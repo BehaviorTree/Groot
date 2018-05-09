@@ -12,6 +12,11 @@ public:
 
     virtual unsigned int  nPorts(PortType portType) const override;
 
-    static QString Name() { return QString("Action"); }
-
+    virtual QString name() const override
+    {
+      return name_;
+    }
+private:
+    const QString name_;
 };
+

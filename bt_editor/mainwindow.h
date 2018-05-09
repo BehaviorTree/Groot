@@ -33,6 +33,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+  void loadFromXML(const QString &xml_text);
+
 private slots:
 
     void on_actionLoad_triggered();
@@ -102,8 +104,6 @@ private:
     QTimer _periodic_timer;
 
     std::mutex _mutex;
-
-    void loadFromXML(const QString &xml_text);
 
     void buildTreeView();
 

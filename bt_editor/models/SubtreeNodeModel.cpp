@@ -1,8 +1,9 @@
 #include "SubtreeNodeModel.hpp"
 
-SubtreeNodeModel::SubtreeNodeModel(QString subtree_ID,
+SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
                                    const ParameterWidgetCreators& creators):
-    BehaviorTreeNodeModel ("SubTree", subtree_ID, creators )
+    BehaviorTreeNodeModel ("SubTree", subtree_ID, creators ),
+    name_(subtree_ID)
 {
     auto style = this->nodeStyle();
     style.NormalBoundaryColor = QColor(255,210,0);

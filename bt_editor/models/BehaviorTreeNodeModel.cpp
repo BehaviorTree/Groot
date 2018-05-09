@@ -26,8 +26,8 @@ BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString& ID, const QString& n
 
   QHBoxLayout *top_layout  = new QHBoxLayout(  );
 
-  top_layout->addWidget( _label_ID );
-  top_layout->addWidget( _line_edit_name );
+  top_layout->addWidget( _label_ID,0 );
+  top_layout->addWidget( _line_edit_name, 1 );
   top_layout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
 
 

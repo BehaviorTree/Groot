@@ -35,7 +35,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_definitions(${Qt5Widgets_DEFINITIONS} -DNODE_EDITOR_STATIC -std=c++11)
 set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
-INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include )
+INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./3rdparty )
 
 add_subdirectory( QtNodeEditor )
 
@@ -53,8 +53,10 @@ set(APP_CPPS
     ./bt_editor/editor_flowscene.cpp
     ./bt_editor/utils.cpp
 
+    ./3rdparty/tinyXML2/tinyxml2.cpp
+    ./bt_editor/XmlParsers.cpp
+
  ##   ./bt_editor/NodeFactory.cpp
- #   ./bt_editor/XmlParsers.cpp
     )
 
 

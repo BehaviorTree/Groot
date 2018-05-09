@@ -49,22 +49,22 @@ public:
 
 public:
 
-  template<typename ModelType>
-  void registerModel(RegistryItemCreator creator,
-                     QString const &category = "Nodes");
 
-  template<typename ModelType>
+  void registerModel(RegistryItemCreator creator,
+                     QString const &category);
+
+
   void registerModel(QString const &category,
                      RegistryItemCreator creator)
   {
-    registerModel<ModelType>(std::move(creator), category);
+    registerModel(std::move(creator), category);
   }
 
   template<typename ModelType>
-  void registerModel(QString const &category = "Nodes")
+  void registerModel(QString const &category)
   {
     RegistryItemCreator creator = [](){ return std::make_unique<ModelType>(); };
-    registerModel<ModelType>(std::move(creator), category);
+    registerModel(std::move(creator), category);
   }
 
   void registerTypeConverter(TypeConverterId const & id,
@@ -97,13 +97,10 @@ private:
 
 
 
-template<typename ModelType> inline void
+inline void
 DataModelRegistry::
     registerModel(RegistryItemCreator creator, QString const &category)
 {
-  static_assert(std::is_base_of<NodeDataModel, ModelType>::value,
-                "Must pass a subclass of NodeDataModel to registerModel");
-
   RegistryItemPtr prototypeInstance = creator();
   QString const name = prototypeInstance->name();
 

@@ -6,14 +6,19 @@
 class SubtreeNodeModel : public BehaviorTreeNodeModel
 {
 public:
-    SubtreeNodeModel(QString subtree_ID,
+    SubtreeNodeModel(const QString& subtree_ID,
                      const ParameterWidgetCreators &creators);
 
     virtual ~SubtreeNodeModel() = default;
 
     virtual unsigned int  nPorts(PortType portType) const override;
 
-    virtual QString name() const override { return QString("SubTree"); }
+    virtual QString name() const override
+    {
+      return name_;
+    }
+private:
+    const QString name_;
 };
 
 

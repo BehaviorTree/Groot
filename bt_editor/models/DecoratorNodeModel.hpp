@@ -13,12 +13,17 @@ public:
     unsigned int  nPorts(PortType) const override final
     { return 1; }
 
-    QString name() const override { return QString("Decorator"); }
-
     ConnectionPolicy portOutConnectionPolicy(PortIndex) const override final
     {
         return ConnectionPolicy::One;
     }
+
+    virtual QString name() const override
+    {
+      return name_;
+    }
+private:
+    const QString name_;
 };
 
 
