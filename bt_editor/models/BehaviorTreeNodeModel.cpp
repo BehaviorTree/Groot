@@ -52,14 +52,14 @@ BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString& ID, const QString& n
   _line_edit_name->setStyleSheet("color: black; background-color: white");
 
   //--------------------------------------
+  _params_widget = new QWidget( _main_widget );
+  _form_layout = new QFormLayout( _params_widget );
 
   if( !creators.empty() )
   {
-      _params_widget = new QWidget( _main_widget );
       main_layout->addWidget(_params_widget);
       _params_widget->setStyleSheet("color: white;");
 
-      _form_layout = new QFormLayout( _params_widget );
       _form_layout->setHorizontalSpacing(2);
       _form_layout->setVerticalSpacing(2);
       _form_layout->setContentsMargins(0, 0, 0, 0);

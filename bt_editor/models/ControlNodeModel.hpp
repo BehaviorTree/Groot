@@ -80,12 +80,12 @@ public:
 };
 
 
-class SelectorModel: public  ControlNodeModelBase<SelectorModel>
+class FallbackModel: public  ControlNodeModelBase<FallbackModel>
 {
 public:
-    SelectorModel();
-    virtual ~SelectorModel()  = default;
-    static QString staticName() { return QString("Selector"); }
+    FallbackModel();
+    virtual ~FallbackModel()  = default;
+    static QString staticName() { return QString("Fallback"); }
 };
 
 

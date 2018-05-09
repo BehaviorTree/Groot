@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
   _model_registry->registerModel<RootNodeModel>("Root");
   _model_registry->registerModel<SequenceModel>("Control");
   _model_registry->registerModel<SequenceStarModel>("Control");
-  _model_registry->registerModel<SelectorModel>("Control");
+  _model_registry->registerModel<FallbackModel>("Control");
 
   _model_registry->registerModel<IfThenElseModel>("Control");
 
@@ -119,6 +119,19 @@ void MainWindow::loadFromXML(const QString& xml_text)
                           document.RootElement()->FirstChildElement("TreeNodesModel")
                           );
       buildTreeView();
+
+      currentTabInfo()->scene->clearScene();
+      QtNodes::Node& first_qt_node = currentTabInfo()->scene->createNode( _model_registry->create("Root") );
+
+      std::cout<< "Starting parsing"<< std::endl;
+
+      ParseBehaviorTreeXML(document.RootElement()->FirstChildElement("BehaviorTree"),
+                           currentTabInfo()->scene,
+                           first_qt_node);
+
+      std::cout<<"XML Parsed Successfully!"<< std::endl;
+
+      NodeReorder( *currentTabInfo()->scene );
     }
   }
   catch( std::runtime_error& err)

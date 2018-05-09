@@ -5,11 +5,73 @@
 #include "models/DecoratorNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 
+using namespace tinyxml2;
+using namespace QtNodes;
+
+void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, Node& qt_root )
+{
+
+  int nested_nodes = 0;
+  QPointF cursor(0,0);
+
+  if( strcmp( bt_root->Name(), "BehaviorTree" ) != 0)
+  {
+    throw std::runtime_error( "expecting a node called <BehaviorTree>");
+  }
+
+  std::function<void(const XMLElement*, Node&)> recursiveStep;
+
+  recursiveStep = [&recursiveStep, &scene, &cursor, &nested_nodes](const XMLElement* xml_node, Node& parent_qtnode)
+  {
+    // TODO: attributes
+
+    // The nodes with a ID used that QString to insert into the registry()
+    QString ID = xml_node->Name();
+    if( xml_node->Attribute("ID") )
+    {
+      ID = xml_node->Attribute("ID");
+    }
+
+    std::unique_ptr<NodeDataModel> dataModel = scene->registry().create( ID );
+
+    if (!dataModel){
+      char buffer[250];
+      sprintf(buffer, "No registered model with name: [%s](%s) ",
+              xml_node->Name(),
+              ID.toStdString().c_str() );
+        throw std::logic_error( buffer );
+    }
+
+    Node& new_node = scene->createNode( std::move(dataModel) );
+
+    cursor.setY( cursor.y() + 65);
+    cursor.setX( nested_nodes * 400 );
+
+    scene->setNodePosition(new_node, cursor);
+    scene->createConnection(new_node, 0, parent_qtnode, 0 );
+
+    nested_nodes++;
+
+    for (const XMLElement*  child = xml_node->FirstChildElement( )  ;
+         child != nullptr;
+         child = child->NextSiblingElement( ) )
+    {
+      recursiveStep( child, new_node );
+    }
+
+    nested_nodes--;
+    return;
+  };
+
+  // start recursion
+  recursiveStep( bt_root->FirstChildElement(), qt_root );
+
+}
+
 
 bool ReadTreeNodesModel(QtNodes::DataModelRegistry& registry,
                         const tinyxml2::XMLElement* model_root)
 {
-  using namespace tinyxml2;
   using QtNodes::DataModelRegistry;
 
   for( const XMLElement* node = model_root->FirstChildElement();

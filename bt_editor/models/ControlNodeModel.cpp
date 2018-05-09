@@ -12,7 +12,7 @@ SequenceModel::SequenceModel(): ControlNodeModelBase()
     setLabelImage(":/icons/arrow_sequence.png");
 }
 
-SelectorModel::SelectorModel(): ControlNodeModelBase()  {
+FallbackModel::FallbackModel(): ControlNodeModelBase()  {
     setLabelImage(":/icons/question_mark.png");
 }
 
