@@ -1,0 +1,56 @@
+clone_depth: 5
+
+environment:
+  matrix:
+    - GENERATOR : "MinGW Makefiles"
+      QTDIR: C:\Qt\5.6\mingw49_32
+      PLATFORM: x86
+    - GENERATOR : "Visual Studio 14 2015 Win64"
+      QTDIR: C:\Qt\5.7\msvc2015_64
+      PLATFORM: x64
+    - GENERATOR : "Visual Studio 14 2015"
+      QTDIR: C:\Qt\5.7\msvc2015
+      PLATFORM: Win32
+
+configuration:
+  - Release
+
+#branches:
+  #only:
+    #- master
+
+before_build:
+  - mkdir build
+  - cd build
+  - set PATH=%QTDIR%\bin;%PATH%
+  - set PATH=C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
+  - set PATH=%PATH:C:\Program Files\Git\usr\bin=% # trick to remove sh.exe
+  - cmake "-G%GENERATOR%" -DCMAKE_PREFIX_PATH="%QTDIR/lib/cmake/Qt5" ..
+
+
+build_script:
+  - if "%PLATFORM%" == "x86" cmake --build .
+  - if "%PLATFORM%" == "x64" msbuild NodeEditor.sln
+  - if "%PLATFORM%" == "Win32" msbuild NodeEditor.sln
+
+
+
+after_build:
+  - 7z a examples.zip %APPVEYOR_BUILD_FOLDER%/build/bin
+  - cmd: cd
+  - cmd: dir \S \P "examples.zip"
+
+artifacts:
+  - path: build\examples.zip
+    name: ex
+
+#deploy:
+  #release: $(APPVEYOR_REPO_TAG_NAME)
+  #provider: GitHub
+  #artifact: /.*\.exe/
+  #auth_token:
+    #secure: j0nBV9xVItdG3j6d0gHoyvrzi7TOhAy9/QIeyCbFeP8PTqq7DPr1oYwL5WIkPaXe
+  #draft: false
+  #prerelease: false
+  #on:
+    #appveyor_repo_tag: true

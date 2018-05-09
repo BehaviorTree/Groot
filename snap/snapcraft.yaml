@@ -1,0 +1,24 @@
+name: behavior-tree-editor
+version: "1.0"
+summary: Qt Application Example
+description: A simple behavior-tree editor
+confinement: strict
+
+apps:
+  behavior-tree-editor:
+    command: qt5-launch application
+    plugs:
+      - home
+
+parts:
+  application:
+    plugin: cmake
+    qt-version: qt5
+    source: ../
+    build-packages:
+      - g++
+      - qttools5-dev-tools
+    stage-packages:
+      # Here for the plugins-- they're not linked in automatically.
+      - libqt5gui5
+

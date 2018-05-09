@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>behavior_tree_editor</name>
+  <version>0.1.0</version>
+  <description>Graphical editor to create behaviour trees</description>
+
+  <maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
+
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <license>MIT</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+    <build_depend>cmake_modules</build_depend>
+
+    <build_depend>pluginlib</build_depend>
+    <build_depend>roscpp</build_depend>
+    <build_depend>behavior_tree_cpp</build_depend>
+
+    <run_depend>pluginlib</run_depend>
+    <run_depend>roscpp</run_depend>
+    <run_depend>behavior_tree_cpp</run_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

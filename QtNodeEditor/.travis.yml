@@ -1,0 +1,53 @@
+language: none
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      compiler: clang
+      env: CXX=clang++-3.8 CC=clang-3.8
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+              # VERY IMPORTANT TO INSTALL g++-5! clang doesn't come with a standard library, so
+              # we need to install g++-5 for a C++14 standard library.
+            - g++-5
+
+    - os: linux
+      dist: trusty
+      compiler: gcc
+      env: CXX=g++-5 CC=gcc-5 QT=5
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+
+    - os: osx
+      osx_image: xcode8.3
+      compiler: clang
+      env: CMAKE_PREFIX_PATH=/usr/local/Cellar/qt/5.10.1:$CMAKE_PREFIX_PATH
+
+git:
+  depth: 10
+
+before_install:
+   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update    ; fi
+   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install qt; fi
+   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq ; fi
+   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install build-essential libgl1-mesa-dev ; fi
+   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -yy install qtbase5-dev ; fi
+
+
+script:
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_VERBOSE_MAKEFILE=$VERBOSE_BUILD .. && make -j
+
+notifications:
+  email: false

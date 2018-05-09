@@ -1,0 +1,23 @@
+#include "RootNodeModel.hpp"
+#include <QLineEdit>
+#include <QDebug>
+
+RootNodeModel::RootNodeModel():
+    BehaviorTreeNodeModel ("Root", "", ParameterWidgetCreators() )
+{
+
+    _line_edit_name->setHidden(true);
+    _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
+    emit adjustSize();
+}
+
+unsigned int RootNodeModel::nPorts(QtNodes::PortType portType) const
+{
+    return (portType==PortType::In) ? 0:1;
+}
+
+
+NodeDataModel::ConnectionPolicy RootNodeModel::portOutConnectionPolicy(QtNodes::PortIndex) const
+{
+    return ConnectionPolicy::One;
+}
