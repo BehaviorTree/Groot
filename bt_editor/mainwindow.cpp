@@ -574,15 +574,29 @@ void MainWindow::onTimerUpdate()
 #endif
 }
 
-void MainWindow::onNodeContextMenu(QtNodes::Node &, const QPointF &)
+void MainWindow::onNodeContextMenu(QtNodes::Node &node, const QPointF &pos)
 {
-  QMenu nodeMenu;
-  auto *morph  = new QAction("Morph into...", &nodeMenu);
-  auto *remove = new QAction("Remove", &nodeMenu);
+  const QString category = getCategory( node.nodeDataModel() );
+  const auto cursor_pos = QCursor::pos();
+  auto names_in_category = _model_registry->registeredModelsByCategory( category );
+  names_in_category.erase( node.nodeDataModel()->name() );
 
-  nodeMenu.addAction(morph);
-  nodeMenu.addAction(remove);
-  nodeMenu.exec( QCursor::pos() );
+  QMenu* nodeMenu = new QMenu(this);
+
+  if( names_in_category.size() > 0)
+  {
+    QMenu* morph_submenu = nodeMenu->addMenu("Morph into...");
+    for(auto& name: names_in_category)
+    {
+      auto action = new QAction(name, morph_submenu);
+      morph_submenu->addAction(action);
+    }
+  }
+
+  auto *remove = new QAction("Remove", nodeMenu);
+  nodeMenu->addAction(remove);
+
+  nodeMenu->exec( cursor_pos );
 }
 
 void MainWindow::onConnectionContextMenu(QtNodes::Connection &, const QPointF&)
@@ -593,6 +607,7 @@ void MainWindow::onConnectionContextMenu(QtNodes::Connection &, const QPointF&)
 
   nodeMenu.addAction(insertControl);
   nodeMenu.addAction(insertDecorator);
+
   nodeMenu.exec( QCursor::pos() );
 }
 
@@ -608,4 +623,9 @@ void MainWindow::on_splitter_splitterMoved(int , int )
     sizes[1] = totalWidth - maxLeftWidth;
     ui->splitter->setSizes(sizes);
   }
+}
+
+void MainWindow::onMorphNode(QtNodes::Node &node)
+{
+
 }

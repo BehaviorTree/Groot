@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 #include <set>
 #include <memory>
 #include <functional>
@@ -83,6 +84,8 @@ public:
 
   TypeConverter getTypeConverter(NodeDataType const & d1,
                                  NodeDataType const & d2) const;
+
+  std::unordered_set<QString> registeredModelsByCategory(const QString& category);
 
 private:
 

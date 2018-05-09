@@ -3,6 +3,12 @@
 #include <QDebug>
 #include <set>
 
+#include "models/ActionNodeModel.hpp"
+#include "models/DecoratorNodeModel.hpp"
+#include "models/ControlNodeModel.hpp"
+#include "models/SubtreeNodeModel.hpp"
+#include "models/RootNodeModel.hpp"
+
 std::vector<QtNodes::Node*> findRoots(const QtNodes::FlowScene &scene)
 {
     std::set<QUuid> roots;
@@ -172,4 +178,30 @@ void NodeReorder(QtNodes::FlowScene &scene)
     }
 
     scene.setSceneRect(-30, -30, right + 60, bottom + 60);
+}
+
+QString getCategory(const QtNodes::NodeDataModel *dataModel)
+{
+  QString category;
+  if( dynamic_cast<const ActionNodeModel*>(dataModel) )
+  {
+    category = "Action";
+  }
+  else if( dynamic_cast<const DecoratorNodeModel*>(dataModel) )
+  {
+    category = "Decorator";
+  }
+  else if( dynamic_cast<const ControlNodeModel*>(dataModel) )
+  {
+    category = "Control";
+  }
+  else if( dynamic_cast<const RootNodeModel*>(dataModel) )
+  {
+    category = "Root";
+  }
+  else if( dynamic_cast<const SubtreeNodeModel*>(dataModel) )
+  {
+    category = "SubTree";
+  }
+  return category;
 }

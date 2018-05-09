@@ -13,4 +13,6 @@ std::vector<QtNodes::Node*> getChildren(const QtNodes::FlowScene &scene,
 void NodeReorder(QtNodes::FlowScene &scene);
 
 
+QString getCategory(const QtNodes::NodeDataModel* model);
+
 #endif // NODE_UTILS_H

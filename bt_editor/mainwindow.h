@@ -67,6 +67,9 @@ private slots:
 
     void on_splitter_splitterMoved(int pos = 0, int index = 0);
 
+    void onMorphNode(QtNodes::Node& n);
+
+
 signals:
     void updateGraphic();
 
