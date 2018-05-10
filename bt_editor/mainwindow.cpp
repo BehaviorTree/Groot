@@ -635,7 +635,7 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
     auto parent_node = conn_in.begin()->second->getNode(PortType::Out);
     auto policy = parent_node->nodeDataModel()->portOutConnectionPolicy(0);
 
-    if( policy == NodeDataModel::ConnectionPolicy::One && conn_out.size() >= 1)
+    if( policy == NodeDataModel::ConnectionPolicy::One && conn_out.size() > 1)
     {
       smart_remove->setEnabled(false);
     }
@@ -658,17 +658,51 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
   }
 }
 
-
-void MainWindow::onConnectionContextMenu(QtNodes::Connection &, const QPointF&)
+void MainWindow::insertNodeInConnection(QtNodes::Connection& connection, QString node_name)
 {
-  QMenu nodeMenu;
-  auto *insertControl   = new QAction("Insert ControlNode", &nodeMenu);
-  auto *insertDecorator = new QAction("Insert DecoratoNode", &nodeMenu);
+  auto scene = currentTabInfo()->scene;
 
-  nodeMenu.addAction(insertControl);
-  nodeMenu.addAction(insertDecorator);
+  auto node_model = _model_registry->create(node_name);
+  QtNodes::Node& inserted_node = scene->createNode( std::move(node_model) );
 
-  nodeMenu.exec( QCursor::pos() );
+  auto parent_node = connection.getNode(PortType::Out);
+  auto child_node  = connection.getNode(PortType::In);
+  scene->deleteConnection(connection);
+  scene->createConnection(*child_node, 0, inserted_node, 0);
+  scene->createConnection(inserted_node, 0, *parent_node, 0);
+
+  NodeReorder( *scene );
+}
+
+
+void MainWindow::onConnectionContextMenu(QtNodes::Connection &connection, const QPointF&)
+{
+  QMenu* nodeMenu = new QMenu(this);
+  auto categories = {"Control", "Decorator"};
+
+  for(auto category: categories)
+  {
+    QMenu* submenu = nodeMenu->addMenu(QString("Insert ") + category + QString("Node") );
+    auto model_names = _model_registry->registeredModelsByCategory( category );
+
+    if( model_names.empty() )
+    {
+      submenu->setEnabled(false);
+    }
+    else{
+      for(auto& name: model_names)
+      {
+        auto action = new QAction(name, submenu);
+        submenu->addAction(action);
+        connect( action, &QAction::triggered, [this, &connection, name]
+        {
+          this->insertNodeInConnection( connection, name);
+        });
+      }
+    }
+  }
+
+  nodeMenu->exec( QCursor::pos() );
 }
 
 void MainWindow::on_splitter_splitterMoved(int , int )

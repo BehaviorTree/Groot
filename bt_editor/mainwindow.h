@@ -63,7 +63,7 @@ private slots:
 
     void onNodeContextMenu(QtNodes::Node& n, const QPointF& pos);
 
-    void onConnectionContextMenu(QtNodes::Connection& n, const QPointF& pos);
+    void onConnectionContextMenu(QtNodes::Connection& connection, const QPointF& pos);
 
     void on_splitter_splitterMoved(int pos = 0, int index = 0);
 
@@ -114,10 +114,12 @@ private:
 
     QMap<QString, QTreeWidgetItem*> _tree_view_top_level_items;
 
-//    QDomDocument _domDocument;
 
     void createMorphSubMenu(QtNodes::Node &node, QMenu *nodeMenu);
+
     void createSmartRemoveAction(QtNodes::Node &node, QMenu *nodeMenu);
+
+    void insertNodeInConnection(QtNodes::Connection &connection, QString node_name);
 };
 
 #endif // MAINWINDOW_H
