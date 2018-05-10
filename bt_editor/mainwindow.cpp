@@ -32,7 +32,7 @@ using QtNodes::DataModelRegistry;
 using QtNodes::FlowView;
 using QtNodes::FlowScene;
 using QtNodes::NodeGraphicsObject;
-
+using QtNodes::NodeState;
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
@@ -559,14 +559,34 @@ void MainWindow::onTimerUpdate()
 
 }
 
-void MainWindow::onNodeContextMenu(QtNodes::Node &node, const QPointF &pos)
+
+void MainWindow::onNodeContextMenu(QtNodes::Node &node, const QPointF&)
+{
+  QMenu* nodeMenu = new QMenu(this);
+
+  //--------------------------------
+  createMorphSubMenu(node, nodeMenu);
+  //--------------------------------
+  auto *remove = new QAction("Remove ", nodeMenu);
+  nodeMenu->addAction(remove);
+
+  connect( remove, &QAction::triggered, [this,&node]()
+  {
+    currentTabInfo()->scene->removeNode(node);
+  });
+  //--------------------------------
+  createSmartRemoveAction(node, nodeMenu);
+ //--------------------------------
+  nodeMenu->exec( QCursor::pos() );
+}
+
+void MainWindow::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
 {
   const QString category = getCategory( node.nodeDataModel() );
-  const auto cursor_pos = QCursor::pos();
   auto names_in_category = _model_registry->registeredModelsByCategory( category );
   names_in_category.erase( node.nodeDataModel()->name() );
 
-  QMenu* nodeMenu = new QMenu(this);
+  QMenu* morph_submenu = nodeMenu->addMenu("Morph into...");
 
   if( category == "Control")
   {
@@ -577,28 +597,67 @@ void MainWindow::onNodeContextMenu(QtNodes::Node &node, const QPointF &pos)
     }
   }
 
-  if( names_in_category.size() > 0)
+  if( names_in_category.size() == 0)
   {
-    QMenu* morph_submenu = nodeMenu->addMenu("Morph into...");
+    morph_submenu->setEnabled(false);
+  }
+  else
+  {
     for(auto& name: names_in_category)
     {
       auto action = new QAction(name, morph_submenu);
       morph_submenu->addAction(action);
 
-      auto scene = currentTabInfo()->scene;
-      connect( action, &QAction::triggered, [this,&node, name, scene]
+      connect( action, &QAction::triggered, [this, &node, name]
       {
         node.changeDataModel( _model_registry->create(name) );
         NodeReorder( *currentTabInfo()->scene );
       });
     }
   }
-
-  auto *remove = new QAction("Remove", nodeMenu);
-  nodeMenu->addAction(remove);
-
-  nodeMenu->exec( cursor_pos );
 }
+
+void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
+{
+  auto *smart_remove = new QAction("Smart Remove ", nodeMenu);
+  nodeMenu->addAction(smart_remove);
+
+  NodeState::ConnectionPtrSet conn_in  = node.nodeState().connections(PortType::In,0);
+  NodeState::ConnectionPtrSet conn_out;
+  auto port_entries = node.nodeState().getEntries(PortType::Out);
+  if( port_entries.size() == 1)
+  {
+    conn_out = port_entries.front();
+  }
+
+  if( conn_in.size() == 1 && conn_out.size() >= 1 )
+  {
+    auto parent_node = conn_in.begin()->second->getNode(PortType::Out);
+    auto policy = parent_node->nodeDataModel()->portOutConnectionPolicy(0);
+
+    if( policy == NodeDataModel::ConnectionPolicy::One && conn_out.size() >= 1)
+    {
+      smart_remove->setEnabled(false);
+    }
+    else{
+      auto node_ptr = &node;
+      connect( smart_remove, &QAction::triggered, [this, node_ptr, parent_node, conn_out]()
+      {
+        currentTabInfo()->scene->removeNode( *node_ptr );
+        for( auto& it: conn_out)
+        {
+          auto child_node = it.second->getNode(PortType::In);
+          currentTabInfo()->scene->createConnection( *child_node, 0, *parent_node, 0 );
+        }
+        NodeReorder( *currentTabInfo()->scene );
+      });
+    }
+  }
+  else{
+    smart_remove->setEnabled(false);
+  }
+}
+
 
 void MainWindow::onConnectionContextMenu(QtNodes::Connection &, const QPointF&)
 {

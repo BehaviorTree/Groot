@@ -116,6 +116,8 @@ private:
 
 //    QDomDocument _domDocument;
 
+    void createMorphSubMenu(QtNodes::Node &node, QMenu *nodeMenu);
+    void createSmartRemoveAction(QtNodes::Node &node, QMenu *nodeMenu);
 };
 
 #endif // MAINWINDOW_H
