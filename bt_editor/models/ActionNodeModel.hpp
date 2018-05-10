@@ -12,11 +12,12 @@ public:
 
     virtual unsigned int  nPorts(PortType portType) const override;
 
-    virtual QString name() const override
-    {
-      return name_;
-    }
+    virtual void restore(QJsonObject const &) override final;
+
 private:
-    const QString name_;
+
+    void init();
+
+    virtual void setInstanceName(const QString& name) override;
 };
 

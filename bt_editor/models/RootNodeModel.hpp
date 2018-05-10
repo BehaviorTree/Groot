@@ -21,10 +21,6 @@ public:
 
   unsigned int  nPorts(PortType portType) const override;
 
-  static QString staticName() { return QString("Root"); }
-
-  QString name() const override { return staticName(); }
-
   virtual ConnectionPolicy portOutConnectionPolicy(PortIndex) const override;
 };
 

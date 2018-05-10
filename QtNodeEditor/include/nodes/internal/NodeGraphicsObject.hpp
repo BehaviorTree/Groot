@@ -100,5 +100,6 @@ private:
 
   // either nullptr or owned by parent QGraphicsItem
   QGraphicsProxyWidget * _proxyWidget;
+  QPoint _press_pos;
 };
 }

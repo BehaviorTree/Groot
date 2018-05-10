@@ -117,7 +117,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1">
         <property name="leftMargin">
          <number>0</number>
@@ -132,7 +132,7 @@
          <widget class="QLineEdit" name="lineEditFilter">
           <property name="maximumSize">
            <size>
-            <width>300</width>
+            <width>400</width>
             <height>16777215</height>
            </size>
           </property>
@@ -145,7 +145,7 @@
          <widget class="QTreeWidget" name="treeWidget">
           <property name="maximumSize">
            <size>
-            <width>300</width>
+            <width>400</width>
             <height>16777215</height>
            </size>
           </property>
@@ -181,10 +181,16 @@
       </widget>
       <widget class="QTabWidget" name="tabWidget">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>300</width>
+         <height>0</height>
+        </size>
        </property>
        <property name="acceptDrops">
         <bool>true</bool>

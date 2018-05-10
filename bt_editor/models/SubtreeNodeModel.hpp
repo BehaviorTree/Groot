@@ -13,12 +13,6 @@ public:
 
     virtual unsigned int  nPorts(PortType portType) const override;
 
-    virtual QString name() const override
-    {
-      return name_;
-    }
-private:
-    const QString name_;
 };
 
 

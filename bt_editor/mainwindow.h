@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QDebug>
 #include <nodes/Node>
 #include <QTreeWidgetItem>
 #include <QShortcut>
@@ -11,10 +12,8 @@
 #include <mutex>
 #include <nodes/DataModelRegistry>
 
-#ifdef USING_ROS
-#include <ros/ros.h>
-#include <std_msgs/String.h>
-#endif
+#include "nodes/FlowScene"
+
 namespace Ui {
 class MainWindow;
 }
@@ -66,6 +65,12 @@ private slots:
     void onConnectionContextMenu(QtNodes::Connection& connection, const QPointF& pos);
 
     void on_splitter_splitterMoved(int pos = 0, int index = 0);
+
+    void onPushUndo();
+
+    void onUndoInvoked();
+
+    void onRedoInvoked();
 
 signals:
     void updateGraphic();
@@ -120,6 +125,13 @@ private:
     void createSmartRemoveAction(QtNodes::Node &node, QMenu *nodeMenu);
 
     void insertNodeInConnection(QtNodes::Connection &connection, QString node_name);
+
+    std::deque<QByteArray> _undo_stack;
+    std::deque<QByteArray> _redo_stack;
+
+    std::atomic_bool _undo_enabled;
 };
+
+
 
 #endif // MAINWINDOW_H

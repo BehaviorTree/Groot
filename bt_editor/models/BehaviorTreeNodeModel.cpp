@@ -6,21 +6,24 @@
 #include <QDebug>
 #include <QFile>
 
-BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString& ID, const QString& name,
+BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString& label_name,
+                                             const QString& registration_name,
                                              const ParameterWidgetCreators &creators):
     _params_widget(nullptr),
-    _form_layout(nullptr)
+    _form_layout(nullptr),
+    _registration_name(registration_name),
+    _instance_name(registration_name)
 {
   _main_widget = new QWidget;
   _main_widget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
   _label_ID = new QLabel( _main_widget );
-  _label_ID->setText( ID );
+  _label_ID->setText( label_name );
   _label_ID->setAlignment(Qt::AlignCenter);
   _label_ID->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
   _line_edit_name = new QLineEdit( _main_widget );
-  _line_edit_name->setText( name );
+  _line_edit_name->setText( _instance_name );
   _line_edit_name->setAlignment(Qt::AlignCenter);
   _line_edit_name->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
@@ -96,12 +99,17 @@ std::shared_ptr<QtNodes::NodeData> BehaviorTreeNodeModel::outData(QtNodes::PortI
 }
 
 QString BehaviorTreeNodeModel::caption() const {
-    return type();
+  return _line_edit_name->text();
 }
 
-QString BehaviorTreeNodeModel::type() const
+const QString &BehaviorTreeNodeModel::registrationName() const
 {
-    return _line_edit_name->text();
+  return _registration_name;
+}
+
+const QString &BehaviorTreeNodeModel::instanceName() const
+{
+  return _instance_name;
 }
 
 std::vector<std::pair<QString, QString>> BehaviorTreeNodeModel::getCurrentParameters() const
@@ -133,11 +141,20 @@ std::vector<std::pair<QString, QString>> BehaviorTreeNodeModel::getCurrentParame
 
 QJsonObject BehaviorTreeNodeModel::save() const
 {
-    return QJsonObject();
+  QJsonObject modelJson;
+  modelJson["name"]  = registrationName();
+  modelJson["alias"] = instanceName();
+  return modelJson;
 }
 
-void BehaviorTreeNodeModel::restore(const QJsonObject &)
+void BehaviorTreeNodeModel::restore(const QJsonObject &modelJson)
 {
+  if( _registration_name != modelJson["name"].toString() )
+  {
+    throw std::runtime_error(" error restoring: different registration_name");
+  }
+  QString alias = modelJson["alias"].toString();
+  setInstanceName( alias );
 }
 
 void BehaviorTreeNodeModel::lock(bool locked)
@@ -161,6 +178,12 @@ void BehaviorTreeNodeModel::lock(bool locked)
       }
     }
   }
+}
+
+void BehaviorTreeNodeModel::setInstanceName(const QString &name)
+{
+  _instance_name = name;
+  _line_edit_name->setText( name );
 }
 
 

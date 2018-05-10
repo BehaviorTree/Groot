@@ -26,19 +26,27 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
     // TODO: attributes
 
     // The nodes with a ID used that QString to insert into the registry()
-    QString ID = xml_node->Name();
+    QString modelID = xml_node->Name();
     if( xml_node->Attribute("ID") )
     {
-      ID = xml_node->Attribute("ID");
+      modelID = xml_node->Attribute("ID");
     }
 
-    std::unique_ptr<NodeDataModel> dataModel = scene->registry().create( ID );
+    std::unique_ptr<NodeDataModel> dataModel = scene->registry().create( modelID );
+
+    if( xml_node->Attribute("name") )
+    {
+      if( auto ptr = dynamic_cast<BehaviorTreeNodeModel*>( dataModel.get() ) )
+      {
+        ptr->setInstanceName( xml_node->Attribute("name") );
+      }
+    }
 
     if (!dataModel){
       char buffer[250];
       sprintf(buffer, "No registered model with name: [%s](%s) ",
               xml_node->Name(),
-              ID.toStdString().c_str() );
+              modelID.toStdString().c_str() );
         throw std::logic_error( buffer );
     }
 

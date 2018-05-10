@@ -18,12 +18,13 @@ public:
         return ConnectionPolicy::One;
     }
 
-    virtual QString name() const override
+    virtual void restore(QJsonObject const &) override final
     {
-      return name_;
+
     }
+
 private:
-    const QString name_;
+
 };
 
 

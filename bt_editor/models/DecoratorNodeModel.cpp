@@ -3,8 +3,7 @@
 
 DecoratorNodeModel::DecoratorNodeModel(QString decorator_ID,
                                        const ParameterWidgetCreators &parameters):
-    BehaviorTreeNodeModel("Decorator", decorator_ID, parameters ),
-    name_(decorator_ID)
+    BehaviorTreeNodeModel("Decorator", decorator_ID, parameters )
 {
     auto style = this->nodeStyle();
     style.NormalBoundaryColor = QColor(255,210,0);
@@ -16,3 +15,5 @@ DecoratorNodeModel::DecoratorNodeModel(QString decorator_ID,
     _line_edit_name->setFixedWidth(fm.boundingRect(decorator_ID).width() + 12);
     _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
 }
+
+

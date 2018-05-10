@@ -28,6 +28,14 @@ public:
 
     unsigned int  nPorts(PortType) const override final
     { return 1; }
+
+
+    virtual void setInstanceName(const QString &name) override;
+
+    virtual void restore(QJsonObject const &modelJson) override final
+    {
+      setInstanceName( modelJson["alias"].toString() );
+    }
 };
 //------------------------------------------------
 
@@ -38,8 +46,6 @@ public:
     ControlNodeModelBase();
     virtual ~ControlNodeModelBase() {}
 
-    QString name() const override { return T::staticName(); }
-
 protected:
 
     void setLabelImage(QString pixmap_address);
@@ -48,7 +54,8 @@ protected:
 
 //-------------------------------------------------
 template<typename T> inline
-ControlNodeModelBase<T>::ControlNodeModelBase(): ControlNodeModel(T::staticName(), ParameterWidgetCreators() )
+ControlNodeModelBase<T>::ControlNodeModelBase():
+  ControlNodeModel(T::staticName(), ParameterWidgetCreators() )
 {
     _main_widget->setToolTip( T::staticName() );
 }

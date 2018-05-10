@@ -10,7 +10,7 @@
 #include <QMenu>
 #include <QWidgetAction>
 #include <QTreeWidgetItem>
-#include <QTreeWidgetItem>
+#include <QShortcut>
 #include <nodes/Node>
 #include <nodes/NodeData>
 #include <nodes/NodeStyle>
@@ -38,7 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::MainWindow),
   _arrange_shortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this),
-  _root_node(nullptr)
+  _root_node(nullptr),
+  _undo_enabled(true)
 {
   ui->setupUi(this);
 
@@ -63,7 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->menubar->setNativeMenuBar(false);
 
   connect( &_arrange_shortcut, &QShortcut::activated,
-           this,   &MainWindow::onNodeMoved  );
+           this,   &MainWindow::on_actionAuto_arrange_triggered  );
 
   connect( &_periodic_timer, SIGNAL(timeout()), this, SLOT(onTimerUpdate()) );
 
@@ -72,14 +73,12 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->splitter->setStretchFactor(0, 1);
   ui->splitter->setStretchFactor(1, 10);
 
-  QList<int> splitter_sizes = ui->splitter->sizes();
+  QShortcut* undo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Z), this);
+  connect( undo_shortcut, &QShortcut::activated, this, &MainWindow::onUndoInvoked );
 
-  if( splitter_sizes[0] < 300)
-  {
-    splitter_sizes[1] += splitter_sizes[0] - 300;
-    splitter_sizes[0] = 300;
-    ui->splitter->setSizes(splitter_sizes);
-  }
+  QShortcut* redo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this);
+  connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
+
 }
 
 
@@ -99,6 +98,18 @@ void MainWindow::createTab(const QString &name)
   connect( ti.scene, &QtNodes::FlowScene::changed,
            this,   &MainWindow::onSceneChanged  );
 
+  connect( ti.scene, &QtNodes::FlowScene::nodeCreated,
+           this,   &MainWindow::onPushUndo  );
+
+  connect( ti.scene, &QtNodes::FlowScene::nodeDeleted,
+           this,   &MainWindow::onPushUndo  );
+
+  connect( ti.scene, &QtNodes::FlowScene::nodeMoved,
+           this,   &MainWindow::onPushUndo  );
+
+  connect( ti.scene, &QtNodes::FlowScene::connectionCreated,
+           this,   &MainWindow::onPushUndo  );
+
   connect( this, SIGNAL(updateGraphic()),  ti.view,   SLOT(repaint())  );
 
   connect( ti.scene, &QtNodes::FlowScene::nodeContextMenu,
@@ -107,6 +118,7 @@ void MainWindow::createTab(const QString &name)
   connect( ti.scene, &QtNodes::FlowScene::connectionContextMenu,
            this, &MainWindow::onConnectionContextMenu );
 
+  ti.view->update();
 }
 
 MainWindow::~MainWindow()
@@ -128,6 +140,9 @@ void MainWindow::loadFromXML(const QString& xml_text)
                           );
       buildTreeView();
 
+      onPushUndo();
+      _undo_enabled.store(false);
+
       currentTabInfo()->scene->clearScene();
       QtNodes::Node& first_qt_node = currentTabInfo()->scene->createNode( _model_registry->create("Root") );
 
@@ -140,6 +155,8 @@ void MainWindow::loadFromXML(const QString& xml_text)
       std::cout<<"XML Parsed Successfully!"<< std::endl;
 
       NodeReorder( *currentTabInfo()->scene );
+      _undo_enabled.store(true);
+      onPushUndo();
     }
   }
   catch( std::runtime_error& err)
@@ -378,12 +395,13 @@ void MainWindow::on_actionZoom_ut_triggered()
 
 void MainWindow::on_actionAuto_arrange_triggered()
 {
+  onPushUndo();
   NodeReorder( * currentTabInfo()->scene );
 }
 
 void MainWindow::onNodeMoved()
 {
-
+  onPushUndo();
   NodeReorder( * currentTabInfo()->scene );
 }
 
@@ -610,6 +628,7 @@ void MainWindow::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
 
       connect( action, &QAction::triggered, [this, &node, name]
       {
+        onPushUndo();
         node.changeDataModel( _model_registry->create(name) );
         NodeReorder( *currentTabInfo()->scene );
       });
@@ -643,6 +662,7 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
       auto node_ptr = &node;
       connect( smart_remove, &QAction::triggered, [this, node_ptr, parent_node, conn_out]()
       {
+        onPushUndo();
         currentTabInfo()->scene->removeNode( *node_ptr );
         for( auto& it: conn_out)
         {
@@ -660,6 +680,7 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
 
 void MainWindow::insertNodeInConnection(QtNodes::Connection& connection, QString node_name)
 {
+  onPushUndo();
   auto scene = currentTabInfo()->scene;
 
   auto node_model = _model_registry->create(node_name);
@@ -716,5 +737,51 @@ void MainWindow::on_splitter_splitterMoved(int , int )
     sizes[0] = maxLeftWidth;
     sizes[1] = totalWidth - maxLeftWidth;
     ui->splitter->setSizes(sizes);
+  }
+}
+
+void MainWindow::onPushUndo()
+{
+  if( !_undo_enabled ) return;
+
+  _undo_enabled.store(false);
+  _undo_stack.push_back( currentTabInfo()->scene->saveToMemory() );
+  _undo_enabled.store(true);
+  qDebug() << "Undo size: " << _undo_stack.size();
+}
+
+void MainWindow::onUndoInvoked()
+{
+  if( _undo_stack.size() > 0)
+  {
+    _undo_enabled.store(false);
+    currentTabInfo()->scene->clearScene();
+    currentTabInfo()->scene->loadFromMemory( _undo_stack.back() );
+    _undo_enabled.store(true);
+  }
+  if( _undo_stack.size() > 1)
+  {
+    auto state = _undo_stack.back();
+    _undo_stack.pop_back();
+    _redo_stack.push_back( state );
+  }
+  qDebug() << "Undo size: " << _undo_stack.size();
+}
+
+void MainWindow::onRedoInvoked()
+{
+  if( _redo_stack.size() > 0)
+  {
+    _undo_enabled.store(false);
+    currentTabInfo()->scene->clearScene();
+    currentTabInfo()->scene->loadFromMemory( _redo_stack.back() );
+    _undo_enabled.store(true);
+  }
+
+  if( _redo_stack.size() > 0)
+  {
+    auto state = _redo_stack.back();
+    _redo_stack.pop_back();
+    _undo_stack.push_back( state );
   }
 }

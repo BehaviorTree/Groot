@@ -12,7 +12,6 @@
 #include <map>
 #include <functional>
 
-
 using QtNodes::PortType;
 using QtNodes::PortIndex;
 using QtNodes::NodeData;
@@ -32,7 +31,8 @@ class BehaviorTreeNodeModel : public NodeDataModel
     Q_OBJECT
 
 public:
-  BehaviorTreeNodeModel(const QString &ID, const QString &name,
+  BehaviorTreeNodeModel(const QString &registration_name,
+                        const QString &instance_name,
                         const ParameterWidgetCreators &parameters );
 
   virtual ~BehaviorTreeNodeModel() {}
@@ -50,17 +50,23 @@ public:
 
   virtual QString caption() const override final;
 
-  QString type() const;
+  const QString& registrationName() const;
+
+  QString name() const override final { return registrationName(); }
+
+  const QString& instanceName() const;
+  virtual void setInstanceName(const QString& name);
 
   std::vector<std::pair<QString, QString> > getCurrentParameters() const;
 
   virtual QWidget *embeddedWidget() override final { return _main_widget; }
 
-  virtual QJsonObject save() const override final;
+  virtual QJsonObject save() const override;
 
-  virtual void restore(QJsonObject const &) override final;
+  virtual void restore(QJsonObject const &) override;
 
   virtual void lock(bool locked) final;
+
 
 protected:
   QWidget*   _main_widget;
@@ -68,6 +74,9 @@ protected:
   QFormLayout *_form_layout;
   QLabel*    _label_ID;
   QLineEdit* _line_edit_name;
+private:
+  const QString _registration_name;
+  QString _instance_name;
 
 signals:
   void adjustSize();
