@@ -85,6 +85,8 @@ public:
   NodeDataModel*
   nodeDataModel() const;
 
+  void changeDataModel( std::unique_ptr<NodeDataModel> new_model );
+
 public slots: // data propagation
 
   /// Propagates incoming data to the underlying model.

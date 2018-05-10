@@ -54,6 +54,9 @@ public:
   void
   lock(bool locked);
 
+  void
+  updateEmbeddedQWidget();
+
 protected:
   void
   paint(QPainter*                       painter,
@@ -86,10 +89,6 @@ protected:
 
   void
   contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
-
-private:
-  void
-  embedQWidget();
 
 private:
 

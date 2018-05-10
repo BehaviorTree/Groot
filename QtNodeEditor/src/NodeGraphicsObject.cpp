@@ -57,7 +57,7 @@ NodeGraphicsObject(FlowScene &scene,
 
   setZValue(0);
 
-  embedQWidget();
+  updateEmbeddedQWidget();
 
   // connect to the move signals to emit the move signals in FlowScene
   auto onMoveSlot = [this] {
@@ -93,9 +93,15 @@ node() const
 
 void
 NodeGraphicsObject::
-embedQWidget()
+updateEmbeddedQWidget()
 {
   NodeGeometry & geom = _node.nodeGeometry();
+
+  if( _proxyWidget )
+  {
+    _scene.removeItem(_proxyWidget);
+    _proxyWidget->deleteLater();
+  }
 
   if (auto w = _node.nodeDataModel()->embeddedWidget())
   {

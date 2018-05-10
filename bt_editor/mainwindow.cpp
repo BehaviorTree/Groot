@@ -71,7 +71,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
   ui->splitter->setStretchFactor(0, 1);
   ui->splitter->setStretchFactor(1, 10);
-  on_splitter_splitterMoved();
+
+  QList<int> splitter_sizes = ui->splitter->sizes();
+
+  if( splitter_sizes[0] < 300)
+  {
+    splitter_sizes[1] += splitter_sizes[0] - 300;
+    splitter_sizes[0] = 300;
+    ui->splitter->setSizes(splitter_sizes);
+  }
 }
 
 
@@ -546,32 +554,9 @@ void MainWindow::on_selectMode_valueChanged(int value)
   ui->labelMonitor->setFont( fontB );
 }
 
-#ifdef USING_ROS
-void MainWindow::callbackState(const std_msgs::String::ConstPtr &msg)
-{
-  _state_received = true;
-  _state_msg = (msg->data.c_str());
-
-  if( _state_msg.size() > 0 &&  ui->selectMode->value() == 1 )
-  {
-    QXmlInputSource source;
-    source.setData( _state_msg );
-    updateStates( &source );
-  }
-}
-#endif
-
 void MainWindow::onTimerUpdate()
 {
-#ifdef USING_ROS
-  _state_received = false;
-  ros::spinOnce();
 
-  if( _state_received && _state_msg.size() > 0 &&  ui->selectMode->value() == 1 )
-  {
-    emit updateGraphic();
-  }
-#endif
 }
 
 void MainWindow::onNodeContextMenu(QtNodes::Node &node, const QPointF &pos)
@@ -583,6 +568,15 @@ void MainWindow::onNodeContextMenu(QtNodes::Node &node, const QPointF &pos)
 
   QMenu* nodeMenu = new QMenu(this);
 
+  if( category == "Control")
+  {
+    auto out_connections = node.nodeState().connections(QtNodes::PortType::Out, 0);
+    if( out_connections.size()>3)
+    {
+      names_in_category.erase( IfThenElseModel::staticName() );
+    }
+  }
+
   if( names_in_category.size() > 0)
   {
     QMenu* morph_submenu = nodeMenu->addMenu("Morph into...");
@@ -590,6 +584,13 @@ void MainWindow::onNodeContextMenu(QtNodes::Node &node, const QPointF &pos)
     {
       auto action = new QAction(name, morph_submenu);
       morph_submenu->addAction(action);
+
+      auto scene = currentTabInfo()->scene;
+      connect( action, &QAction::triggered, [this,&node, name, scene]
+      {
+        node.changeDataModel( _model_registry->create(name) );
+        NodeReorder( *currentTabInfo()->scene );
+      });
     }
   }
 
@@ -623,9 +624,4 @@ void MainWindow::on_splitter_splitterMoved(int , int )
     sizes[1] = totalWidth - maxLeftWidth;
     ui->splitter->setSizes(sizes);
   }
-}
-
-void MainWindow::onMorphNode(QtNodes::Node &node)
-{
-
 }
