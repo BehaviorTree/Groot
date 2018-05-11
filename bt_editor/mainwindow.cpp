@@ -143,7 +143,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
       _undo_enabled.store(false);
 
       currentTabInfo()->scene->clearScene();
-      QtNodes::Node& first_qt_node = currentTabInfo()->scene->createNode( _model_registry->create("Root") );
+      QtNodes::Node& first_qt_node = currentTabInfo()->scene->createNode( _model_registry->create("Root"), QPointF() );
 
       std::cout<< "Starting parsing"<< std::endl;
 
@@ -394,18 +394,18 @@ void MainWindow::on_actionZoom_ut_triggered()
 
 void MainWindow::on_actionAuto_arrange_triggered()
 {
-  onPushUndo();
   _undo_enabled = false;
   NodeReorder( * currentTabInfo()->scene );
   _undo_enabled = true;
+  onPushUndo();
 }
 
 void MainWindow::onNodeMoved()
 {
-  onPushUndo();
   _undo_enabled = false;
   NodeReorder( * currentTabInfo()->scene );
   _undo_enabled = true;
+  onPushUndo();
 }
 
 void MainWindow::onNodeSizeChanged()
@@ -631,11 +631,11 @@ void MainWindow::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
 
       connect( action, &QAction::triggered, [this, &node, name]
       {
-        onPushUndo();
         _undo_enabled = false;
         node.changeDataModel( _model_registry->create(name) );
         NodeReorder( *currentTabInfo()->scene );
         _undo_enabled = true;
+        onPushUndo();
       });
     }
   }
@@ -667,7 +667,6 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
       auto node_ptr = &node;
       connect( smart_remove, &QAction::triggered, [this, node_ptr, parent_node, conn_out]()
       {
-        onPushUndo();
         _undo_enabled = false;
         currentTabInfo()->scene->removeNode( *node_ptr );
         for( auto& it: conn_out)
@@ -677,6 +676,7 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
         }
         NodeReorder( *currentTabInfo()->scene );
         _undo_enabled = true;
+        onPushUndo();
       });
     }
   }
@@ -687,25 +687,24 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
 
 void MainWindow::insertNodeInConnection(QtNodes::Connection& connection, QString node_name)
 {
-  onPushUndo();
   _undo_enabled = false;
   auto scene = currentTabInfo()->scene;
 
   auto node_model = _model_registry->create(node_name);
-  QtNodes::Node& inserted_node = scene->createNode( std::move(node_model) );
-
-
   auto parent_node = connection.getNode(PortType::Out);
   auto child_node  = connection.getNode(PortType::In);
 
-  QPointF child_pos = child_node->nodeGraphicsObject().pos();
-  inserted_node.nodeGraphicsObject().setPos( QPointF( child_pos.x() - 50, child_pos.y() ) );
+  QPointF pos = child_node->nodeGraphicsObject().pos();
+  pos.setX( pos.x() - 50 );
+
+  QtNodes::Node& inserted_node = scene->createNode( std::move(node_model), pos );
 
   scene->deleteConnection(connection);
   scene->createConnection(*child_node, 0, inserted_node, 0);
   scene->createConnection(inserted_node, 0, *parent_node, 0);
   NodeReorder( *scene );
   _undo_enabled = true;
+  onPushUndo();
 }
 
 
@@ -758,43 +757,49 @@ void MainWindow::onPushUndo()
   if( !_undo_enabled ) return;
 
   _undo_enabled.store(false);
-  _undo_stack.push_back( currentTabInfo()->scene->saveToMemory() );
+  //-----------------
+  currentTabInfo()->scene->update();
+  const QByteArray state = currentTabInfo()->scene->saveToMemory();
+
+  if( _current_state.size() > 0)
+  {
+    _undo_stack.push_back( _current_state );
+  }
+  _current_state = state;
+  //-----------------
   _undo_enabled.store(true);
-  qDebug() << "Undo size: " << _undo_stack.size();
+  //std::cout << _current_state.toStdString() << std::endl;
+  //qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
 
 void MainWindow::onUndoInvoked()
 {
   if( _undo_stack.size() > 0)
   {
+    _redo_stack.push_back( std::move(_current_state) );
+    _current_state = std::move( _undo_stack.back() );
+    _undo_stack.pop_back();
+
     _undo_enabled.store(false);
-    currentTabInfo()->scene->clearScene();
-    currentTabInfo()->scene->loadFromMemory( _undo_stack.back() );
+    auto& scene = currentTabInfo()->scene;
+    scene->clearScene();
+    currentTabInfo()->scene->loadFromMemory( _current_state );
     _undo_enabled.store(true);
   }
-  if( _undo_stack.size() > 1)
-  {
-    auto state = _undo_stack.back();
-    _undo_stack.pop_back();
-    _redo_stack.push_back( state );
-  }
-  qDebug() << "Undo size: " << _undo_stack.size();
 }
 
 void MainWindow::onRedoInvoked()
 {
   if( _redo_stack.size() > 0)
   {
-    _undo_enabled.store(false);
-    currentTabInfo()->scene->clearScene();
-    currentTabInfo()->scene->loadFromMemory( _redo_stack.back() );
-    _undo_enabled.store(true);
-  }
-
-  if( _redo_stack.size() > 0)
-  {
-    auto state = _redo_stack.back();
+    _undo_stack.push_back( _current_state );
+    _current_state = std::move( _redo_stack.back() );
     _redo_stack.pop_back();
-    _undo_stack.push_back( state );
+
+    _undo_enabled.store(false);
+    auto& scene = currentTabInfo()->scene;
+    scene->clearScene();
+    currentTabInfo()->scene->loadFromMemory( _current_state );
+    _undo_enabled.store(true);
   }
 }

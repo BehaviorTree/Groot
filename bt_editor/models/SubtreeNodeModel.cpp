@@ -14,6 +14,7 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
     QFontMetrics fm = _line_edit_name->fontMetrics();
     _line_edit_name->setFixedWidth(fm.boundingRect(subtree_ID).width() + 12);
     _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
+    _main_widget->adjustSize();
 }
 
 unsigned int SubtreeNodeModel::nPorts(QtNodes::PortType portType) const

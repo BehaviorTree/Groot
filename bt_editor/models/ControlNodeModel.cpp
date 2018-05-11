@@ -5,8 +5,7 @@
 ControlNodeModel::ControlNodeModel(const QString &ID, const ParameterWidgetCreators &parameters ):
     BehaviorTreeNodeModel("Control", ID , parameters)
 {
-  init();
- // connect(_line_edit_name, &QLineEdit::textEdited, this, &ControlNodeModel::setInstanceName);
+
 }
 
 void ControlNodeModel::init()
@@ -14,22 +13,16 @@ void ControlNodeModel::init()
   QFontMetrics fm = _line_edit_name->fontMetrics();
   const QString& txt = _line_edit_name->text();
   const int new_width = std::max( 120, fm.boundingRect(txt).width() + 12 );
-  qDebug() << " new width A: " << new_width;
   _line_edit_name->setFixedWidth(new_width);
   _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
+  _main_widget->adjustSize();
 }
 
 
 void ControlNodeModel::setInstanceName(const QString &name)
 {
   BehaviorTreeNodeModel::setInstanceName(name);
-
-//  QFontMetrics fm = _line_edit_name->fontMetrics();
-//  const QString& txt = _line_edit_name->text();
-//  const int new_width = std::max( 100, fm.boundingRect(txt).width() + 12);
-//  qDebug() << " new width A: " << new_width;
-//  _line_edit_name->setFixedWidth( new_width  );
-//  _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
+  init();
 }
 
 

@@ -14,6 +14,7 @@ DecoratorNodeModel::DecoratorNodeModel(QString decorator_ID,
     QFontMetrics fm = _line_edit_name->fontMetrics();
     _line_edit_name->setFixedWidth(fm.boundingRect(decorator_ID).width() + 12);
     _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
+    _main_widget->adjustSize();
 }
 
 

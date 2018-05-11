@@ -50,12 +50,10 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
         throw std::logic_error( buffer );
     }
 
-    Node& new_node = scene->createNode( std::move(dataModel) );
-
     cursor.setY( cursor.y() + 65);
     cursor.setX( nested_nodes * 400 );
 
-    scene->setNodePosition(new_node, cursor);
+    Node& new_node = scene->createNode( std::move(dataModel), cursor);
     scene->createConnection(new_node, 0, parent_qtnode, 0 );
 
     nested_nodes++;

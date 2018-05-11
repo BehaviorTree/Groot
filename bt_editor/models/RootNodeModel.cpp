@@ -7,7 +7,7 @@ RootNodeModel::RootNodeModel():
 {
     _line_edit_name->setHidden(true);
     _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
-    emit adjustSize();
+    _main_widget->adjustSize();
 }
 
 unsigned int RootNodeModel::nPorts(QtNodes::PortType portType) const

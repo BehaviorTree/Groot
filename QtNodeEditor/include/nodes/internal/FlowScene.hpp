@@ -56,9 +56,9 @@ public:
 
   void deleteConnection(Connection& connection);
 
-  Node&createNode(std::unique_ptr<NodeDataModel> && dataModel);
+  Node& createNode(std::unique_ptr<NodeDataModel> && dataModel, QPointF pos );
 
-  Node&restoreNode(QJsonObject const& nodeJson);
+  Node& restoreNode(QJsonObject const& nodeJson);
 
   void removeNode(Node& node);
 

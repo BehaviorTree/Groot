@@ -173,10 +173,12 @@ deleteConnection(Connection& connection)
 
 Node&
 FlowScene::
-createNode(std::unique_ptr<NodeDataModel> && dataModel)
+createNode(std::unique_ptr<NodeDataModel> && dataModel, QPointF pos)
 {
   auto node = std::make_unique<Node>(std::move(dataModel));
   auto ngo  = std::make_unique<NodeGraphicsObject>(*this, *node);
+
+  ngo->setPos(pos);
 
   node->setGraphicsObject(std::move(ngo));
 

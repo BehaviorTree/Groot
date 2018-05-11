@@ -15,16 +15,13 @@ void ActionNodeModel::init()
   const QString& txt = _line_edit_name->text();
   _line_edit_name->setFixedWidth(fm.boundingRect(txt).width() + 12);
   _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
+  _main_widget->adjustSize();
 }
 
 void ActionNodeModel::setInstanceName(const QString &name)
 {
   BehaviorTreeNodeModel::setInstanceName(name);
-
-  QFontMetrics fm = _line_edit_name->fontMetrics();
-  const QString& txt = _line_edit_name->text();
-  _line_edit_name->setFixedWidth(fm.boundingRect(txt).width() + 12);
-  _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
+  init();
 }
 
 unsigned int ActionNodeModel::nPorts(QtNodes::PortType portType) const
