@@ -36,6 +36,8 @@ public:
     {
       setInstanceName( modelJson["alias"].toString() );
     }
+private:
+    void init();
 };
 //------------------------------------------------
 

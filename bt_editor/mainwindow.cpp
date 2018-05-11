@@ -15,7 +15,6 @@
 #include <nodes/NodeData>
 #include <nodes/NodeStyle>
 #include <nodes/FlowView>
-#include <nodes/DataModelRegistry>
 
 #include "editor_flowscene.h"
 
@@ -396,13 +395,17 @@ void MainWindow::on_actionZoom_ut_triggered()
 void MainWindow::on_actionAuto_arrange_triggered()
 {
   onPushUndo();
+  _undo_enabled = false;
   NodeReorder( * currentTabInfo()->scene );
+  _undo_enabled = true;
 }
 
 void MainWindow::onNodeMoved()
 {
   onPushUndo();
+  _undo_enabled = false;
   NodeReorder( * currentTabInfo()->scene );
+  _undo_enabled = true;
 }
 
 void MainWindow::onNodeSizeChanged()
@@ -629,8 +632,10 @@ void MainWindow::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
       connect( action, &QAction::triggered, [this, &node, name]
       {
         onPushUndo();
+        _undo_enabled = false;
         node.changeDataModel( _model_registry->create(name) );
         NodeReorder( *currentTabInfo()->scene );
+        _undo_enabled = true;
       });
     }
   }
@@ -663,6 +668,7 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
       connect( smart_remove, &QAction::triggered, [this, node_ptr, parent_node, conn_out]()
       {
         onPushUndo();
+        _undo_enabled = false;
         currentTabInfo()->scene->removeNode( *node_ptr );
         for( auto& it: conn_out)
         {
@@ -670,6 +676,7 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
           currentTabInfo()->scene->createConnection( *child_node, 0, *parent_node, 0 );
         }
         NodeReorder( *currentTabInfo()->scene );
+        _undo_enabled = true;
       });
     }
   }
