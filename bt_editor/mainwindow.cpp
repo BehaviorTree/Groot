@@ -681,18 +681,24 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
 void MainWindow::insertNodeInConnection(QtNodes::Connection& connection, QString node_name)
 {
   onPushUndo();
+  _undo_enabled = false;
   auto scene = currentTabInfo()->scene;
 
   auto node_model = _model_registry->create(node_name);
   QtNodes::Node& inserted_node = scene->createNode( std::move(node_model) );
 
+
   auto parent_node = connection.getNode(PortType::Out);
   auto child_node  = connection.getNode(PortType::In);
+
+  QPointF child_pos = child_node->nodeGraphicsObject().pos();
+  inserted_node.nodeGraphicsObject().setPos( QPointF( child_pos.x() - 50, child_pos.y() ) );
+
   scene->deleteConnection(connection);
   scene->createConnection(*child_node, 0, inserted_node, 0);
   scene->createConnection(inserted_node, 0, *parent_node, 0);
-
   NodeReorder( *scene );
+  _undo_enabled = true;
 }
 
 
