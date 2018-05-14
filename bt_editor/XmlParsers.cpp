@@ -134,24 +134,29 @@ std::function<QWidget *()> instanceFactoryCombo(QStringList options)
 }
 
 
-bool ReadTreeNodesModel(QtNodes::DataModelRegistry& registry,
+TreeNodeModels ReadTreeNodesModel(QtNodes::DataModelRegistry& registry,
                         const tinyxml2::XMLElement* model_root)
 {
+  TreeNodeModels models_list;
   using QtNodes::DataModelRegistry;
 
   for( const XMLElement* node = model_root->FirstChildElement();
        node != nullptr;
        node = node->NextSiblingElement() )
   {
-    const char* node_name = node->Name();
+    TreeNodeModel node_model;
+
+    QString node_name (node->Name());
     QString ID;
     if(  node->Attribute("ID") )
     {
       ID = QString(node->Attribute("ID"));
     }
     else{
-      ID = QString(node_name);
+      ID = node_name;
     }
+
+    node_model.ID = ID;
 
     ParameterWidgetCreators parameters;
 
@@ -163,57 +168,66 @@ bool ReadTreeNodesModel(QtNodes::DataModelRegistry& registry,
       ParameterWidgetCreator creator;
 
       creator.label = param_node->Attribute("label");
-      if( type == "Text"){
+      if( type == "Text")
+      {
         creator.instance_factory = instanceFactoryText();
+        node_model.params[ creator.label ] = TreeNodeModel::ParamType::TEXT;
       }
-      else if( type == "Int"){
+      else if( type == "Int")
+      {
         creator.instance_factory = instanceFactoryInt();
+        node_model.params[ creator.label ] = TreeNodeModel::ParamType::INT;
       }
-      else if( type == "Double"){
+      else if( type == "Double")
+      {
         creator.instance_factory = instanceFactoryDouble();
+        node_model.params[ creator.label ] = TreeNodeModel::ParamType::DOUBLE;
       }
-      else if( type == "Combo"){
-
+      else if( type == "Combo")
+      {
         QString options = param_node->Attribute("options");
         QStringList option_list = options.split(";", QString::SkipEmptyParts);
         creator.instance_factory = instanceFactoryCombo(option_list);
+        node_model.params[ creator.label ] = TreeNodeModel::ParamType::COMBO;
       }
       else{
         throw  std::runtime_error("Attribute 'type' of element <Parameter>"
                                   " must be either: Text, Int, Double or Combo");
       }
-      //   QString label;
-      //    std::function<QWidget*(QWidget*)> instance_factory;
       parameters.push_back(creator);
     }
 
-    if( ! strcmp( node_name, "Action" ) )
+    if( node_name == "Action" )
     {
       DataModelRegistry::RegistryItemCreator creator = [ID, parameters]()
       {
         return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, parameters) );
       };
       registry.registerModel("Action", creator);
+      node_model.node_type = TreeNodeModel::NodeType::ACTION;
     }
-    else if( ! strcmp( node_name, "Decorator" ) )
+    else if( node_name == "Decorator" )
     {
       DataModelRegistry::RegistryItemCreator creator = [ID, parameters]()
       {
         return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, parameters) );
       };
       registry.registerModel("Decorator", creator);
-
+      node_model.node_type = TreeNodeModel::NodeType::DECORATOR;
     }
-    else if( ! strcmp( node_name, "SubTree" ) )
+    else if( node_name == "SubTree" )
     {
       DataModelRegistry::RegistryItemCreator creator = [ID, parameters]()
       {
         return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID,parameters) );
       };
       registry.registerModel("SubTree", creator);
+      node_model.node_type = TreeNodeModel::NodeType::SUBTREE;
     }
+
+    models_list.push_back(node_model);
   }
-  return true;
+  return models_list;
 }
 
 

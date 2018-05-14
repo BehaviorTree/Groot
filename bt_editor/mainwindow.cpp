@@ -118,7 +118,7 @@ void MainWindow::createTab(const QString &name)
   connect( ti.scene, &QtNodes::FlowScene::connectionCreated,
            this,   &MainWindow::onPushUndo  );
 
-  connect( this, SIGNAL(updateGraphic()),  ti.view,   SLOT(repaint())  );
+  connect( this, SIGNAL(updateGraphic()), ti.view, SLOT(repaint())  );
 
   connect( ti.scene, &QtNodes::FlowScene::nodeContextMenu,
            this, &MainWindow::onNodeContextMenu );

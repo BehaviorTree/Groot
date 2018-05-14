@@ -8,9 +8,19 @@
 #include <nodes/FlowScene>
 #include <nodes/DataModelRegistry>
 
+struct TreeNodeModel
+{
+  enum class NodeType  { ACTION, DECORATOR, CONTROL, SUBTREE } node_type;
+  enum class ParamType { INT, DOUBLE, TEXT, COMBO };
+  QString ID;
+  std::map<QString, ParamType> params;
+};
+
+typedef std::vector<TreeNodeModel> TreeNodeModels;
+
 void ParseBehaviorTreeXML(const tinyxml2::XMLElement* bt_root, QtNodes::FlowScene* scene, QtNodes::Node& qt_root );
 
-bool ReadTreeNodesModel(QtNodes::DataModelRegistry& registry, const tinyxml2::XMLElement* model_root);
+TreeNodeModels ReadTreeNodesModel(QtNodes::DataModelRegistry& registry, const tinyxml2::XMLElement* model_root);
 
 //--------------------------------------------------------
 
