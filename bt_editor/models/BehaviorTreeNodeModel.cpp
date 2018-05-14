@@ -34,7 +34,6 @@ BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString& label_name,
   top_layout->addWidget( _line_edit_name, 1 );
   top_layout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
 
-
   QVBoxLayout *main_layout = new QVBoxLayout( _main_widget );
   main_layout->addLayout(top_layout);
 
@@ -105,6 +104,16 @@ BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString& label_name,
 
   _main_widget->adjustSize();
 
+  connect( _line_edit_name, &QLineEdit::editingFinished,
+           [this]()
+  {
+    if( _line_edit_name->text() != _instance_name)
+    {
+      _instance_name = _line_edit_name->text();
+      this->instanceNameChanged();
+    }
+  } );
+
   emit adjustSize();
 }
 
@@ -144,8 +153,9 @@ std::vector<std::pair<QString, QString>> BehaviorTreeNodeModel::getCurrentParame
     {
       QLabel* label = static_cast<QLabel*>( label_item->widget() );
 
-      if(auto line = dynamic_cast<QLineEdit*>( field_item->widget() ) ){
-        out.push_back( { label->text(), line->text() } );
+      if(auto linedit = dynamic_cast<QLineEdit*>( field_item->widget() ) )
+      {
+        out.push_back( { label->text(), linedit->text() } );
       }
       else if( auto combo = dynamic_cast<QComboBox*>( field_item->widget() ) )
       {
@@ -205,12 +215,11 @@ void BehaviorTreeNodeModel::lock(bool locked)
 
     if( field_item )
     {
-      QLineEdit* line  = dynamic_cast<QLineEdit*>( field_item->widget() );
-      QComboBox* combo = dynamic_cast<QComboBox*>( field_item->widget() );
-      if( line ){
-        line->setReadOnly( locked );
+      if(auto lineedit = dynamic_cast<QLineEdit*>( field_item->widget() ))
+      {
+        lineedit->setReadOnly( locked );
       }
-      else if( combo )
+      else if(auto combo = dynamic_cast<QComboBox*>( field_item->widget() ))
       {
         combo->setEnabled( !locked );
       }

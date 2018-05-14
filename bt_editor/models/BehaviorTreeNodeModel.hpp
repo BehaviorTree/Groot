@@ -63,7 +63,7 @@ public:
 
   virtual QWidget *parametersWidget() { return _params_widget; }
 
-  virtual QJsonObject save() const override;
+  virtual QJsonObject save() const override final;
 
   virtual void restore(QJsonObject const &) override final;
 
@@ -88,4 +88,6 @@ signals:
   void adjustSize();
 
   void parameterUpdated(QString, QWidget*);
+
+  void instanceNameChanged();
 };

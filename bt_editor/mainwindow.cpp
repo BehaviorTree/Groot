@@ -298,12 +298,13 @@ void recursivelyCreateXml(const QtNodes::FlowScene &scene,
       dynamic_cast<const SubtreeNodeModel*>(node_model) )
   {
       element->SetAttribute("ID", bt_node->registrationName().toStdString().c_str() );
-      // TODO
-//      auto parameters = action_node->getCurrentParameters();
-//      for(const auto& param: parameters)
-//      {
-//        element->SetAttribute( param.first, param.second );
-//      }
+  }
+
+  auto parameters = bt_node->getCurrentParameters();
+  for(const auto& param: parameters)
+  {
+    element->SetAttribute( param.first.toStdString().c_str(),
+                           param.second.toStdString().c_str() );
   }
 
   if( bt_node->instanceName() != bt_node->registrationName())
@@ -423,6 +424,9 @@ void MainWindow::onNodeCreated(QtNodes::Node& node)
   {
     connect( bt_node, &BehaviorTreeNodeModel::parameterUpdated,
              this, &MainWindow::onNodeParameterUpdated );
+
+    connect( bt_node, &BehaviorTreeNodeModel::instanceNameChanged,
+             this, &MainWindow::onPushUndo );
   }
   onPushUndo();
 }
@@ -805,6 +809,7 @@ void MainWindow::onUndoInvoked()
     scene->clearScene();
     currentTabInfo()->scene->loadFromMemory( _current_state );
     _undo_enabled.store(true);
+    qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
   }
 }
 
@@ -821,6 +826,7 @@ void MainWindow::onRedoInvoked()
     scene->clearScene();
     currentTabInfo()->scene->loadFromMemory( _current_state );
     _undo_enabled.store(true);
+    qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
   }
 }
 
