@@ -20,7 +20,7 @@ using QtNodes::NodeDataModel;
 
 struct ParameterWidgetCreator{
     QString label;
-    std::function<QWidget*(QWidget*)> instance_factory;
+    std::function<QWidget*()> instance_factory;
 };
 
 typedef std::vector<ParameterWidgetCreator> ParameterWidgetCreators;
@@ -61,16 +61,21 @@ public:
 
   virtual QWidget *embeddedWidget() override final { return _main_widget; }
 
+  virtual QWidget *parametersWidget() { return _params_widget; }
+
   virtual QJsonObject save() const override;
 
-  virtual void restore(QJsonObject const &) override;
+  virtual void restore(QJsonObject const &) override final;
 
   virtual void lock(bool locked) final;
+
+  void setParameterValue(const QString& label, const QString& value);
 
 
 protected:
   QWidget*   _main_widget;
   QWidget*   _params_widget;
+  std::map<QString,QWidget*>   _params_map;
   QFormLayout *_form_layout;
   QLabel*    _label_ID;
   QLineEdit* _line_edit_name;
@@ -79,5 +84,8 @@ private:
   QString _instance_name;
 
 signals:
+
   void adjustSize();
+
+  void parameterUpdated(QString, QWidget*);
 };

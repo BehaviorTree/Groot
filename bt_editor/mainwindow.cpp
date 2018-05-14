@@ -48,12 +48,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
   _model_registry = std::make_shared<QtNodes::DataModelRegistry>();
 
-  _model_registry->registerModel<RootNodeModel>("Root");
-  _model_registry->registerModel<SequenceModel>("Control");
-  _model_registry->registerModel<SequenceStarModel>("Control");
-  _model_registry->registerModel<FallbackModel>("Control");
+  _model_registry->registerModel("Root", [](){ return std::make_unique<RootNodeModel>();} );
 
-  _model_registry->registerModel<IfThenElseModel>("Control");
+  _model_registry->registerModel("Control", [](){ return std::make_unique<SequenceModel>();} );
+  _model_registry->registerModel("Control", [](){ return std::make_unique<SequenceStarModel>();} );
+  _model_registry->registerModel("Control", [](){ return std::make_unique<FallbackModel>();} );
+  _model_registry->registerModel("Control", [](){ return std::make_unique<IfThenElseModel>();} );
 
   buildTreeView();
 
@@ -70,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent) :
   _periodic_timer.start(10);
 
   ui->splitter->setStretchFactor(0, 1);
-  ui->splitter->setStretchFactor(1, 10);
+  ui->splitter->setStretchFactor(1, 5);
 
   QShortcut* undo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Z), this);
   connect( undo_shortcut, &QShortcut::activated, this, &MainWindow::onUndoInvoked );
@@ -98,7 +98,7 @@ void MainWindow::createTab(const QString &name)
            this,   &MainWindow::onSceneChanged  );
 
   connect( ti.scene, &QtNodes::FlowScene::nodeCreated,
-           this,   &MainWindow::onPushUndo  );
+           this,   &MainWindow::onNodeCreated  );
 
   connect( ti.view, &QtNodes::FlowView::startMultipleDelete,
            [this]() { this->_undo_enabled.store(false); }  );
@@ -417,11 +417,13 @@ void MainWindow::on_actionAuto_arrange_triggered()
   onPushUndo();
 }
 
-void MainWindow::onNodeMoved()
+void MainWindow::onNodeCreated(QtNodes::Node& node)
 {
-  _undo_enabled = false;
-  NodeReorder( * currentTabInfo()->scene );
-  _undo_enabled = true;
+  if( auto bt_node = dynamic_cast<BehaviorTreeNodeModel*>( node.nodeDataModel() ) )
+  {
+    connect( bt_node, &BehaviorTreeNodeModel::parameterUpdated,
+             this, &MainWindow::onNodeParameterUpdated );
+  }
   onPushUndo();
 }
 
@@ -757,6 +759,7 @@ void MainWindow::onConnectionContextMenu(QtNodes::Connection &connection, const 
 
 void MainWindow::on_splitter_splitterMoved(int , int )
 {
+  this->update();
   QList<int> sizes = ui->splitter->sizes();
   const int maxLeftWidth = ui->treeWidget->maximumWidth();
   int totalWidth = sizes[0] + sizes[1];
@@ -819,4 +822,10 @@ void MainWindow::onRedoInvoked()
     currentTabInfo()->scene->loadFromMemory( _current_state );
     _undo_enabled.store(true);
   }
+}
+
+void MainWindow::onNodeParameterUpdated(QString label, QWidget *)
+{
+  qDebug() << "parameter " << label << " updated";
+  onPushUndo();
 }

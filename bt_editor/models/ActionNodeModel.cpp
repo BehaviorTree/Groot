@@ -1,8 +1,9 @@
 #include "ActionNodeModel.hpp"
 #include <QLineEdit>
 
-ActionNodeModel::ActionNodeModel(const QString &action_ID):
-  BehaviorTreeNodeModel("Action", action_ID, ParameterWidgetCreators() )
+ActionNodeModel::ActionNodeModel(const QString &action_ID,
+                                 const ParameterWidgetCreators &creators):
+  BehaviorTreeNodeModel("Action", action_ID, creators )
 {
   init();
 }
@@ -30,8 +31,4 @@ unsigned int ActionNodeModel::nPorts(QtNodes::PortType portType) const
 }
 
 
-void ActionNodeModel::restore(const QJsonObject &modelJson)
-{
-  _line_edit_name->setText( modelJson["alias"].toString() );
-  init();
-}
+

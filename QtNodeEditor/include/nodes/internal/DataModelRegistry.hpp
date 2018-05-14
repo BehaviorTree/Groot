@@ -61,12 +61,12 @@ public:
     registerModel(std::move(creator), category);
   }
 
-  template<typename ModelType>
-  void registerModel(QString const &category)
-  {
-    RegistryItemCreator creator = [](){ return std::make_unique<ModelType>(); };
-    registerModel(std::move(creator), category);
-  }
+//  template<typename ModelType>
+//  void registerModel(QString const &category)
+//  {
+//    RegistryItemCreator creator = [](){ return std::make_unique<ModelType>(); };
+//    registerModel(std::move(creator), category);
+//  }
 
   void registerTypeConverter(TypeConverterId const & id,
                              TypeConverter typeConverter)

@@ -18,11 +18,6 @@ public:
         return ConnectionPolicy::One;
     }
 
-    virtual void restore(QJsonObject const &) override final
-    {
-
-    }
-
 private:
 
 };

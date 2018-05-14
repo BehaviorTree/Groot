@@ -30,7 +30,9 @@ const QString gTestXML = R"(
                 <Decorator ID="Negation">
                      <Action ID="IsDoorOpen" />
                 </Decorator>
-                <Action ID="OpenDoor" />
+                <RetryUntilSuccesful ID="RetryUntilSuccesful" num_attempts="4">
+                     <OpenDoor ID="OpenDoor"/>
+                </RetryUntilSuccesful>
                 <Action ID="PassThroughDoor" />
                 <Action ID="CloseDoor" />
             </Sequence>

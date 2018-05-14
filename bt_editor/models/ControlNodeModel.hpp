@@ -32,10 +32,10 @@ public:
 
     virtual void setInstanceName(const QString &name) override;
 
-    virtual void restore(QJsonObject const &modelJson) override final
-    {
-      setInstanceName( modelJson["alias"].toString() );
-    }
+//    virtual void restore(QJsonObject const &modelJson) override final
+//    {
+//      setInstanceName( modelJson["alias"].toString() );
+//    }
 private:
     void init();
 };

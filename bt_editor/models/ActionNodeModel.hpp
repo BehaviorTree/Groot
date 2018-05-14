@@ -6,15 +6,13 @@
 class ActionNodeModel : public BehaviorTreeNodeModel
 {
 public:
-    ActionNodeModel(const QString& action_ID);
+    ActionNodeModel(const QString& action_ID, const ParameterWidgetCreators &creators);
 
     virtual ~ActionNodeModel()  = default;
 
     virtual unsigned int  nPorts(PortType portType) const override;
 
-    virtual void restore(QJsonObject const &) override final;
-
-private:
+  private:
 
     void init();
 

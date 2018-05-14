@@ -39,12 +39,13 @@ main(int argc, char *argv[])
 
   MainWindow win;
 
+  win.show();
+
   if( parser.isSet(test_option) )
   {
     win.loadFromXML( gTestXML );
   }
 
-  win.show();
 
   return app.exec();
 }

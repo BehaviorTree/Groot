@@ -46,7 +46,7 @@ private slots:
 
     void on_actionAuto_arrange_triggered();
 
-    void onNodeMoved();
+    void onNodeCreated(QtNodes::Node &node);
 
     void onNodeSizeChanged();
 
@@ -71,6 +71,8 @@ private slots:
     void onUndoInvoked();
 
     void onRedoInvoked();
+
+    void onNodeParameterUpdated(QString, QWidget*);
 
 signals:
     void updateGraphic();

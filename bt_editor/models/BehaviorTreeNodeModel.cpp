@@ -3,6 +3,7 @@
 #include <QFormLayout>
 #include <QSizePolicy>
 #include <QLineEdit>
+#include <QComboBox>
 #include <QDebug>
 #include <QFile>
 
@@ -69,14 +70,33 @@ BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString& label_name,
 
       for(const auto& param_creator: creators )
       {
-        QLabel* field_label =  new QLabel( param_creator.label, _params_widget );
-        QWidget* field_widget = param_creator.instance_factory(_params_widget);
+        const QString label = param_creator.label;
+        QLabel* field_label =  new QLabel( label, _params_widget );
+        QWidget* field_widget = param_creator.instance_factory();
+
+        _params_map.insert( std::make_pair( label, field_widget) );
+
         field_widget->setStyleSheet("color: white; "
                                     "background-color: gray; "
                                     "border: 1px solid #FFFFFF; "
                                     "padding: 1px 0px 1px 3px;");
 
         _form_layout->addRow( field_label, field_widget );
+
+        auto paramUpdated = [this,label,field_widget]()
+        {
+          this->parameterUpdated(label,field_widget);
+        };
+
+        if(auto lineedit = dynamic_cast<QLineEdit*>( field_widget ) )
+        {
+          connect( lineedit, &QLineEdit::editingFinished, paramUpdated );
+        }
+        else if( auto combo = dynamic_cast<QComboBox*>( field_widget ) )
+        {
+          connect( combo, &QComboBox::currentTextChanged, paramUpdated);
+        }
+
       }
       main_layout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
       _form_layout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
@@ -124,12 +144,10 @@ std::vector<std::pair<QString, QString>> BehaviorTreeNodeModel::getCurrentParame
     {
       QLabel* label = static_cast<QLabel*>( label_item->widget() );
 
-      QLineEdit* line  = dynamic_cast<QLineEdit*>( field_item->widget() );
-      QComboBox* combo = dynamic_cast<QComboBox*>( field_item->widget() );
-      if( line ){
+      if(auto line = dynamic_cast<QLineEdit*>( field_item->widget() ) ){
         out.push_back( { label->text(), line->text() } );
       }
-      else if( combo )
+      else if( auto combo = dynamic_cast<QComboBox*>( field_item->widget() ) )
       {
         out.push_back( { label->text(), combo->currentText() } );
       }
@@ -144,6 +162,17 @@ QJsonObject BehaviorTreeNodeModel::save() const
   QJsonObject modelJson;
   modelJson["name"]  = registrationName();
   modelJson["alias"] = instanceName();
+
+  for (const auto& it: _params_map)
+  {
+    if( auto linedit = dynamic_cast<QLineEdit*>(it.second)){
+      modelJson[it.first] = linedit->text();
+    }
+    else if( auto combo = dynamic_cast<QComboBox*>(it.second)){
+      modelJson[it.first] = combo->currentText();
+    }
+  }
+
   return modelJson;
 }
 
@@ -155,6 +184,15 @@ void BehaviorTreeNodeModel::restore(const QJsonObject &modelJson)
   }
   QString alias = modelJson["alias"].toString();
   setInstanceName( alias );
+
+  for(auto it = modelJson.begin(); it != modelJson.end(); it++ )
+  {
+    if( it.key() != "alias" && it.key() != "name")
+    {
+      setParameterValue( it.key(), it.value().toString() );
+    }
+  }
+
 }
 
 void BehaviorTreeNodeModel::lock(bool locked)
@@ -176,6 +214,22 @@ void BehaviorTreeNodeModel::lock(bool locked)
       {
         combo->setEnabled( !locked );
       }
+    }
+  }
+}
+
+void BehaviorTreeNodeModel::setParameterValue(const QString &label, const QString &value)
+{
+  auto it = _params_map.find(label);
+  if( it != _params_map.end() )
+  {
+    if( auto lineedit = dynamic_cast<QLineEdit*>(it->second) )
+    {
+      lineedit->setText(value);
+    }
+    else if( auto combo = dynamic_cast<QLineEdit*>(it->second) )
+    {
+      combo->setText(value);
     }
   }
 }

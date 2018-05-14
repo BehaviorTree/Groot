@@ -5,6 +5,8 @@
 #include "models/DecoratorNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 
+#include <QLineEdit>
+
 using namespace tinyxml2;
 using namespace QtNodes;
 
@@ -33,12 +35,27 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
     }
 
     std::unique_ptr<NodeDataModel> dataModel = scene->registry().create( modelID );
+    BehaviorTreeNodeModel* bt_node = dynamic_cast<BehaviorTreeNodeModel*>( dataModel.get() );
 
     if( xml_node->Attribute("name") )
     {
-      if( auto ptr = dynamic_cast<BehaviorTreeNodeModel*>( dataModel.get() ) )
+      if( bt_node )
       {
-        ptr->setInstanceName( xml_node->Attribute("name") );
+        bt_node->setInstanceName( xml_node->Attribute("name") );
+      }
+    }
+
+    if( bt_node )
+    {
+      for( const XMLAttribute* attribute= xml_node->FirstAttribute();
+           attribute != nullptr;
+           attribute = attribute->Next() )
+      {
+        const QString attr_name( attribute->Name() );
+        if( attr_name!= "ID" && attr_name != "name")
+        {
+          bt_node->setParameterValue( attr_name, attribute->Value() );
+        }
       }
     }
 
@@ -47,7 +64,7 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
       sprintf(buffer, "No registered model with name: [%s](%s) ",
               xml_node->Name(),
               modelID.toStdString().c_str() );
-        throw std::logic_error( buffer );
+      throw std::logic_error( buffer );
     }
 
     cursor.setY( cursor.y() + 65);
@@ -74,6 +91,48 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
 
 }
 
+std::function<QWidget *()> instanceFactoryText()
+{
+  return [](){
+    QLineEdit* line = new QLineEdit();
+    line->setAlignment( Qt::AlignHCenter);
+    line->setMaximumWidth(150);
+    return line;
+  };
+}
+
+std::function<QWidget *()> instanceFactoryInt()
+{
+  return [](){
+    QLineEdit* line = new QLineEdit();
+    line->setValidator( new QIntValidator( line ));
+    line->setAlignment( Qt::AlignHCenter);
+    line->setMaximumWidth(80);
+    return line;
+  };
+}
+
+std::function<QWidget *()> instanceFactoryDouble()
+{
+  return [](){
+    QLineEdit* line = new QLineEdit();
+    line->setValidator( new QDoubleValidator( line ));
+    line->setAlignment( Qt::AlignHCenter);
+    line->setMaximumWidth(120);
+    return line;
+  };
+}
+
+std::function<QWidget *()> instanceFactoryCombo(QStringList options)
+{
+  return [options](){
+    QComboBox* combo = new QComboBox();
+    combo->addItems(options);
+    combo->setMaximumWidth(150);
+    return combo;
+  };
+}
+
 
 bool ReadTreeNodesModel(QtNodes::DataModelRegistry& registry,
                         const tinyxml2::XMLElement* model_root)
@@ -94,13 +153,45 @@ bool ReadTreeNodesModel(QtNodes::DataModelRegistry& registry,
       ID = QString(node_name);
     }
 
-    const ParameterWidgetCreators parameters;
+    ParameterWidgetCreators parameters;
+
+    for (const XMLElement* param_node = node->FirstChildElement("Parameter");
+         param_node != nullptr;
+         param_node = param_node->NextSiblingElement("Parameter") )
+    {
+      const QString type(  param_node->Attribute("type") );
+      ParameterWidgetCreator creator;
+
+      creator.label = param_node->Attribute("label");
+      if( type == "Text"){
+        creator.instance_factory = instanceFactoryText();
+      }
+      else if( type == "Int"){
+        creator.instance_factory = instanceFactoryInt();
+      }
+      else if( type == "Double"){
+        creator.instance_factory = instanceFactoryDouble();
+      }
+      else if( type == "Combo"){
+
+        QString options = param_node->Attribute("options");
+        QStringList option_list = options.split(";", QString::SkipEmptyParts);
+        creator.instance_factory = instanceFactoryCombo(option_list);
+      }
+      else{
+        throw  std::runtime_error("Attribute 'type' of element <Parameter>"
+                                  " must be either: Text, Int, Double or Combo");
+      }
+      //   QString label;
+      //    std::function<QWidget*(QWidget*)> instance_factory;
+      parameters.push_back(creator);
+    }
 
     if( ! strcmp( node_name, "Action" ) )
     {
       DataModelRegistry::RegistryItemCreator creator = [ID, parameters]()
       {
-        return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID) );
+        return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, parameters) );
       };
       registry.registerModel("Action", creator);
     }

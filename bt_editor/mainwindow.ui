@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>814</width>
     <height>600</height>
    </rect>
   </property>
@@ -118,7 +118,10 @@
        <enum>Qt::Horizontal</enum>
       </property>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1">
+       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1,0,0">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetMaximumSize</enum>
+        </property>
         <property name="leftMargin">
          <number>0</number>
         </property>
@@ -132,7 +135,7 @@
          <widget class="QLineEdit" name="lineEditFilter">
           <property name="maximumSize">
            <size>
-            <width>400</width>
+            <width>300</width>
             <height>16777215</height>
            </size>
           </property>
@@ -145,8 +148,14 @@
          <widget class="QTreeWidget" name="treeWidget">
           <property name="maximumSize">
            <size>
-            <width>400</width>
+            <width>300</width>
             <height>16777215</height>
+           </size>
+          </property>
+          <property name="baseSize">
+           <size>
+            <width>300</width>
+            <height>0</height>
            </size>
           </property>
           <property name="dragEnabled">
@@ -177,6 +186,55 @@
           </column>
          </widget>
         </item>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Node Parameters</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="parametersFrame">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>300</width>
+            <height>500</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <property name="spacing">
+            <number>1</number>
+           </property>
+           <property name="leftMargin">
+            <number>1</number>
+           </property>
+           <property name="topMargin">
+            <number>1</number>
+           </property>
+           <property name="rightMargin">
+            <number>1</number>
+           </property>
+           <property name="bottomMargin">
+            <number>1</number>
+           </property>
+           <item>
+            <layout class="QVBoxLayout" name="parametersLayout"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QTabWidget" name="tabWidget">
@@ -189,6 +247,12 @@
        <property name="minimumSize">
         <size>
          <width>300</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>500</width>
          <height>0</height>
         </size>
        </property>
@@ -208,7 +272,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>814</width>
      <height>22</height>
     </rect>
    </property>
