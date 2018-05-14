@@ -35,6 +35,12 @@ public slots:
 
   void deleteSelectedNodes();
 
+signals:
+
+  void startMultipleDelete();
+
+  void finishMultipleDelete();
+
 protected:
 
   void contextMenuEvent(QContextMenuEvent *event) override;

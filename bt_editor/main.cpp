@@ -37,8 +37,6 @@ main(int argc, char *argv[])
   parser.addOption(test_option);
   parser.process( app );
 
-  // EditorModel::loadMetaModelFromFile( "/home/dfaconti/ExampeEditorMetaModel.xml" );
-
   MainWindow win;
 
   if( parser.isSet(test_option) )

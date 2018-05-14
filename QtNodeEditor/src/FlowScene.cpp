@@ -11,7 +11,6 @@
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonArray>
-
 #include <QDebug>
 
 #include "Node.hpp"
@@ -223,21 +222,17 @@ removeNode(Node& node)
   // call signal
   nodeDeleted(node);
 
-  auto deleteConnections =
-    [&node, this] (PortType portType)
+  for(auto portType: {PortType::In,PortType::Out})
+  {
+    auto nodeState = node.nodeState();
+    auto const & nodeEntries = nodeState.getEntries(portType);
+
+    for (auto &connections : nodeEntries)
     {
-      auto nodeState = node.nodeState();
-      auto const & nodeEntries = nodeState.getEntries(portType);
-
-      for (auto &connections : nodeEntries)
-      {
-        for (auto const &pair : connections)
-          deleteConnection(*pair.second);
-      }
-    };
-
-  deleteConnections(PortType::In);
-  deleteConnections(PortType::Out);
+      for (auto const &pair : connections)
+        deleteConnection(*pair.second);
+    }
+  }
 
   _nodes.erase(node.id());
 }
@@ -502,11 +497,13 @@ saveToMemory() const
 
   QJsonArray nodesJsonArray;
 
-  for (auto const & pair : _nodes)
+  for (auto& pair : _nodes)
   {
-    auto const &node = pair.second;
-
-    nodesJsonArray.append(node->save());
+    const FlowScene::UniqueNode &node = pair.second;
+    if(node)
+    {
+      nodesJsonArray.append(node->save());
+    }
   }
 
   sceneJson["nodes"] = nodesJsonArray;
@@ -515,11 +512,13 @@ saveToMemory() const
   for (auto const & pair : _connections)
   {
     auto const &connection = pair.second;
+    if(connection)
+    {
+      QJsonObject connectionJson = connection->save();
 
-    QJsonObject connectionJson = connection->save();
-
-    if (!connectionJson.isEmpty())
-      connectionJsonArray.append(connectionJson);
+      if (!connectionJson.isEmpty())
+        connectionJsonArray.append(connectionJson);
+    }
   }
 
   sceneJson["connections"] = connectionJsonArray;

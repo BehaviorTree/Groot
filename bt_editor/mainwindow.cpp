@@ -100,8 +100,17 @@ void MainWindow::createTab(const QString &name)
   connect( ti.scene, &QtNodes::FlowScene::nodeCreated,
            this,   &MainWindow::onPushUndo  );
 
+  connect( ti.view, &QtNodes::FlowView::startMultipleDelete,
+           [this]() { this->_undo_enabled.store(false); }  );
+
   connect( ti.scene, &QtNodes::FlowScene::nodeDeleted,
            this,   &MainWindow::onPushUndo  );
+
+  connect( ti.view, &QtNodes::FlowView::finishMultipleDelete,
+           [this]() {
+    this->_undo_enabled.store(true);
+    this->onPushUndo();
+  }  );
 
   connect( ti.scene, &QtNodes::FlowScene::nodeMoved,
            this,   &MainWindow::onPushUndo  );
@@ -134,9 +143,11 @@ void MainWindow::loadFromXML(const QString& xml_text)
     XMLError err = document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
     if( !err )
     {
-      ReadTreeNodesModel( *_model_registry ,
-                          document.RootElement()->FirstChildElement("TreeNodesModel")
-                          );
+      const XMLElement* tree_nodes_model = document.RootElement()->FirstChildElement("TreeNodesModel");
+      if( tree_nodes_model )
+      {
+        ReadTreeNodesModel( *_model_registry, tree_nodes_model );
+      }
       buildTreeView();
 
       onPushUndo();
@@ -267,113 +278,119 @@ void MainWindow::on_actionLoad_triggered()
   loadFromXML(xml_text);
 }
 
-/*
-void MainWindow::recursivelyCreateXml(QDomDocument& doc, QDomElement& parent_element, const QtNodes::Node* node)
+
+void recursivelyCreateXml(const QtNodes::FlowScene &scene,
+                          tinyxml2::XMLDocument& doc,
+                          tinyxml2::XMLElement* parent_element,
+                          const QtNodes::Node* node)
 {
-       const QtNodes::NodeDataModel* node_model = node->nodeDataModel();
-    const QString model_name = node_model->name();
-    QDomElement element = doc.createElement( model_name );
-    if( model_name == "Action" || model_name == "Decorator")
-    {
-        const auto* action_node = dynamic_cast<const BehaviorTreeNodeModel*>(node_model);
-        if( action_node )
-        {
-            element.setAttribute("ID", action_node->type() );
-            auto parameters = action_node->getCurrentParameters();
-            for(const auto& param: parameters)
-            {
-                element.setAttribute( param.first, param.second );
-            }
-        }
-    }
+  using namespace tinyxml2;
+  const QtNodes::NodeDataModel* node_model = node->nodeDataModel();
+  const std::string model_name = node_model->name().toStdString();
 
-    if( element.attribute("ID") != node_model->caption())
-    {
-        element.setAttribute("name", node_model->caption() );
-    }
-    parent_element.appendChild( element );
+  XMLElement* element = doc.NewElement( model_name.c_str() );
 
-    auto node_children = getChildren(*_main_scene, *node );
-    for(QtNodes::Node* child : node_children)
-    {
-        recursivelyCreateXml(doc, element, child );
-    }
+  const auto* bt_node = dynamic_cast<const BehaviorTreeNodeModel*>(node_model);
+  if( !bt_node ) return;
+
+  if( dynamic_cast<const ActionNodeModel*>(node_model) ||
+      dynamic_cast<const DecoratorNodeModel*>(node_model) ||
+      dynamic_cast<const SubtreeNodeModel*>(node_model) )
+  {
+      element->SetAttribute("ID", bt_node->registrationName().toStdString().c_str() );
+      // TODO
+//      auto parameters = action_node->getCurrentParameters();
+//      for(const auto& param: parameters)
+//      {
+//        element->SetAttribute( param.first, param.second );
+//      }
+  }
+
+  if( bt_node->instanceName() != bt_node->registrationName())
+  {
+    element->SetAttribute("name", bt_node->instanceName().toStdString().c_str() );
+  }
+  parent_element->InsertEndChild( element );
+
+  auto node_children = getChildren(scene, *node );
+  for(QtNodes::Node* child : node_children)
+  {
+    recursivelyCreateXml(scene, doc, element, child );
+  }
 }
-*/
+
 
 void MainWindow::on_actionSave_triggered()
 {
-  /*    std::vector<QtNodes::Node*> roots = findRoots( *_main_scene );
-    bool valid_root = (roots.size() == 1) && ( dynamic_cast<RootNodeModel*>(roots.front()->nodeDataModel() ));
+  const QtNodes::FlowScene* scene = currentTabInfo()->scene;
 
-    QtNodes::Node* current_node = nullptr;
+  std::vector<QtNodes::Node*> roots = findRoots( *scene );
+  bool valid_root = (roots.size() == 1) && ( dynamic_cast<RootNodeModel*>(roots.front()->nodeDataModel() ));
 
-    if( valid_root ){
-        auto root_children = getChildren(*_main_scene, *roots.front() );
-        if( root_children.size() == 1){
-            current_node = root_children.front();
-        }
-        else{
-            valid_root = false;
-        }
-    }
+  QtNodes::Node* current_node = nullptr;
 
-    if( !valid_root || !current_node)
-    {
-        QMessageBox::warning(this, tr("Oops!"),
-                             tr("Malformed behavior tree. There must be only 1 root node"),
-                             QMessageBox::Ok);
-        return;
-    }
-
-    //----------------------------
-    QDomElement root_element = _domDocument.documentElement();
-
-    QDomElement bt_node = root_element.firstChildElement( "BehaviorTree" );
-    if( !bt_node.isNull() )
-    {
-        while( bt_node.childNodes().size() > 0)
-        {
-           bt_node.removeChild( bt_node.firstChild() );
-        }
+  if( valid_root )
+  {
+    auto root_children = getChildren(*scene, *roots.front() );
+    if( root_children.size() == 1){
+      current_node = root_children.front();
     }
     else{
-        bt_node = _domDocument.createElement( "BehaviorTree" );
-        root_element.appendChild(bt_node);
+      valid_root = false;
     }
+  }
 
-    recursivelyCreateXml(_domDocument, bt_node, current_node );
+  if( !valid_root || !current_node)
+  {
+    QMessageBox::warning(this, tr("Oops!"),
+                         tr("Malformed behavior tree. There must be only 1 root node"),
+                         QMessageBox::Ok);
+    return;
+  }
 
-    //-------------------------------------
-    QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
-    QString directory_path  = settings.value("MainWindow.lastSaveDirectory",
-                                             QDir::currentPath() ).toString();
+  //----------------------------
+  using namespace tinyxml2;
+  XMLDocument doc;
+  XMLNode* root = doc.InsertEndChild( doc.NewElement( "root" ) );
 
-    QFileDialog saveDialog;
-    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
-    saveDialog.setDefaultSuffix("xml");
-    saveDialog.setNameFilter("State Machine (*.xml)");
-    saveDialog.setDirectory(directory_path);
-    saveDialog.exec();
+  XMLElement* root_tree = doc.NewElement("BehaviorTree");
+  root->InsertEndChild(root_tree);
 
-    QString fileName;
-    if(saveDialog.result() == QDialog::Accepted && saveDialog.selectedFiles().size() == 1)
-    {
-        fileName = saveDialog.selectedFiles().at(0);
-    }
+  recursivelyCreateXml(*scene, doc, root_tree, current_node );
 
-    if (fileName.isEmpty()){
-        return;
-    }
+  //-------------------------------------
+  QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+  QString directory_path  = settings.value("MainWindow.lastSaveDirectory",
+                                           QDir::currentPath() ).toString();
 
-    QFile file(fileName);
-    if (file.open(QIODevice::WriteOnly)) {
-        QTextStream stream(&file);
-        stream << _domDocument.toString(4) << endl;
-    }
+  QFileDialog saveDialog;
+  saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+  saveDialog.setDefaultSuffix("xml");
+  saveDialog.setNameFilter("State Machine (*.xml)");
+  saveDialog.setDirectory(directory_path);
+  saveDialog.exec();
 
-    directory_path = QFileInfo(fileName).absolutePath();
-    settings.setValue("MainWindow.lastSaveDirectory", directory_path);*/
+  QString fileName;
+  if(saveDialog.result() == QDialog::Accepted && saveDialog.selectedFiles().size() == 1)
+  {
+    fileName = saveDialog.selectedFiles().at(0);
+  }
+
+  if (fileName.isEmpty()){
+    return;
+  }
+
+  XMLPrinter printer;
+  doc.Print( &printer );
+
+  QFile file(fileName);
+  if (file.open(QIODevice::WriteOnly)) {
+    QTextStream stream(&file);
+    stream << printer.CStr() << endl;
+  }
+
+  directory_path = QFileInfo(fileName).absolutePath();
+  settings.setValue("MainWindow.lastSaveDirectory", directory_path);
 }
 
 void MainWindow::on_actionZoom_In_triggered()
@@ -597,7 +614,7 @@ void MainWindow::onNodeContextMenu(QtNodes::Node &node, const QPointF&)
   });
   //--------------------------------
   createSmartRemoveAction(node, nodeMenu);
- //--------------------------------
+  //--------------------------------
   nodeMenu->exec( QCursor::pos() );
 }
 
@@ -769,7 +786,7 @@ void MainWindow::onPushUndo()
   //-----------------
   _undo_enabled.store(true);
   //std::cout << _current_state.toStdString() << std::endl;
-  //qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+  qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
 
 void MainWindow::onUndoInvoked()

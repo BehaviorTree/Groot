@@ -251,18 +251,24 @@ void
 FlowView::
 deleteSelectedNodes()
 {
-  // delete the nodes, this will delete many of the connections
-  for (QGraphicsItem * item : _scene->selectedItems())
-  {
-    if (auto n = qgraphicsitem_cast<NodeGraphicsObject*>(item))
-      _scene->removeNode(n->node());
-  }
+  startMultipleDelete();
 
   for (QGraphicsItem * item : _scene->selectedItems())
   {
     if (auto c = qgraphicsitem_cast<ConnectionGraphicsObject*>(item))
       _scene->deleteConnection(c->connection());
   }
+
+  // delete the nodes, this will delete many of the connections
+  for (QGraphicsItem* item : _scene->selectedItems())
+  {
+    NodeGraphicsObject* ngo = qgraphicsitem_cast<NodeGraphicsObject*>(item);
+    if (ngo){
+      _scene->removeNode(ngo->node());
+    }
+  }
+
+  finishMultipleDelete();
 }
 
 
