@@ -101,7 +101,7 @@ pointsC1C2() const
   double xDistance = _in.x() - _out.x();
   //double yDistance = _in.y() - _out.y() - 100;
 
-  double defaultOffset = 200;
+  double defaultOffset = 50;
 
   double minimum = qMin(defaultOffset, std::abs(xDistance));
 
@@ -112,7 +112,6 @@ pointsC1C2() const
   if (xDistance <= 0)
   {
     verticalOffset = -minimum;
-
     ratio1 = 1.0;
   }
 

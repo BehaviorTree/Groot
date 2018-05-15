@@ -79,13 +79,15 @@ void NodeReorderRecursive(QtNodes::FlowScene &scene,
                              int level,
                              std::map<int, std::vector<QtNodes::Node*>>& nodes_by_level)
 {
-    const double vertical_spacing = 15;
+    const double VERTICAL_SPACING = 30;
+    const double HORIZONTAL_SPACING = 60;
+
     std::vector<QtNodes::Node*> children = getChildren(scene, node );
 
     double total_height = 0;
     for (QtNodes::Node* child_node: children)
     {
-        total_height += child_node->nodeGeometry().height() + vertical_spacing;
+        total_height += child_node->nodeGeometry().height() + VERTICAL_SPACING;
     }
 
     auto this_level_it = nodes_by_level.find(level);
@@ -97,7 +99,7 @@ void NodeReorderRecursive(QtNodes::FlowScene &scene,
     if( next_level_it != nodes_by_level.end() )
     {
         QtNodes::Node& last_node_right = *(next_level_it->second.back()) ;
-        next_max_Y = vertical_spacing*3.0 +
+        next_max_Y = VERTICAL_SPACING +
                 scene.getNodePosition( last_node_right ).y() +
                 scene.getNodeSize( last_node_right ).height();
     }
@@ -105,7 +107,7 @@ void NodeReorderRecursive(QtNodes::FlowScene &scene,
     if( this_level_it != nodes_by_level.end() )
     {
         QtNodes::Node& last_node_right = *(this_level_it->second.back()) ;
-        this_max_Y = vertical_spacing*2.0 +
+        this_max_Y = VERTICAL_SPACING +
                 scene.getNodePosition( last_node_right ).y() +
                 scene.getNodeSize( last_node_right ).height();
     }
@@ -120,18 +122,18 @@ void NodeReorderRecursive(QtNodes::FlowScene &scene,
     nodes_by_level[level].push_back( &node );
     //---------------------------------------------
 
-    QPointF children_cursor( cursor.x() + node.nodeGeometry().width() + 100, cursor.y() ) ;
+    QPointF children_cursor( cursor.x() + node.nodeGeometry().width() + HORIZONTAL_SPACING, cursor.y() ) ;
 
     if( children.size() > 1){
         children_cursor.setY( cursor.y() - total_height*0.5 );
     }
 
-    for (int i=0; i< children.size(); i++)
+    for (unsigned i=0; i< children.size(); i++)
     {
         QtNodes::Node* child_node = children[i];
         const double height = child_node->nodeGeometry().height();
         NodeReorderRecursive( scene, *child_node, children_cursor, level+1, nodes_by_level  );
-        double child_y   =  children_cursor.y() + height + 2.0*vertical_spacing;
+        double child_y   =  children_cursor.y() + height + 2.0*VERTICAL_SPACING;
         children_cursor.setY( child_y );
         //qDebug() << ".... cursor shifted " << prev_cursor << " to " << children_cursor;
     }
