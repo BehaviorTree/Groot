@@ -22,6 +22,49 @@ void ParseBehaviorTreeXML(const tinyxml2::XMLElement* bt_root, QtNodes::FlowScen
 
 TreeNodeModels ReadTreeNodesModel(QtNodes::DataModelRegistry& registry, const tinyxml2::XMLElement* root);
 
+
+
+inline
+TreeNodeModel::ParamType getParamTypeFromString(const QString& str)
+{
+  if( str == "Int")    return TreeNodeModel::ParamType::INT;
+  if( str == "Double") return TreeNodeModel::ParamType::DOUBLE;
+  if( str == "Combo")  return TreeNodeModel::ParamType::COMBO;
+  if( str == "Combo")  return TreeNodeModel::ParamType::TEXT;
+  return TreeNodeModel::ParamType::UNDEFINED;
+};
+
+inline
+TreeNodeModel::NodeType getNodeTypeFromString(const QString& str)
+{
+  if( str == "Action")    return TreeNodeModel::NodeType::ACTION;
+  if( str == "Decorator") return TreeNodeModel::NodeType::DECORATOR;
+  if( str == "SubTree")   return TreeNodeModel::NodeType::SUBTREE;
+  if( str == "Control")   return TreeNodeModel::NodeType::CONTROL;
+  return TreeNodeModel::NodeType::UNDEFINED;
+};
+
+
+inline
+const char* toStr(TreeNodeModel::NodeType type)
+{
+  if( type == TreeNodeModel::NodeType::ACTION ) return   "Action";
+  if( type == TreeNodeModel::NodeType::DECORATOR) return "Decorator";
+  if( type == TreeNodeModel::NodeType::SUBTREE) return   "SubTree";
+  if( type == TreeNodeModel::NodeType::CONTROL) return   "Control";
+  return nullptr;
+};
+
+inline
+const char* toStr(TreeNodeModel::ParamType type)
+{
+  if( type == TreeNodeModel::ParamType::TEXT)   return "Text";
+  if( type == TreeNodeModel::ParamType::INT )   return "Int";
+  if( type == TreeNodeModel::ParamType::DOUBLE) return "Double";
+  if( type == TreeNodeModel::ParamType::COMBO)  return "Combo";
+  return nullptr;
+};
+
 //--------------------------------------------------------
 
 const QString gTestXML = R"(

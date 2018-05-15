@@ -13,6 +13,7 @@
 #include <nodes/DataModelRegistry>
 
 #include "nodes/FlowScene"
+#include "XmlParsers.hpp"
 
 namespace Ui {
 class MainWindow;
@@ -132,6 +133,8 @@ private:
     std::deque<QByteArray> _redo_stack;
     QByteArray _current_state;
     std::atomic_bool _undo_enabled;
+
+    TreeNodeModels _tree_nodes_model;
 
 };
 

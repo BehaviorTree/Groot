@@ -145,26 +145,6 @@ ParameterWidgetCreator buildWidgetCreator(const QString& label,TreeNodeModel::Pa
 }
 
 static
-TreeNodeModel::ParamType getParamTypeFromString(const QString& str)
-{
-  if( str == "Int")    return TreeNodeModel::ParamType::INT;
-  if( str == "Double") return TreeNodeModel::ParamType::DOUBLE;
-  if( str == "Combo")  return TreeNodeModel::ParamType::COMBO;
-  if( str == "Combo")  return TreeNodeModel::ParamType::TEXT;
-  return TreeNodeModel::ParamType::UNDEFINED;
-};
-
-static
-TreeNodeModel::NodeType getNodeTypeFromString(const QString& str)
-{
-  if( str == "Action")    return TreeNodeModel::NodeType::ACTION;
-  if( str == "Decorator") return TreeNodeModel::NodeType::DECORATOR;
-  if( str == "SubTree")   return TreeNodeModel::NodeType::SUBTREE;
-  if( str == "Control")   return TreeNodeModel::NodeType::CONTROL;
-  return TreeNodeModel::NodeType::UNDEFINED;
-};
-
-static
 void buildTreeNodeModel(const tinyxml2::XMLElement* node,
                         QtNodes::DataModelRegistry& registry,
                         TreeNodeModels& models_list,
@@ -251,7 +231,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
     registry.registerModel("SubTree", node_creator);
   }
 
-  if( node_type != TreeNodeModel::NodeType::ACTION)
+  if( node_type != TreeNodeModel::NodeType::UNDEFINED)
   {
     models_list.push_back(node_model);
   }

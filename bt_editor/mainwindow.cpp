@@ -143,7 +143,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
     XMLError err = document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
     if( !err )
     {
-      ReadTreeNodesModel( *_model_registry, document.RootElement() );
+      _tree_nodes_model = ReadTreeNodesModel( *_model_registry, document.RootElement() );
       buildTreeView();
 
       onPushUndo();
@@ -354,6 +354,28 @@ void MainWindow::on_actionSave_triggered()
   root->InsertEndChild(root_tree);
 
   recursivelyCreateXml(*scene, doc, root_tree, current_node );
+
+  XMLElement* root_models = doc.NewElement("TreeNodesModel");
+
+  for(const TreeNodeModel& model: _tree_nodes_model)
+  {
+    XMLElement* node = doc.NewElement( toStr(model.node_type) );
+
+    if( node )
+    {
+      node->SetAttribute("ID", model.ID.toStdString().c_str());
+      for(const auto& it: model.params)
+      {
+        XMLElement* param_node = doc.NewElement( "Parameter" );
+        param_node->InsertEndChild(root_models);
+        param_node->SetAttribute("label", it.first.toStdString().c_str() );
+        param_node->SetAttribute("type",  toStr( it.second ) );
+        node->InsertEndChild(param_node);
+      }
+    }
+    root_models->InsertEndChild(node);
+  }
+  root->InsertEndChild(root_models);
 
   //-------------------------------------
   QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
