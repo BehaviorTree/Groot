@@ -5,6 +5,7 @@
 #include "models/DecoratorNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 
+#include <QtDebug>
 #include <QLineEdit>
 
 using namespace tinyxml2;
@@ -90,143 +91,214 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
   recursiveStep( bt_root->FirstChildElement(), qt_root );
 
 }
+//------------------------------------------------------------------
 
-std::function<QWidget *()> instanceFactoryText()
+ParameterWidgetCreator buildWidgetCreator(const QString& label,TreeNodeModel::ParamType type, const QString& combo_options)
 {
-  return [](){
-    QLineEdit* line = new QLineEdit();
-    line->setAlignment( Qt::AlignHCenter);
-    line->setMaximumWidth(150);
-    return line;
-  };
-}
+  ParameterWidgetCreator creator;
+  creator.label = label;
 
-std::function<QWidget *()> instanceFactoryInt()
-{
-  return [](){
-    QLineEdit* line = new QLineEdit();
-    line->setValidator( new QIntValidator( line ));
-    line->setAlignment( Qt::AlignHCenter);
-    line->setMaximumWidth(80);
-    return line;
-  };
-}
-
-std::function<QWidget *()> instanceFactoryDouble()
-{
-  return [](){
-    QLineEdit* line = new QLineEdit();
-    line->setValidator( new QDoubleValidator( line ));
-    line->setAlignment( Qt::AlignHCenter);
-    line->setMaximumWidth(120);
-    return line;
-  };
-}
-
-std::function<QWidget *()> instanceFactoryCombo(QStringList options)
-{
-  return [options](){
-    QComboBox* combo = new QComboBox();
-    combo->addItems(options);
-    combo->setMaximumWidth(150);
-    return combo;
-  };
-}
-
-
-TreeNodeModels ReadTreeNodesModel(QtNodes::DataModelRegistry& registry,
-                        const tinyxml2::XMLElement* model_root)
-{
-  TreeNodeModels models_list;
-  using QtNodes::DataModelRegistry;
-
-  for( const XMLElement* node = model_root->FirstChildElement();
-       node != nullptr;
-       node = node->NextSiblingElement() )
+  if( type == TreeNodeModel::ParamType::TEXT)
   {
-    TreeNodeModel node_model;
-
-    QString node_name (node->Name());
-    QString ID;
-    if(  node->Attribute("ID") )
+    creator.instance_factory = []()
     {
-      ID = QString(node->Attribute("ID"));
-    }
-    else{
-      ID = node_name;
-    }
+      QLineEdit* line = new QLineEdit();
+      line->setAlignment( Qt::AlignHCenter);
+      line->setMaximumWidth(150);
+      return line;
+    };
+  }
+  else if( type == TreeNodeModel::ParamType::INT)
+  {
+    creator.instance_factory = []()
+    {
+      QLineEdit* line = new QLineEdit();
+      line->setValidator( new QIntValidator( line ));
+      line->setAlignment( Qt::AlignHCenter);
+      line->setMaximumWidth(80);
+      return line;
+    };
+  }
+  else if( type == TreeNodeModel::ParamType::DOUBLE)
+  {
+    creator.instance_factory = []()
+    {
+      QLineEdit* line = new QLineEdit();
+      line->setValidator( new QDoubleValidator( line ));
+      line->setAlignment( Qt::AlignHCenter);
+      line->setMaximumWidth(120);
+      return line;
+    };
+  }
+  else if( type == TreeNodeModel::ParamType::COMBO)
+  {
+    QStringList option_list = combo_options.split(";", QString::SkipEmptyParts);
+    creator.instance_factory = [option_list]()
+    {
+      QComboBox* combo = new QComboBox();
+      combo->addItems(option_list);
+      combo->setMaximumWidth(150);
+      return combo;
+    };
+  }
+  return creator;
+}
 
-    node_model.ID = ID;
+static
+TreeNodeModel::ParamType getParamTypeFromString(const QString& str)
+{
+  if( str == "Int")    return TreeNodeModel::ParamType::INT;
+  if( str == "Double") return TreeNodeModel::ParamType::DOUBLE;
+  if( str == "Combo")  return TreeNodeModel::ParamType::COMBO;
+  if( str == "Combo")  return TreeNodeModel::ParamType::TEXT;
+  return TreeNodeModel::ParamType::UNDEFINED;
+};
 
-    ParameterWidgetCreators parameters;
+static
+TreeNodeModel::NodeType getNodeTypeFromString(const QString& str)
+{
+  if( str == "Action")    return TreeNodeModel::NodeType::ACTION;
+  if( str == "Decorator") return TreeNodeModel::NodeType::DECORATOR;
+  if( str == "SubTree")   return TreeNodeModel::NodeType::SUBTREE;
+  if( str == "Control")   return TreeNodeModel::NodeType::CONTROL;
+  return TreeNodeModel::NodeType::UNDEFINED;
+};
 
+static
+void buildTreeNodeModel(const tinyxml2::XMLElement* node,
+                        QtNodes::DataModelRegistry& registry,
+                        TreeNodeModels& models_list,
+                        bool is_tree_node_model)
+{
+
+  TreeNodeModel node_model;
+
+  QString node_name (node->Name());
+  QString ID = node_name;
+  if(  node->Attribute("ID") )
+  {
+    ID = QString(node->Attribute("ID"));
+  }
+
+  if( registry.registeredModelCreators().count(ID) > 0)
+  {
+    return;
+  }
+
+  node_model.ID = ID;
+
+  const auto node_type = getNodeTypeFromString(node_name);
+  node_model.node_type = node_type;
+
+  ParameterWidgetCreators parameters;
+
+  if( is_tree_node_model)
+  {
     for (const XMLElement* param_node = node->FirstChildElement("Parameter");
          param_node != nullptr;
          param_node = param_node->NextSiblingElement("Parameter") )
     {
-      const QString type(  param_node->Attribute("type") );
-      ParameterWidgetCreator creator;
+      const auto param_type = getParamTypeFromString( param_node->Attribute("type"));
+      const auto param_name = param_node->Attribute("label");
 
-      creator.label = param_node->Attribute("label");
-      if( type == "Text")
-      {
-        creator.instance_factory = instanceFactoryText();
-        node_model.params[ creator.label ] = TreeNodeModel::ParamType::TEXT;
-      }
-      else if( type == "Int")
-      {
-        creator.instance_factory = instanceFactoryInt();
-        node_model.params[ creator.label ] = TreeNodeModel::ParamType::INT;
-      }
-      else if( type == "Double")
-      {
-        creator.instance_factory = instanceFactoryDouble();
-        node_model.params[ creator.label ] = TreeNodeModel::ParamType::DOUBLE;
-      }
-      else if( type == "Combo")
-      {
-        QString options = param_node->Attribute("options");
-        QStringList option_list = options.split(";", QString::SkipEmptyParts);
-        creator.instance_factory = instanceFactoryCombo(option_list);
-        node_model.params[ creator.label ] = TreeNodeModel::ParamType::COMBO;
-      }
-      else{
-        throw  std::runtime_error("Attribute 'type' of element <Parameter>"
-                                  " must be either: Text, Int, Double or Combo");
-      }
-      parameters.push_back(creator);
+      auto widget_creator = buildWidgetCreator( param_name, param_type,
+                                                param_node->Attribute("options") );
+      parameters.push_back(widget_creator);
+      node_model.params.insert( std::make_pair(param_name, param_type) );
     }
+  }
+  else
+  {
+    for (const XMLAttribute* attr = node->FirstAttribute();
+         attr != nullptr;
+         attr = attr->Next() )
+    {
+      QString attr_name( attr->Name() );
+      if(attr_name != "ID" && attr_name != "name")
+      {
+        const auto& param_type = TreeNodeModel::ParamType::TEXT;
+        const auto  param_name = attr_name;
 
-    if( node_name == "Action" )
-    {
-      DataModelRegistry::RegistryItemCreator creator = [ID, parameters]()
-      {
-        return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, parameters) );
-      };
-      registry.registerModel("Action", creator);
-      node_model.node_type = TreeNodeModel::NodeType::ACTION;
+        auto widget_creator = buildWidgetCreator( param_name, param_type, QString() );
+        parameters.push_back(widget_creator);
+        node_model.params.insert( std::make_pair(param_name, param_type) );
+      }
     }
-    else if( node_name == "Decorator" )
-    {
-      DataModelRegistry::RegistryItemCreator creator = [ID, parameters]()
-      {
-        return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, parameters) );
-      };
-      registry.registerModel("Decorator", creator);
-      node_model.node_type = TreeNodeModel::NodeType::DECORATOR;
-    }
-    else if( node_name == "SubTree" )
-    {
-      DataModelRegistry::RegistryItemCreator creator = [ID, parameters]()
-      {
-        return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID,parameters) );
-      };
-      registry.registerModel("SubTree", creator);
-      node_model.node_type = TreeNodeModel::NodeType::SUBTREE;
-    }
+  }
 
+  if( node_type == TreeNodeModel::NodeType::ACTION )
+  {
+    DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+    {
+      return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, parameters) );
+    };
+    registry.registerModel("Action", node_creator);
+  }
+  else if( node_type == TreeNodeModel::NodeType::DECORATOR )
+  {
+    DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+    {
+      return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, parameters) );
+    };
+    registry.registerModel("Decorator", node_creator);
+  }
+  else if( node_type == TreeNodeModel::NodeType::SUBTREE )
+  {
+    DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+    {
+      return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID,parameters) );
+    };
+    registry.registerModel("SubTree", node_creator);
+  }
+
+  if( node_type != TreeNodeModel::NodeType::ACTION)
+  {
     models_list.push_back(node_model);
   }
+
+  qDebug() << "registered " << ID;
+}
+
+//------------------------------------------------------------------
+
+TreeNodeModels ReadTreeNodesModel(QtNodes::DataModelRegistry& registry,
+                        const tinyxml2::XMLElement* root)
+{
+  TreeNodeModels models_list;
+  using QtNodes::DataModelRegistry;
+
+  auto model_root = root->FirstChildElement("TreeNodesModel");
+
+  if( model_root )
+  {
+    for( const XMLElement* node = model_root->FirstChildElement();
+         node != nullptr;
+         node = node->NextSiblingElement() )
+    {
+      buildTreeNodeModel(node, registry, models_list, true);
+    }
+  }
+
+  std::function<void(const XMLElement*)> recursiveStep;
+  recursiveStep = [&](const XMLElement* node)
+  {
+    buildTreeNodeModel(node, registry, models_list, false);
+
+    for( const XMLElement* child = node->FirstChildElement();
+         child != nullptr;
+         child = child->NextSiblingElement() )
+    {
+      recursiveStep(child);
+    }
+  };
+
+  for( const XMLElement* bt_root = root->FirstChildElement("BehaviorTree");
+       bt_root != nullptr;
+       bt_root = bt_root->NextSiblingElement("BehaviorTree") )
+  {
+    recursiveStep( bt_root->FirstChildElement() );
+  }
+
   return models_list;
 }
 

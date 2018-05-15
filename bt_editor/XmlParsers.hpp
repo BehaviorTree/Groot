@@ -10,8 +10,8 @@
 
 struct TreeNodeModel
 {
-  enum class NodeType  { ACTION, DECORATOR, CONTROL, SUBTREE } node_type;
-  enum class ParamType { INT, DOUBLE, TEXT, COMBO };
+  enum class NodeType  { ACTION, DECORATOR, CONTROL, SUBTREE, UNDEFINED } node_type;
+  enum class ParamType { INT, DOUBLE, TEXT, COMBO, UNDEFINED };
   QString ID;
   std::map<QString, ParamType> params;
 };
@@ -20,7 +20,7 @@ typedef std::vector<TreeNodeModel> TreeNodeModels;
 
 void ParseBehaviorTreeXML(const tinyxml2::XMLElement* bt_root, QtNodes::FlowScene* scene, QtNodes::Node& qt_root );
 
-TreeNodeModels ReadTreeNodesModel(QtNodes::DataModelRegistry& registry, const tinyxml2::XMLElement* model_root);
+TreeNodeModels ReadTreeNodesModel(QtNodes::DataModelRegistry& registry, const tinyxml2::XMLElement* root);
 
 //--------------------------------------------------------
 
@@ -40,9 +40,9 @@ const QString gTestXML = R"(
                 <Decorator ID="Negation">
                      <Action ID="IsDoorOpen" />
                 </Decorator>
-                <RetryUntilSuccesful ID="RetryUntilSuccesful" num_attempts="4">
-                     <OpenDoor ID="OpenDoor"/>
-                </RetryUntilSuccesful>
+                <Decorator ID="RetryUntilSuccesful" num_attempts="4">
+                     <Action ID="OpenDoor"/>
+                </Decorator>
                 <Action ID="PassThroughDoor" />
                 <Action ID="CloseDoor" />
             </Sequence>

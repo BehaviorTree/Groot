@@ -143,11 +143,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
     XMLError err = document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
     if( !err )
     {
-      const XMLElement* tree_nodes_model = document.RootElement()->FirstChildElement("TreeNodesModel");
-      if( tree_nodes_model )
-      {
-        ReadTreeNodesModel( *_model_registry, tree_nodes_model );
-      }
+      ReadTreeNodesModel( *_model_registry, document.RootElement() );
       buildTreeView();
 
       onPushUndo();
