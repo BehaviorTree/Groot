@@ -18,6 +18,11 @@ public:
         return ConnectionPolicy::One;
     }
 
+    virtual const char* className() const override final
+    {
+      return "Decorator";
+    }
+
 private:
 
 };

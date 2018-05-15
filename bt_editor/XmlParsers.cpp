@@ -62,7 +62,7 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
 
     if (!dataModel){
       char buffer[250];
-      sprintf(buffer, "No registered model with name: [%s](%s) ",
+      sprintf(buffer, "No registered model with name: [%s](%s)",
               xml_node->Name(),
               modelID.toStdString().c_str() );
       throw std::logic_error( buffer );
@@ -93,12 +93,12 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
 }
 //------------------------------------------------------------------
 
-ParameterWidgetCreator buildWidgetCreator(const QString& label,TreeNodeModel::ParamType type, const QString& combo_options)
+ParameterWidgetCreator buildWidgetCreator(const QString& label,ParamType type, const QString& combo_options)
 {
   ParameterWidgetCreator creator;
   creator.label = label;
 
-  if( type == TreeNodeModel::ParamType::TEXT)
+  if( type == ParamType::TEXT)
   {
     creator.instance_factory = []()
     {
@@ -108,7 +108,7 @@ ParameterWidgetCreator buildWidgetCreator(const QString& label,TreeNodeModel::Pa
       return line;
     };
   }
-  else if( type == TreeNodeModel::ParamType::INT)
+  else if( type == ParamType::INT)
   {
     creator.instance_factory = []()
     {
@@ -119,7 +119,7 @@ ParameterWidgetCreator buildWidgetCreator(const QString& label,TreeNodeModel::Pa
       return line;
     };
   }
-  else if( type == TreeNodeModel::ParamType::DOUBLE)
+  else if( type == ParamType::DOUBLE)
   {
     creator.instance_factory = []()
     {
@@ -130,7 +130,7 @@ ParameterWidgetCreator buildWidgetCreator(const QString& label,TreeNodeModel::Pa
       return line;
     };
   }
-  else if( type == TreeNodeModel::ParamType::COMBO)
+  else if( type == ParamType::COMBO)
   {
     QStringList option_list = combo_options.split(";", QString::SkipEmptyParts);
     creator.instance_factory = [option_list]()
@@ -165,8 +165,6 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
     return;
   }
 
-  node_model.ID = ID;
-
   const auto node_type = getNodeTypeFromString(node_name);
   node_model.node_type = node_type;
 
@@ -196,7 +194,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
       QString attr_name( attr->Name() );
       if(attr_name != "ID" && attr_name != "name")
       {
-        const auto& param_type = TreeNodeModel::ParamType::TEXT;
+        const auto& param_type = ParamType::TEXT;
         const auto  param_name = attr_name;
 
         auto widget_creator = buildWidgetCreator( param_name, param_type, QString() );
@@ -206,7 +204,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
     }
   }
 
-  if( node_type == TreeNodeModel::NodeType::ACTION )
+  if( node_type == NodeType::ACTION )
   {
     DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
     {
@@ -214,7 +212,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
     };
     registry.registerModel("Action", node_creator);
   }
-  else if( node_type == TreeNodeModel::NodeType::DECORATOR )
+  else if( node_type == NodeType::DECORATOR )
   {
     DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
     {
@@ -222,7 +220,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
     };
     registry.registerModel("Decorator", node_creator);
   }
-  else if( node_type == TreeNodeModel::NodeType::SUBTREE )
+  else if( node_type == NodeType::SUBTREE )
   {
     DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
     {
@@ -231,9 +229,9 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
     registry.registerModel("SubTree", node_creator);
   }
 
-  if( node_type != TreeNodeModel::NodeType::UNDEFINED)
+  if( node_type != NodeType::UNDEFINED)
   {
-    models_list.push_back(node_model);
+    models_list.insert( std::make_pair(ID, node_model) );
   }
 
   qDebug() << "registered " << ID;
@@ -241,10 +239,10 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
 
 //------------------------------------------------------------------
 
-TreeNodeModels ReadTreeNodesModel(QtNodes::DataModelRegistry& registry,
-                        const tinyxml2::XMLElement* root)
+void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
+                        QtNodes::DataModelRegistry& registry,
+                        TreeNodeModels& models_list)
 {
-  TreeNodeModels models_list;
   using QtNodes::DataModelRegistry;
 
   auto model_root = root->FirstChildElement("TreeNodesModel");
@@ -278,8 +276,6 @@ TreeNodeModels ReadTreeNodesModel(QtNodes::DataModelRegistry& registry,
   {
     recursiveStep( bt_root->FirstChildElement() );
   }
-
-  return models_list;
 }
 
 

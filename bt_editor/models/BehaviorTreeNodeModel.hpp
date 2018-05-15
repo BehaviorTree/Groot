@@ -71,6 +71,8 @@ public:
 
   void setParameterValue(const QString& label, const QString& value);
 
+  virtual const char* className() const = 0;
+
 
 protected:
   QWidget*   _main_widget;

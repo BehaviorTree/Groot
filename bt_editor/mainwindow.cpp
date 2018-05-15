@@ -143,7 +143,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
     XMLError err = document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
     if( !err )
     {
-      _tree_nodes_model = ReadTreeNodesModel( *_model_registry, document.RootElement() );
+      ReadTreeNodesModel( document.RootElement(), *_model_registry, _tree_nodes_model );
       buildTreeView();
 
       onPushUndo();
@@ -284,9 +284,10 @@ void recursivelyCreateXml(const QtNodes::FlowScene &scene,
   const QtNodes::NodeDataModel* node_model = node->nodeDataModel();
   const std::string model_name = node_model->name().toStdString();
 
-  XMLElement* element = doc.NewElement( model_name.c_str() );
-
   const auto* bt_node = dynamic_cast<const BehaviorTreeNodeModel*>(node_model);
+
+  XMLElement* element = doc.NewElement( bt_node->className() );
+
   if( !bt_node ) return;
 
   if( dynamic_cast<const ActionNodeModel*>(node_model) ||
@@ -350,20 +351,26 @@ void MainWindow::on_actionSave_triggered()
   XMLDocument doc;
   XMLNode* root = doc.InsertEndChild( doc.NewElement( "root" ) );
 
+  root->InsertEndChild( doc.NewComment("-----------------------------------") );
   XMLElement* root_tree = doc.NewElement("BehaviorTree");
   root->InsertEndChild(root_tree);
 
   recursivelyCreateXml(*scene, doc, root_tree, current_node );
 
+  root->InsertEndChild( doc.NewComment("-----------------------------------") );
+
   XMLElement* root_models = doc.NewElement("TreeNodesModel");
 
-  for(const TreeNodeModel& model: _tree_nodes_model)
+  for(const auto& it: _tree_nodes_model)
   {
+    const auto& ID    = it.first;
+    const auto& model = it.second;
+
     XMLElement* node = doc.NewElement( toStr(model.node_type) );
 
     if( node )
     {
-      node->SetAttribute("ID", model.ID.toStdString().c_str());
+      node->SetAttribute("ID", ID.toStdString().c_str());
       for(const auto& it: model.params)
       {
         XMLElement* param_node = doc.NewElement( "Parameter" );
@@ -376,6 +383,7 @@ void MainWindow::on_actionSave_triggered()
     root_models->InsertEndChild(node);
   }
   root->InsertEndChild(root_models);
+  root->InsertEndChild( doc.NewComment("-----------------------------------") );
 
   //-------------------------------------
   QSettings settings("EurecatRobotics", "BehaviorTreeEditor");

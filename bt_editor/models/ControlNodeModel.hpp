@@ -48,10 +48,14 @@ public:
     ControlNodeModelBase();
     virtual ~ControlNodeModelBase() {}
 
+    virtual const char* className() const override final
+    {
+      return T::staticName();
+    }
+
 protected:
 
     void setLabelImage(QString pixmap_address);
-
 };
 
 //-------------------------------------------------
@@ -85,7 +89,7 @@ public:
     SequenceModel();
     virtual ~SequenceModel() = default;
 
-    static QString staticName() { return QString("Sequence"); }
+    static const char* staticName() { return ("Sequence"); }
 };
 
 
@@ -94,7 +98,7 @@ class FallbackModel: public  ControlNodeModelBase<FallbackModel>
 public:
     FallbackModel();
     virtual ~FallbackModel()  = default;
-    static QString staticName() { return QString("Fallback"); }
+    static const char* staticName() { return ("Fallback"); }
 };
 
 
@@ -103,7 +107,7 @@ class SequenceStarModel: public ControlNodeModelBase<SequenceStarModel>
 public:
     SequenceStarModel();
     virtual ~SequenceStarModel()  = default;
-    static QString staticName() { return QString("SequenceStar"); }
+    static const char* staticName() { return ("SequenceStar"); }
 
 };
 
@@ -114,7 +118,7 @@ class IfThenElseModel: public  ControlNodeModelBase<IfThenElseModel>
 public:
     IfThenElseModel();
     virtual ~IfThenElseModel()  = default;
-    static QString staticName() { return QString("IfThenElse"); }
+    static const char* staticName() { return ("IfThenElse"); }
 };
 
 

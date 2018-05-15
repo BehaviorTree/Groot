@@ -12,6 +12,11 @@ public:
 
     virtual unsigned int  nPorts(PortType portType) const override;
 
+    virtual const char* className() const override final
+    {
+      return "Action";
+    }
+
   private:
 
     void init();

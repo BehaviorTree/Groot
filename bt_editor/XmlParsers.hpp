@@ -8,60 +8,62 @@
 #include <nodes/FlowScene>
 #include <nodes/DataModelRegistry>
 
+enum class NodeType  { ACTION, DECORATOR, CONTROL, SUBTREE, UNDEFINED };
+enum class ParamType { INT, DOUBLE, TEXT, COMBO, UNDEFINED };
+
 struct TreeNodeModel
 {
-  enum class NodeType  { ACTION, DECORATOR, CONTROL, SUBTREE, UNDEFINED } node_type;
-  enum class ParamType { INT, DOUBLE, TEXT, COMBO, UNDEFINED };
-  QString ID;
+  NodeType node_type;
   std::map<QString, ParamType> params;
 };
 
-typedef std::vector<TreeNodeModel> TreeNodeModels;
+typedef std::map<QString,TreeNodeModel> TreeNodeModels;
 
 void ParseBehaviorTreeXML(const tinyxml2::XMLElement* bt_root, QtNodes::FlowScene* scene, QtNodes::Node& qt_root );
 
-TreeNodeModels ReadTreeNodesModel(QtNodes::DataModelRegistry& registry, const tinyxml2::XMLElement* root);
-
+void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
+                        QtNodes::DataModelRegistry& registry,
+                        TreeNodeModels& models_list);
 
 
 inline
-TreeNodeModel::ParamType getParamTypeFromString(const QString& str)
+ParamType getParamTypeFromString(const QString& str)
 {
-  if( str == "Int")    return TreeNodeModel::ParamType::INT;
-  if( str == "Double") return TreeNodeModel::ParamType::DOUBLE;
-  if( str == "Combo")  return TreeNodeModel::ParamType::COMBO;
-  if( str == "Combo")  return TreeNodeModel::ParamType::TEXT;
-  return TreeNodeModel::ParamType::UNDEFINED;
+  if( str == "Int")    return ParamType::INT;
+  if( str == "Double") return ParamType::DOUBLE;
+  if( str == "Combo")  return ParamType::COMBO;
+  if( str == "Combo")  return ParamType::TEXT;
+  return ParamType::UNDEFINED;
 };
 
 inline
-TreeNodeModel::NodeType getNodeTypeFromString(const QString& str)
+NodeType getNodeTypeFromString(const QString& str)
 {
-  if( str == "Action")    return TreeNodeModel::NodeType::ACTION;
-  if( str == "Decorator") return TreeNodeModel::NodeType::DECORATOR;
-  if( str == "SubTree")   return TreeNodeModel::NodeType::SUBTREE;
-  if( str == "Control")   return TreeNodeModel::NodeType::CONTROL;
-  return TreeNodeModel::NodeType::UNDEFINED;
+  if( str == "Action")    return NodeType::ACTION;
+  if( str == "Decorator") return NodeType::DECORATOR;
+  if( str == "SubTree")   return NodeType::SUBTREE;
+  if( str == "Control")   return NodeType::CONTROL;
+  return NodeType::UNDEFINED;
 };
 
 
 inline
-const char* toStr(TreeNodeModel::NodeType type)
+const char* toStr(NodeType type)
 {
-  if( type == TreeNodeModel::NodeType::ACTION ) return   "Action";
-  if( type == TreeNodeModel::NodeType::DECORATOR) return "Decorator";
-  if( type == TreeNodeModel::NodeType::SUBTREE) return   "SubTree";
-  if( type == TreeNodeModel::NodeType::CONTROL) return   "Control";
+  if( type == NodeType::ACTION )   return   "Action";
+  if( type == NodeType::DECORATOR) return "Decorator";
+  if( type == NodeType::SUBTREE)   return   "SubTree";
+  if( type == NodeType::CONTROL)   return   "Control";
   return nullptr;
 };
 
 inline
-const char* toStr(TreeNodeModel::ParamType type)
+const char* toStr(ParamType type)
 {
-  if( type == TreeNodeModel::ParamType::TEXT)   return "Text";
-  if( type == TreeNodeModel::ParamType::INT )   return "Int";
-  if( type == TreeNodeModel::ParamType::DOUBLE) return "Double";
-  if( type == TreeNodeModel::ParamType::COMBO)  return "Combo";
+  if( type == ParamType::TEXT)   return "Text";
+  if( type == ParamType::INT )   return "Int";
+  if( type == ParamType::DOUBLE) return "Double";
+  if( type == ParamType::COMBO)  return "Combo";
   return nullptr;
 };
 
