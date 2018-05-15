@@ -14,6 +14,7 @@
 
 #include "nodes/FlowScene"
 #include "XmlParsers.hpp"
+#include "node_palette.h"
 
 namespace Ui {
 class MainWindow;
@@ -107,23 +108,15 @@ private:
 
     QShortcut _arrange_shortcut;
 
- //   void recursivelyCreateXml(QDomDocument& doc, QDomElement& parent_element, const QtNodes::Node* node);
-
     QTimer _periodic_timer;
 
     std::mutex _mutex;
-
-    void buildTreeView();
-
 
     bool    _state_received;
     QString _state_msg;
     QtNodes::Node* _root_node;
 
-    QMap<QString, QTreeWidgetItem*> _tree_view_top_level_items;
-
-
-    void createMorphSubMenu(QtNodes::Node &node, QMenu *nodeMenu);
+     void createMorphSubMenu(QtNodes::Node &node, QMenu *nodeMenu);
 
     void createSmartRemoveAction(QtNodes::Node &node, QMenu *nodeMenu);
 
@@ -135,6 +128,8 @@ private:
     std::atomic_bool _undo_enabled;
 
     TreeNodeModels _tree_nodes_model;
+
+    NodePalette* _node_palette_widget;
 
 };
 

@@ -25,6 +25,7 @@
 #include "models/RootNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 
+
 #include "utils.h"
 
 using QtNodes::DataModelRegistry;
@@ -53,9 +54,9 @@ MainWindow::MainWindow(QWidget *parent) :
   _model_registry->registerModel("Control", [](){ return std::make_unique<SequenceModel>();} );
   _model_registry->registerModel("Control", [](){ return std::make_unique<SequenceStarModel>();} );
   _model_registry->registerModel("Control", [](){ return std::make_unique<FallbackModel>();} );
-  _model_registry->registerModel("Control", [](){ return std::make_unique<IfThenElseModel>();} );
 
-  buildTreeView();
+  _node_palette_widget = new NodePalette(_tree_nodes_model, this);
+  ui->leftFrame->layout()->addWidget( _node_palette_widget );
 
   createTab("Behaviortree");
 
@@ -144,7 +145,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
     if( !err )
     {
       ReadTreeNodesModel( document.RootElement(), *_model_registry, _tree_nodes_model );
-      buildTreeView();
+      _node_palette_widget->updateTreeView();
 
       onPushUndo();
       _undo_enabled.store(false);
@@ -174,70 +175,6 @@ void MainWindow::loadFromXML(const QString& xml_text)
   }
 
   lockEditing( ui->selectMode->value() == 1 );
-}
-
-void MainWindow::buildTreeView()
-{
-  auto AdjustFont = [](QTreeWidgetItem* item, int size, bool is_bold)
-  {
-    QFont font = item->font(0);
-    font.setBold(is_bold);
-    font.setPointSize(size);
-    item->setFont(0, font);
-  };
-
-  auto skipText = QStringLiteral("skip me");
-
-  //Add filterbox to the context menu
-
-  ui->lineEditFilter->setPlaceholderText(QStringLiteral("Filter"));
-  ui->lineEditFilter->setClearButtonEnabled(true);
-
-  ui->treeWidget->clear();
-  _tree_view_top_level_items.clear();
-
-  for (auto const &cat : _model_registry->categories())
-  {
-    auto item = new QTreeWidgetItem(ui->treeWidget);
-    item->setText(0, cat);
-    AdjustFont(item, 12, true);
-    item->setData(0, Qt::UserRole, skipText);
-    item->setFlags( item->flags() ^ Qt::ItemIsDragEnabled );
-    _tree_view_top_level_items[cat] = item;
-  }
-
-  for (auto const &assoc : _model_registry->registeredModelsCategoryAssociation())
-  {
-    const QString& category = assoc.second;
-    auto parent = _tree_view_top_level_items[category];
-    auto item = new QTreeWidgetItem(parent);
-    item->setText(0, assoc.first);
-    AdjustFont(item, 11, false);
-    item->setData(0, Qt::UserRole, assoc.first);
-  }
-
-  ui->treeWidget->expandAll();
-
-  //Setup filtering
-  connect(ui->lineEditFilter, &QLineEdit::textChanged, [&](const QString &text)
-  {
-    for (auto& topLvlItem : _tree_view_top_level_items)
-    {
-      for (int i = 0; i < topLvlItem->childCount(); ++i)
-      {
-        auto child = topLvlItem->child(i);
-        auto modelName = child->data(0, Qt::UserRole).toString();
-        if (modelName.contains(text, Qt::CaseInsensitive))
-        {
-          child->setHidden(false);
-        }
-        else
-        {
-          child->setHidden(true);
-        }
-      }
-    }
-  });
 }
 
 
@@ -275,47 +212,6 @@ void MainWindow::on_actionLoad_triggered()
 }
 
 
-void recursivelyCreateXml(const QtNodes::FlowScene &scene,
-                          tinyxml2::XMLDocument& doc,
-                          tinyxml2::XMLElement* parent_element,
-                          const QtNodes::Node* node)
-{
-  using namespace tinyxml2;
-  const QtNodes::NodeDataModel* node_model = node->nodeDataModel();
-  const std::string model_name = node_model->name().toStdString();
-
-  const auto* bt_node = dynamic_cast<const BehaviorTreeNodeModel*>(node_model);
-
-  XMLElement* element = doc.NewElement( bt_node->className() );
-
-  if( !bt_node ) return;
-
-  if( dynamic_cast<const ActionNodeModel*>(node_model) ||
-      dynamic_cast<const DecoratorNodeModel*>(node_model) ||
-      dynamic_cast<const SubtreeNodeModel*>(node_model) )
-  {
-      element->SetAttribute("ID", bt_node->registrationName().toStdString().c_str() );
-  }
-
-  auto parameters = bt_node->getCurrentParameters();
-  for(const auto& param: parameters)
-  {
-    element->SetAttribute( param.first.toStdString().c_str(),
-                           param.second.toStdString().c_str() );
-  }
-
-  if( bt_node->instanceName() != bt_node->registrationName())
-  {
-    element->SetAttribute("name", bt_node->instanceName().toStdString().c_str() );
-  }
-  parent_element->InsertEndChild( element );
-
-  auto node_children = getChildren(scene, *node );
-  for(QtNodes::Node* child : node_children)
-  {
-    recursivelyCreateXml(scene, doc, element, child );
-  }
-}
 
 
 void MainWindow::on_actionSave_triggered()
@@ -355,7 +251,7 @@ void MainWindow::on_actionSave_triggered()
   XMLElement* root_tree = doc.NewElement("BehaviorTree");
   root->InsertEndChild(root_tree);
 
-  recursivelyCreateXml(*scene, doc, root_tree, current_node );
+  RecursivelyCreateXml(*scene, doc, root_tree, current_node );
 
   root->InsertEndChild( doc.NewComment("-----------------------------------") );
 
@@ -791,7 +687,7 @@ void MainWindow::on_splitter_splitterMoved(int , int )
 {
   this->update();
   QList<int> sizes = ui->splitter->sizes();
-  const int maxLeftWidth = ui->treeWidget->maximumWidth();
+  const int maxLeftWidth = ui->leftFrame->maximumWidth();
   int totalWidth = sizes[0] + sizes[1];
 
   if( sizes[0] > maxLeftWidth)

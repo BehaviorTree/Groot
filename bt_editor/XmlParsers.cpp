@@ -279,3 +279,42 @@ void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
 }
 
 
+
+void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *parent_element, const Node *node)
+{
+  using namespace tinyxml2;
+  const QtNodes::NodeDataModel* node_model = node->nodeDataModel();
+  const std::string model_name = node_model->name().toStdString();
+
+  const auto* bt_node = dynamic_cast<const BehaviorTreeNodeModel*>(node_model);
+
+  XMLElement* element = doc.NewElement( bt_node->className() );
+
+  if( !bt_node ) return;
+
+  if( dynamic_cast<const ActionNodeModel*>(node_model) ||
+      dynamic_cast<const DecoratorNodeModel*>(node_model) ||
+      dynamic_cast<const SubtreeNodeModel*>(node_model) )
+  {
+    element->SetAttribute("ID", bt_node->registrationName().toStdString().c_str() );
+  }
+
+  auto parameters = bt_node->getCurrentParameters();
+  for(const auto& param: parameters)
+  {
+    element->SetAttribute( param.first.toStdString().c_str(),
+                           param.second.toStdString().c_str() );
+  }
+
+  if( bt_node->instanceName() != bt_node->registrationName())
+  {
+    element->SetAttribute("name", bt_node->instanceName().toStdString().c_str() );
+  }
+  parent_element->InsertEndChild( element );
+
+  auto node_children = getChildren(scene, *node );
+  for(QtNodes::Node* child : node_children)
+  {
+    RecursivelyCreateXml(scene, doc, element, child );
+  }
+}

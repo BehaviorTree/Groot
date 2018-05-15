@@ -25,6 +25,12 @@ void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
                         QtNodes::DataModelRegistry& registry,
                         TreeNodeModels& models_list);
 
+void RecursivelyCreateXml(const QtNodes::FlowScene &scene,
+                          tinyxml2::XMLDocument& doc,
+                          tinyxml2::XMLElement* parent_element,
+                          const QtNodes::Node* node);
+
+
 
 inline
 ParamType getParamTypeFromString(const QString& str)

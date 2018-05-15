@@ -52,6 +52,7 @@ set(APP_CPPS
     ./bt_editor/mainwindow.cpp
     ./bt_editor/editor_flowscene.cpp
     ./bt_editor/utils.cpp
+    ./bt_editor/node_palette.cpp
 
     ./3rdparty/tinyXML2/tinyxml2.cpp
     ./bt_editor/XmlParsers.cpp
@@ -66,7 +67,8 @@ qt5_add_resources(RESOURCES
 
 QT5_WRAP_UI(FORMS_HEADERS
   ./bt_editor/mainwindow.ui
-  ./bt_editor/action_form.ui )
+  ./bt_editor/action_form.ui
+  ./bt_editor/node_palette.ui )
 
 add_executable(behavior_tree_editor
     ${APP_CPPS}
