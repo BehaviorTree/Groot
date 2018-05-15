@@ -8,10 +8,9 @@
 #include "mainwindow.h"
 #include "models/ActionNodeModel.hpp"
 #include "models/RootNodeModel.hpp"
-#include "NodeFactory.hpp"
 
 #include <nodes/DataModelRegistry>
-#include "XmlParsers.hpp"
+#include "XML_utilities.hpp"
 
 #ifdef USING_ROS
 #include <ros/ros.h>

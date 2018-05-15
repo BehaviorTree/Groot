@@ -55,7 +55,7 @@ set(APP_CPPS
     ./bt_editor/node_palette.cpp
 
     ./3rdparty/tinyXML2/tinyxml2.cpp
-    ./bt_editor/XmlParsers.cpp
+    ./bt_editor/XML_utilities.cpp
 
  ##   ./bt_editor/NodeFactory.cpp
     )

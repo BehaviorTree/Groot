@@ -13,7 +13,7 @@
 #include <nodes/DataModelRegistry>
 
 #include "nodes/FlowScene"
-#include "XmlParsers.hpp"
+#include "XML_utilities.hpp"
 #include "node_palette.h"
 
 namespace Ui {

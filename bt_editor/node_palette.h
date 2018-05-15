@@ -3,7 +3,7 @@
 
 #include <QFrame>
 #include <QTreeWidgetItem>
-#include "XmlParsers.hpp"
+#include "XML_utilities.hpp"
 
 namespace Ui {
 class NodePalette;

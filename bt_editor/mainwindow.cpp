@@ -18,7 +18,7 @@
 
 #include "editor_flowscene.h"
 
-#include "XmlParsers.hpp"
+#include "XML_utilities.hpp"
 #include "models/ActionNodeModel.hpp"
 #include "models/ControlNodeModel.hpp"
 #include "models/DecoratorNodeModel.hpp"
