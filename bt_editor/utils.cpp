@@ -191,20 +191,18 @@ struct AbstractRectangularGeometry
   std::vector<AbstractRectangularGeometry*> children;
 };
 
-void RecursiveNodeReorder(AbstractRectangularGeometry* root_node)
+void RecursiveNodeReorder(AbstractRectangularGeometry* root_node, QtNodes::PortLayout layout)
 {
   std::function<void(int, AbstractRectangularGeometry* node)> recursiveStep;
 
   std::vector<QPointF> layer_cursor;
   layer_cursor.push_back(QPointF(0,0));
 
-  recursiveStep = [&recursiveStep, &layer_cursor](int current_layer, AbstractRectangularGeometry* node)
+  recursiveStep = [layout, &recursiveStep, &layer_cursor](int current_layer, AbstractRectangularGeometry* node)
   {
     const qreal LAYER_SPACING = 100;
     const qreal NODE_SPACING  = 40;
     node->pos = layer_cursor[current_layer];
-
-    qDebug() << node->name << " -> " << node->pos;
 
     qreal max_height = 0;
     qreal total_width = -NODE_SPACING;
@@ -222,10 +220,8 @@ void RecursiveNodeReorder(AbstractRectangularGeometry* root_node)
       if( current_layer >= layer_cursor.size())
       {
         QPointF new_cursor( recommended_X,
-                            node->pos .y() + max_height + LAYER_SPACING );
+                            node->pos.y() + max_height + LAYER_SPACING );
         layer_cursor.push_back( new_cursor );
-
-        qDebug() <<  current_layer << " " << new_cursor << " " << node->name;
       }
       else{
         recommended_X = std::max( recommended_X, layer_cursor[current_layer].x() );
@@ -237,15 +233,13 @@ void RecursiveNodeReorder(AbstractRectangularGeometry* root_node)
       for(auto& child: node->children)
       {
         recursiveStep(current_layer, child);
-        layer_cursor[current_layer].setX( layer_cursor[current_layer].x() +
-                                          child->size.width() +
-                                          NODE_SPACING  );
+        layer_cursor[current_layer]+= QPointF( child->size.width() + NODE_SPACING, 0 );
       }
 
       auto final_pos = layer_cursor[current_layer];
 
       // rebalance father
-      auto diff = (node->pos.x() + node->size.width()*0.5) - (final_pos.x() + initial_pos.x() - NODE_SPACING)* 0.5 ;
+      double diff = (node->pos.x() + node->size.width()*0.5) - (final_pos.x() + initial_pos.x() - NODE_SPACING)* 0.5 ;
       node->pos += QPointF( - diff, 0 );
       layer_cursor[current_layer -1 ] += QPointF( - diff, 0 );
     }
