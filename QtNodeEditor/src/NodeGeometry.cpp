@@ -16,6 +16,7 @@ using QtNodes::NodeGeometry;
 using QtNodes::NodeDataModel;
 using QtNodes::PortIndex;
 using QtNodes::PortType;
+using QtNodes::PortLayout;
 using QtNodes::Node;
 
 NodeGeometry::
@@ -33,6 +34,7 @@ NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
   , _dataModel(dataModel)
   , _fontMetrics(QFont())
   , _boldFontMetrics(QFont())
+  , _ports_layout(PortLayout::Vertical  )
 {
   QFont f; f.setBold(true);
 
@@ -136,44 +138,28 @@ portScenePosition(PortIndex index,
                   PortType portType,
                   QTransform t) const
 {
-  auto const &nodeStyle = StyleCollection::nodeStyle();
+  auto const connectionDiameter = StyleCollection::nodeStyle().ConnectionPointDiameter;
 
-  unsigned int step = _entryHeight + _spacing;
-
-  QPointF result;
-
-  double totalHeight = 0.0;
-
-  totalHeight += captionHeight();
-
-  totalHeight += step * index;
-
-  // TODO: why?
-  totalHeight += step / 2.0;
-
-  switch (portType)
+  if( _ports_layout == PortLayout::Horizontal)
   {
-    case PortType::Out:
-    {
-      double x = _width + nodeStyle.ConnectionPointDiameter;
+    unsigned int step = _entryHeight + _spacing;
+    double totalHeight = captionHeight() + step * index;
+    totalHeight += step / 2.0;
 
-      result = QPointF(x, totalHeight);
-      break;
-    }
-
-    case PortType::In:
-    {
-      double x = 0.0 - nodeStyle.ConnectionPointDiameter;
-
-      result = QPointF(x, totalHeight);
-      break;
-    }
-
-    default:
-      break;
+    double x = (portType == PortType::Out) ? _width + connectionDiameter :
+                                             - connectionDiameter;
+    return t.map( QPointF(x, totalHeight) );
   }
+  else
+  {
+    unsigned int nPorts = (portType == PortType::In ) ? nSinks() : nSources();
+    unsigned int step = _width / (nPorts + 1);
+    double x = step * (index+1);
 
-  return t.map(result);
+    double y = (portType == PortType::Out) ? _height + connectionDiameter :
+                                             - connectionDiameter;
+    return t.map( QPointF( x, y) );
+  }
 }
 
 

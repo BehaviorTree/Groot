@@ -56,5 +56,7 @@ private:
   double _lineWidth;
 
   bool _hovered;
+
+  PortLayout _ports_layout;
 };
 }

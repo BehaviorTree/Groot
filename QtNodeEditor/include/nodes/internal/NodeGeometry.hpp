@@ -155,5 +155,7 @@ private:
 
   mutable QFontMetrics _fontMetrics;
   mutable QFontMetrics _boldFontMetrics;
+
+  PortLayout _ports_layout;
 };
 }

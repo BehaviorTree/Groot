@@ -15,6 +15,12 @@ enum class PortType
   Out
 };
 
+enum class PortLayout
+{
+  Horizontal,
+  Vertical
+};
+
 static const int INVALID = -1;
 
 using PortIndex = int;
