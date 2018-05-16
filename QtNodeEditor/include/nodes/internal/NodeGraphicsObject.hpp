@@ -98,6 +98,8 @@ private:
 
   bool _locked;
 
+  bool _double_clicked;
+
   // either nullptr or owned by parent QGraphicsItem
   QGraphicsProxyWidget * _proxyWidget;
   QPoint _press_pos;

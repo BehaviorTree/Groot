@@ -28,6 +28,7 @@ NodeGraphicsObject(FlowScene &scene,
   : _scene(scene)
   , _node(node)
   , _locked(false)
+  , _double_clicked(false)
   , _proxyWidget(nullptr)
 {
   _scene.addItem(this);
@@ -197,11 +198,13 @@ mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
   if(_locked) return;
 
+  event->setModifiers(event->modifiers() | Qt::ControlModifier);
+
   // deselect all other items after this one is selected
   if (!isSelected() &&
       !(event->modifiers() & Qt::ControlModifier))
   {
-    _scene.clearSelection();
+    //_scene.clearSelection();
   }
 
   auto clickPort =
@@ -326,6 +329,8 @@ void
 NodeGraphicsObject::
 mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
+  event->setModifiers(event->modifiers() | Qt::ControlModifier);
+
   auto & state = _node.nodeState();
 
   state.setResizing(false);
@@ -338,6 +343,11 @@ mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
   if( (event->screenPos() - _press_pos).manhattanLength() > 20 )
   {
       _scene.nodeMoved(_node, pos());
+  }
+  if( _double_clicked )
+  {
+    _double_clicked = false;
+    setSelected(true);
   }
 }
 
@@ -404,7 +414,7 @@ NodeGraphicsObject::
 mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
 {
   QGraphicsItem::mouseDoubleClickEvent(event);
-
+  _double_clicked = true;
   _scene.nodeDoubleClicked(node());
 }
 

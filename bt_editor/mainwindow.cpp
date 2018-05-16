@@ -127,6 +127,9 @@ void MainWindow::createTab(const QString &name)
   connect( ti.scene, &QtNodes::FlowScene::connectionContextMenu,
            this, &MainWindow::onConnectionContextMenu );
 
+  connect( ti.scene, &QtNodes::FlowScene::nodeDoubleClicked,
+           this, &MainWindow::onNodeDoubleClicked);
+
   ti.view->update();
 }
 
@@ -756,4 +759,22 @@ void MainWindow::onNodeParameterUpdated(QString label, QWidget *)
 {
   qDebug() << "parameter " << label << " updated";
   onPushUndo();
+}
+
+void MainWindow::onNodeDoubleClicked(QtNodes::Node &root_node)
+{
+  auto& scene = currentTabInfo()->scene;
+  std::function<void(QtNodes::Node&)> selectRecursively;
+
+  selectRecursively = [&](QtNodes::Node& node)
+  {
+    node.nodeGraphicsObject().setSelected(true);
+    auto children = getChildren(*scene,node);
+    for (auto& child: children)
+    {
+      selectRecursively(*child);
+    }
+  };
+
+  selectRecursively(root_node);
 }

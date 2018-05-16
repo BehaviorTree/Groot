@@ -76,6 +76,8 @@ private slots:
 
     void onNodeParameterUpdated(QString, QWidget*);
 
+    void onNodeDoubleClicked(QtNodes::Node& n);
+
 signals:
     void updateGraphic();
 
