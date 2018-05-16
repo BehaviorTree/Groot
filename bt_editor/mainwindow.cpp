@@ -511,7 +511,7 @@ void MainWindow::on_selectMode_sliderPressed()
 
 void MainWindow::on_selectMode_valueChanged(int value)
 {
-  bool locked = value == 1;
+  bool locked = (value == 1);
   lockEditing( locked );
 
   QFont fontA = ui->labelEdit->font();
@@ -521,6 +521,12 @@ void MainWindow::on_selectMode_valueChanged(int value)
   QFont fontB = ui->labelMonitor->font();
   fontB.setBold( locked );
   ui->labelMonitor->setFont( fontB );
+
+  for (auto& it: _tab_info)
+  {
+    auto& scene = it.second.scene;
+    scene->lock( locked );
+  }
 }
 
 void MainWindow::onTimerUpdate()
@@ -703,6 +709,8 @@ void MainWindow::on_splitter_splitterMoved(int , int )
 
 void MainWindow::onPushUndo()
 {
+  if (ui->selectMode->value() == 1) return; //locked
+
   if( !_undo_enabled ) return;
 
   _undo_enabled.store(false);
@@ -723,6 +731,8 @@ void MainWindow::onPushUndo()
 
 void MainWindow::onUndoInvoked()
 {
+  if (ui->selectMode->value() == 1) return; //locked
+
   if( _undo_stack.size() > 0)
   {
     _redo_stack.push_back( std::move(_current_state) );
@@ -740,6 +750,8 @@ void MainWindow::onUndoInvoked()
 
 void MainWindow::onRedoInvoked()
 {
+  if (ui->selectMode->value() == 1) return; //locked
+
   if( _redo_stack.size() > 0)
   {
     _undo_stack.push_back( _current_state );

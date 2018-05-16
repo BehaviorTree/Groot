@@ -12,7 +12,7 @@
 #include <mutex>
 #include <nodes/DataModelRegistry>
 
-#include "nodes/FlowScene"
+#include "editor_flowscene.h"
 #include "XML_utilities.hpp"
 #include "node_palette.h"
 
@@ -96,7 +96,7 @@ private:
 
     struct TabInfo
     {
-      QtNodes::FlowScene* scene;
+      EditorFlowScene* scene;
       QtNodes::FlowView*  view;
     };
 

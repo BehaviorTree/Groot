@@ -8,7 +8,8 @@
 
 EditorFlowScene::EditorFlowScene(std::shared_ptr<QtNodes::DataModelRegistry> registry,
                                  QObject * parent):
-  FlowScene(registry,parent)
+  FlowScene(registry,parent),
+  _editor_locked(false)
 {
 
 }
@@ -33,7 +34,7 @@ void EditorFlowScene::dragMoveEvent(QGraphicsSceneDragDropEvent* event)
 
 void EditorFlowScene::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
-  if(event->mimeData()->hasFormat("application/x-qabstractitemmodeldatalist")  )
+  if(!_editor_locked && event->mimeData()->hasFormat("application/x-qabstractitemmodeldatalist")  )
   {
     QByteArray encoded = event->mimeData()->data("application/x-qabstractitemmodeldatalist");
     QDataStream stream(&encoded, QIODevice::ReadOnly);
