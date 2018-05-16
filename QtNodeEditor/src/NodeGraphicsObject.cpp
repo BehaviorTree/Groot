@@ -204,7 +204,7 @@ mousePressEvent(QGraphicsSceneMouseEvent * event)
   if (!isSelected() &&
       !(event->modifiers() & Qt::ControlModifier))
   {
-    //_scene.clearSelection();
+    _scene.clearSelection();
   }
 
   auto clickPort =
@@ -329,7 +329,20 @@ void
 NodeGraphicsObject::
 mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
-  event->setModifiers(event->modifiers() | Qt::ControlModifier);
+  if( _double_clicked )
+  {
+    event->setModifiers(event->modifiers() | Qt::ControlModifier);
+    _double_clicked = false;
+    setSelected(true);
+    return;
+  }
+  else{
+    if( !isSelected() )
+    {
+      _scene.clearSelection();
+    }
+  }
+
 
   auto & state = _node.nodeState();
 
@@ -344,11 +357,7 @@ mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
   {
       _scene.nodeMoved(_node, pos());
   }
-  if( _double_clicked )
-  {
-    _double_clicked = false;
-    setSelected(true);
-  }
+
 }
 
 
