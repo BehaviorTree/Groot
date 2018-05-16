@@ -313,7 +313,7 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
   parent_element->InsertEndChild( element );
 
   auto node_children = getChildren(scene, *node );
-  for(QtNodes::Node* child : node_children)
+  for(const QtNodes::Node* child : node_children)
   {
     RecursivelyCreateXml(scene, doc, element, child );
   }
