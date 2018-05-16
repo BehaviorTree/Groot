@@ -198,7 +198,7 @@ mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
   if(_locked) return;
 
-  event->setModifiers(event->modifiers() | Qt::ControlModifier);
+ // event->setModifiers(event->modifiers() | Qt::ControlModifier);
 
   // deselect all other items after this one is selected
   if (!isSelected() &&
