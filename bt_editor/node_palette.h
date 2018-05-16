@@ -19,6 +19,12 @@ public:
 
     void updateTreeView();
 
+private slots:
+
+    void on_treeWidget_itemSelectionChanged();
+
+    void on_lineEditFilter_textChanged(const QString &arg1);
+
 private:
     Ui::NodePalette *ui;
     TreeNodeModels &_tree_nodes_model;

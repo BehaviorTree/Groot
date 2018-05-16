@@ -36,6 +36,7 @@ void NodePalette::updateTreeView()
       AdjustFont(item, 11, true);
       item->setData(0, Qt::UserRole, skipText);
       item->setFlags( item->flags() ^ Qt::ItemIsDragEnabled );
+      item->setFlags( item->flags() ^ Qt::ItemIsSelectable );
       _tree_view_category_items[ cat ] = item;
     }
 
@@ -72,25 +73,29 @@ void NodePalette::updateTreeView()
     }
 
     ui->treeWidget->expandAll();
+}
 
-    //Setup filtering
-    connect(ui->lineEditFilter, &QLineEdit::textChanged, [&](const QString &text)
+void NodePalette::on_treeWidget_itemSelectionChanged()
+{
+
+}
+
+void NodePalette::on_lineEditFilter_textChanged(const QString &text)
+{
+  for (auto& it : _tree_view_category_items)
+  {
+    for (int i = 0; i < it.second->childCount(); ++i)
     {
-      for (auto& topLvlItem : _tree_view_category_items)
+      auto child = it.second->child(i);
+      auto modelName = child->data(0, Qt::UserRole).toString();
+      if (modelName.contains(text, Qt::CaseInsensitive))
       {
-        for (int i = 0; i < topLvlItem.second->childCount(); ++i)
-        {
-          auto child = topLvlItem.second->child(i);
-          auto modelName = child->data(0, Qt::UserRole).toString();
-          if (modelName.contains(text, Qt::CaseInsensitive))
-          {
-            child->setHidden(false);
-          }
-          else
-          {
-            child->setHidden(true);
-          }
-        }
+        child->setHidden(false);
       }
-    });
+      else
+      {
+        child->setHidden(true);
+      }
+    }
+  }
 }
