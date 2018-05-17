@@ -42,15 +42,15 @@ private slots:
 
     void on_actionSave_triggered();
 
-    void on_actionZoom_In_triggered();
+    void on_actionZoom_Out_triggered();
 
-    void on_actionZoom_ut_triggered();
+    void on_actionZoom_In_triggered();
 
     void on_actionAuto_arrange_triggered();
 
     void onNodeCreated(QtNodes::Node &node);
 
-    void onNodeSizeChanged();
+    void nodeReorder();
 
     void onSceneChanged();
 
@@ -77,6 +77,12 @@ private slots:
     void onNodeParameterUpdated(QString, QWidget*);
 
     void onNodeDoubleClicked(QtNodes::Node& n);
+
+    void on_comboBoxLayout_currentIndexChanged(int index);
+
+    void on_pushButtonReorder_pressed();
+
+    void on_pushButtonCenterView_pressed();
 
 signals:
     void updateGraphic();

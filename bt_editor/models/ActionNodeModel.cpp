@@ -3,7 +3,7 @@
 
 ActionNodeModel::ActionNodeModel(const QString &action_ID,
                                  const ParameterWidgetCreators &creators):
-  BehaviorTreeNodeModel("Action", action_ID, creators )
+  BehaviorTreeNodeModel("A:", action_ID, creators )
 {
   init();
 }

@@ -23,6 +23,10 @@ public:
       return "Decorator";
     }
 
+    QString caption() const override {
+      return "Decorator";
+    }
+
 private:
 
 };

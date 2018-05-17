@@ -93,6 +93,10 @@ void MainWindow::createTab(const QString &name)
   ti.view  = new FlowView( ti.scene );
   _tab_info[name] = ti;
 
+  ti.scene->setLayout( ui->comboBoxLayout->currentIndex() == 0 ?
+                         QtNodes::PortLayout::Horizontal :
+                         QtNodes::PortLayout::Vertical );
+
   ui->tabWidget->addTab( ti.view, name );
 
   connect( ti.scene, &QtNodes::FlowScene::changed,
@@ -164,7 +168,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
       std::cout<<"XML Parsed Successfully!"<< std::endl;
 
-      NodeReorder( *currentTabInfo()->scene );
+      nodeReorder();
       _undo_enabled.store(true);
       onPushUndo();
     }
@@ -319,7 +323,7 @@ void MainWindow::on_actionSave_triggered()
   settings.setValue("MainWindow.lastSaveDirectory", directory_path);
 }
 
-void MainWindow::on_actionZoom_In_triggered()
+void MainWindow::on_actionZoom_Out_triggered()
 {
   FlowView* view = dynamic_cast<FlowView*>( ui->tabWidget->currentWidget() );
   if(view){
@@ -327,7 +331,7 @@ void MainWindow::on_actionZoom_In_triggered()
   }
 }
 
-void MainWindow::on_actionZoom_ut_triggered()
+void MainWindow::on_actionZoom_In_triggered()
 {
   FlowView* view = dynamic_cast<FlowView*>( ui->tabWidget->currentWidget() );
   if(view){
@@ -338,7 +342,9 @@ void MainWindow::on_actionZoom_ut_triggered()
 void MainWindow::on_actionAuto_arrange_triggered()
 {
   _undo_enabled = false;
-  NodeReorder( * currentTabInfo()->scene );
+
+  nodeReorder();
+
   _undo_enabled = true;
   onPushUndo();
 }
@@ -356,22 +362,12 @@ void MainWindow::onNodeCreated(QtNodes::Node& node)
   onPushUndo();
 }
 
-void MainWindow::onNodeSizeChanged()
+void MainWindow::nodeReorder()
 {
-  for(const auto& tab_it: _tab_info)
-  {
-    const auto& tab = tab_it.second;
-
-    for (auto& node_it: tab.scene->nodes() )
-    {
-      QtNodes::Node* node = node_it.second.get();
-
-      node->nodeGeometry().recalculateSize();
-      node->nodeGraphicsObject().update();
-    }
-    tab.scene->update();
-    NodeReorder( *(tab.scene) );
-  }
+  auto& scene = currentTabInfo()->scene;
+  auto abstract_tree = BuildAbstractTree( *scene );
+  NodeReorder( *scene, std::move(abstract_tree) );
+  on_pushButtonCenterView_pressed();
 }
 
 void MainWindow::onSceneChanged()
@@ -587,7 +583,7 @@ void MainWindow::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
       {
         _undo_enabled = false;
         node.changeDataModel( _model_registry->create(name) );
-        NodeReorder( *currentTabInfo()->scene );
+        nodeReorder();
         _undo_enabled = true;
         onPushUndo();
       });
@@ -628,7 +624,7 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
           auto child_node = it.second->getNode(PortType::In);
           currentTabInfo()->scene->createConnection( *child_node, 0, *parent_node, 0 );
         }
-        NodeReorder( *currentTabInfo()->scene );
+        nodeReorder();
         _undo_enabled = true;
         onPushUndo();
       });
@@ -656,7 +652,7 @@ void MainWindow::insertNodeInConnection(QtNodes::Connection& connection, QString
   scene->deleteConnection(connection);
   scene->createConnection(*child_node, 0, inserted_node, 0);
   scene->createConnection(inserted_node, 0, *parent_node, 0);
-  NodeReorder( *scene );
+  nodeReorder();
   _undo_enabled = true;
   onPushUndo();
 }
@@ -789,4 +785,36 @@ void MainWindow::onNodeDoubleClicked(QtNodes::Node &root_node)
   };
 
   selectRecursively(root_node);
+}
+
+void MainWindow::on_comboBoxLayout_currentIndexChanged(int index)
+{
+  _undo_enabled = false;
+  for(auto& tab: _tab_info)
+  {
+    auto& scene = tab.second.scene;
+    auto abstract_tree = BuildAbstractTree( *scene );
+
+    scene->setLayout( (index==0) ? QtNodes::PortLayout::Horizontal :
+                                   QtNodes::PortLayout::Vertical);
+
+    NodeReorder( *scene, std::move(abstract_tree) );
+  }
+  on_pushButtonCenterView_pressed();
+  _undo_enabled = true;
+
+}
+
+void MainWindow::on_pushButtonReorder_pressed()
+{
+    on_actionAuto_arrange_triggered();
+}
+
+void MainWindow::on_pushButtonCenterView_pressed()
+{
+  auto scene = currentTabInfo()->scene;
+  QRectF rect = scene->itemsBoundingRect();
+  currentTabInfo()->view->setSceneRect (rect);
+  currentTabInfo()->view->fitInView(rect, Qt::KeepAspectRatio);
+  on_actionZoom_Out_triggered();
 }

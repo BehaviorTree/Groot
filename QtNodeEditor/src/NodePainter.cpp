@@ -264,7 +264,7 @@ drawModelName(QPainter * painter,
   auto rect = metrics.boundingRect(name);
 
   QPointF position((geom.width() - rect.width()) / 2.0,
-                   (geom.spacing() + geom.entryHeight()) / 3.0);
+                   (geom.spacing() + geom.entryHeight()) / 2.0);
 
   painter->setFont(f);
   painter->setPen(nodeStyle.FontColor);

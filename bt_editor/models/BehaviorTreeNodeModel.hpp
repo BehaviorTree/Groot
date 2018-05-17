@@ -31,14 +31,14 @@ class BehaviorTreeNodeModel : public NodeDataModel
     Q_OBJECT
 
 public:
-  BehaviorTreeNodeModel(const QString &registration_name,
+  BehaviorTreeNodeModel(const QString &label_name,
                         const QString &instance_name,
                         const ParameterWidgetCreators &parameters );
 
   virtual ~BehaviorTreeNodeModel() {}
 
   virtual bool captionVisible() const override final
-  { return false; }
+  { return true; }
 
 public:
 
@@ -48,7 +48,7 @@ public:
 
   void setInData(std::shared_ptr<NodeData>, int) override final {}
 
-  virtual QString caption() const override final;
+  virtual QString caption() const override;
 
   const QString& registrationName() const;
 

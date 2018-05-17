@@ -9,6 +9,8 @@
 #include "models/SubtreeNodeModel.hpp"
 #include "models/RootNodeModel.hpp"
 
+using QtNodes::PortLayout;
+
 std::vector<QtNodes::Node*> findRoots(const QtNodes::FlowScene &scene)
 {
   std::set<QUuid> roots;
@@ -62,207 +64,163 @@ std::vector<QtNodes::Node*> getChildren(const QtNodes::FlowScene &scene,
     }
   }
 
-  auto CompareFunction = [&](const QtNodes::Node* a, const QtNodes::Node* b)
+  if( scene.layout() == PortLayout::Vertical)
   {
-    return scene.getNodePosition( *a ).x() <  scene.getNodePosition( *b ).x();
-  };
-  std::sort(children.begin(), children.end(), CompareFunction );
+    std::sort(children.begin(), children.end(),
+              [&](const QtNodes::Node* a, const QtNodes::Node* b)
+    {
+      return scene.getNodePosition( *a ).x() <  scene.getNodePosition( *b ).x();
+    } );
+  }
+  else{
+    std::sort(children.begin(), children.end(),
+              [&](const QtNodes::Node* a, const QtNodes::Node* b)
+    {
+      return scene.getNodePosition( *a ).y() <  scene.getNodePosition( *b ).y();
+    } );
+  }
 
   return children;
 }
 
 
 //---------------------------------------------------
-/*
-void NodeReorderRecursive(QtNodes::FlowScene &scene,
-                             QtNodes::Node& node,
-                             QPointF cursor,
-                             int level,
-                             std::map<int, std::vector<QtNodes::Node*>>& nodes_by_level)
+
+void RecursiveNodeReorder(AbstractGeometry* root_node, PortLayout layout)
 {
-    const double VERTICAL_SPACING = 30;
-    const double HORIZONTAL_SPACING = 60;
-
-    std::vector<QtNodes::Node*> children = getChildren(scene, node );
-
-    double total_height = 0;
-    for (QtNodes::Node* child_node: children)
-    {
-        total_height += child_node->nodeGeometry().height() + VERTICAL_SPACING;
-    }
-
-    auto this_level_it = nodes_by_level.find(level);
-    auto next_level_it = nodes_by_level.find(level+1);
-
-    double this_max_Y = 0;
-    double next_max_Y = cursor.y();
-
-    if( next_level_it != nodes_by_level.end() )
-    {
-        QtNodes::Node& last_node_right = *(next_level_it->second.back()) ;
-        next_max_Y = VERTICAL_SPACING +
-                scene.getNodePosition( last_node_right ).y() +
-                scene.getNodeSize( last_node_right ).height();
-    }
-
-    if( this_level_it != nodes_by_level.end() )
-    {
-        QtNodes::Node& last_node_right = *(this_level_it->second.back()) ;
-        this_max_Y = VERTICAL_SPACING +
-                scene.getNodePosition( last_node_right ).y() +
-                scene.getNodeSize( last_node_right ).height();
-    }
-
-    //---------------------------------------------
-    // adjust cursor Y
-    cursor.setY( std::max( this_max_Y, next_max_Y) );
-//    qDebug() << "node: " << node.nodeDataModel()->caption()<< " id: "<<
-//                node.nodeDataModel()->name() << " pos: " << cursor;
-
-    scene.setNodePosition( node, cursor);
-    nodes_by_level[level].push_back( &node );
-    //---------------------------------------------
-
-    QPointF children_cursor( cursor.x() + node.nodeGeometry().width() + HORIZONTAL_SPACING, cursor.y() ) ;
-
-    if( children.size() > 1){
-        children_cursor.setY( cursor.y() - total_height*0.5 );
-    }
-
-    for (unsigned i=0; i< children.size(); i++)
-    {
-        QtNodes::Node* child_node = children[i];
-        const double height = child_node->nodeGeometry().height();
-        NodeReorderRecursive( scene, *child_node, children_cursor, level+1, nodes_by_level  );
-        double child_y   =  children_cursor.y() + height + 2.0*VERTICAL_SPACING;
-        children_cursor.setY( child_y );
-        //qDebug() << ".... cursor shifted " << prev_cursor << " to " << children_cursor;
-    }
-
-    if( children.size() > 1)
-    {
-        double min_Y = scene.getNodePosition( *children.front() ).y();
-        double max_Y = scene.getNodePosition( *children.back() ).y();
-
-        QPointF temp_cursor( cursor.x(),  (max_Y + min_Y) * 0.5 );
-        if( temp_cursor.y() > cursor.y())
-        {
-            scene.setNodePosition( node, temp_cursor);
-        }
-    }
-}
-
-
-void NodeReorder(QtNodes::FlowScene &scene)
-{
-  //   qDebug() << "--------------------------";
-    std::vector<QtNodes::Node*> roots = findRoots(scene);
-    std::map<int, std::vector<QtNodes::Node*>> nodes_by_level;
-
-    QPointF cursor(10,10);
-
-    for (QtNodes::Node* node: roots)
-    {
-        NodeReorderRecursive(scene, *node, cursor, 0, nodes_by_level);
-    }
-
-    double right   = 0;
-    double bottom  = 0;
-
-    for (auto& it: scene.nodes() )
-    {
-        QtNodes::Node* node = it.second.get();
-        node->nodeGeometry().recalculateSize();
-        QPointF pos = scene.getNodePosition(*node) ;
-        QSizeF rect =  scene.getNodeSize(*node);
-
-        right  = std::max( right,  pos.x() + rect.width() );
-        bottom = std::max( bottom, pos.y() + rect.height() );
-    }
-
-    scene.setSceneRect(-30, -30, right + 60, bottom + 60);
-}*/
-
-struct AbstractRectangularGeometry
-{
-  QString name;
-  QPointF pos; // top left corner
-  QSizeF size;
-  std::vector<AbstractRectangularGeometry*> children;
-};
-
-void RecursiveNodeReorder(AbstractRectangularGeometry* root_node, QtNodes::PortLayout layout)
-{
-  std::function<void(int, AbstractRectangularGeometry* node)> recursiveStep;
+  std::function<void(unsigned, AbstractGeometry* node)> recursiveStep;
 
   std::vector<QPointF> layer_cursor;
+  std::vector< std::vector<AbstractGeometry*> > nodes_by_level(1);
   layer_cursor.push_back(QPointF(0,0));
+  const qreal LEVEL_SPACING = 100;
+  const qreal NODE_SPACING  = 40;
 
-  recursiveStep = [layout, &recursiveStep, &layer_cursor](int current_layer, AbstractRectangularGeometry* node)
+  recursiveStep = [&](unsigned current_layer, AbstractGeometry* node)
   {
-    const qreal LAYER_SPACING = 100;
-    const qreal NODE_SPACING  = 40;
     node->pos = layer_cursor[current_layer];
+    nodes_by_level[current_layer].push_back( node );
 
-    qreal max_height = 0;
-    qreal total_width = -NODE_SPACING;
-
-    for(auto& child: node->children)
-    {
-      max_height = std::max( max_height, child->size.height() );
-      total_width +=  child->size.width() + NODE_SPACING;
-    }
-
+    //------------------------------------
     if( node->children.size() > 0 )
     {
+      qreal recommended_pos = NODE_SPACING * 0.5;
+
       current_layer++;
-      auto recommended_X = node->pos.x() + node->size.width()*0.5 - total_width*0.5;
-      if( current_layer >= layer_cursor.size())
+
+      if( layout == PortLayout::Vertical)
       {
-        QPointF new_cursor( recommended_X,
-                            node->pos.y() + max_height + LAYER_SPACING );
-        layer_cursor.push_back( new_cursor );
-      }
+        recommended_pos += (node->pos.x() + node->size.width()*0.5)  ;
+        for(auto& child: node->children)
+        {
+          recommended_pos -=  (child->size.width() + NODE_SPACING) * 0.5;
+        }
+
+        if( current_layer >= layer_cursor.size())
+        {
+          QPointF new_cursor( recommended_pos,
+                              node->pos.y() + LEVEL_SPACING );
+          layer_cursor.push_back( new_cursor );
+          nodes_by_level.push_back( std::vector<AbstractGeometry*>() );
+        }
+        else{
+          recommended_pos = std::max( recommended_pos, layer_cursor[current_layer].x() );
+          layer_cursor[current_layer].setX(recommended_pos);
+        }
+      }//------------------------------------
       else{
-        recommended_X = std::max( recommended_X, layer_cursor[current_layer].x() );
-        layer_cursor[current_layer].setX(recommended_X);
+        recommended_pos += node->pos.y() + node->size.height()*0.5;
+        for(auto& child: node->children)
+        {
+          recommended_pos -=  (child->size.height() + NODE_SPACING) * 0.5;
+        }
+
+        if( current_layer >= layer_cursor.size())
+        {
+          QPointF new_cursor( node->pos.x() + LEVEL_SPACING,
+                              recommended_pos);
+          layer_cursor.push_back( new_cursor );
+          nodes_by_level.push_back( std::vector<AbstractGeometry*>() );
+        }
+        else{
+          recommended_pos = std::max( recommended_pos, layer_cursor[current_layer].y() );
+          layer_cursor[current_layer].setY(recommended_pos);
+        }
       }
+      //------------------------------------
 
       auto initial_pos = layer_cursor[current_layer];
 
       for(auto& child: node->children)
       {
         recursiveStep(current_layer, child);
-        layer_cursor[current_layer]+= QPointF( child->size.width() + NODE_SPACING, 0 );
+        if( layout == PortLayout::Vertical)
+        {
+          layer_cursor[current_layer]+= QPointF( child->size.width() + NODE_SPACING, 0 );
+        }
+        else{
+          layer_cursor[current_layer]+= QPointF( 0, child->size.height() + NODE_SPACING );
+        }
       }
 
       auto final_pos = layer_cursor[current_layer];
 
       // rebalance father
-      double diff = (node->pos.x() + node->size.width()*0.5) - (final_pos.x() + initial_pos.x() - NODE_SPACING)* 0.5 ;
-      node->pos += QPointF( - diff, 0 );
-      layer_cursor[current_layer -1 ] += QPointF( - diff, 0 );
+      if( layout == PortLayout::Vertical)
+      {
+        double diff = (node->pos.x() + node->size.width()*0.5) - (final_pos.x() + initial_pos.x() - NODE_SPACING)* 0.5 ;
+        node->pos += QPointF( - diff, 0 );
+        layer_cursor[current_layer -1 ] += QPointF( - diff, 0 );
+      }
+      else{
+        double diff = (node->pos.y() + node->size.height()*0.5) - (final_pos.y() + initial_pos.y() - NODE_SPACING)* 0.5 ;
+        node->pos += QPointF( 0, - diff );
+        layer_cursor[current_layer -1 ] += QPointF( 0, - diff );
+      }
     }
   };
 
   recursiveStep(0, root_node);
 
-}
-
-void NodeReorder(QtNodes::FlowScene &scene)
-{
-  auto roots = findRoots(scene);
-  if( roots.size() != 1)
+  if( layout == PortLayout::Vertical)
   {
-    return;
+    qreal offset = root_node->size.height() + LEVEL_SPACING;
+    for(unsigned i=1; i< nodes_by_level.size(); i++ )
+    {
+      qreal max_height = 0;
+      for(auto node: nodes_by_level[i])
+      {
+        max_height = std::max( max_height, node->size.height() );
+        node->pos.setY( offset );
+      }
+      offset += max_height + LEVEL_SPACING;
+    }
+  }
+  else{
+    qreal offset = root_node->size.width() + LEVEL_SPACING;
+    for(unsigned i=1; i< nodes_by_level.size(); i++ )
+    {
+      qreal max_width = 0;
+      for(auto node: nodes_by_level[i])
+      {
+        max_width = std::max( max_width, node->size.width() );
+        node->pos.setX( offset );
+      }
+      offset += max_width + LEVEL_SPACING;
+    }
   }
 
-  std::map<QtNodes::Node*, AbstractRectangularGeometry> abstract_nodes;
+}
+
+
+AbstractTree BuildAbstractTree(QtNodes::FlowScene &scene)
+{
+  std::map<QtNodes::Node*, AbstractGeometry> abstract_nodes;
 
   for (const auto& it: scene.nodes() )
   {
     QtNodes::Node* node = (it.second.get());
-    AbstractRectangularGeometry abs_node;
+    AbstractGeometry abs_node;
 
     abs_node.name = node->nodeDataModel()->name();
     abs_node.pos  = scene.getNodePosition(*node) ;
@@ -273,7 +231,7 @@ void NodeReorder(QtNodes::FlowScene &scene)
   for (auto& it: abstract_nodes)
   {
     const QtNodes::Node& node = *(it.first);
-    AbstractRectangularGeometry& abs_node = it.second;
+    AbstractGeometry& abs_node = it.second;
 
     auto children = getChildren(scene, node );
     abs_node.children.reserve( children.size() );
@@ -283,10 +241,20 @@ void NodeReorder(QtNodes::FlowScene &scene)
       abs_node.children.push_back( &( abstract_nodes[child] ) );
     }
   }
+  return abstract_nodes;
+}
 
-  RecursiveNodeReorder( &abstract_nodes[ roots.front() ] );
+void NodeReorder(QtNodes::FlowScene &scene, AbstractTree abstract_tree)
+{
+  auto roots = findRoots(scene);
+  if( roots.size() != 1)
+  {
+    return;
+  }
 
-  for (auto& it: abstract_nodes)
+  RecursiveNodeReorder( &abstract_tree[ roots.front() ], scene.layout() );
+
+  for (auto& it: abstract_tree)
   {
     QtNodes::Node& node = *(it.first);
     scene.setNodePosition( node, it.second.pos );
@@ -318,3 +286,5 @@ QString getCategory(const QtNodes::NodeDataModel *dataModel)
   }
   return category;
 }
+
+

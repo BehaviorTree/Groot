@@ -73,6 +73,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pushButtonCenterView">
+        <property name="text">
+         <string>Center View</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -84,6 +91,31 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBoxLayout">
+        <property name="minimumSize">
+         <size>
+          <width>130</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <item>
+         <property name="text">
+          <string>Horizontal Layout</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Vertical Layout</string>
+         </property>
+        </item>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonReorder">
@@ -187,7 +219,7 @@
      <x>0</x>
      <y>0</y>
      <width>814</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLoad">
@@ -280,22 +312,6 @@
     <hint type="destinationlabel">
      <x>558</x>
      <y>362</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButtonReorder</sender>
-   <signal>clicked()</signal>
-   <receiver>actionAuto_arrange</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>749</x>
-     <y>44</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
     </hint>
    </hints>
   </connection>

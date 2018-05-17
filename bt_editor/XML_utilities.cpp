@@ -16,6 +16,7 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
 
   int nested_nodes = 0;
   QPointF cursor(0,0);
+  double x_offset = 0;
 
   if( strcmp( bt_root->Name(), "BehaviorTree" ) != 0)
   {
@@ -24,7 +25,8 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
 
   std::function<void(const XMLElement*, Node&)> recursiveStep;
 
-  recursiveStep = [&recursiveStep, &scene, &cursor, &nested_nodes](const XMLElement* xml_node, Node& parent_qtnode)
+  recursiveStep = [&recursiveStep, &scene, &cursor, &nested_nodes, &x_offset]
+      (const XMLElement* xml_node, Node& parent_qtnode)
   {
     // TODO: attributes
 
@@ -69,7 +71,7 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
     }
 
     cursor.setY( cursor.y() + 65);
-    cursor.setX( nested_nodes * 400 );
+    cursor.setX( nested_nodes * 400 + x_offset );
 
     Node& new_node = scene->createNode( std::move(dataModel), cursor);
     scene->createConnection(new_node, 0, parent_qtnode, 0 );
@@ -81,6 +83,7 @@ void ParseBehaviorTreeXML(const XMLElement* bt_root, QtNodes::FlowScene* scene, 
          child = child->NextSiblingElement( ) )
     {
       recursiveStep( child, new_node );
+      x_offset += 30;
     }
 
     nested_nodes--;

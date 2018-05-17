@@ -97,6 +97,10 @@ public:
 
   void loadFromMemory(const QByteArray& data);
 
+  void setLayout( QtNodes::PortLayout layout);
+
+  QtNodes::PortLayout layout() const;
+
 signals:
 
   void nodeCreated(Node &n);
@@ -131,6 +135,8 @@ private:
   std::unordered_map<QUuid, SharedConnection> _connections;
   std::unordered_map<QUuid, UniqueNode>       _nodes;
   std::shared_ptr<DataModelRegistry>          _registry;
+
+  QtNodes::PortLayout _layout;
 
 };
 

@@ -135,3 +135,8 @@ pointsC1C2() const
   }
   return std::make_pair(c1, c2);
 }
+
+void ConnectionGeometry::setPortLayout(QtNodes::PortLayout layout)
+{
+  _ports_layout = layout;
+}

@@ -224,7 +224,7 @@ void
 FlowView::
 scaleUp()
 {
-  double const step   = 1.2;
+  double const step   = 1.1;
   double const factor = std::pow(step, 1.0);
 
   QTransform t = transform();
@@ -240,7 +240,7 @@ void
 FlowView::
 scaleDown()
 {
-  double const step   = 1.2;
+  double const step   = 1.1;
   double const factor = std::pow(step, -1.0);
 
   scale(factor, factor);

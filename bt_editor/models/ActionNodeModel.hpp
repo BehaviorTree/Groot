@@ -17,6 +17,10 @@ public:
       return "Action";
     }
 
+    QString caption() const override {
+      return "Action";
+    }
+
   private:
 
     void init();

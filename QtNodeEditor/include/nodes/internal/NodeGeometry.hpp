@@ -118,6 +118,9 @@ public:
   calculateNodePositionBetweenNodePorts(PortIndex targetPortIndex, PortType targetPort, Node* targetNode,
                                         PortIndex sourcePortIndex, PortType sourcePort, Node* sourceNode,
                                         Node& newNode);
+
+  void setPortLayout( PortLayout layout);
+
 private:
 
   unsigned int

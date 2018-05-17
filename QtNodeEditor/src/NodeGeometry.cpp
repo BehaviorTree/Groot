@@ -294,6 +294,11 @@ calculateNodePositionBetweenNodePorts(PortIndex targetPortIndex, PortType target
   return converterNodePos;
 }
 
+void NodeGeometry::setPortLayout(QtNodes::PortLayout layout)
+{
+  _ports_layout = layout;
+}
+
 
 unsigned int
 NodeGeometry::

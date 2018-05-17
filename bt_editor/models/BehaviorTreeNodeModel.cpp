@@ -7,7 +7,7 @@
 #include <QDebug>
 #include <QFile>
 
-BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString& label_name,
+BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString &label_name,
                                              const QString& registration_name,
                                              const ParameterWidgetCreators &creators):
     _params_widget(nullptr),
@@ -19,6 +19,7 @@ BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString& label_name,
   _main_widget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
   _label_ID = new QLabel( _main_widget );
+  _label_ID->setHidden(true);
   _label_ID->setText( label_name );
   _label_ID->setAlignment(Qt::AlignCenter);
   _label_ID->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -128,7 +129,7 @@ std::shared_ptr<QtNodes::NodeData> BehaviorTreeNodeModel::outData(QtNodes::PortI
 }
 
 QString BehaviorTreeNodeModel::caption() const {
-  return _line_edit_name->text();
+  return _registration_name;
 }
 
 const QString &BehaviorTreeNodeModel::registrationName() const

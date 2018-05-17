@@ -102,6 +102,7 @@ createConnection(Node& nodeIn,
 
   // after this function connection points are set to node port
   connection->setGraphicsObject(std::move(cgo));
+  connection->connectionGeometry().setPortLayout( layout() );
 
   // trigger data propagation
   nodeOut.onDataUpdated(portIndexOut);
@@ -182,6 +183,7 @@ createNode(std::unique_ptr<NodeDataModel> && dataModel, QPointF pos)
   node->setGraphicsObject(std::move(ngo));
 
   auto nodePtr = node.get();
+  nodePtr->nodeGeometry().setPortLayout( layout() );
   _nodes[node->id()] = std::move(node);
 
   nodeCreated(*nodePtr);
@@ -208,6 +210,7 @@ restoreNode(QJsonObject const& nodeJson)
   node->restore(nodeJson);
 
   auto nodePtr = node.get();
+  nodePtr->nodeGeometry().setPortLayout( layout() );
   _nodes[node->id()] = std::move(node);
 
   nodeCreated(*nodePtr);
@@ -551,6 +554,24 @@ loadFromMemory(const QByteArray& data)
 }
 
 
+void FlowScene::setLayout( QtNodes::PortLayout layout)
+{
+  _layout = layout;
+  for(auto& node: nodes() )
+  {
+    node.second->nodeGeometry().setPortLayout(layout);
+  }
+  for(auto& conn: connections() )
+  {
+    conn.second->connectionGeometry().setPortLayout(layout);
+  }
+}
+
+QtNodes::PortLayout FlowScene::layout() const
+{
+  return _layout;
+}
+
 //------------------------------------------------------------------------------
 namespace QtNodes
 {
@@ -589,4 +610,6 @@ locateNodeAt(QPointF scenePoint, FlowScene &scene,
 
   return resultNode;
 }
+
+
 }
