@@ -79,6 +79,7 @@ MainWindow::MainWindow(QWidget *parent) :
   QShortcut* redo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this);
   connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
+  onSceneChanged();
 }
 
 
@@ -99,9 +100,7 @@ void MainWindow::createTab(const QString &name)
 
   ui->tabWidget->addTab( ti.view, name );
 
-  connect( ti.scene, &QtNodes::FlowScene::changed,
-           this,   &MainWindow::onSceneChanged  );
-
+  //--------------------------------
   connect( ti.scene, &QtNodes::FlowScene::nodeCreated,
            this,   &MainWindow::onNodeCreated  );
 
@@ -121,6 +120,15 @@ void MainWindow::createTab(const QString &name)
            this,   &MainWindow::onPushUndo  );
 
   connect( ti.scene, &QtNodes::FlowScene::connectionCreated,
+           [this](QtNodes::Connection &c )
+  {
+    if( c.getNode(QtNodes::PortType::In) && c.getNode(QtNodes::PortType::Out))
+    {
+      onPushUndo();
+    }
+  });
+
+  connect( ti.scene, &QtNodes::FlowScene::connectionDeleted,
            this,   &MainWindow::onPushUndo  );
 
   connect( this, SIGNAL(updateGraphic()), ti.view, SLOT(repaint())  );
@@ -133,6 +141,25 @@ void MainWindow::createTab(const QString &name)
 
   connect( ti.scene, &QtNodes::FlowScene::nodeDoubleClicked,
            this, &MainWindow::onNodeDoubleClicked);
+  //--------------------------------
+  connect( ti.scene, &QtNodes::FlowScene::nodeCreated,
+           this,   &MainWindow::onSceneChanged  );
+
+  connect( ti.scene, &QtNodes::FlowScene::nodeDeleted,
+           this,   &MainWindow::onSceneChanged  );
+
+  connect( ti.scene, &QtNodes::FlowScene::connectionCreated,
+           [this](QtNodes::Connection &c )
+  {
+    if( c.getNode(QtNodes::PortType::In) && c.getNode(QtNodes::PortType::Out))
+    {
+      onSceneChanged();
+    }
+  });
+
+  connect( ti.scene, &QtNodes::FlowScene::connectionDeleted,
+           this,   &MainWindow::onSceneChanged  );
+  //--------------------------------
 
   ti.view->update();
 }
@@ -170,6 +197,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
       nodeReorder();
       _undo_enabled.store(true);
+      onSceneChanged();
       onPushUndo();
     }
   }
@@ -342,9 +370,7 @@ void MainWindow::on_actionZoom_In_triggered()
 void MainWindow::on_actionAuto_arrange_triggered()
 {
   _undo_enabled = false;
-
   nodeReorder();
-
   _undo_enabled = true;
   onPushUndo();
 }
@@ -372,7 +398,31 @@ void MainWindow::nodeReorder()
 
 void MainWindow::onSceneChanged()
 {
-  //qDebug() << "onSceneChanged " ;
+  if( !_undo_enabled ) return;
+
+  currentTabInfo()->scene->update();
+  bool valid_BT = (findRoots( *currentTabInfo()->scene ).size() == 1);
+
+  ui->comboBoxLayout->setEnabled(valid_BT);
+  ui->pushButtonReorder->setEnabled(valid_BT);
+  ui->actionAuto_arrange->setEnabled(valid_BT);
+  ui->actionSave->setEnabled(valid_BT);
+  QPixmap pix;
+
+  if(valid_BT)
+  {
+    pix.load(":/icons/green-circle.png");
+    ui->labelSemaphore->setToolTip("Valid Tree");
+  }
+  else{
+    pix.load(":/icons/red-circle.png");
+    ui->labelSemaphore->setToolTip("NOT a valid Tree");
+  }
+
+  ui->labelSemaphore->setPixmap(pix);
+  ui->labelSemaphore->setFixedSize( QSize(24,24) );
+  ui->labelSemaphore->setScaledContents(true);
+
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -383,41 +433,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
   QMainWindow::closeEvent(event);
 }
 
-/*
-void MainWindow::updateStates(QXmlInputSource* source)
-{
-    //TODO
-
-    std::unique_lock<std::mutex> lock(_mutex);
-
-    if( !_root_node ) return;
-
-    for (auto& it: _main_scene->nodes())
-    {
-        it.second->nodeGraphicsObject().setGeometryChanged();
-    }
-
-    QXmlSimpleReader parser;
-    StateUpdateXmlHandler handler(_main_scene, _root_node);
-
-    parser.setContentHandler( &handler );
-
-    std::cout<<	"Start parsing"<< std::endl;
-
-    if(parser.parse(source))
-    {
-        std::cout<<"Parsed Successfully!"<< std::endl;
-    }
-    else {
-        std::cout<<"Parsing Failed..."  << std::endl;
-    }
-
-    for (auto& it: _main_scene->nodes())
-    {
-        it.second->nodeGraphicsObject().update();
-    }
-}
-*/
 MainWindow::TabInfo *MainWindow::currentTabInfo()
 {
   int index = ui->tabWidget->currentIndex();
@@ -714,9 +729,12 @@ void MainWindow::onPushUndo()
   currentTabInfo()->scene->update();
   const QByteArray state = currentTabInfo()->scene->saveToMemory();
 
-  if( _current_state.size() > 0)
+  if( _current_state.size() )
   {
-    _undo_stack.push_back( _current_state );
+    if( _undo_stack.empty() || (_undo_stack.back() != _current_state))
+    {
+      _undo_stack.push_back( _current_state );
+    }
   }
   _current_state = state;
   //-----------------
@@ -740,6 +758,7 @@ void MainWindow::onUndoInvoked()
     scene->clearScene();
     currentTabInfo()->scene->loadFromMemory( _current_state );
     _undo_enabled.store(true);
+    onSceneChanged();
     qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
   }
 }
@@ -759,6 +778,7 @@ void MainWindow::onRedoInvoked()
     scene->clearScene();
     currentTabInfo()->scene->loadFromMemory( _current_state );
     _undo_enabled.store(true);
+    onSceneChanged();
     qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
   }
 }

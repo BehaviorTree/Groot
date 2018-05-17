@@ -75,7 +75,6 @@ createConnection(PortType connectedPort,
 
   _connections[connection->id()] = connection;
 
-  connectionCreated(*connection);
   return connection;
 }
 
@@ -157,6 +156,12 @@ restoreConnection(QJsonObject const &connectionJson)
                      *nodeOut, portIndexOut,
                      getConverter());
 
+  if( nodeIn &&  nodeOut)
+  {
+    connectionCreated(*connection);
+  }
+
+  connection->connectionGeometry().setPortLayout( layout() );
   return connection;
 }
 
@@ -165,9 +170,9 @@ void
 FlowScene::
 deleteConnection(Connection& connection)
 {
-  connectionDeleted(connection);
   connection.removeFromNodes();
   _connections.erase(connection.id());
+  connectionDeleted(connection);
 }
 
 

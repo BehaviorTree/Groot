@@ -74,8 +74,27 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonCenterView">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="toolTip">
+         <string>Zoom and Center view</string>
+        </property>
         <property name="text">
-         <string>Center View</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/icons.qrc">
+          <normaloff>:/icons/home.png</normaloff>:/icons/home.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -102,7 +121,7 @@
         </property>
         <property name="font">
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>11</pointsize>
          </font>
         </property>
         <item>
@@ -121,6 +140,31 @@
        <widget class="QPushButton" name="pushButtonReorder">
         <property name="text">
          <string>Reorder</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelSemaphore">
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="resources/icons.qrc">:/icons/red-circle.png</pixmap>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -297,7 +341,9 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionQuit</sender>

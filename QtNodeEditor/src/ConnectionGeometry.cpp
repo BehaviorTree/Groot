@@ -15,7 +15,7 @@ ConnectionGeometry()
   //, _animationPhase(0)
   , _lineWidth(3.0)
   , _hovered(false)
-  , _ports_layout( PortLayout::Vertical )
+  , _ports_layout( PortLayout::Horizontal )
 { }
 
 QPointF const&

@@ -251,7 +251,11 @@ void
 FlowView::
 deleteSelectedNodes()
 {
-  startMultipleDelete();
+  const bool multiple = _scene->selectedItems().size() > 1;
+  if( multiple)
+  {
+    startMultipleDelete();
+  }
 
   for (QGraphicsItem * item : _scene->selectedItems())
   {
@@ -268,7 +272,10 @@ deleteSelectedNodes()
     }
   }
 
-  finishMultipleDelete();
+  if( multiple )
+  {
+    finishMultipleDelete();
+  }
 }
 
 
