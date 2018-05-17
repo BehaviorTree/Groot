@@ -37,8 +37,14 @@ using QtNodes::NodeState;
 
 class ScopedDisable{
 public:
-  ScopedDisable(bool* val): _val(val), _prev(val) { *_val = false; }
-  ~ScopedDisable() { *_val = _prev; }
+  ScopedDisable(bool* val): _val(val), _prev(*val)
+  {
+    *_val = false;
+  }
+  ~ScopedDisable()
+  {
+    *_val = _prev;
+  }
   private:
     bool* _val;
     bool _prev;
@@ -745,6 +751,7 @@ void MainWindow::onPushUndo()
     if( _undo_stack.empty() || (_undo_stack.back() != _current_state))
     {
       _undo_stack.push_back( _current_state );
+      _redo_stack.clear();
     }
   }
   _current_state = state;
@@ -803,7 +810,6 @@ void MainWindow::onRedoInvoked()
       if( combo_index != ui->comboBoxLayout->currentIndex() )
       {
         ui->comboBoxLayout->setCurrentIndex(combo_index);
-        QApplication::processEvents();
       }
     }
     onSceneChanged();
@@ -858,7 +864,7 @@ void MainWindow::on_comboBoxLayout_currentIndexChanged(int index)
         refresh = true;
       }
     }
-    if( refresh ) on_pushButtonCenterView_pressed();
+    on_pushButtonCenterView_pressed();
   }
   onPushUndo();
 }
