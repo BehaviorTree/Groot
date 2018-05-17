@@ -112,26 +112,39 @@
        </spacer>
       </item>
       <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Layout:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QComboBox" name="comboBoxLayout">
         <property name="minimumSize">
          <size>
-          <width>130</width>
+          <width>90</width>
           <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>90</width>
+          <height>16777215</height>
          </size>
         </property>
         <property name="font">
          <font>
-          <pointsize>11</pointsize>
+          <pointsize>10</pointsize>
          </font>
         </property>
         <item>
          <property name="text">
-          <string>Horizontal Layout</string>
+          <string>Horizontal</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Vertical Layout</string>
+          <string>Vertical</string>
          </property>
         </item>
        </widget>

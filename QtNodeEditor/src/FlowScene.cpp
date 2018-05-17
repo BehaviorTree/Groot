@@ -73,6 +73,8 @@ createConnection(PortType connectedPort,
   // after this function connection points are set to node port
   connection->setGraphicsObject(std::move(cgo));
 
+  connection->connectionGeometry().setPortLayout( layout() );
+
   _connections[connection->id()] = connection;
 
   return connection;
@@ -101,6 +103,7 @@ createConnection(Node& nodeIn,
 
   // after this function connection points are set to node port
   connection->setGraphicsObject(std::move(cgo));
+
   connection->connectionGeometry().setPortLayout( layout() );
 
   // trigger data propagation
@@ -514,6 +517,9 @@ saveToMemory() const
     }
   }
 
+  sceneJson["layout"] = (layout() == PortLayout::Horizontal) ?
+        "Horizontal" : "Vertical";
+
   sceneJson["nodes"] = nodesJsonArray;
 
   QJsonArray connectionJsonArray;
@@ -542,6 +548,9 @@ FlowScene::
 loadFromMemory(const QByteArray& data)
 {
   QJsonObject const jsonDocument = QJsonDocument::fromJson(data).object();
+
+  QString layout = jsonDocument["layout"].toString();
+  setLayout( (layout == "Horizontal") ? PortLayout::Horizontal : PortLayout::Vertical );
 
   QJsonArray nodesJsonArray = jsonDocument["nodes"].toArray();
 

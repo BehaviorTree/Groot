@@ -34,6 +34,16 @@ using QtNodes::FlowScene;
 using QtNodes::NodeGraphicsObject;
 using QtNodes::NodeState;
 
+
+class ScopedDisable{
+public:
+  ScopedDisable(bool* val): _val(val), _prev(val) { *_val = false; }
+  ~ScopedDisable() { *_val = _prev; }
+  private:
+    bool* _val;
+    bool _prev;
+};
+
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::MainWindow),
@@ -105,14 +115,14 @@ void MainWindow::createTab(const QString &name)
            this,   &MainWindow::onNodeCreated  );
 
   connect( ti.view, &QtNodes::FlowView::startMultipleDelete,
-           [this]() { this->_undo_enabled.store(false); }  );
+           [this]() { this->_undo_enabled = (false); }  );
 
   connect( ti.scene, &QtNodes::FlowScene::nodeDeleted,
            this,   &MainWindow::onPushUndo  );
 
   connect( ti.view, &QtNodes::FlowView::finishMultipleDelete,
            [this]() {
-    this->_undo_enabled.store(true);
+    this->_undo_enabled = (true);
     this->onPushUndo();
   }  );
 
@@ -182,21 +192,22 @@ void MainWindow::loadFromXML(const QString& xml_text)
       _node_palette_widget->updateTreeView();
 
       onPushUndo();
-      _undo_enabled.store(false);
+      {
+        ScopedDisable lk( &this->_undo_enabled );
 
-      currentTabInfo()->scene->clearScene();
-      QtNodes::Node& first_qt_node = currentTabInfo()->scene->createNode( _model_registry->create("Root"), QPointF() );
+        currentTabInfo()->scene->clearScene();
+        QtNodes::Node& first_qt_node = currentTabInfo()->scene->createNode( _model_registry->create("Root"), QPointF() );
 
-      std::cout<< "Starting parsing"<< std::endl;
+        std::cout<< "Starting parsing"<< std::endl;
 
-      ParseBehaviorTreeXML(document.RootElement()->FirstChildElement("BehaviorTree"),
-                           currentTabInfo()->scene,
-                           first_qt_node);
+        ParseBehaviorTreeXML(document.RootElement()->FirstChildElement("BehaviorTree"),
+                             currentTabInfo()->scene,
+                             first_qt_node);
 
-      std::cout<<"XML Parsed Successfully!"<< std::endl;
+        std::cout<<"XML Parsed Successfully!"<< std::endl;
 
-      nodeReorder();
-      _undo_enabled.store(true);
+        nodeReorder();
+      }
       onSceneChanged();
       onPushUndo();
     }
@@ -369,9 +380,7 @@ void MainWindow::on_actionZoom_In_triggered()
 
 void MainWindow::on_actionAuto_arrange_triggered()
 {
-  _undo_enabled = false;
   nodeReorder();
-  _undo_enabled = true;
   onPushUndo();
 }
 
@@ -390,6 +399,7 @@ void MainWindow::onNodeCreated(QtNodes::Node& node)
 
 void MainWindow::nodeReorder()
 {
+  ScopedDisable lk( &this->_undo_enabled );
   auto& scene = currentTabInfo()->scene;
   auto abstract_tree = BuildAbstractTree( *scene );
   NodeReorder( *scene, std::move(abstract_tree) );
@@ -398,9 +408,6 @@ void MainWindow::nodeReorder()
 
 void MainWindow::onSceneChanged()
 {
-  if( !_undo_enabled ) return;
-
-  currentTabInfo()->scene->update();
   bool valid_BT = (findRoots( *currentTabInfo()->scene ).size() == 1);
 
   ui->comboBoxLayout->setEnabled(valid_BT);
@@ -596,10 +603,11 @@ void MainWindow::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
 
       connect( action, &QAction::triggered, [this, &node, name]
       {
-        _undo_enabled = false;
-        node.changeDataModel( _model_registry->create(name) );
-        nodeReorder();
-        _undo_enabled = true;
+        {
+          ScopedDisable lk( &this->_undo_enabled );
+          node.changeDataModel( _model_registry->create(name) );
+          nodeReorder();
+        }
         onPushUndo();
       });
     }
@@ -632,15 +640,16 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
       auto node_ptr = &node;
       connect( smart_remove, &QAction::triggered, [this, node_ptr, parent_node, conn_out]()
       {
-        _undo_enabled = false;
-        currentTabInfo()->scene->removeNode( *node_ptr );
-        for( auto& it: conn_out)
         {
-          auto child_node = it.second->getNode(PortType::In);
-          currentTabInfo()->scene->createConnection( *child_node, 0, *parent_node, 0 );
+          ScopedDisable lk( &this->_undo_enabled );
+          currentTabInfo()->scene->removeNode( *node_ptr );
+          for( auto& it: conn_out)
+          {
+            auto child_node = it.second->getNode(PortType::In);
+            currentTabInfo()->scene->createConnection( *child_node, 0, *parent_node, 0 );
+          }
+          nodeReorder();
         }
-        nodeReorder();
-        _undo_enabled = true;
         onPushUndo();
       });
     }
@@ -652,23 +661,24 @@ void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
 
 void MainWindow::insertNodeInConnection(QtNodes::Connection& connection, QString node_name)
 {
-  _undo_enabled = false;
-  auto scene = currentTabInfo()->scene;
+  {
+    ScopedDisable lk( &this->_undo_enabled );
+    auto scene = currentTabInfo()->scene;
 
-  auto node_model = _model_registry->create(node_name);
-  auto parent_node = connection.getNode(PortType::Out);
-  auto child_node  = connection.getNode(PortType::In);
+    auto node_model = _model_registry->create(node_name);
+    auto parent_node = connection.getNode(PortType::Out);
+    auto child_node  = connection.getNode(PortType::In);
 
-  QPointF pos = child_node->nodeGraphicsObject().pos();
-  pos.setX( pos.x() - 50 );
+    QPointF pos = child_node->nodeGraphicsObject().pos();
+    pos.setX( pos.x() - 50 );
 
-  QtNodes::Node& inserted_node = scene->createNode( std::move(node_model), pos );
+    QtNodes::Node& inserted_node = scene->createNode( std::move(node_model), pos );
 
-  scene->deleteConnection(connection);
-  scene->createConnection(*child_node, 0, inserted_node, 0);
-  scene->createConnection(inserted_node, 0, *parent_node, 0);
-  nodeReorder();
-  _undo_enabled = true;
+    scene->deleteConnection(connection);
+    scene->createConnection(*child_node, 0, inserted_node, 0);
+    scene->createConnection(inserted_node, 0, *parent_node, 0);
+    nodeReorder();
+  }
   onPushUndo();
 }
 
@@ -724,8 +734,9 @@ void MainWindow::onPushUndo()
 
   if( !_undo_enabled ) return;
 
-  _undo_enabled.store(false);
   //-----------------
+  ScopedDisable lk( &this->_undo_enabled );
+
   currentTabInfo()->scene->update();
   const QByteArray state = currentTabInfo()->scene->saveToMemory();
 
@@ -738,7 +749,6 @@ void MainWindow::onPushUndo()
   }
   _current_state = state;
   //-----------------
-  _undo_enabled.store(true);
   //std::cout << _current_state.toStdString() << std::endl;
   qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
@@ -753,12 +763,22 @@ void MainWindow::onUndoInvoked()
     _current_state = std::move( _undo_stack.back() );
     _undo_stack.pop_back();
 
-    _undo_enabled.store(false);
-    auto& scene = currentTabInfo()->scene;
-    scene->clearScene();
-    currentTabInfo()->scene->loadFromMemory( _current_state );
-    _undo_enabled.store(true);
+    {
+      ScopedDisable lk( &this->_undo_enabled );
+      auto& scene = currentTabInfo()->scene;
+      scene->clearScene();
+      currentTabInfo()->scene->loadFromMemory( _current_state );
+
+      int combo_index = ( currentTabInfo()->scene->layout() == QtNodes::PortLayout::Horizontal) ? 0 : 1;
+      if( combo_index != ui->comboBoxLayout->currentIndex() )
+      {
+        ui->comboBoxLayout->setCurrentIndex(combo_index);
+        QApplication::processEvents();
+      }
+    }
+
     onSceneChanged();
+
     qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
   }
 }
@@ -773,12 +793,21 @@ void MainWindow::onRedoInvoked()
     _current_state = std::move( _redo_stack.back() );
     _redo_stack.pop_back();
 
-    _undo_enabled.store(false);
-    auto& scene = currentTabInfo()->scene;
-    scene->clearScene();
-    currentTabInfo()->scene->loadFromMemory( _current_state );
-    _undo_enabled.store(true);
+    {
+      ScopedDisable lk( &this->_undo_enabled );
+      auto& scene = currentTabInfo()->scene;
+      scene->clearScene();
+      currentTabInfo()->scene->loadFromMemory( _current_state );
+
+      int combo_index = ( currentTabInfo()->scene->layout() == QtNodes::PortLayout::Horizontal) ? 0 : 1;
+      if( combo_index != ui->comboBoxLayout->currentIndex() )
+      {
+        ui->comboBoxLayout->setCurrentIndex(combo_index);
+        QApplication::processEvents();
+      }
+    }
     onSceneChanged();
+
     qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
   }
 }
@@ -809,20 +838,29 @@ void MainWindow::onNodeDoubleClicked(QtNodes::Node &root_node)
 
 void MainWindow::on_comboBoxLayout_currentIndexChanged(int index)
 {
-  _undo_enabled = false;
-  for(auto& tab: _tab_info)
+  auto new_layout = (index==0) ? QtNodes::PortLayout::Horizontal :
+                                 QtNodes::PortLayout::Vertical;
+
+  bool refresh = false;
   {
-    auto& scene = tab.second.scene;
-    auto abstract_tree = BuildAbstractTree( *scene );
+    ScopedDisable lk( &this->_undo_enabled );
+    for(auto& tab: _tab_info)
+    {
+      auto& scene = tab.second.scene;
+      if( scene->layout() != new_layout )
+      {
+        auto abstract_tree = BuildAbstractTree( *scene );
 
-    scene->setLayout( (index==0) ? QtNodes::PortLayout::Horizontal :
-                                   QtNodes::PortLayout::Vertical);
+        scene->setLayout( (index==0) ? QtNodes::PortLayout::Horizontal :
+                                       QtNodes::PortLayout::Vertical);
 
-    NodeReorder( *scene, std::move(abstract_tree) );
+        NodeReorder( *scene, std::move(abstract_tree) );
+        refresh = true;
+      }
+    }
+    if( refresh ) on_pushButtonCenterView_pressed();
   }
-  on_pushButtonCenterView_pressed();
-  _undo_enabled = true;
-
+  onPushUndo();
 }
 
 void MainWindow::on_pushButtonReorder_pressed()

@@ -133,7 +133,7 @@ private:
     std::deque<QByteArray> _undo_stack;
     std::deque<QByteArray> _redo_stack;
     QByteArray _current_state;
-    std::atomic_bool _undo_enabled;
+    bool _undo_enabled;
 
     TreeNodeModels _tree_nodes_model;
 
