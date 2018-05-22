@@ -53,7 +53,6 @@ public:
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::MainWindow),
-  _arrange_shortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this),
   _root_node(nullptr),
   _undo_enabled(true)
 {
@@ -79,12 +78,10 @@ MainWindow::MainWindow(QWidget *parent) :
   this->setMenuBar(ui->menubar);
   ui->menubar->setNativeMenuBar(false);
 
-  connect( &_arrange_shortcut, &QShortcut::activated,
+  auto arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
+
+  connect( arrange_shortcut, &QShortcut::activated,
            this,   &MainWindow::on_actionAuto_arrange_triggered  );
-
-  connect( &_periodic_timer, SIGNAL(timeout()), this, SLOT(onTimerUpdate()) );
-
-  _periodic_timer.start(10);
 
   ui->splitter->setStretchFactor(0, 1);
   ui->splitter->setStretchFactor(1, 5);
@@ -105,37 +102,33 @@ void MainWindow::createTab(const QString &name)
   {
     throw std::runtime_error(std::string("There is already a Tab named ") + name.toStdString() );
   }
-  TabInfo ti;
-  ti.scene = new EditorFlowScene( _model_registry );
-  ti.view  = new FlowView( ti.scene );
+  GraphicContainer* ti = new GraphicContainer( _model_registry, this );
   _tab_info[name] = ti;
 
-  ti.scene->setLayout( ui->comboBoxLayout->currentIndex() == 0 ?
-                         QtNodes::PortLayout::Horizontal :
-                         QtNodes::PortLayout::Vertical );
+  ti->scene()->setLayout( ui->comboBoxLayout->currentIndex() == 0 ?
+                            QtNodes::PortLayout::Horizontal :
+                            QtNodes::PortLayout::Vertical );
 
-  ui->tabWidget->addTab( ti.view, name );
+  ui->tabWidget->addTab( ti->view(), name );
 
   //--------------------------------
-  connect( ti.scene, &QtNodes::FlowScene::nodeCreated,
-           this,   &MainWindow::onNodeCreated  );
 
-  connect( ti.view, &QtNodes::FlowView::startMultipleDelete,
+  connect( ti->view(), &QtNodes::FlowView::startMultipleDelete,
            [this]() { this->_undo_enabled = (false); }  );
 
-  connect( ti.scene, &QtNodes::FlowScene::nodeDeleted,
+  connect( ti->scene(), &QtNodes::FlowScene::nodeDeleted,
            this,   &MainWindow::onPushUndo  );
 
-  connect( ti.view, &QtNodes::FlowView::finishMultipleDelete,
+  connect( ti->view(), &QtNodes::FlowView::finishMultipleDelete,
            [this]() {
     this->_undo_enabled = (true);
     this->onPushUndo();
   }  );
 
-  connect( ti.scene, &QtNodes::FlowScene::nodeMoved,
+  connect( ti->scene(), &QtNodes::FlowScene::nodeMoved,
            this,   &MainWindow::onPushUndo  );
 
-  connect( ti.scene, &QtNodes::FlowScene::connectionCreated,
+  connect( ti->scene(), &QtNodes::FlowScene::connectionCreated,
            [this](QtNodes::Connection &c )
   {
     if( c.getNode(QtNodes::PortType::In) && c.getNode(QtNodes::PortType::Out))
@@ -144,27 +137,23 @@ void MainWindow::createTab(const QString &name)
     }
   });
 
-  connect( ti.scene, &QtNodes::FlowScene::connectionDeleted,
+  connect( ti->scene(), &QtNodes::FlowScene::connectionDeleted,
            this,   &MainWindow::onPushUndo  );
 
-  connect( this, SIGNAL(updateGraphic()), ti.view, SLOT(repaint())  );
+  connect( this, SIGNAL(updateGraphic()), ti->view(), SLOT(repaint())  );
 
-  connect( ti.scene, &QtNodes::FlowScene::nodeContextMenu,
-           this, &MainWindow::onNodeContextMenu );
-
-  connect( ti.scene, &QtNodes::FlowScene::connectionContextMenu,
+  connect( ti->scene(), &QtNodes::FlowScene::connectionContextMenu,
            this, &MainWindow::onConnectionContextMenu );
 
-  connect( ti.scene, &QtNodes::FlowScene::nodeDoubleClicked,
-           this, &MainWindow::onNodeDoubleClicked);
+
   //--------------------------------
-  connect( ti.scene, &QtNodes::FlowScene::nodeCreated,
+  connect( ti->scene(), &QtNodes::FlowScene::nodeCreated,
            this,   &MainWindow::onSceneChanged  );
 
-  connect( ti.scene, &QtNodes::FlowScene::nodeDeleted,
+  connect( ti->scene(), &QtNodes::FlowScene::nodeDeleted,
            this,   &MainWindow::onSceneChanged  );
 
-  connect( ti.scene, &QtNodes::FlowScene::connectionCreated,
+  connect( ti->scene(), &QtNodes::FlowScene::connectionCreated,
            [this](QtNodes::Connection &c )
   {
     if( c.getNode(QtNodes::PortType::In) && c.getNode(QtNodes::PortType::Out))
@@ -173,11 +162,11 @@ void MainWindow::createTab(const QString &name)
     }
   });
 
-  connect( ti.scene, &QtNodes::FlowScene::connectionDeleted,
+  connect( ti->scene(), &QtNodes::FlowScene::connectionDeleted,
            this,   &MainWindow::onSceneChanged  );
   //--------------------------------
 
-  ti.view->update();
+  ti->view()->update();
 }
 
 MainWindow::~MainWindow()
@@ -201,13 +190,13 @@ void MainWindow::loadFromXML(const QString& xml_text)
       {
         ScopedDisable lk( &this->_undo_enabled );
 
-        currentTabInfo()->scene->clearScene();
-        QtNodes::Node& first_qt_node = currentTabInfo()->scene->createNode( _model_registry->create("Root"), QPointF() );
+        currentTabInfo()->scene()->clearScene();
+        QtNodes::Node& first_qt_node = currentTabInfo()->scene()->createNode( _model_registry->create("Root"), QPointF() );
 
         std::cout<< "Starting parsing"<< std::endl;
 
         ParseBehaviorTreeXML(document.RootElement()->FirstChildElement("BehaviorTree"),
-                             currentTabInfo()->scene,
+                             currentTabInfo()->scene(),
                              first_qt_node);
 
         std::cout<<"XML Parsed Successfully!"<< std::endl;
@@ -268,7 +257,7 @@ void MainWindow::on_actionLoad_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-  const QtNodes::FlowScene* scene = currentTabInfo()->scene;
+  const QtNodes::FlowScene* scene = currentTabInfo()->scene();
 
   std::vector<QtNodes::Node*> roots = findRoots( *scene );
   bool valid_root = (roots.size() == 1) && ( dynamic_cast<RootNodeModel*>(roots.front()->nodeDataModel() ));
@@ -386,35 +375,13 @@ void MainWindow::on_actionZoom_In_triggered()
 
 void MainWindow::on_actionAuto_arrange_triggered()
 {
-  nodeReorder();
+  currentTabInfo()->nodeReorder();
   onPushUndo();
-}
-
-void MainWindow::onNodeCreated(QtNodes::Node& node)
-{
-  if( auto bt_node = dynamic_cast<BehaviorTreeNodeModel*>( node.nodeDataModel() ) )
-  {
-    connect( bt_node, &BehaviorTreeNodeModel::parameterUpdated,
-             this, &MainWindow::onNodeParameterUpdated );
-
-    connect( bt_node, &BehaviorTreeNodeModel::instanceNameChanged,
-             this, &MainWindow::onPushUndo );
-  }
-  onPushUndo();
-}
-
-void MainWindow::nodeReorder()
-{
-  ScopedDisable lk( &this->_undo_enabled );
-  auto& scene = currentTabInfo()->scene;
-  auto abstract_tree = BuildAbstractTree( *scene );
-  NodeReorder( *scene, std::move(abstract_tree) );
-  on_pushButtonCenterView_pressed();
 }
 
 void MainWindow::onSceneChanged()
 {
-  bool valid_BT = (findRoots( *currentTabInfo()->scene ).size() == 1);
+  bool valid_BT = (findRoots( *currentTabInfo()->scene() ).size() == 1);
 
   ui->comboBoxLayout->setEnabled(valid_BT);
   ui->pushButtonReorder->setEnabled(valid_BT);
@@ -446,64 +413,21 @@ void MainWindow::closeEvent(QCloseEvent *event)
   QMainWindow::closeEvent(event);
 }
 
-MainWindow::TabInfo *MainWindow::currentTabInfo()
+GraphicContainer* MainWindow::currentTabInfo()
 {
   int index = ui->tabWidget->currentIndex();
   QString tab_name = ui->tabWidget->tabText(index);
 
   auto it = _tab_info.find( tab_name );
-  return (it != _tab_info.end()) ? &(it->second) : nullptr;
+  return (it != _tab_info.end()) ? (it->second) : nullptr;
 }
 
 
 void MainWindow::lockEditing(bool locked)
 {
-  for(auto tab_it: _tab_info)
+  for(auto& tab_it: _tab_info)
   {
-    const QtNodes::FlowScene &scene = *(tab_it.second.scene);
-    if( locked)
-    {
-      std::vector<QtNodes::Node*> roots = findRoots( scene );
-      bool valid_root = (roots.size() == 1) && ( dynamic_cast<RootNodeModel*>(roots.front()->nodeDataModel() ));
-
-      if( valid_root) _root_node = roots.front();
-    }
-
-    for (auto& nodes_it: scene.nodes() )
-    {
-      QtNodes::Node* node = nodes_it.second.get();
-      node->nodeGraphicsObject().lock( locked );
-
-      auto bt_model = dynamic_cast<BehaviorTreeNodeModel*>( node->nodeDataModel() );
-      if( bt_model )
-      {
-        bt_model->lock(locked);
-      }
-      else{
-        auto ctr_model = dynamic_cast<ControlNodeModel*>( node->nodeDataModel() );
-        if( ctr_model )
-        {
-          ctr_model->lock(locked);
-        }
-      }
-      if( !locked )
-      {
-        node->nodeGraphicsObject().setGeometryChanged();
-        QtNodes::NodeStyle style;
-        node->nodeDataModel()->setNodeStyle( style );
-        node->nodeGraphicsObject().update();
-      }
-    }
-
-    for (auto& scene_it: scene.connections() )
-    {
-      QtNodes::Connection* conn = scene_it.second.get();
-      conn->getConnectionGraphicsObject().lock( locked );
-    }
-  }
-
-  if( !locked ){
-    emit updateGraphic();
+    tab_it.second->lockEditing(locked);
   }
 }
 
@@ -525,141 +449,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 void MainWindow::resizeEvent(QResizeEvent *)
 {
   on_splitter_splitterMoved();
-}
-
-void MainWindow::onTimerUpdate()
-{
-
-}
-
-
-void MainWindow::onNodeContextMenu(QtNodes::Node &node, const QPointF&)
-{
-  QMenu* nodeMenu = new QMenu(this);
-
-  //--------------------------------
-  createMorphSubMenu(node, nodeMenu);
-  //--------------------------------
-  auto *remove = new QAction("Remove ", nodeMenu);
-  nodeMenu->addAction(remove);
-
-  connect( remove, &QAction::triggered, [this,&node]()
-  {
-    currentTabInfo()->scene->removeNode(node);
-  });
-  //--------------------------------
-  createSmartRemoveAction(node, nodeMenu);
-  //--------------------------------
-  nodeMenu->exec( QCursor::pos() );
-}
-
-void MainWindow::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
-{
-  const QString category = getCategory( node.nodeDataModel() );
-  auto names_in_category = _model_registry->registeredModelsByCategory( category );
-  names_in_category.erase( node.nodeDataModel()->name() );
-
-  QMenu* morph_submenu = nodeMenu->addMenu("Morph into...");
-
-  if( category == "Control")
-  {
-    auto out_connections = node.nodeState().connections(QtNodes::PortType::Out, 0);
-    if( out_connections.size()>3)
-    {
-      names_in_category.erase( IfThenElseModel::staticName() );
-    }
-  }
-
-  if( names_in_category.size() == 0)
-  {
-    morph_submenu->setEnabled(false);
-  }
-  else
-  {
-    for(auto& name: names_in_category)
-    {
-      auto action = new QAction(name, morph_submenu);
-      morph_submenu->addAction(action);
-
-      connect( action, &QAction::triggered, [this, &node, name]
-      {
-        {
-          ScopedDisable lk( &this->_undo_enabled );
-          node.changeDataModel( _model_registry->create(name) );
-          nodeReorder();
-        }
-        onPushUndo();
-      });
-    }
-  }
-}
-
-void MainWindow::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
-{
-  auto *smart_remove = new QAction("Smart Remove ", nodeMenu);
-  nodeMenu->addAction(smart_remove);
-
-  NodeState::ConnectionPtrSet conn_in  = node.nodeState().connections(PortType::In,0);
-  NodeState::ConnectionPtrSet conn_out;
-  auto port_entries = node.nodeState().getEntries(PortType::Out);
-  if( port_entries.size() == 1)
-  {
-    conn_out = port_entries.front();
-  }
-
-  if( conn_in.size() == 1 && conn_out.size() >= 1 )
-  {
-    auto parent_node = conn_in.begin()->second->getNode(PortType::Out);
-    auto policy = parent_node->nodeDataModel()->portOutConnectionPolicy(0);
-
-    if( policy == NodeDataModel::ConnectionPolicy::One && conn_out.size() > 1)
-    {
-      smart_remove->setEnabled(false);
-    }
-    else{
-      auto node_ptr = &node;
-      connect( smart_remove, &QAction::triggered, [this, node_ptr, parent_node, conn_out]()
-      {
-        {
-          ScopedDisable lk( &this->_undo_enabled );
-          currentTabInfo()->scene->removeNode( *node_ptr );
-          for( auto& it: conn_out)
-          {
-            auto child_node = it.second->getNode(PortType::In);
-            currentTabInfo()->scene->createConnection( *child_node, 0, *parent_node, 0 );
-          }
-          nodeReorder();
-        }
-        onPushUndo();
-      });
-    }
-  }
-  else{
-    smart_remove->setEnabled(false);
-  }
-}
-
-void MainWindow::insertNodeInConnection(QtNodes::Connection& connection, QString node_name)
-{
-  {
-    ScopedDisable lk( &this->_undo_enabled );
-    auto scene = currentTabInfo()->scene;
-
-    auto node_model = _model_registry->create(node_name);
-    auto parent_node = connection.getNode(PortType::Out);
-    auto child_node  = connection.getNode(PortType::In);
-
-    QPointF pos = child_node->nodeGraphicsObject().pos();
-    pos.setX( pos.x() - 50 );
-
-    QtNodes::Node& inserted_node = scene->createNode( std::move(node_model), pos );
-
-    scene->deleteConnection(connection);
-    scene->createConnection(*child_node, 0, inserted_node, 0);
-    scene->createConnection(inserted_node, 0, *parent_node, 0);
-    nodeReorder();
-  }
-  onPushUndo();
 }
 
 
@@ -717,8 +506,8 @@ void MainWindow::onPushUndo()
   //-----------------
   ScopedDisable lk( &this->_undo_enabled );
 
-  currentTabInfo()->scene->update();
-  const QByteArray state = currentTabInfo()->scene->saveToMemory();
+  currentTabInfo()->scene()->update();
+  const QByteArray state = currentTabInfo()->scene()->saveToMemory();
 
   if( _current_state.size() )
   {
@@ -746,11 +535,11 @@ void MainWindow::onUndoInvoked()
 
     {
       ScopedDisable lk( &this->_undo_enabled );
-      auto& scene = currentTabInfo()->scene;
+      auto scene = currentTabInfo()->scene();
       scene->clearScene();
-      currentTabInfo()->scene->loadFromMemory( _current_state );
+      currentTabInfo()->scene()->loadFromMemory( _current_state );
 
-      int combo_index = ( currentTabInfo()->scene->layout() == QtNodes::PortLayout::Horizontal) ? 0 : 1;
+      int combo_index = ( currentTabInfo()->scene()->layout() == QtNodes::PortLayout::Horizontal) ? 0 : 1;
       if( combo_index != ui->comboBoxLayout->currentIndex() )
       {
         ui->comboBoxLayout->setCurrentIndex(combo_index);
@@ -776,11 +565,11 @@ void MainWindow::onRedoInvoked()
 
     {
       ScopedDisable lk( &this->_undo_enabled );
-      auto& scene = currentTabInfo()->scene;
+      auto scene = currentTabInfo()->scene();
       scene->clearScene();
-      currentTabInfo()->scene->loadFromMemory( _current_state );
+      currentTabInfo()->scene()->loadFromMemory( _current_state );
 
-      int combo_index = ( currentTabInfo()->scene->layout() == QtNodes::PortLayout::Horizontal) ? 0 : 1;
+      int combo_index = ( currentTabInfo()->scene()->layout() == QtNodes::PortLayout::Horizontal) ? 0 : 1;
       if( combo_index != ui->comboBoxLayout->currentIndex() )
       {
         ui->comboBoxLayout->setCurrentIndex(combo_index);
@@ -792,29 +581,6 @@ void MainWindow::onRedoInvoked()
   }
 }
 
-void MainWindow::onNodeParameterUpdated(QString label, QWidget *)
-{
-  qDebug() << "parameter " << label << " updated";
-  onPushUndo();
-}
-
-void MainWindow::onNodeDoubleClicked(QtNodes::Node &root_node)
-{
-  auto& scene = currentTabInfo()->scene;
-  std::function<void(QtNodes::Node&)> selectRecursively;
-
-  selectRecursively = [&](QtNodes::Node& node)
-  {
-    node.nodeGraphicsObject().setSelected(true);
-    auto children = getChildren(*scene,node);
-    for (auto& child: children)
-    {
-      selectRecursively(*child);
-    }
-  };
-
-  selectRecursively(root_node);
-}
 
 void MainWindow::on_comboBoxLayout_currentIndexChanged(int index)
 {
@@ -826,7 +592,7 @@ void MainWindow::on_comboBoxLayout_currentIndexChanged(int index)
     ScopedDisable lk( &this->_undo_enabled );
     for(auto& tab: _tab_info)
     {
-      auto& scene = tab.second.scene;
+      auto scene = tab.second->scene();
       if( scene->layout() != new_layout )
       {
         auto abstract_tree = BuildAbstractTree( *scene );
@@ -850,11 +616,7 @@ void MainWindow::on_pushButtonReorder_pressed()
 
 void MainWindow::on_pushButtonCenterView_pressed()
 {
-  auto scene = currentTabInfo()->scene;
-  QRectF rect = scene->itemsBoundingRect();
-  currentTabInfo()->view->setSceneRect (rect);
-  currentTabInfo()->view->fitInView(rect, Qt::KeepAspectRatio);
-  on_actionZoom_Out_triggered();
+  currentTabInfo()->zoomHomeView();
 }
 
 void MainWindow::on_radioEditor_toggled(bool checked)

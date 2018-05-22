@@ -25,6 +25,9 @@ private slots:
   void on_timeSlider_valueChanged(int value);
 
 private:
+
+    void loadFromFlatbuffers(const std::vector<int8_t>& serialized_description);
+
     Ui::SidepanelReplay *ui;
 };
 

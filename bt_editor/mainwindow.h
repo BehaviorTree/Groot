@@ -12,7 +12,7 @@
 #include <mutex>
 #include <nodes/DataModelRegistry>
 
-#include "editor_flowscene.h"
+#include "graphic_container.h"
 #include "XML_utilities.hpp"
 #include "sidepanel_editor.h"
 #include "sidepanel_replay.h"
@@ -49,17 +49,9 @@ private slots:
 
     void on_actionAuto_arrange_triggered();
 
-    void onNodeCreated(QtNodes::Node &node);
-
-    void nodeReorder();
-
     void onSceneChanged();
 
     virtual void closeEvent(QCloseEvent *event) override;
-
-    void onTimerUpdate();
-
-    void onNodeContextMenu(QtNodes::Node& n, const QPointF& pos);
 
     void onConnectionContextMenu(QtNodes::Connection& connection, const QPointF& pos);
 
@@ -70,10 +62,6 @@ private slots:
     void onUndoInvoked();
 
     void onRedoInvoked();
-
-    void onNodeParameterUpdated(QString, QWidget*);
-
-    void onNodeDoubleClicked(QtNodes::Node& n);
 
     void on_comboBoxLayout_currentIndexChanged(int index);
 
@@ -99,39 +87,17 @@ private:
 
     void resizeEvent(QResizeEvent *) override;
 
-   // void updateStates(QXmlInputSource* source);
-
     std::shared_ptr<QtNodes::DataModelRegistry> _model_registry;
 
-    struct TabInfo
-    {
-      EditorFlowScene* scene;
-      QtNodes::FlowView*  view;
-    };
+    std::map<QString, GraphicContainer*> _tab_info;
 
-    std::map<QString, TabInfo> _tab_info;
-
-    TabInfo* currentTabInfo();
+    GraphicContainer* currentTabInfo();
 
     void createTab(const QString &name);
 
-    bool _node_moved;
-
-    QShortcut _arrange_shortcut;
-
-    QTimer _periodic_timer;
-
     std::mutex _mutex;
 
-    bool    _state_received;
-    QString _state_msg;
     QtNodes::Node* _root_node;
-
-     void createMorphSubMenu(QtNodes::Node &node, QMenu *nodeMenu);
-
-    void createSmartRemoveAction(QtNodes::Node &node, QMenu *nodeMenu);
-
-    void insertNodeInConnection(QtNodes::Connection &connection, QString node_name);
 
     std::deque<QByteArray> _undo_stack;
     std::deque<QByteArray> _redo_stack;
