@@ -113,57 +113,14 @@ void MainWindow::createTab(const QString &name)
 
   //--------------------------------
 
-  connect( ti->view(), &QtNodes::FlowView::startMultipleDelete,
-           [this]() { this->_undo_enabled = (false); }  );
+  connect( ti, &GraphicContainer::undoableChange,
+           this, &MainWindow::onPushUndo );
 
-  connect( ti->scene(), &QtNodes::FlowScene::nodeDeleted,
-           this,   &MainWindow::onPushUndo  );
-
-  connect( ti->view(), &QtNodes::FlowView::finishMultipleDelete,
-           [this]() {
-    this->_undo_enabled = (true);
-    this->onPushUndo();
-  }  );
-
-  connect( ti->scene(), &QtNodes::FlowScene::nodeMoved,
-           this,   &MainWindow::onPushUndo  );
-
-  connect( ti->scene(), &QtNodes::FlowScene::connectionCreated,
-           [this](QtNodes::Connection &c )
-  {
-    if( c.getNode(QtNodes::PortType::In) && c.getNode(QtNodes::PortType::Out))
-    {
-      onPushUndo();
-    }
-  });
-
-  connect( ti->scene(), &QtNodes::FlowScene::connectionDeleted,
-           this,   &MainWindow::onPushUndo  );
+  connect( ti, &GraphicContainer::undoableChange,
+           this, &MainWindow::onSceneChanged );
 
   connect( this, SIGNAL(updateGraphic()), ti->view(), SLOT(repaint())  );
 
-  connect( ti->scene(), &QtNodes::FlowScene::connectionContextMenu,
-           this, &MainWindow::onConnectionContextMenu );
-
-
-  //--------------------------------
-  connect( ti->scene(), &QtNodes::FlowScene::nodeCreated,
-           this,   &MainWindow::onSceneChanged  );
-
-  connect( ti->scene(), &QtNodes::FlowScene::nodeDeleted,
-           this,   &MainWindow::onSceneChanged  );
-
-  connect( ti->scene(), &QtNodes::FlowScene::connectionCreated,
-           [this](QtNodes::Connection &c )
-  {
-    if( c.getNode(QtNodes::PortType::In) && c.getNode(QtNodes::PortType::Out))
-    {
-      onSceneChanged();
-    }
-  });
-
-  connect( ti->scene(), &QtNodes::FlowScene::connectionDeleted,
-           this,   &MainWindow::onSceneChanged  );
   //--------------------------------
 
   ti->view()->update();
@@ -201,7 +158,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
         std::cout<<"XML Parsed Successfully!"<< std::endl;
 
-        nodeReorder();
+        currentTabInfo()->nodeReorder();
       }
       onSceneChanged();
       onPushUndo();
@@ -376,7 +333,6 @@ void MainWindow::on_actionZoom_In_triggered()
 void MainWindow::on_actionAuto_arrange_triggered()
 {
   currentTabInfo()->nodeReorder();
-  onPushUndo();
 }
 
 void MainWindow::onSceneChanged()
@@ -451,36 +407,6 @@ void MainWindow::resizeEvent(QResizeEvent *)
   on_splitter_splitterMoved();
 }
 
-
-void MainWindow::onConnectionContextMenu(QtNodes::Connection &connection, const QPointF&)
-{
-  QMenu* nodeMenu = new QMenu(this);
-  auto categories = {"Control", "Decorator"};
-
-  for(auto category: categories)
-  {
-    QMenu* submenu = nodeMenu->addMenu(QString("Insert ") + category + QString("Node") );
-    auto model_names = _model_registry->registeredModelsByCategory( category );
-
-    if( model_names.empty() )
-    {
-      submenu->setEnabled(false);
-    }
-    else{
-      for(auto& name: model_names)
-      {
-        auto action = new QAction(name, submenu);
-        submenu->addAction(action);
-        connect( action, &QAction::triggered, [this, &connection, name]
-        {
-          this->insertNodeInConnection( connection, name);
-        });
-      }
-    }
-  }
-
-  nodeMenu->exec( QCursor::pos() );
-}
 
 void MainWindow::on_splitter_splitterMoved(int , int )
 {

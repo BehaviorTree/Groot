@@ -45,6 +45,9 @@ public slots:
 
     void onNodeContextMenu(QtNodes::Node& node, const QPointF& pos);
 
+    void onConnectionContextMenu(QtNodes::Connection &connection, const QPointF&);
+
+
 private:
     EditorFlowScene* _scene;
     QtNodes::FlowView*  _view;
@@ -56,6 +59,8 @@ private:
    void insertNodeInConnection(QtNodes::Connection &connection, QString node_name);
 
    std::shared_ptr<QtNodes::DataModelRegistry> _model_registry;
+
+   bool _signal_was_blocked;
 
 };
 

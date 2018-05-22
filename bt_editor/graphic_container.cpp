@@ -4,6 +4,7 @@
 #include "models/RootNodeModel.hpp"
 #include "models/ControlNodeModel.hpp"
 
+#include <QSignalBlocker>
 #include <QMenu>
 
 using namespace QtNodes;
@@ -11,12 +12,13 @@ using namespace QtNodes;
 GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_registry,
                                    QObject *parent) :
   QObject(parent),
-  _model_registry(model_registry)
+  _model_registry(model_registry),
+  _signal_was_blocked(true)
 {
   _scene = new EditorFlowScene( model_registry );
   _view  = new FlowView( _scene );
 
-  connect( _scene, &FlowScene::nodeDoubleClicked,
+  connect( _scene, &QtNodes::FlowScene::nodeDoubleClicked,
            this, &GraphicContainer::onNodeDoubleClicked);
 
   connect( _scene, &QtNodes::FlowScene::nodeCreated,
@@ -24,6 +26,43 @@ GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_regi
 
   connect( _scene, &QtNodes::FlowScene::nodeContextMenu,
            this, &GraphicContainer::onNodeContextMenu );
+
+
+  connect( _scene, &QtNodes::FlowScene::connectionContextMenu,
+           this, &GraphicContainer::onConnectionContextMenu );
+
+
+  connect( _scene, &QtNodes::FlowScene::nodeDeleted,
+           this,   &GraphicContainer::undoableChange  );
+
+
+  connect( _scene, &QtNodes::FlowScene::nodeMoved,
+           this,   &GraphicContainer::undoableChange  );
+
+  connect( _scene, &QtNodes::FlowScene::connectionDeleted,
+           this,   &GraphicContainer::undoableChange  );
+
+  connect( _view, &QtNodes::FlowView::startMultipleDelete, [this]()
+  {
+    _signal_was_blocked = this->blockSignals(true);
+  } );
+
+  connect( _view, &QtNodes::FlowView::finishMultipleDelete, [this]()
+  {
+    this->blockSignals(_signal_was_blocked);
+    this->undoableChange();
+  }  );
+
+
+  connect( _scene, &QtNodes::FlowScene::connectionCreated,
+           [this](QtNodes::Connection &c )
+  {
+    if( c.getNode(QtNodes::PortType::In) && c.getNode(QtNodes::PortType::Out))
+    {
+      undoableChange();
+    }
+  });
+
 }
 
 void GraphicContainer::lockEditing(bool locked)
@@ -57,10 +96,13 @@ void GraphicContainer::lockEditing(bool locked)
 
 void GraphicContainer::nodeReorder()
 {
-  ScopedDisable lk( &_undo_enabled );
-  auto abstract_tree = BuildAbstractTree( *_scene );
-  NodeReorder( *_scene, std::move(abstract_tree) );
-  zoomHomeView();
+  {
+    const QSignalBlocker blocker(this);
+    auto abstract_tree = BuildAbstractTree( *_scene );
+    NodeReorder( *_scene, std::move(abstract_tree) );
+    zoomHomeView();
+  }
+  undoableChange();
 }
 
 void GraphicContainer::zoomHomeView()
@@ -144,7 +186,7 @@ void GraphicContainer::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
       connect( action, &QAction::triggered, [this, &node, name]
       {
         {
-          ScopedDisable lk( &this->_undo_enabled );
+          const QSignalBlocker blocker(this);
           node.changeDataModel( _model_registry->create(name) );
           nodeReorder();
         }
@@ -181,13 +223,13 @@ void GraphicContainer::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeM
       connect( smart_remove, &QAction::triggered, [this, node_ptr, parent_node, conn_out]()
       {
         {
-          ScopedDisable lk( &this->_undo_enabled );
-          _scene->removeNode( *node_ptr );
+          const QSignalBlocker blocker(this);
           for( auto& it: conn_out)
           {
             auto child_node = it.second->getNode(PortType::In);
             _scene->createConnection( *child_node, 0, *parent_node, 0 );
           }
+          _scene->removeNode( *node_ptr );
           nodeReorder();
         }
         undoableChange();
@@ -202,7 +244,7 @@ void GraphicContainer::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeM
 void GraphicContainer::insertNodeInConnection(Connection &connection, QString node_name)
 {
   {
-    ScopedDisable lk( &this->_undo_enabled );
+    const QSignalBlocker blocker(this);
 
     auto node_model = _model_registry->create(node_name);
     auto parent_node = connection.getNode(PortType::Out);
@@ -219,5 +261,35 @@ void GraphicContainer::insertNodeInConnection(Connection &connection, QString no
     nodeReorder();
   }
   undoableChange();
+}
+
+void GraphicContainer::onConnectionContextMenu(QtNodes::Connection &connection, const QPointF&)
+{
+  QMenu* nodeMenu = new QMenu(_view);
+  auto categories = {"Control", "Decorator"};
+
+  for(auto category: categories)
+  {
+    QMenu* submenu = nodeMenu->addMenu(QString("Insert ") + category + QString("Node") );
+    auto model_names = _model_registry->registeredModelsByCategory( category );
+
+    if( model_names.empty() )
+    {
+      submenu->setEnabled(false);
+    }
+    else{
+      for(auto& name: model_names)
+      {
+        auto action = new QAction(name, submenu);
+        submenu->addAction(action);
+        connect( action, &QAction::triggered, [this, &connection, name]
+        {
+          this->insertNodeInConnection( connection, name);
+        });
+      }
+    }
+  }
+
+  nodeMenu->exec( QCursor::pos() );
 }
 

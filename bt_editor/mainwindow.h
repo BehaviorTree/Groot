@@ -53,8 +53,6 @@ private slots:
 
     virtual void closeEvent(QCloseEvent *event) override;
 
-    void onConnectionContextMenu(QtNodes::Connection& connection, const QPointF& pos);
-
     void on_splitter_splitterMoved(int pos = 0, int index = 0);
 
     void onPushUndo();
