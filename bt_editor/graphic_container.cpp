@@ -156,7 +156,11 @@ void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &pos)
 
   connect( remove, &QAction::triggered, [this,&node]()
   {
-    _scene->removeNode(node);
+    {
+      const QSignalBlocker blocker(this);
+      _scene->removeNode(node);
+    }
+    undoableChange();
   });
   //--------------------------------
   createSmartRemoveAction(node, nodeMenu);

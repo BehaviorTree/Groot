@@ -35,21 +35,6 @@ using QtNodes::NodeGraphicsObject;
 using QtNodes::NodeState;
 
 
-class ScopedDisable{
-public:
-  ScopedDisable(bool* val): _val(val), _prev(*val)
-  {
-    *_val = false;
-  }
-  ~ScopedDisable()
-  {
-    *_val = _prev;
-  }
-  private:
-    bool* _val;
-    bool _prev;
-};
-
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::MainWindow),
@@ -145,7 +130,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
       onPushUndo();
       {
-        ScopedDisable lk( &this->_undo_enabled );
+        const QSignalBlocker blocker( currentTabInfo() );
 
         currentTabInfo()->scene()->clearScene();
         QtNodes::Node& first_qt_node = currentTabInfo()->scene()->createNode( _model_registry->create("Root"), QPointF() );
@@ -430,7 +415,7 @@ void MainWindow::onPushUndo()
   if( !_undo_enabled ) return;
 
   //-----------------
-  ScopedDisable lk( &this->_undo_enabled );
+  const QSignalBlocker blocker( currentTabInfo() );
 
   currentTabInfo()->scene()->update();
   const QByteArray state = currentTabInfo()->scene()->saveToMemory();
@@ -460,7 +445,7 @@ void MainWindow::onUndoInvoked()
     _undo_stack.pop_back();
 
     {
-      ScopedDisable lk( &this->_undo_enabled );
+      const QSignalBlocker blocker( currentTabInfo() );
       auto scene = currentTabInfo()->scene();
       scene->clearScene();
       currentTabInfo()->scene()->loadFromMemory( _current_state );
@@ -490,7 +475,7 @@ void MainWindow::onRedoInvoked()
     _redo_stack.pop_back();
 
     {
-      ScopedDisable lk( &this->_undo_enabled );
+      const QSignalBlocker blocker( currentTabInfo() );
       auto scene = currentTabInfo()->scene();
       scene->clearScene();
       currentTabInfo()->scene()->loadFromMemory( _current_state );
@@ -515,7 +500,7 @@ void MainWindow::on_comboBoxLayout_currentIndexChanged(int index)
 
   bool refresh = false;
   {
-    ScopedDisable lk( &this->_undo_enabled );
+    const QSignalBlocker blocker( currentTabInfo() );
     for(auto& tab: _tab_info)
     {
       auto scene = tab.second->scene();
