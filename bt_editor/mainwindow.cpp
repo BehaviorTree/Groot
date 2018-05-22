@@ -71,8 +71,8 @@ MainWindow::MainWindow(QWidget *parent) :
   _model_registry->registerModel("Control", [](){ return std::make_unique<SequenceStarModel>();} );
   _model_registry->registerModel("Control", [](){ return std::make_unique<FallbackModel>();} );
 
-  _node_palette_widget = new NodePalette(_tree_nodes_model, this);
-  ui->leftFrame->layout()->addWidget( _node_palette_widget );
+  _editor_widget = new SidepanelEditor(_tree_nodes_model, this);
+  ui->leftFrame->layout()->addWidget( _editor_widget );
 
   createTab("Behaviortree");
 
@@ -195,7 +195,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
     if( !err )
     {
       ReadTreeNodesModel( document.RootElement(), *_model_registry, _tree_nodes_model );
-      _node_palette_widget->updateTreeView();
+      _editor_widget->updateTreeView();
 
       onPushUndo();
       {
@@ -226,7 +226,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
     return;
   }
 
-  lockEditing( ui->selectMode->value() == 1 );
+  lockEditing( !ui->radioEditor->isChecked() );
 }
 
 
@@ -527,32 +527,6 @@ void MainWindow::resizeEvent(QResizeEvent *)
   on_splitter_splitterMoved();
 }
 
-void MainWindow::on_selectMode_sliderPressed()
-{
-  const int new_value = (ui->selectMode->value() == 0) ? 1 : 0;
-  ui->selectMode->setValue( new_value );
-}
-
-void MainWindow::on_selectMode_valueChanged(int value)
-{
-  bool locked = (value == 1);
-  lockEditing( locked );
-
-  QFont fontA = ui->labelEdit->font();
-  fontA.setBold( !locked );
-  ui->labelEdit->setFont( fontA );
-
-  QFont fontB = ui->labelMonitor->font();
-  fontB.setBold( locked );
-  ui->labelMonitor->setFont( fontB );
-
-  for (auto& it: _tab_info)
-  {
-    auto& scene = it.second.scene;
-    scene->lock( locked );
-  }
-}
-
 void MainWindow::onTimerUpdate()
 {
 
@@ -736,7 +710,7 @@ void MainWindow::on_splitter_splitterMoved(int , int )
 
 void MainWindow::onPushUndo()
 {
-  if (ui->selectMode->value() == 1) return; //locked
+  if ( !ui->radioEditor->isChecked() ) return; //locked
 
   if( !_undo_enabled ) return;
 
@@ -762,7 +736,7 @@ void MainWindow::onPushUndo()
 
 void MainWindow::onUndoInvoked()
 {
-  if (ui->selectMode->value() == 1) return; //locked
+  if ( !ui->radioEditor->isChecked() ) return; //locked
 
   if( _undo_stack.size() > 0)
   {
@@ -792,7 +766,7 @@ void MainWindow::onUndoInvoked()
 
 void MainWindow::onRedoInvoked()
 {
-  if (ui->selectMode->value() == 1) return; //locked
+  if ( !ui->radioEditor->isChecked() ) return; //locked
 
   if( _redo_stack.size() > 0)
   {
@@ -881,4 +855,32 @@ void MainWindow::on_pushButtonCenterView_pressed()
   currentTabInfo()->view->setSceneRect (rect);
   currentTabInfo()->view->fitInView(rect, Qt::KeepAspectRatio);
   on_actionZoom_Out_triggered();
+}
+
+void MainWindow::on_radioEditor_toggled(bool checked)
+{
+  lockEditing( !checked );
+  if( checked )
+  {
+    ui->radioMonitor->setChecked(false);
+    ui->radioReplay->setChecked(false);
+  }
+}
+
+void MainWindow::on_radioMonitor_toggled(bool checked)
+{
+  if( checked )
+  {
+    ui->radioEditor->setChecked(false);
+    ui->radioReplay->setChecked(false);
+  }
+}
+
+void MainWindow::on_radioReplay_toggled(bool checked)
+{
+  if( checked )
+  {
+    ui->radioMonitor->setChecked(false);
+    ui->radioEditor->setChecked(false);
+  }
 }

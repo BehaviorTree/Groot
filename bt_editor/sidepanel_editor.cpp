@@ -1,13 +1,13 @@
-#include "node_palette.h"
-#include "ui_node_palette.h"
+#include "sidepanel_editor.h"
+#include "ui_sidepanel_editor.h"
 
 #include <QComboBox>
 #include <QHeaderView>
 #include <QPushButton>
 
-NodePalette::NodePalette(TreeNodeModels &tree_nodes_model, QWidget *parent) :
+SidepanelEditor::SidepanelEditor(TreeNodeModels &tree_nodes_model, QWidget *parent) :
     QFrame(parent),
-    ui(new Ui::NodePalette),
+    ui(new Ui::SidepanelEditor),
     _tree_nodes_model(tree_nodes_model)
 {
     ui->setupUi(this);   
@@ -15,12 +15,12 @@ NodePalette::NodePalette(TreeNodeModels &tree_nodes_model, QWidget *parent) :
     ui->buttonsFrame->setHidden(true);
 }
 
-NodePalette::~NodePalette()
+SidepanelEditor::~SidepanelEditor()
 {
     delete ui;
 }
 
-void NodePalette::updateTreeView()
+void SidepanelEditor::updateTreeView()
 {
     auto AdjustFont = [](QTreeWidgetItem* item, int size, bool is_bold)
     {
@@ -75,7 +75,7 @@ void NodePalette::updateTreeView()
     ui->treeWidget->expandAll();
 }
 
-void NodePalette::on_treeWidget_itemSelectionChanged()
+void SidepanelEditor::on_treeWidget_itemSelectionChanged()
 {
   auto selected_items = ui->treeWidget->selectedItems();
   if(selected_items.size() == 0)
@@ -93,7 +93,7 @@ void NodePalette::on_treeWidget_itemSelectionChanged()
 
     ui->parametersTableWidget->setRowCount(model.params.size());
 
-    connect( ui->parametersTableWidget,  &QTableWidget::cellChanged, this, &NodePalette::on_parameterChanged);
+    connect( ui->parametersTableWidget,  &QTableWidget::cellChanged, this, &SidepanelEditor::on_parameterChanged);
 
     for (auto& it: model.params)
     {
@@ -108,12 +108,11 @@ void NodePalette::on_treeWidget_itemSelectionChanged()
 
     ui->parametersTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->parametersTableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-
   }
 
 }
 
-void NodePalette::on_lineEditFilter_textChanged(const QString &text)
+void SidepanelEditor::on_lineEditFilter_textChanged(const QString &text)
 {
   for (auto& it : _tree_view_category_items)
   {
@@ -133,14 +132,14 @@ void NodePalette::on_lineEditFilter_textChanged(const QString &text)
   }
 }
 
-void NodePalette::on_parametersTableWidget_itemSelectionChanged()
+void SidepanelEditor::on_parametersTableWidget_itemSelectionChanged()
 {
   auto selected_items = ui->parametersTableWidget->selectedItems();
 
   ui->pushButtonDelete->setEnabled( selected_items.size() != 0 );
 }
 
-void NodePalette::on_parameterChanged(int row, int col)
+void SidepanelEditor::on_parameterChanged(int row, int col)
 {
   ui->pushButtonAdd->setEnabled(true);
 

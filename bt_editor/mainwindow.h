@@ -14,7 +14,8 @@
 
 #include "editor_flowscene.h"
 #include "XML_utilities.hpp"
-#include "node_palette.h"
+#include "sidepanel_editor.h"
+#include "sidepanel_replay.h"
 
 namespace Ui {
 class MainWindow;
@@ -56,10 +57,6 @@ private slots:
 
     virtual void closeEvent(QCloseEvent *event) override;
 
-    void on_selectMode_sliderPressed();
-
-    void on_selectMode_valueChanged(int value);
-
     void onTimerUpdate();
 
     void onNodeContextMenu(QtNodes::Node& n, const QPointF& pos);
@@ -83,6 +80,12 @@ private slots:
     void on_pushButtonReorder_pressed();
 
     void on_pushButtonCenterView_pressed();
+
+    void on_radioEditor_toggled(bool checked);
+
+    void on_radioMonitor_toggled(bool checked);
+
+    void on_radioReplay_toggled(bool checked);
 
 signals:
     void updateGraphic();
@@ -137,8 +140,8 @@ private:
 
     TreeNodeModels _tree_nodes_model;
 
-    NodePalette* _node_palette_widget;
-
+    SidepanelEditor* _editor_widget;
+    SidepanelReplay* _replay_widget;
 };
 
 
