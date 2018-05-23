@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <nodes/Node>
 
-enum class NodeType   { ACTION, DECORATOR, CONTROL, SUBTREE, ROOT, UNDEFINED };
+enum class NodeType   { ACTION, DECORATOR, CONTROL, CONDITION, SUBTREE, ROOT, UNDEFINED };
 enum class ParamType  { INT, DOUBLE, TEXT, COMBO, UNDEFINED };
 enum class NodeStatus { IDLE, RUNNING, SUCCESS, FAILURE };
 
@@ -31,19 +31,22 @@ struct AbstractTreeNode
     QSizeF size;
     QPointF pos; // top left corner
     uint16_t uid;
+    uint8_t _padding_[6];
     std::vector<AbstractTreeNode*> children;
     QtNodes::Node* corresponding_node;
     std::vector< std::pair<QString,QString> > parameters;
 };
 
-struct BehaviorTree
+struct AbsBehaviorTree
 {
-    BehaviorTree():root_node_uid(0) {}
+    AbsBehaviorTree():root_node_uid(0) {}
 
+    std::map<uint16_t, AbstractTreeNode> nodes;
     uint16_t root_node_uid;
-    std::unordered_map<uint16_t, AbstractTreeNode> nodes;
+    uint8_t _padding_[6];
 };
 
+Q_DECLARE_METATYPE(AbsBehaviorTree);
 
 
 

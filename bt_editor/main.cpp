@@ -27,6 +27,8 @@ main(int argc, char *argv[])
   QApplication app(argc, argv);
   app.setApplicationName("BehaviorTreeEditor");
 
+  qRegisterMetaType<AbsBehaviorTree>();
+
   QCommandLineParser parser;
   parser.setApplicationDescription("BehaviorTreeEditor: just a fancy XML editor");
   parser.addHelpOption();

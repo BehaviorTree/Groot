@@ -2,6 +2,7 @@
 #define SIDEPANEL_REPLAY_H
 
 #include <QFrame>
+#include "bt_editor_base.h"
 
 namespace Ui {
 class SidepanelReplay;
@@ -16,13 +17,16 @@ public:
     ~SidepanelReplay();
 
 private slots:
-  void on_pushButtonLoadLog_pressed();
+    void on_pushButtonLoadLog_pressed();
 
-  void on_pushButtonPlay_toggled(bool checked);
+    void on_pushButtonPlay_toggled(bool checked);
 
-  void on_spinBox_valueChanged(int arg1);
+    void on_spinBox_valueChanged(int arg1);
 
-  void on_timeSlider_valueChanged(int value);
+    void on_timeSlider_valueChanged(int value);
+
+signals:
+    void loadBehaviorTree( AbsBehaviorTree tree );
 
 private:
 

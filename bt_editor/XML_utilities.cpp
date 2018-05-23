@@ -13,7 +13,6 @@ using namespace QtNodes;
 
 void CreateTreeInSceneFromXML(const XMLElement* bt_root, QtNodes::FlowScene* scene )
 {
-    int nested_nodes = 0;
     QPointF cursor(0,0);
     double x_offset = 0;
 
@@ -22,10 +21,10 @@ void CreateTreeInSceneFromXML(const XMLElement* bt_root, QtNodes::FlowScene* sce
         throw std::runtime_error( "expecting a node called <BehaviorTree>");
     }
 
-    std::function<void(const XMLElement*, Node&)> recursiveStep;
+    std::function<void(const XMLElement*, Node&, int)> recursiveStep;
 
-    recursiveStep = [&recursiveStep, &scene, &cursor, &nested_nodes, &x_offset]
-            (const XMLElement* xml_node, Node& parent_qtnode)
+    recursiveStep = [&recursiveStep, &scene, &cursor, &x_offset]
+            (const XMLElement* xml_node, Node& parent_qtnode, int nest_level)
     {
         // The nodes with a ID used that QString to insert into the registry()
         QString modelID = xml_node->Name();
@@ -64,28 +63,25 @@ void CreateTreeInSceneFromXML(const XMLElement* bt_root, QtNodes::FlowScene* sce
         }
 
         cursor.setY( cursor.y() + 65);
-        cursor.setX( nested_nodes * 400 + x_offset );
+        cursor.setX( nest_level * 400 + x_offset );
 
         Node& new_node = scene->createNode( std::move(dataModel), cursor);
         scene->createConnection(new_node, 0, parent_qtnode, 0 );
-
-        nested_nodes++;
 
         for (const XMLElement*  child = xml_node->FirstChildElement( )  ;
              child != nullptr;
              child = child->NextSiblingElement( ) )
         {
-            recursiveStep( child, new_node );
+            recursiveStep( child, new_node, nest_level+1 );
             x_offset += 30;
         }
 
-        nested_nodes--;
         return;
     };
 
     // start recursion
     QtNodes::Node& first_qt_node = scene->createNode( scene->registry().create("Root"), QPointF() );
-    recursiveStep( bt_root->FirstChildElement(), first_qt_node );
+    recursiveStep( bt_root->FirstChildElement(), first_qt_node, 0 );
 }
 //------------------------------------------------------------------
 

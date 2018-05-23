@@ -75,6 +75,8 @@ private slots:
 
     void on_pushButtonTest_pressed();
 
+    void on_loadBehaviorTree(AbsBehaviorTree tree);
+
 signals:
     void updateGraphic();
 

@@ -81,6 +81,9 @@ MainWindow::MainWindow(QWidget *parent) :
   QShortcut* redo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this);
   connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
+  connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
+           this, &MainWindow::on_loadBehaviorTree );
+
   onSceneChanged();
 }
 
@@ -571,7 +574,24 @@ void MainWindow::on_pushButtonTest_pressed()
 {
     const QSignalBlocker blocker( currentTabInfo() );
 
-    BehaviorTree tree = BuildBehaviorTreeFromScene( currentTabInfo()->scene() );
+    AbsBehaviorTree tree = BuildBehaviorTreeFromScene( currentTabInfo()->scene() );
     BuildSceneFromBehaviorTree( currentTabInfo()->scene(), tree);
     currentTabInfo()->nodeReorder();
+}
+
+void MainWindow::on_loadBehaviorTree(AbsBehaviorTree tree)
+{
+    {
+        const QSignalBlocker blocker( currentTabInfo() );
+        auto scene = currentTabInfo()->scene();
+
+        scene->clearScene();
+
+        BuildSceneFromBehaviorTree( scene, tree);
+        onSceneChanged();
+        scene->update();
+
+       // currentTabInfo()->nodeReorder();
+    }
+    onPushUndo();
 }
