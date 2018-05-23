@@ -68,7 +68,7 @@
     <widget class="QTableWidget" name="tableWidget">
      <property name="font">
       <font>
-       <pointsize>8</pointsize>
+       <pointsize>9</pointsize>
       </font>
      </property>
      <property name="editTriggers">
@@ -84,7 +84,7 @@
       <bool>false</bool>
      </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
-      <number>20</number>
+      <number>15</number>
      </attribute>
      <attribute name="verticalHeaderMinimumSectionSize">
       <number>15</number>
@@ -141,6 +141,9 @@
       <widget class="QSpinBox" name="spinBox">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::ClickFocus</enum>
        </property>
        <property name="maximum">
         <number>0</number>
@@ -211,6 +214,9 @@
     <widget class="QSlider" name="timeSlider">
      <property name="enabled">
       <bool>false</bool>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
      </property>
      <property name="maximum">
       <number>0</number>

@@ -27,7 +27,7 @@ private slots:
 
     void on_timeSlider_valueChanged(int value);
 
-    void on_tableWidget_itemDoubleClicked(QTableWidgetItem *item);
+    void on_tableWidget_itemClicked(QTableWidgetItem *item);
 
 signals:
     void loadBehaviorTree( AbsBehaviorTree& tree );
@@ -35,6 +35,8 @@ signals:
     void repaint();
 
 private:
+
+    bool eventFilter(QObject *object, QEvent *event) override;
 
     void loadFromFlatbuffers(const std::vector<int8_t>& serialized_description);
 
@@ -49,11 +51,12 @@ private:
         NodeStatus status;
     };
     std::vector<Transition> _transitions;
-    std::vector< std::pair<int,double>> _timepoint;
+    std::vector< std::pair<double,int>> _timepoint;
 
-    int _prev_value;
+    int _prev_row;
 
     AbsBehaviorTree _loaded_tree;
+    void updatedSpinAndSlider(int row);
 };
 
 #endif // SIDEPANEL_REPLAY_H

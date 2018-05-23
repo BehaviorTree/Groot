@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent) :
            this,   &MainWindow::on_actionAuto_arrange_triggered  );
 
   ui->splitter->setStretchFactor(0, 1);
-  ui->splitter->setStretchFactor(1, 5);
+  ui->splitter->setStretchFactor(1, 4);
 
   QShortcut* undo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Z), this);
   connect( undo_shortcut, &QShortcut::activated, this, &MainWindow::onUndoInvoked );

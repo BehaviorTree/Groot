@@ -6,6 +6,7 @@
 #include<QFileInfo>
 #include<QFileDialog>
 #include<QSettings>
+#include <QKeyEvent>
 
 #include "bt_editor_base.h"
 #include "utils.h"
@@ -14,10 +15,12 @@
 SidepanelReplay::SidepanelReplay(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::SidepanelReplay),
-    _prev_value(0)
+    _prev_row(0)
 {
     ui->setupUi(this);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+
+    ui->tableWidget->installEventFilter(this);
 }
 
 SidepanelReplay::~SidepanelReplay()
@@ -133,16 +136,21 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
             timestamp.sprintf("absolute time: %.3f", trans.timestamp);
             timestamp_item->setToolTip( timestamp );
 
-            ui->tableWidget->setItem(row,0, timestamp_item );
             ui->tableWidget->setItem(row,1, new QTableWidgetItem( node.instance_name) );
             ui->tableWidget->setItem(row,2, createStatusItem( trans.prev_status) );
             ui->tableWidget->setItem(row,3, createStatusItem( trans.status) );
 
             if(  (trans.timestamp - previous_timestamp) >= 0.001 )
             {
-                _timepoint.push_back( {row,trans.timestamp}  );
+                _timepoint.push_back( {trans.timestamp, row}  );
                 previous_timestamp = trans.timestamp;
+
+                auto font = timestamp_item->font();
+                font.setBold(true);
+                timestamp_item->setFont(font);
             }
+
+            ui->tableWidget->setItem(row,0, timestamp_item );
         }
 
         ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
@@ -183,7 +191,12 @@ void SidepanelReplay::on_spinBox_valueChanged(int value)
     {
         ui->timeSlider->setValue( value );
     }
-    onValueChanged( _timepoint[value].first );
+
+    int row = _timepoint[value].second;
+    auto item = ui->tableWidget->item(row, 0);
+    ui->tableWidget->scrollToItem( item, QAbstractItemView::PositionAtCenter  );
+
+    onValueChanged( row );
 }
 
 void SidepanelReplay::on_timeSlider_valueChanged(int value)
@@ -192,15 +205,23 @@ void SidepanelReplay::on_timeSlider_valueChanged(int value)
     {
         ui->spinBox->setValue( value );
     }
-    onValueChanged( _timepoint[value].first );
+
+    int row = _timepoint[value].second;
+    auto item = ui->tableWidget->item(row, 0);
+    ui->tableWidget->scrollToItem( item, QAbstractItemView::PositionAtCenter  );
+
+    onValueChanged( row );
 }
 
 void SidepanelReplay::onValueChanged(int current_row)
 {
+    current_row = std::min( current_row, ui->tableWidget->rowCount() -1 );
+    current_row = std::max( current_row, 0 );
+
     int first = 0;
-    if( _prev_value < current_row )
+    if( _prev_row < current_row )
     {
-        first = _prev_value;
+        first = _prev_row;
     }
     {
         ui->tableWidget->horizontalHeader()->setSectionResizeMode (QHeaderView::Fixed);
@@ -245,12 +266,65 @@ void SidepanelReplay::onValueChanged(int current_row)
         node->nodeGraphicsObject().update();
     }
 
-    _prev_value = current_row;
-    ui->tableWidget->scrollToItem( ui->tableWidget->item(current_row, 0),
-                                   QAbstractItemView::PositionAtCenter  );
+    _prev_row = current_row;
 }
 
-void SidepanelReplay::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
+
+void SidepanelReplay::updatedSpinAndSlider(int row)
+{
+    auto it = std::upper_bound( _timepoint.begin(), _timepoint.end(), row,
+                                []( int val, const std::pair<double,int>& a ) -> bool
+    {
+        return val < a.second;
+    } );
+
+    QSignalBlocker block1( ui->spinBox );
+    QSignalBlocker block2( ui->timeSlider );
+
+    int index = (it - _timepoint.begin()) -1;
+    index = std::min( index, static_cast<int>(_timepoint.size()) -1 );
+    index = std::max( index, 0 );
+
+    ui->spinBox->setValue(index);
+    ui->timeSlider->setValue(index);
+}
+
+void SidepanelReplay::on_tableWidget_itemClicked(QTableWidgetItem *item)
 {
     onValueChanged( item->row() );
+    updatedSpinAndSlider(item->row());
+}
+
+bool SidepanelReplay::eventFilter(QObject *object, QEvent *event)
+{
+    if( object == ui->tableWidget)
+    {
+        if (event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent *key_event = static_cast<QKeyEvent *>(event);
+
+            int next_row = -1;
+            if( key_event->key() ==  Qt::Key_Down)
+            {
+                next_row = _prev_row +1;
+            }
+            else if( key_event->key() ==  Qt::Key_Up)
+            {
+                next_row = _prev_row -1;
+            }
+
+            if( next_row >= 0)
+            {
+                onValueChanged( next_row);
+                updatedSpinAndSlider( next_row );
+                ui->tableWidget->scrollToItem( ui->tableWidget->item(next_row, 0),
+                                               QAbstractItemView::EnsureVisible  );
+            }
+
+            return true;
+        }
+    }
+    else{
+        return false;
+    }
 }
