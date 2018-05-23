@@ -37,9 +37,9 @@ public slots:
 
 signals:
 
-  void startMultipleDelete();
+  void startNodeDelete();
 
-  void finishMultipleDelete();
+  void finishNodeDelete();
 
 protected:
 

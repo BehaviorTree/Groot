@@ -42,12 +42,12 @@ GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_regi
   connect( _scene, &QtNodes::FlowScene::connectionDeleted,
            this,   &GraphicContainer::undoableChange  );
 
-  connect( _view, &QtNodes::FlowView::startMultipleDelete, [this]()
+  connect( _view, &QtNodes::FlowView::startNodeDelete, [this]()
   {
     _signal_was_blocked = this->blockSignals(true);
   } );
 
-  connect( _view, &QtNodes::FlowView::finishMultipleDelete, [this]()
+  connect( _view, &QtNodes::FlowView::finishNodeDelete, [this]()
   {
     this->blockSignals(_signal_was_blocked);
     this->undoableChange();
