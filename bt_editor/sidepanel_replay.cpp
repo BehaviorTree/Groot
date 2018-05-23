@@ -13,9 +13,11 @@
 
 SidepanelReplay::SidepanelReplay(QWidget *parent) :
     QFrame(parent),
-    ui(new Ui::SidepanelReplay)
+    ui(new Ui::SidepanelReplay),
+    _prev_value(0)
 {
     ui->setupUi(this);
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 }
 
 SidepanelReplay::~SidepanelReplay()
@@ -55,18 +57,23 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
 
     memcpy( fb_buffer.data(), &buffer[4], bt_header_size);
 
-    AbsBehaviorTree tree = BuildBehaviorTreeFromFlatbuffers( fb_buffer );
+    _loaded_tree = BuildBehaviorTreeFromFlatbuffers( fb_buffer );
 
-    loadBehaviorTree( tree );
+    loadBehaviorTree( _loaded_tree );
 
+    _transitions.clear();
     _transitions.reserve( (content.size() - 4 - bt_header_size) / 12 );
+
+    _timepoint.clear();
+
 
     for (size_t index = 4+bt_header_size; index < content.size(); index += 12)
     {
         Transition transition;
         const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[index] );
         const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[index+4] );
-        transition.timestamp = t_sec + t_usec* 0.000001;
+        double timestamp = t_sec + t_usec* 0.000001;
+        transition.timestamp = timestamp;
         transition.uid = flatbuffers::ReadScalar<uint16_t>(&buffer[index+8]);
         transition.prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
         transition.status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+11] ));
@@ -109,12 +116,15 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
 
     if(  transitions_count > 0)
     {
+        double previous_timestamp = 0;
+
         const double first_timestamp = _transitions.front().timestamp;
+        _timepoint.clear();
 
         for(size_t row=0; row < transitions_count; row++)
         {
             auto& trans = _transitions[row];
-            auto& node = tree.nodes[ trans.uid ];
+            auto& node = _loaded_tree.nodes[ trans.uid ];
 
             QString timestamp;
             timestamp.sprintf("%.3f", trans.timestamp - first_timestamp);
@@ -127,34 +137,34 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
             ui->tableWidget->setItem(row,1, new QTableWidgetItem( node.instance_name) );
             ui->tableWidget->setItem(row,2, createStatusItem( trans.prev_status) );
             ui->tableWidget->setItem(row,3, createStatusItem( trans.status) );
+
+            if(  (trans.timestamp - previous_timestamp) >= 0.001 )
+            {
+                _timepoint.push_back( {row,trans.timestamp}  );
+                previous_timestamp = trans.timestamp;
+            }
         }
 
         ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-        ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
         ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
         ui->tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-
         ui->tableWidget->verticalHeader()->minimumSectionSize();
 
 
-        ui->label->setText( QString("of %1").arg(transitions_count) );
-        ui->spinBox->setMinimum(1);
-        ui->spinBox->setMaximum(transitions_count);
+        ui->label->setText( QString("of %1").arg(_timepoint.size()) );
+        ui->spinBox->setMaximum(_timepoint.size());
         ui->spinBox->setEnabled(true);
 
-        ui->timeSlider->setMinimum(1);
-        ui->timeSlider->setMaximum(transitions_count);
+        ui->timeSlider->setMaximum(_timepoint.size());
         ui->timeSlider->setEnabled(true);
 
         ui->pushButtonPlay->setEnabled(true);
     }
     else{
         ui->label->setText("of 0");
-        ui->spinBox->setMinimum(0);
         ui->spinBox->setMaximum(0);
         ui->spinBox->setEnabled(false);
 
-        ui->timeSlider->setMinimum(0);
         ui->timeSlider->setMaximum(0);
         ui->timeSlider->setEnabled(false);
 
@@ -173,7 +183,7 @@ void SidepanelReplay::on_spinBox_valueChanged(int value)
     {
         ui->timeSlider->setValue( value );
     }
-    selectRowsBackground(value);
+    onValueChanged( _timepoint[value].first );
 }
 
 void SidepanelReplay::on_timeSlider_valueChanged(int value)
@@ -182,23 +192,65 @@ void SidepanelReplay::on_timeSlider_valueChanged(int value)
     {
         ui->spinBox->setValue( value );
     }
-    selectRowsBackground(value);
+    onValueChanged( _timepoint[value].first );
 }
 
-void SidepanelReplay::selectRowsBackground(int last_row)
+void SidepanelReplay::onValueChanged(int current_row)
 {
-    for (int row = 1; row < last_row; row++)
+    int first = 0;
+    if( _prev_value < current_row )
     {
-        ui->tableWidget->item(row, 0)->setBackground( QColor::fromRgb(210, 210, 210) );
-        ui->tableWidget->item(row, 1)->setBackground( QColor::fromRgb(210, 210, 210) );
-        ui->tableWidget->item(row, 2)->setBackground( QColor::fromRgb(210, 210, 210) );
-        ui->tableWidget->item(row, 3)->setBackground( QColor::fromRgb(210, 210, 210) );
+        first = _prev_value;
     }
-    for (int row = last_row; row < ui->tableWidget->rowCount(); row++)
     {
-        ui->tableWidget->item(row, 0)->setBackground( QColor::fromRgb(255, 255, 255) );
-        ui->tableWidget->item(row, 1)->setBackground( QColor::fromRgb(255, 255, 255) );
-        ui->tableWidget->item(row, 2)->setBackground( QColor::fromRgb(255, 255, 255) );
-        ui->tableWidget->item(row, 3)->setBackground( QColor::fromRgb(255, 255, 255) );
+        ui->tableWidget->horizontalHeader()->setSectionResizeMode (QHeaderView::Fixed);
+        ui->tableWidget->verticalHeader()->setSectionResizeMode (QHeaderView::Fixed);
+
+        for (int row = first; row <= current_row; row++)
+        {
+            ui->tableWidget->item(row, 0)->setBackground( QColor::fromRgb(210, 210, 210) );
+            ui->tableWidget->item(row, 1)->setBackground( QColor::fromRgb(210, 210, 210) );
+            ui->tableWidget->item(row, 2)->setBackground( QColor::fromRgb(210, 210, 210) );
+            ui->tableWidget->item(row, 3)->setBackground( QColor::fromRgb(210, 210, 210) );
+        }
+        for (int row = current_row+1; row < ui->tableWidget->rowCount(); row++)
+        {
+            ui->tableWidget->item(row, 0)->setBackground( QColor::fromRgb(255, 255, 255) );
+            ui->tableWidget->item(row, 1)->setBackground( QColor::fromRgb(255, 255, 255) );
+            ui->tableWidget->item(row, 2)->setBackground( QColor::fromRgb(255, 255, 255) );
+            ui->tableWidget->item(row, 3)->setBackground( QColor::fromRgb(255, 255, 255) );
+        }
+
+        ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+        ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+        ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+        ui->tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     }
+
+    for (auto& it: _loaded_tree.nodes)
+    {
+        it.second.status = NodeStatus::IDLE;
+    }
+
+    for (int index = 0; index <= current_row; index++)
+    {
+        auto& trans = _transitions[index];
+        _loaded_tree.nodes[ trans.uid ].status = trans.status;
+    }
+
+    for (auto& it: _loaded_tree.nodes)
+    {
+        auto& node = it.second.corresponding_node;
+        node->nodeDataModel()->setNodeStyle( getStyleFromStatus( it.second.status ) );
+        node->nodeGraphicsObject().update();
+    }
+
+    _prev_value = current_row;
+    ui->tableWidget->scrollToItem( ui->tableWidget->item(current_row, 0),
+                                   QAbstractItemView::PositionAtCenter  );
+}
+
+void SidepanelReplay::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
+{
+    onValueChanged( item->row() );
 }

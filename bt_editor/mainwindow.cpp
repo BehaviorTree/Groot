@@ -57,7 +57,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
   _editor_widget = new SidepanelEditor(_tree_nodes_model, this);
   _replay_widget = new SidepanelReplay(this);
-  _replay_widget->setHidden(true);
+
+  _editor_widget->setHidden( !ui->radioEditor->isChecked() );
+  _replay_widget->setHidden( !ui->radioReplay->isChecked() );
 
   ui->leftFrame->layout()->addWidget( _editor_widget );
   ui->leftFrame->layout()->addWidget( _replay_widget );
@@ -110,8 +112,6 @@ void MainWindow::createTab(const QString &name)
 
   connect( ti, &GraphicContainer::undoableChange,
            this, &MainWindow::onSceneChanged );
-
-  connect( this, SIGNAL(updateGraphic()), ti->view(), SLOT(repaint())  );
 
   //--------------------------------
 
@@ -578,7 +578,7 @@ void MainWindow::on_radioReplay_toggled(bool checked)
   }
 }
 
-void MainWindow::on_loadBehaviorTree(AbsBehaviorTree tree)
+void MainWindow::on_loadBehaviorTree(AbsBehaviorTree &tree)
 {
     {
         const QSignalBlocker blocker( currentTabInfo() );

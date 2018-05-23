@@ -2,6 +2,7 @@
 #define SIDEPANEL_REPLAY_H
 
 #include <QFrame>
+#include <QTableWidgetItem>
 #include "bt_editor_base.h"
 
 
@@ -26,14 +27,18 @@ private slots:
 
     void on_timeSlider_valueChanged(int value);
 
+    void on_tableWidget_itemDoubleClicked(QTableWidgetItem *item);
+
 signals:
-    void loadBehaviorTree( AbsBehaviorTree tree );
+    void loadBehaviorTree( AbsBehaviorTree& tree );
+
+    void repaint();
 
 private:
 
     void loadFromFlatbuffers(const std::vector<int8_t>& serialized_description);
 
-    void selectRowsBackground(int last_row);
+    void onValueChanged(int value);
 
     Ui::SidepanelReplay *ui;
 
@@ -44,6 +49,11 @@ private:
         NodeStatus status;
     };
     std::vector<Transition> _transitions;
+    std::vector< std::pair<int,double>> _timepoint;
+
+    int _prev_value;
+
+    AbsBehaviorTree _loaded_tree;
 };
 
 #endif // SIDEPANEL_REPLAY_H

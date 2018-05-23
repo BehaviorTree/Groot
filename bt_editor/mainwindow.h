@@ -73,7 +73,7 @@ private slots:
 
     void on_radioReplay_toggled(bool checked);
 
-    void on_loadBehaviorTree(AbsBehaviorTree tree);
+    void on_loadBehaviorTree(AbsBehaviorTree& tree);
 
 signals:
     void updateGraphic();
