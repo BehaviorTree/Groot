@@ -73,6 +73,8 @@ private slots:
 
     void on_radioReplay_toggled(bool checked);
 
+    void on_pushButtonTest_pressed();
+
 signals:
     void updateGraphic();
 

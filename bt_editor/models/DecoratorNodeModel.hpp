@@ -3,7 +3,7 @@
 
 #include "BehaviorTreeNodeModel.hpp"
 
-class DecoratorNodeModel : public BehaviorTreeNodeModel
+class DecoratorNodeModel : public BehaviorTreeDataModel
 {
 public:
     DecoratorNodeModel(QString decorator_ID, const ParameterWidgetCreators &parameters);
@@ -26,6 +26,8 @@ public:
     QString caption() const override {
       return "Decorator";
     }
+
+     virtual NodeType nodeType() const override final { return NodeType::DECORATOR; }
 
 private:
 

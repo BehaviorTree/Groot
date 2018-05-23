@@ -28,7 +28,7 @@ main(int argc, char *argv[])
   app.setApplicationName("BehaviorTreeEditor");
 
   QCommandLineParser parser;
-  parser.setApplicationDescription("BehaviorTreeEditor: just a fancy XMl editor");
+  parser.setApplicationDescription("BehaviorTreeEditor: just a fancy XML editor");
   parser.addHelpOption();
 
   QCommandLineOption test_option(QStringList() << "t" << "test",

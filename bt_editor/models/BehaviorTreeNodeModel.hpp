@@ -11,6 +11,7 @@
 #include <vector>
 #include <map>
 #include <functional>
+#include "bt_editor/bt_editor_base.h"
 
 using QtNodes::PortType;
 using QtNodes::PortIndex;
@@ -26,16 +27,18 @@ struct ParameterWidgetCreator{
 typedef std::vector<ParameterWidgetCreator> ParameterWidgetCreators;
 
 
-class BehaviorTreeNodeModel : public NodeDataModel
+
+
+class BehaviorTreeDataModel : public NodeDataModel
 {
     Q_OBJECT
 
 public:
-  BehaviorTreeNodeModel(const QString &label_name,
+  BehaviorTreeDataModel(const QString &label_name,
                         const QString &instance_name,
                         const ParameterWidgetCreators &parameters );
 
-  virtual ~BehaviorTreeNodeModel() {}
+  virtual ~BehaviorTreeDataModel() {}
 
   virtual bool captionVisible() const override final
   { return true; }
@@ -73,6 +76,11 @@ public:
 
   virtual const char* className() const = 0;
 
+  void setUID(uint16_t uid) { _uid = uid; }
+
+  uint16_t UID() const { return _uid; }
+
+  virtual NodeType nodeType() const = 0;
 
 protected:
   QWidget*   _main_widget;
@@ -81,6 +89,7 @@ protected:
   QFormLayout *_form_layout;
   QLabel*    _label_ID;
   QLineEdit* _line_edit_name;
+  uint16_t _uid;
 private:
   const QString _registration_name;
   QString _instance_name;

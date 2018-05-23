@@ -3,7 +3,7 @@
 
 #include "BehaviorTreeNodeModel.hpp"
 
-class SubtreeNodeModel : public BehaviorTreeNodeModel
+class SubtreeNodeModel : public BehaviorTreeDataModel
 {
 public:
     SubtreeNodeModel(const QString& subtree_ID,
@@ -17,6 +17,8 @@ public:
     {
       return "SubTree";
     }
+
+    virtual NodeType nodeType() const override final { return NodeType::SUBTREE; }
 };
 
 

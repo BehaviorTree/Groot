@@ -2,24 +2,16 @@
 #define XMLPARSERS_HPP
 
 #include "tinyXML2/tinyxml2.h"
+#include "bt_editor_base.h"
 
 #include <nodes/Node>
 #include <nodes/NodeData>
 #include <nodes/FlowScene>
 #include <nodes/DataModelRegistry>
 
-enum class NodeType  { ACTION, DECORATOR, CONTROL, SUBTREE, UNDEFINED };
-enum class ParamType { INT, DOUBLE, TEXT, COMBO, UNDEFINED };
 
-struct TreeNodeModel
-{
-  NodeType node_type;
-  std::map<QString, ParamType> params;
-};
 
-typedef std::map<QString,TreeNodeModel> TreeNodeModels;
-
-void ParseBehaviorTreeXML(const tinyxml2::XMLElement* bt_root, QtNodes::FlowScene* scene, QtNodes::Node& qt_root );
+void CreateTreeInSceneFromXML(const tinyxml2::XMLElement* bt_root, QtNodes::FlowScene* scene );
 
 void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
                         QtNodes::DataModelRegistry& registry,
@@ -29,8 +21,6 @@ void RecursivelyCreateXml(const QtNodes::FlowScene &scene,
                           tinyxml2::XMLDocument& doc,
                           tinyxml2::XMLElement* parent_element,
                           const QtNodes::Node* node);
-
-
 
 inline
 ParamType getParamTypeFromString(const QString& str)

@@ -3,7 +3,7 @@
 
 SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
                                    const ParameterWidgetCreators& creators):
-    BehaviorTreeNodeModel ("SubTree", subtree_ID, creators )
+    BehaviorTreeDataModel ("SubTree", subtree_ID, creators )
 {
     auto style = this->nodeStyle();
     style.NormalBoundaryColor = QColor(255,210,0);

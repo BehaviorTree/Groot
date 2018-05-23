@@ -72,7 +72,7 @@ void GraphicContainer::lockEditing(bool locked)
     QtNodes::Node* node = nodes_it.second.get();
     node->nodeGraphicsObject().lock( locked );
 
-    auto bt_model = dynamic_cast<BehaviorTreeNodeModel*>( node->nodeDataModel() );
+    auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() );
     if( bt_model )
     {
       bt_model->lock(locked);
@@ -98,8 +98,8 @@ void GraphicContainer::nodeReorder()
 {
   {
     const QSignalBlocker blocker(this);
-    auto abstract_tree = BuildAbstractTree( *_scene );
-    NodeReorder( *_scene, std::move(abstract_tree) );
+    auto abstract_tree = BuildBehaviorTreeFromScene( _scene );
+    NodeReorder( *_scene, abstract_tree );
     zoomHomeView();
   }
   undoableChange();
@@ -132,12 +132,12 @@ void GraphicContainer::onNodeDoubleClicked(Node &root_node)
 
 void GraphicContainer::onNodeCreated(Node &node)
 {
-  if( auto bt_node = dynamic_cast<BehaviorTreeNodeModel*>( node.nodeDataModel() ) )
+  if( auto bt_node = dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() ) )
   {
-    connect( bt_node, &BehaviorTreeNodeModel::parameterUpdated,
+    connect( bt_node, &BehaviorTreeDataModel::parameterUpdated,
              this, &GraphicContainer::undoableChange );
 
-    connect( bt_node, &BehaviorTreeNodeModel::instanceNameChanged,
+    connect( bt_node, &BehaviorTreeDataModel::instanceNameChanged,
              this, &GraphicContainer::undoableChange );
   }
 

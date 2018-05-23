@@ -18,7 +18,7 @@ using QtNodes::NodeData;
 using QtNodes::NodeDataType;
 using QtNodes::NodeDataModel;
 
-class ControlNodeModel : public BehaviorTreeNodeModel
+class ControlNodeModel : public BehaviorTreeDataModel
 {
 
 public:
@@ -32,10 +32,12 @@ public:
 
     virtual void setInstanceName(const QString &name) override;
 
-//    virtual void restore(QJsonObject const &modelJson) override final
-//    {
-//      setInstanceName( modelJson["alias"].toString() );
-//    }
+    virtual NodeType nodeType() const override final { return NodeType::CONTROL; }
+
+    //    virtual void restore(QJsonObject const &modelJson) override final
+    //    {
+    //      setInstanceName( modelJson["alias"].toString() );
+    //    }
 private:
     void init();
 };
@@ -50,7 +52,7 @@ public:
 
     virtual const char* className() const override final
     {
-      return T::staticName();
+        return T::staticName();
     }
 
 protected:
@@ -61,7 +63,7 @@ protected:
 //-------------------------------------------------
 template<typename T> inline
 ControlNodeModelBase<T>::ControlNodeModelBase():
-  ControlNodeModel(T::staticName(), ParameterWidgetCreators() )
+    ControlNodeModel(T::staticName(), ParameterWidgetCreators() )
 {
     _main_widget->setToolTip( T::staticName() );
 }

@@ -3,7 +3,7 @@
 #include <QtDebug>
 
 ControlNodeModel::ControlNodeModel(const QString &ID, const ParameterWidgetCreators &parameters ):
-    BehaviorTreeNodeModel("Control", ID , parameters)
+    BehaviorTreeDataModel("Control", ID , parameters)
 {
 
 }
@@ -21,7 +21,7 @@ void ControlNodeModel::init()
 
 void ControlNodeModel::setInstanceName(const QString &name)
 {
-  BehaviorTreeNodeModel::setInstanceName(name);
+  BehaviorTreeDataModel::setInstanceName(name);
   init();
 }
 

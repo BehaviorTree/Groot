@@ -92,6 +92,9 @@
             <property name="checked">
              <bool>true</bool>
             </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
@@ -109,6 +112,9 @@
              <string>Monitor</string>
             </property>
             <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="flat">
              <bool>true</bool>
             </property>
            </widget>
@@ -133,6 +139,9 @@
             <property name="checkable">
              <bool>true</bool>
             </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
@@ -152,7 +161,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="centralLayout" stretch="0,1">
         <item>
          <layout class="QHBoxLayout" name="topLayout">
@@ -166,6 +175,13 @@
            <widget class="Line" name="line">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonTest">
+            <property name="text">
+             <string>TestMe</string>
             </property>
            </widget>
           </item>
@@ -320,7 +336,7 @@
      <x>0</x>
      <y>0</y>
      <width>814</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLoad">

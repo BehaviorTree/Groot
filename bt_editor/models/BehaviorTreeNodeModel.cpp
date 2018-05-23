@@ -7,11 +7,18 @@
 #include <QDebug>
 #include <QFile>
 
-BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString &label_name,
+static uint16_t GetUID()
+{
+    static uint16_t uid = 1;
+    return uid++;
+}
+
+BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
                                              const QString& registration_name,
                                              const ParameterWidgetCreators &creators):
     _params_widget(nullptr),
     _form_layout(nullptr),
+    _uid( GetUID() ),
     _registration_name(registration_name),
     _instance_name(registration_name)
 {
@@ -118,31 +125,31 @@ BehaviorTreeNodeModel::BehaviorTreeNodeModel(const QString &label_name,
   emit adjustSize();
 }
 
-QtNodes::NodeDataType BehaviorTreeNodeModel::dataType(QtNodes::PortType, QtNodes::PortIndex) const
+QtNodes::NodeDataType BehaviorTreeDataModel::dataType(QtNodes::PortType, QtNodes::PortIndex) const
 {
     return NodeDataType {"", ""};
 }
 
-std::shared_ptr<QtNodes::NodeData> BehaviorTreeNodeModel::outData(QtNodes::PortIndex)
+std::shared_ptr<QtNodes::NodeData> BehaviorTreeDataModel::outData(QtNodes::PortIndex)
 {
     return nullptr;
 }
 
-QString BehaviorTreeNodeModel::caption() const {
+QString BehaviorTreeDataModel::caption() const {
   return _registration_name;
 }
 
-const QString &BehaviorTreeNodeModel::registrationName() const
+const QString &BehaviorTreeDataModel::registrationName() const
 {
   return _registration_name;
 }
 
-const QString &BehaviorTreeNodeModel::instanceName() const
+const QString &BehaviorTreeDataModel::instanceName() const
 {
   return _instance_name;
 }
 
-std::vector<std::pair<QString, QString>> BehaviorTreeNodeModel::getCurrentParameters() const
+std::vector<std::pair<QString, QString>> BehaviorTreeDataModel::getCurrentParameters() const
 {
   std::vector<std::pair<QString, QString>> out;
 
@@ -152,7 +159,7 @@ std::vector<std::pair<QString, QString>> BehaviorTreeNodeModel::getCurrentParame
     auto field_item  = _form_layout->itemAt(row, QFormLayout::FieldRole);
     if( label_item && field_item )
     {
-      QLabel* label = static_cast<QLabel*>( label_item->widget() );
+      QLabel* label = dynamic_cast<QLabel*>( label_item->widget() );
 
       if(auto linedit = dynamic_cast<QLineEdit*>( field_item->widget() ) )
       {
@@ -168,7 +175,7 @@ std::vector<std::pair<QString, QString>> BehaviorTreeNodeModel::getCurrentParame
   return out;
 }
 
-QJsonObject BehaviorTreeNodeModel::save() const
+QJsonObject BehaviorTreeDataModel::save() const
 {
   QJsonObject modelJson;
   modelJson["name"]  = registrationName();
@@ -187,7 +194,7 @@ QJsonObject BehaviorTreeNodeModel::save() const
   return modelJson;
 }
 
-void BehaviorTreeNodeModel::restore(const QJsonObject &modelJson)
+void BehaviorTreeDataModel::restore(const QJsonObject &modelJson)
 {
   if( _registration_name != modelJson["name"].toString() )
   {
@@ -206,7 +213,7 @@ void BehaviorTreeNodeModel::restore(const QJsonObject &modelJson)
 
 }
 
-void BehaviorTreeNodeModel::lock(bool locked)
+void BehaviorTreeDataModel::lock(bool locked)
 {
   _line_edit_name->setEnabled( !locked );
 
@@ -228,7 +235,7 @@ void BehaviorTreeNodeModel::lock(bool locked)
   }
 }
 
-void BehaviorTreeNodeModel::setParameterValue(const QString &label, const QString &value)
+void BehaviorTreeDataModel::setParameterValue(const QString &label, const QString &value)
 {
   auto it = _params_map.find(label);
   if( it != _params_map.end() )
@@ -244,7 +251,7 @@ void BehaviorTreeNodeModel::setParameterValue(const QString &label, const QStrin
   }
 }
 
-void BehaviorTreeNodeModel::setInstanceName(const QString &name)
+void BehaviorTreeDataModel::setInstanceName(const QString &name)
 {
   _instance_name = name;
   _line_edit_name->setText( name );

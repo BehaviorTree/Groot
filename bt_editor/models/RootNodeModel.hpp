@@ -9,7 +9,7 @@
 #include "BehaviorTreeNodeModel.hpp"
 
 
-class RootNodeModel : public BehaviorTreeNodeModel
+class RootNodeModel : public BehaviorTreeDataModel
 {
 
 public:
@@ -27,5 +27,7 @@ public:
   {
     return "Root";
   }
+
+  virtual NodeType nodeType() const override final { return NodeType::ROOT; }
 };
 

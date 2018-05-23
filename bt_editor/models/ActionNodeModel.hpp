@@ -3,7 +3,7 @@
 #include "BehaviorTreeNodeModel.hpp"
 
 
-class ActionNodeModel : public BehaviorTreeNodeModel
+class ActionNodeModel : public BehaviorTreeDataModel
 {
 public:
     ActionNodeModel(const QString& action_ID, const ParameterWidgetCreators &creators);
@@ -14,14 +14,16 @@ public:
 
     virtual const char* className() const override final
     {
-      return "Action";
+        return "Action";
     }
 
     QString caption() const override {
-      return "Action";
+        return "Action";
     }
 
-  private:
+    virtual NodeType nodeType() const override final { return NodeType::ACTION; }
+
+private:
 
     void init();
 

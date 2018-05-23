@@ -56,7 +56,11 @@ MainWindow::MainWindow(QWidget *parent) :
   _model_registry->registerModel("Control", [](){ return std::make_unique<FallbackModel>();} );
 
   _editor_widget = new SidepanelEditor(_tree_nodes_model, this);
+  _replay_widget = new SidepanelReplay(this);
+  _replay_widget->setHidden(true);
+
   ui->leftFrame->layout()->addWidget( _editor_widget );
+  ui->leftFrame->layout()->addWidget( _replay_widget );
 
   createTab("Behaviortree");
 
@@ -133,13 +137,11 @@ void MainWindow::loadFromXML(const QString& xml_text)
         const QSignalBlocker blocker( currentTabInfo() );
 
         currentTabInfo()->scene()->clearScene();
-        QtNodes::Node& first_qt_node = currentTabInfo()->scene()->createNode( _model_registry->create("Root"), QPointF() );
 
         std::cout<< "Starting parsing"<< std::endl;
 
-        ParseBehaviorTreeXML(document.RootElement()->FirstChildElement("BehaviorTree"),
-                             currentTabInfo()->scene(),
-                             first_qt_node);
+        CreateTreeInSceneFromXML(document.RootElement()->FirstChildElement("BehaviorTree"),
+                             currentTabInfo()->scene() );
 
         std::cout<<"XML Parsed Successfully!"<< std::endl;
 
@@ -193,8 +195,6 @@ void MainWindow::on_actionLoad_triggered()
 
   loadFromXML(xml_text);
 }
-
-
 
 
 void MainWindow::on_actionSave_triggered()
@@ -506,12 +506,12 @@ void MainWindow::on_comboBoxLayout_currentIndexChanged(int index)
       auto scene = tab.second->scene();
       if( scene->layout() != new_layout )
       {
-        auto abstract_tree = BuildAbstractTree( *scene );
+        auto abstract_tree = BuildBehaviorTreeFromScene( scene );
 
         scene->setLayout( (index==0) ? QtNodes::PortLayout::Horizontal :
                                        QtNodes::PortLayout::Vertical);
 
-        NodeReorder( *scene, std::move(abstract_tree) );
+        NodeReorder( *scene, abstract_tree );
         refresh = true;
       }
     }
@@ -537,6 +537,10 @@ void MainWindow::on_radioEditor_toggled(bool checked)
   {
     ui->radioMonitor->setChecked(false);
     ui->radioReplay->setChecked(false);
+
+    _editor_widget->setHidden( false );
+    _replay_widget->setHidden( true );
+    ui->leftFrame->update();
   }
 }
 
@@ -546,6 +550,7 @@ void MainWindow::on_radioMonitor_toggled(bool checked)
   {
     ui->radioEditor->setChecked(false);
     ui->radioReplay->setChecked(false);
+
   }
 }
 
@@ -555,5 +560,18 @@ void MainWindow::on_radioReplay_toggled(bool checked)
   {
     ui->radioMonitor->setChecked(false);
     ui->radioEditor->setChecked(false);
+
+    _editor_widget->setHidden( true );
+    _replay_widget->setHidden( false );
+    ui->leftFrame->update();
   }
+}
+
+void MainWindow::on_pushButtonTest_pressed()
+{
+    const QSignalBlocker blocker( currentTabInfo() );
+
+    BehaviorTree tree = BuildBehaviorTreeFromScene( currentTabInfo()->scene() );
+    BuildSceneFromBehaviorTree( currentTabInfo()->scene(), tree);
+    currentTabInfo()->nodeReorder();
 }
