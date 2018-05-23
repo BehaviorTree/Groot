@@ -419,6 +419,7 @@ void MainWindow::onPushUndo()
 
   //-----------------
   const QSignalBlocker blocker( currentTabInfo() );
+  _undo_enabled = false;
 
   currentTabInfo()->scene()->update();
   const QByteArray state = currentTabInfo()->scene()->saveToMemory();
@@ -433,6 +434,7 @@ void MainWindow::onPushUndo()
     }
   }
   _current_state = state;
+  _undo_enabled = true;
   //-----------------
   //std::cout << _current_state.toStdString() << std::endl;
   qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
@@ -444,12 +446,15 @@ void MainWindow::onUndoInvoked()
 
   if( _undo_stack.size() > 0)
   {
-    _redo_stack.push_back( std::move(_current_state) );
-    _current_state = std::move( _undo_stack.back() );
+    _redo_stack.push_back( _current_state );
+    _current_state = _undo_stack.back();
     _undo_stack.pop_back();
+
+    qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 
     {
       const QSignalBlocker blocker( currentTabInfo() );
+      _undo_enabled = false;
       auto scene = currentTabInfo()->scene();
       scene->clearScene();
       currentTabInfo()->scene()->loadFromMemory( _current_state );
@@ -460,6 +465,7 @@ void MainWindow::onUndoInvoked()
         ui->comboBoxLayout->setCurrentIndex(combo_index);
         QApplication::processEvents();
       }
+      _undo_enabled = true;
     }
 
     onSceneChanged();
@@ -480,6 +486,7 @@ void MainWindow::onRedoInvoked()
 
     {
       const QSignalBlocker blocker( currentTabInfo() );
+      _undo_enabled = false;
       auto scene = currentTabInfo()->scene();
       scene->clearScene();
       currentTabInfo()->scene()->loadFromMemory( _current_state );
@@ -487,8 +494,9 @@ void MainWindow::onRedoInvoked()
       int combo_index = ( currentTabInfo()->scene()->layout() == QtNodes::PortLayout::Horizontal) ? 0 : 1;
       if( combo_index != ui->comboBoxLayout->currentIndex() )
       {
-        ui->comboBoxLayout->setCurrentIndex(combo_index);
+          ui->comboBoxLayout->setCurrentIndex(combo_index);
       }
+      _undo_enabled = true;
     }
     onSceneChanged();
 
