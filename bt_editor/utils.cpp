@@ -420,23 +420,9 @@ AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers(const std::vector<char> &buffer
         abs_node.instance_name = node->instance_name()->c_str();
         abs_node.registration_name = node->registration_name()->c_str();
         abs_node.uid = node->uid();
+        abs_node.type   = convert( node->type() );
+        abs_node.status = convert( node->status() );
 
-        switch( node->type() )
-        {
-        case BT_Serialization::Type::ACTION    : abs_node.type = NodeType::ACTION; break;
-        case BT_Serialization::Type::DECORATOR : abs_node.type = NodeType::DECORATOR; break;
-        case BT_Serialization::Type::CONTROL   : abs_node.type = NodeType::CONTROL; break;
-        case BT_Serialization::Type::SUBTREE   : abs_node.type = NodeType::SUBTREE; break;
-        case BT_Serialization::Type::CONDITION : abs_node.type = NodeType::CONDITION; break;
-        case BT_Serialization::Type::UNDEFINED : abs_node.type = NodeType::UNDEFINED; break;
-        }
-        switch( node->status() )
-        {
-        case BT_Serialization::Status::IDLE    : abs_node.status = NodeStatus::IDLE; break;
-        case BT_Serialization::Status::RUNNING : abs_node.status = NodeStatus::RUNNING; break;
-        case BT_Serialization::Status::SUCCESS : abs_node.status = NodeStatus::SUCCESS; break;
-        case BT_Serialization::Status::FAILURE : abs_node.status = NodeStatus::FAILURE; break;
-        }
         tree.nodes.insert( {abs_node.uid, abs_node} );
     }
 
@@ -451,4 +437,41 @@ AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers(const std::vector<char> &buffer
         }
     }
     return tree;
+}
+
+QtNodes::NodeStyle getStyleFromStatus(NodeStatus status)
+{
+    QtNodes::NodeStyle style;
+
+    if( status == NodeStatus::IDLE )
+    {
+        return style;
+    }
+
+    if( status == NodeStatus::SUCCESS )
+    {
+        style.NormalBoundaryColor = QColor(102, 255, 51);
+        style.GradientColor0
+                = style.GradientColor1
+                = style.GradientColor2
+                = style.GradientColor3 = QColor(51, 153, 51);
+    }
+    else if( status == NodeStatus::RUNNING )
+    {
+        style.NormalBoundaryColor = QColor(255, 204, 0);
+        style.GradientColor0
+                = style.GradientColor1
+                = style.GradientColor2
+                = style.GradientColor3 = QColor(204, 122, 0);
+    }
+    else if( status == NodeStatus::FAILURE )
+    {
+        style.NormalBoundaryColor = QColor(255, 51, 0);
+        style.GradientColor0
+                = style.GradientColor1
+                = style.GradientColor2
+                = style.GradientColor3 = QColor(204, 51, 0);
+    }
+
+    return style;
 }

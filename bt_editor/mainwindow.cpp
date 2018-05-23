@@ -436,7 +436,6 @@ void MainWindow::onPushUndo()
   _current_state = state;
   _undo_enabled = true;
   //-----------------
-  //std::cout << _current_state.toStdString() << std::endl;
   qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
 
@@ -547,8 +546,8 @@ void MainWindow::on_radioEditor_toggled(bool checked)
   lockEditing( !checked );
   if( checked )
   {
-    ui->radioMonitor->setChecked(false);
-    ui->radioReplay->setChecked(false);
+//    ui->radioMonitor->setChecked(false);
+//    ui->radioReplay->setChecked(false);
 
     _editor_widget->setHidden( false );
     _replay_widget->setHidden( true );
@@ -560,8 +559,8 @@ void MainWindow::on_radioMonitor_toggled(bool checked)
 {
   if( checked )
   {
-    ui->radioEditor->setChecked(false);
-    ui->radioReplay->setChecked(false);
+//    ui->radioEditor->setChecked(false);
+//    ui->radioReplay->setChecked(false);
 
   }
 }
@@ -570,22 +569,13 @@ void MainWindow::on_radioReplay_toggled(bool checked)
 {
   if( checked )
   {
-    ui->radioMonitor->setChecked(false);
-    ui->radioEditor->setChecked(false);
+//    ui->radioMonitor->setChecked(false);
+//    ui->radioEditor->setChecked(false);
 
     _editor_widget->setHidden( true );
     _replay_widget->setHidden( false );
     ui->leftFrame->update();
   }
-}
-
-void MainWindow::on_pushButtonTest_pressed()
-{
-    const QSignalBlocker blocker( currentTabInfo() );
-
-    AbsBehaviorTree tree = BuildBehaviorTreeFromScene( currentTabInfo()->scene() );
-    BuildSceneFromBehaviorTree( currentTabInfo()->scene(), tree);
-    currentTabInfo()->nodeReorder();
 }
 
 void MainWindow::on_loadBehaviorTree(AbsBehaviorTree tree)

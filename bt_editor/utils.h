@@ -3,6 +3,8 @@
 
 #include <nodes/NodeData>
 #include <nodes/FlowScene>
+#include <nodes/NodeStyle>
+
 #include "bt_editor_base.h"
 #include "BT_logger_generated.h"
 
@@ -21,5 +23,32 @@ QString getCategory(const QtNodes::NodeDataModel* model);
 
 
 AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers( const std::vector<char>& buffer );
+
+QtNodes::NodeStyle getStyleFromStatus(NodeStatus status);
+
+
+inline NodeType convert(const BT_Serialization::Type& type)
+{
+    switch( type )
+    {
+    case BT_Serialization::Type::ACTION    : return  NodeType::ACTION;
+    case BT_Serialization::Type::DECORATOR : return  NodeType::DECORATOR;
+    case BT_Serialization::Type::CONTROL   : return  NodeType::CONTROL;
+    case BT_Serialization::Type::SUBTREE   : return  NodeType::SUBTREE;
+    case BT_Serialization::Type::CONDITION : return  NodeType::CONDITION;
+    case BT_Serialization::Type::UNDEFINED : return  NodeType::UNDEFINED;
+    }
+}
+
+inline NodeStatus convert(const BT_Serialization::Status& status)
+{
+    switch( status )
+    {
+    case BT_Serialization::Status::IDLE    : return NodeStatus::IDLE;
+    case BT_Serialization::Status::RUNNING : return NodeStatus::RUNNING;
+    case BT_Serialization::Status::SUCCESS : return NodeStatus::SUCCESS;
+    case BT_Serialization::Status::FAILURE : return NodeStatus::FAILURE;
+    }
+}
 
 #endif // NODE_UTILS_H

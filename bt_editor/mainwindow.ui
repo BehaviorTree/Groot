@@ -35,13 +35,13 @@
       <widget class="QFrame" name="leftFrame">
        <property name="minimumSize">
         <size>
-         <width>0</width>
+         <width>250</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>300</width>
+         <width>500</width>
          <height>16777215</height>
         </size>
        </property>
@@ -70,7 +70,7 @@
            <number>1</number>
           </property>
           <item>
-           <widget class="QPushButton" name="radioEditor">
+           <widget class="QRadioButton" name="radioEditor">
             <property name="minimumSize">
              <size>
               <width>60</width>
@@ -79,9 +79,21 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>70</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QRadioButton:checked{
+    background-color: rgb(252, 175, 62)
+}
+
+QRadioButton:unchecked{
+   background-color: rgba(0, 0, 0,0)
+}</string>
             </property>
             <property name="text">
              <string>Editor</string>
@@ -92,21 +104,30 @@
             <property name="checked">
              <bool>true</bool>
             </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="radioMonitor">
+           <widget class="QRadioButton" name="radioMonitor">
             <property name="enabled">
              <bool>false</bool>
             </property>
             <property name="maximumSize">
              <size>
-              <width>70</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QRadioButton:checked{
+    background-color: rgb(252, 175, 62)
+}
+
+QRadioButton:unchecked{
+   background-color: rgba(0, 0, 0,0)
+}</string>
             </property>
             <property name="text">
              <string>Monitor</string>
@@ -114,13 +135,10 @@
             <property name="checkable">
              <bool>true</bool>
             </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="radioReplay">
+           <widget class="QRadioButton" name="radioReplay">
             <property name="minimumSize">
              <size>
               <width>60</width>
@@ -129,17 +147,26 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>70</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QRadioButton:checked{
+    background-color: rgb(252, 175, 62)
+}
+
+QRadioButton:unchecked{
+   background-color: rgba(0, 0, 0,0)
+}</string>
             </property>
             <property name="text">
              <string>Replay</string>
             </property>
             <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="flat">
              <bool>true</bool>
             </property>
            </widget>
@@ -151,8 +178,8 @@
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>40</width>
-              <height>20</height>
+              <width>0</width>
+              <height>0</height>
              </size>
             </property>
            </spacer>
@@ -175,13 +202,6 @@
            <widget class="Line" name="line">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButtonTest">
-            <property name="text">
-             <string>TestMe</string>
             </property>
            </widget>
           </item>

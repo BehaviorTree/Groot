@@ -4,6 +4,7 @@
 #include <QFrame>
 #include "bt_editor_base.h"
 
+
 namespace Ui {
 class SidepanelReplay;
 }
@@ -32,7 +33,17 @@ private:
 
     void loadFromFlatbuffers(const std::vector<int8_t>& serialized_description);
 
+    void selectRowsBackground(int last_row);
+
     Ui::SidepanelReplay *ui;
+
+    struct Transition{
+        uint16_t uid;
+        double timestamp;
+        NodeStatus prev_status;
+        NodeStatus status;
+    };
+    std::vector<Transition> _transitions;
 };
 
 #endif // SIDEPANEL_REPLAY_H
