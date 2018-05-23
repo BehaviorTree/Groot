@@ -413,7 +413,7 @@ void MainWindow::on_splitter_splitterMoved(int , int )
 
 void MainWindow::onPushUndo()
 {
-  if ( !ui->radioEditor->isChecked() ) return; //locked
+ // if ( !ui->radioEditor->isChecked() ) return; //locked
 
   if( !_undo_enabled ) return;
 
@@ -425,7 +425,8 @@ void MainWindow::onPushUndo()
 
   if( _current_state.size() )
   {
-    if( _undo_stack.empty() || (_undo_stack.back() != _current_state))
+    if( _undo_stack.empty() ||
+        ( state != _current_state && _undo_stack.back() != _current_state))
     {
       _undo_stack.push_back( _current_state );
       _redo_stack.clear();
@@ -591,7 +592,9 @@ void MainWindow::on_loadBehaviorTree(AbsBehaviorTree tree)
         onSceneChanged();
         scene->update();
 
-       // currentTabInfo()->nodeReorder();
+        currentTabInfo()->nodeReorder();
     }
+    _undo_stack.clear();
+    _redo_stack.clear();
     onPushUndo();
 }

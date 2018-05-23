@@ -100,11 +100,6 @@ void RecursiveNodeReorder(AbstractTreeNode* root_node, PortLayout layout)
 
     recursiveStep = [&](unsigned current_layer, AbstractTreeNode* node)
     {
-        for(auto& child: node->children)
-        {
-            qDebug() << node->instance_name << " " <<  node->uid << "  " << child->uid;
-        }
-
         node->pos = layer_cursor[current_layer];
         nodes_by_level[current_layer].push_back( node );
 
