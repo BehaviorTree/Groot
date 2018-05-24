@@ -1,12 +1,16 @@
 #include "sidepanel_replay.h"
 #include "ui_sidepanel_replay.h"
 
-#include<QDir>
-#include<QFile>
-#include<QFileInfo>
-#include<QFileDialog>
-#include<QSettings>
+#include <QDir>
+#include <QFile>
+#include <QtConcurrent/QtConcurrentRun>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QSettings>
 #include <QKeyEvent>
+#include <QStandardItem>
+#include <QModelIndex>
+#include <QTimer>
 
 #include "bt_editor_base.h"
 #include "utils.h"
@@ -18,9 +22,27 @@ SidepanelReplay::SidepanelReplay(QWidget *parent) :
     _prev_row(0)
 {
     ui->setupUi(this);
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 
-    ui->tableWidget->installEventFilter(this);
+    _table_model = new QStandardItemModel(0,4, this);
+
+    _table_model->setHeaderData(0,Qt::Horizontal, "Time");
+    _table_model->setHeaderData(1,Qt::Horizontal, "Node Name");
+    _table_model->setHeaderData(2,Qt::Horizontal, "Previous");
+    _table_model->setHeaderData(3,Qt::Horizontal, "Status");
+
+    ui->tableView->setModel(_table_model);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+
+    _update_timer = new QTimer(this);
+    _update_timer->setSingleShot(true);
+    connect( _update_timer, &QTimer::timeout, this, &SidepanelReplay::onTimerUpdate );
+
+
+    _play_timer = new QTimer(this);
+    _play_timer->setSingleShot(true);
+    connect( _play_timer, &QTimer::timeout, this, &SidepanelReplay::onPlayUpdate );
+
+    ui->tableView->installEventFilter(this);
 }
 
 SidepanelReplay::~SidepanelReplay()
@@ -84,37 +106,35 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
         _transitions.push_back(transition);
     }
 
-    ui->tableWidget->setColumnCount(4);
+    _table_model->setColumnCount(4);
     const size_t transitions_count = _transitions.size();
 
-    ui->tableWidget->setRowCount( transitions_count );
-
-    auto createStatusItem = [](NodeStatus status) -> QTableWidgetItem*
+    auto createStatusItem = [](NodeStatus status) -> QStandardItem*
     {
+        QStandardItem* item = nullptr;
         switch (status)
         {
         case NodeStatus::SUCCESS:{
-            auto item = new QTableWidgetItem("SUCCESS");
+            item = new QStandardItem("SUCCESS");
             item->setForeground(QColor::fromRgb(77, 255, 77));
-            return item;
-        }
+        } break;
         case NodeStatus::FAILURE:{
-            auto item = new QTableWidgetItem("FAILURE");
+            item = new QStandardItem("FAILURE");
             item->setForeground(QColor::fromRgb(255, 0, 0));
-            return item;
-        }
+        } break;
         case NodeStatus::RUNNING:{
-            auto item = new QTableWidgetItem("RUNNING");
+            item = new QStandardItem("RUNNING");
             item->setForeground(QColor::fromRgb(235, 120, 66));
-            return item;
-        }
+        } break;
         case NodeStatus::IDLE:{
-            auto item = new QTableWidgetItem("IDLE");
+            item = new QStandardItem("IDLE");
             item->setForeground(QColor::fromRgb(20, 20, 20));
-            return item;
+        } break;
         }
-        }
-        return nullptr;
+        auto font = item->font();
+        font.setBold(true);
+        item->setFont(font);
+        return item;
     };
 
     if(  transitions_count > 0)
@@ -132,13 +152,9 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
             QString timestamp;
             timestamp.sprintf("%.3f", trans.timestamp - first_timestamp);
 
-            auto timestamp_item = new QTableWidgetItem( timestamp );
+            auto timestamp_item = new QStandardItem( timestamp );
             timestamp.sprintf("absolute time: %.3f", trans.timestamp);
             timestamp_item->setToolTip( timestamp );
-
-            ui->tableWidget->setItem(row,1, new QTableWidgetItem( node.instance_name) );
-            ui->tableWidget->setItem(row,2, createStatusItem( trans.prev_status) );
-            ui->tableWidget->setItem(row,3, createStatusItem( trans.status) );
 
             if(  (trans.timestamp - previous_timestamp) >= 0.001 )
             {
@@ -150,14 +166,23 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
                 timestamp_item->setFont(font);
             }
 
-            ui->tableWidget->setItem(row,0, timestamp_item );
+            QList<QStandardItem *> rowData;
+            rowData << timestamp_item;
+            rowData << new QStandardItem( node.instance_name );
+            rowData << createStatusItem( trans.prev_status );
+            rowData << createStatusItem( trans.status );
+            _table_model->appendRow(rowData);
         }
 
-        ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-        ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-        ui->tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-        ui->tableWidget->verticalHeader()->minimumSectionSize();
+        emit _table_model->dataChanged( _table_model->index(0,0), _table_model->index( transitions_count-1, 3) );
 
+        ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+        ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+        ui->tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+        ui->tableView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+        ui->tableView->verticalHeader()->minimumSize();
+
+        qDebug() << _table_model->rowCount();
 
         ui->label->setText( QString("of %1").arg(_timepoint.size()) );
         ui->spinBox->setMaximum(_timepoint.size());
@@ -180,10 +205,6 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
     }
 }
 
-void SidepanelReplay::on_pushButtonPlay_toggled(bool checked)
-{
-
-}
 
 void SidepanelReplay::on_spinBox_valueChanged(int value)
 {
@@ -193,10 +214,10 @@ void SidepanelReplay::on_spinBox_valueChanged(int value)
     }
 
     int row = _timepoint[value].second;
-    auto item = ui->tableWidget->item(row, 0);
-    ui->tableWidget->scrollToItem( item, QAbstractItemView::PositionAtCenter  );
 
-    onValueChanged( row );
+    ui->tableView->scrollTo( _table_model->index(row,0), QAbstractItemView::PositionAtCenter  );
+
+    onRowChanged( row );
 }
 
 void SidepanelReplay::on_timeSlider_valueChanged(int value)
@@ -207,46 +228,44 @@ void SidepanelReplay::on_timeSlider_valueChanged(int value)
     }
 
     int row = _timepoint[value].second;
-    auto item = ui->tableWidget->item(row, 0);
-    ui->tableWidget->scrollToItem( item, QAbstractItemView::PositionAtCenter  );
+    ui->tableView->scrollTo( _table_model->index(row,0), QAbstractItemView::PositionAtCenter);
 
-    onValueChanged( row );
+    onRowChanged( row );
 }
 
-void SidepanelReplay::onValueChanged(int current_row)
+void SidepanelReplay::onRowChanged(int current_row)
 {
-    current_row = std::min( current_row, ui->tableWidget->rowCount() -1 );
+    current_row = std::min( current_row, _table_model->rowCount() -1 );
     current_row = std::max( current_row, 0 );
 
-    int first = 0;
-    if( _prev_row < current_row )
-    {
-        first = _prev_row;
-    }
-    {
-        ui->tableWidget->horizontalHeader()->setSectionResizeMode (QHeaderView::Fixed);
-        ui->tableWidget->verticalHeader()->setSectionResizeMode (QHeaderView::Fixed);
+    int prev_row = _prev_row;
 
-        for (int row = first; row <= current_row; row++)
-        {
-            ui->tableWidget->item(row, 0)->setBackground( QColor::fromRgb(210, 210, 210) );
-            ui->tableWidget->item(row, 1)->setBackground( QColor::fromRgb(210, 210, 210) );
-            ui->tableWidget->item(row, 2)->setBackground( QColor::fromRgb(210, 210, 210) );
-            ui->tableWidget->item(row, 3)->setBackground( QColor::fromRgb(210, 210, 210) );
-        }
-        for (int row = current_row+1; row < ui->tableWidget->rowCount(); row++)
-        {
-            ui->tableWidget->item(row, 0)->setBackground( QColor::fromRgb(255, 255, 255) );
-            ui->tableWidget->item(row, 1)->setBackground( QColor::fromRgb(255, 255, 255) );
-            ui->tableWidget->item(row, 2)->setBackground( QColor::fromRgb(255, 255, 255) );
-            ui->tableWidget->item(row, 3)->setBackground( QColor::fromRgb(255, 255, 255) );
-        }
+    ui->tableView->horizontalHeader()->setSectionResizeMode (QHeaderView::Fixed);
+    ui->tableView->verticalHeader()->setSectionResizeMode (QHeaderView::Fixed);
 
-        ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-        ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
-        ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-        ui->tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    const auto selected_color   = QColor::fromRgb(210, 210, 210);
+    const auto unselected_color = QColor::fromRgb(255, 255, 255);
+
+    for (int row = prev_row; row <= current_row; row++)
+    {
+        _table_model->item(row, 0)->setBackground( selected_color );
+        _table_model->item(row, 1)->setBackground( selected_color );
+        _table_model->item(row, 2)->setBackground( selected_color );
+        _table_model->item(row, 3)->setBackground( selected_color );
     }
+    for (int row = current_row+1; row <= prev_row; row++)
+    {
+        _table_model->item(row, 0)->setBackground( unselected_color );
+        _table_model->item(row, 1)->setBackground( unselected_color );
+        _table_model->item(row, 2)->setBackground( unselected_color );
+        _table_model->item(row, 3)->setBackground( unselected_color );
+    }
+
+    if( !_update_timer->isActive() )
+    {
+        _update_timer->stop();
+    }
+    _update_timer->start(100);
 
     for (auto& it: _loaded_tree.nodes)
     {
@@ -269,7 +288,6 @@ void SidepanelReplay::onValueChanged(int current_row)
     _prev_row = current_row;
 }
 
-
 void SidepanelReplay::updatedSpinAndSlider(int row)
 {
     auto it = std::upper_bound( _timepoint.begin(), _timepoint.end(), row,
@@ -289,15 +307,10 @@ void SidepanelReplay::updatedSpinAndSlider(int row)
     ui->timeSlider->setValue(index);
 }
 
-void SidepanelReplay::on_tableWidget_itemClicked(QTableWidgetItem *item)
-{
-    onValueChanged( item->row() );
-    updatedSpinAndSlider(item->row());
-}
 
 bool SidepanelReplay::eventFilter(QObject *object, QEvent *event)
 {
-    if( object == ui->tableWidget)
+    if( object == ui->tableView)
     {
         if (event->type() == QEvent::KeyPress)
         {
@@ -313,18 +326,123 @@ bool SidepanelReplay::eventFilter(QObject *object, QEvent *event)
                 next_row = _prev_row -1;
             }
 
-            if( next_row >= 0)
+            if( next_row >= 0 && next_row < _table_model->rowCount() )
             {
-                onValueChanged( next_row);
+                onRowChanged( next_row);
                 updatedSpinAndSlider( next_row );
-                ui->tableWidget->scrollToItem( ui->tableWidget->item(next_row, 0),
-                                               QAbstractItemView::EnsureVisible  );
+                ui->tableView->scrollTo( _table_model->index(next_row,0),
+                                         QAbstractItemView::EnsureVisible);
             }
-
             return true;
         }
     }
-    else{
-        return false;
+    return false;
+}
+
+void SidepanelReplay::on_tableView_clicked(const QModelIndex &index)
+{
+    // disable during play
+    if( !ui->pushButtonPlay->isChecked())
+    {
+        onRowChanged( index.row() );
+        updatedSpinAndSlider( index.row() );
     }
+}
+
+void SidepanelReplay::onTimerUpdate()
+{
+    ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+}
+
+void SidepanelReplay::on_pushButtonPlay_toggled(bool checked)
+{
+    ui->timeSlider->setEnabled( !checked );
+    ui->spinBox->setEnabled( !checked );
+
+    if(checked)
+    {
+        _initial_real_time      = std::chrono::high_resolution_clock::now();
+        _initial_relative_time  = _transitions[ _prev_row ].timestamp;
+
+        size_t row = _prev_row;
+
+        while( row < _transitions.size()-1 &&
+               (_transitions[row+1].timestamp - _initial_relative_time) < 0.01 )
+        {
+            row++;
+        }
+
+        qDebug() << "START: row " << row << " time " << _transitions[row].timestamp - _transitions.front().timestamp;
+
+
+        double next_time  = _transitions[ row ].timestamp;
+        int delay_ms = (next_time - _initial_relative_time) * 1000;
+
+        _play_timer->start( delay_ms );
+    }
+    else{
+        if( !_play_timer->isActive() )
+        {
+            const QSignalBlocker blocker( _play_timer );
+            _play_timer->stop();
+        }
+
+        ui->tableView->scrollTo( _table_model->index( _prev_row,0),
+                                 QAbstractItemView::PositionAtCenter);
+    }
+}
+
+void SidepanelReplay::onPlayUpdate()
+{
+    if( !ui->pushButtonPlay->isChecked())
+    {
+        return;
+    }
+
+    using namespace std::chrono;
+    const size_t LAST_ROW = _transitions.size()-1;
+
+    auto now = high_resolution_clock::now();
+    double relative_time = _initial_relative_time + 0.001*(double) duration_cast<milliseconds>( now - _initial_real_time).count();
+    size_t row = _prev_row;
+
+    while( row < LAST_ROW &&
+           (_transitions[row+1].timestamp - relative_time) < 0.001 )
+    {
+        row++;
+    }
+
+    row = std::min( row, LAST_ROW);
+
+    qDebug() << " row " << row << " tiemstamp " << relative_time - _transitions.front().timestamp;
+    onRowChanged( row );
+    updatedSpinAndSlider( row );
+
+    if( row == LAST_ROW)
+    {
+        ui->pushButtonPlay->setChecked(false);
+        return;
+    }
+
+    size_t next_row = row+1 ;
+
+    while( next_row < LAST_ROW &&
+           (_transitions[next_row].timestamp - relative_time) < 0.01 )
+    {
+        next_row++;
+    }
+
+    double next_time  = _transitions[ next_row ].timestamp;
+    int delay_relative = (next_time - _initial_relative_time) * 1000;
+    auto deadline =  _initial_real_time + std::chrono::milliseconds((int)(delay_relative));
+
+    int delay_real = duration_cast<milliseconds>( deadline - high_resolution_clock::now() ).count();
+
+    delay_real = std::max( 0, delay_real );
+
+    qDebug() << "delay_relative " << delay_relative << " next_row " << next_row << "  delay_real " << delay_real << "\n";
+    _play_timer->start(delay_real);
 }

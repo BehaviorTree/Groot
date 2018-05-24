@@ -65,7 +65,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QTableWidget" name="tableWidget">
+    <widget class="QTableView" name="tableView">
      <property name="font">
       <font>
        <pointsize>9</pointsize>
@@ -80,59 +80,27 @@
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
-     <attribute name="verticalHeaderVisible">
+     <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>60</number>
+     </attribute>
+     <attribute name="horizontalHeaderMinimumSectionSize">
+      <number>60</number>
+     </attribute>
+     <attribute name="horizontalHeaderStretchLastSection">
       <bool>false</bool>
      </attribute>
+     <attribute name="verticalHeaderVisible">
+      <bool>true</bool>
+     </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
-      <number>15</number>
+      <number>20</number>
      </attribute>
      <attribute name="verticalHeaderMinimumSectionSize">
-      <number>15</number>
+      <number>20</number>
      </attribute>
-     <column>
-      <property name="text">
-       <string>Timestamp</string>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Node Name</string>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Previous</string>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-        <weight>50</weight>
-        <bold>false</bold>
-       </font>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>New Status</string>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-        <weight>50</weight>
-        <bold>false</bold>
-       </font>
-      </property>
-     </column>
+     <attribute name="verticalHeaderStretchLastSection">
+      <bool>false</bool>
+     </attribute>
     </widget>
    </item>
    <item>
@@ -186,6 +154,15 @@
        </property>
        <property name="toolTip">
         <string>Play the recorded log</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton:checked{
+    background-color: rgb(252, 175, 62)
+}
+
+QPushButton:unchecked{
+   background-color: rgba(0, 0, 0,0)
+}</string>
        </property>
        <property name="text">
         <string/>
