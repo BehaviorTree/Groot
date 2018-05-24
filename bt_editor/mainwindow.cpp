@@ -546,9 +546,6 @@ void MainWindow::on_radioEditor_toggled(bool checked)
   lockEditing( !checked );
   if( checked )
   {
-//    ui->radioMonitor->setChecked(false);
-//    ui->radioReplay->setChecked(false);
-
     _editor_widget->setHidden( false );
     _replay_widget->setHidden( true );
     ui->leftFrame->update();
@@ -559,8 +556,6 @@ void MainWindow::on_radioMonitor_toggled(bool checked)
 {
   if( checked )
   {
-//    ui->radioEditor->setChecked(false);
-//    ui->radioReplay->setChecked(false);
 
   }
 }
@@ -569,9 +564,6 @@ void MainWindow::on_radioReplay_toggled(bool checked)
 {
   if( checked )
   {
-//    ui->radioMonitor->setChecked(false);
-//    ui->radioEditor->setChecked(false);
-
     _editor_widget->setHidden( true );
     _replay_widget->setHidden( false );
     ui->leftFrame->update();
