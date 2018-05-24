@@ -50,6 +50,94 @@ SidepanelReplay::~SidepanelReplay()
     delete ui;
 }
 
+void SidepanelReplay::updateTableModel()
+{
+    _table_model->setColumnCount(4);
+    _table_model->setRowCount(0);
+
+    const size_t transitions_count = _transitions.size();
+
+    auto createStatusItem = [](NodeStatus status) -> QStandardItem*
+    {
+        QStandardItem* item = nullptr;
+        switch (status)
+        {
+        case NodeStatus::SUCCESS:{
+            item = new QStandardItem("SUCCESS");
+            item->setForeground(QColor::fromRgb(77, 255, 77));
+        } break;
+        case NodeStatus::FAILURE:{
+            item = new QStandardItem("FAILURE");
+            item->setForeground(QColor::fromRgb(255, 0, 0));
+        } break;
+        case NodeStatus::RUNNING:{
+            item = new QStandardItem("RUNNING");
+            item->setForeground(QColor::fromRgb(235, 120, 66));
+        } break;
+        case NodeStatus::IDLE:{
+            item = new QStandardItem("IDLE");
+            item->setForeground(QColor::fromRgb(20, 20, 20));
+        } break;
+        }
+        auto font = item->font();
+        font.setBold(true);
+        item->setFont(font);
+        return item;
+    };
+
+    if(  transitions_count > 0)
+    {
+        double previous_timestamp = 0;
+        const double first_timestamp = _transitions.front().timestamp;
+
+        for(size_t row=0; row < transitions_count; row++)
+        {
+            auto& trans = _transitions[row];
+            auto& node = _loaded_tree.nodes[ trans.uid ];
+
+            QString timestamp;
+            timestamp.sprintf("%.3f", trans.timestamp - first_timestamp);
+
+            auto timestamp_item = new QStandardItem( timestamp );
+            timestamp.sprintf("absolute time: %.3f", trans.timestamp);
+            timestamp_item->setToolTip( timestamp );
+
+            if(  (trans.timestamp - previous_timestamp) >= 0.001 )
+            {
+                _timepoint.push_back( {trans.timestamp, row}  );
+                previous_timestamp = trans.timestamp;
+
+                auto font = timestamp_item->font();
+                font.setBold(true);
+                timestamp_item->setFont(font);
+            }
+
+            QList<QStandardItem *> rowData;
+            rowData << timestamp_item;
+            rowData << new QStandardItem( node.instance_name );
+            rowData << createStatusItem( trans.prev_status );
+            rowData << createStatusItem( trans.status );
+            _table_model->appendRow(rowData);
+        }
+
+        emit _table_model->dataChanged( _table_model->index(0,0), _table_model->index( transitions_count-1, 3) );
+
+        ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+        ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+        ui->tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+        ui->tableView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+        ui->tableView->verticalHeader()->minimumSize();
+    }
+
+    ui->label->setText( QString("of %1").arg( _timepoint.size() ) );
+
+    ui->spinBox->setMaximum( _timepoint.size() );
+    ui->spinBox->setEnabled( !_timepoint.empty() );
+    ui->timeSlider->setMaximum( _timepoint.size() );
+    ui->timeSlider->setEnabled( !_timepoint.empty() );
+    ui->pushButtonPlay->setEnabled( !_timepoint.empty() );
+}
+
 void SidepanelReplay::on_pushButtonLoadLog_pressed()
 {
     QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
@@ -89,9 +177,6 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
     _transitions.clear();
     _transitions.reserve( (content.size() - 4 - bt_header_size) / 12 );
 
-    _timepoint.clear();
-
-
     for (size_t index = 4+bt_header_size; index < content.size(); index += 12)
     {
         Transition transition;
@@ -106,103 +191,10 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
         _transitions.push_back(transition);
     }
 
-    _table_model->setColumnCount(4);
-    const size_t transitions_count = _transitions.size();
+    _timepoint.clear();
+    _prev_row = 0;
+    updateTableModel();
 
-    auto createStatusItem = [](NodeStatus status) -> QStandardItem*
-    {
-        QStandardItem* item = nullptr;
-        switch (status)
-        {
-        case NodeStatus::SUCCESS:{
-            item = new QStandardItem("SUCCESS");
-            item->setForeground(QColor::fromRgb(77, 255, 77));
-        } break;
-        case NodeStatus::FAILURE:{
-            item = new QStandardItem("FAILURE");
-            item->setForeground(QColor::fromRgb(255, 0, 0));
-        } break;
-        case NodeStatus::RUNNING:{
-            item = new QStandardItem("RUNNING");
-            item->setForeground(QColor::fromRgb(235, 120, 66));
-        } break;
-        case NodeStatus::IDLE:{
-            item = new QStandardItem("IDLE");
-            item->setForeground(QColor::fromRgb(20, 20, 20));
-        } break;
-        }
-        auto font = item->font();
-        font.setBold(true);
-        item->setFont(font);
-        return item;
-    };
-
-    if(  transitions_count > 0)
-    {
-        double previous_timestamp = 0;
-
-        const double first_timestamp = _transitions.front().timestamp;
-        _timepoint.clear();
-
-        for(size_t row=0; row < transitions_count; row++)
-        {
-            auto& trans = _transitions[row];
-            auto& node = _loaded_tree.nodes[ trans.uid ];
-
-            QString timestamp;
-            timestamp.sprintf("%.3f", trans.timestamp - first_timestamp);
-
-            auto timestamp_item = new QStandardItem( timestamp );
-            timestamp.sprintf("absolute time: %.3f", trans.timestamp);
-            timestamp_item->setToolTip( timestamp );
-
-            if(  (trans.timestamp - previous_timestamp) >= 0.001 )
-            {
-                _timepoint.push_back( {trans.timestamp, row}  );
-                previous_timestamp = trans.timestamp;
-
-                auto font = timestamp_item->font();
-                font.setBold(true);
-                timestamp_item->setFont(font);
-            }
-
-            QList<QStandardItem *> rowData;
-            rowData << timestamp_item;
-            rowData << new QStandardItem( node.instance_name );
-            rowData << createStatusItem( trans.prev_status );
-            rowData << createStatusItem( trans.status );
-            _table_model->appendRow(rowData);
-        }
-
-        emit _table_model->dataChanged( _table_model->index(0,0), _table_model->index( transitions_count-1, 3) );
-
-        ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-        ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
-        ui->tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-        ui->tableView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-        ui->tableView->verticalHeader()->minimumSize();
-
-        qDebug() << _table_model->rowCount();
-
-        ui->label->setText( QString("of %1").arg(_timepoint.size()) );
-        ui->spinBox->setMaximum(_timepoint.size());
-        ui->spinBox->setEnabled(true);
-
-        ui->timeSlider->setMaximum(_timepoint.size());
-        ui->timeSlider->setEnabled(true);
-
-        ui->pushButtonPlay->setEnabled(true);
-    }
-    else{
-        ui->label->setText("of 0");
-        ui->spinBox->setMaximum(0);
-        ui->spinBox->setEnabled(false);
-
-        ui->timeSlider->setMaximum(0);
-        ui->timeSlider->setEnabled(false);
-
-        ui->pushButtonPlay->setEnabled(false);
-    }
 }
 
 
@@ -417,7 +409,7 @@ void SidepanelReplay::onPlayUpdate()
 
     row = std::min( row, LAST_ROW);
 
-    qDebug() << " row " << row << " tiemstamp " << relative_time - _transitions.front().timestamp;
+    //qDebug() << " row " << row << " tiemstamp " << relative_time - _transitions.front().timestamp;
     onRowChanged( row );
     updatedSpinAndSlider( row );
 
@@ -438,11 +430,9 @@ void SidepanelReplay::onPlayUpdate()
     double next_time  = _transitions[ next_row ].timestamp;
     int delay_relative = (next_time - _initial_relative_time) * 1000;
     auto deadline =  _initial_real_time + std::chrono::milliseconds((int)(delay_relative));
-
     int delay_real = duration_cast<milliseconds>( deadline - high_resolution_clock::now() ).count();
-
     delay_real = std::max( 0, delay_real );
 
-    qDebug() << "delay_relative " << delay_relative << " next_row " << next_row << "  delay_real " << delay_real << "\n";
+    //qDebug() << "delay_relative " << delay_relative << " next_row " << next_row << "  delay_real " << delay_real << "\n";
     _play_timer->start(delay_real);
 }

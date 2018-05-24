@@ -60,6 +60,7 @@ private:
     int _prev_row;
 
     AbsBehaviorTree _loaded_tree;
+
     void updatedSpinAndSlider(int row);
 
     QStandardItemModel* _table_model;
@@ -70,6 +71,7 @@ private:
 
     std::chrono::high_resolution_clock::time_point _initial_real_time;
     double _initial_relative_time;
+    void updateTableModel();
 };
 
 #endif // SIDEPANEL_REPLAY_H
