@@ -591,6 +591,8 @@ void MainWindow::on_loadBehaviorTree(AbsBehaviorTree &tree)
         scene->update();
 
         currentTabInfo()->nodeReorder();
+
+        lockEditing( !ui->radioEditor->isChecked() );
     }
     _undo_stack.clear();
     _redo_stack.clear();

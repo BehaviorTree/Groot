@@ -58,6 +58,7 @@ private:
     std::vector< std::pair<double,int>> _timepoint;
 
     int _prev_row;
+    int _next_row;
 
     AbsBehaviorTree _loaded_tree;
 
@@ -69,8 +70,6 @@ private:
 
     QTimer *_play_timer;
 
-    std::chrono::high_resolution_clock::time_point _initial_real_time;
-    double _initial_relative_time;
     void updateTableModel();
 };
 

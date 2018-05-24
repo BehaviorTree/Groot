@@ -102,7 +102,7 @@ void SidepanelReplay::updateTableModel()
             timestamp.sprintf("absolute time: %.3f", trans.timestamp);
             timestamp_item->setToolTip( timestamp );
 
-            if(  (trans.timestamp - previous_timestamp) >= 0.001 )
+            if(  (trans.timestamp - previous_timestamp) >= 0.001 || row == transitions_count-1)
             {
                 _timepoint.push_back( {trans.timestamp, row}  );
                 previous_timestamp = trans.timestamp;
@@ -131,9 +131,11 @@ void SidepanelReplay::updateTableModel()
 
     ui->label->setText( QString("of %1").arg( _timepoint.size() ) );
 
-    ui->spinBox->setMaximum( _timepoint.size() );
+    ui->spinBox->setValue(0);
+    ui->spinBox->setMaximum( _timepoint.size()-1 );
     ui->spinBox->setEnabled( !_timepoint.empty() );
-    ui->timeSlider->setMaximum( _timepoint.size() );
+    ui->timeSlider->setValue( 0 );
+    ui->timeSlider->setMaximum( _timepoint.size()-1 );
     ui->timeSlider->setEnabled( !_timepoint.empty() );
     ui->pushButtonPlay->setEnabled( !_timepoint.empty() );
 }
@@ -194,7 +196,6 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
     _timepoint.clear();
     _prev_row = 0;
     updateTableModel();
-
 }
 
 
@@ -230,7 +231,10 @@ void SidepanelReplay::onRowChanged(int current_row)
     current_row = std::min( current_row, _table_model->rowCount() -1 );
     current_row = std::max( current_row, 0 );
 
-    int prev_row = _prev_row;
+    if( _prev_row == current_row)
+    {
+        return;
+    }
 
     ui->tableView->horizontalHeader()->setSectionResizeMode (QHeaderView::Fixed);
     ui->tableView->verticalHeader()->setSectionResizeMode (QHeaderView::Fixed);
@@ -238,14 +242,14 @@ void SidepanelReplay::onRowChanged(int current_row)
     const auto selected_color   = QColor::fromRgb(210, 210, 210);
     const auto unselected_color = QColor::fromRgb(255, 255, 255);
 
-    for (int row = prev_row; row <= current_row; row++)
+    for (int row = _prev_row; row <= current_row; row++)
     {
         _table_model->item(row, 0)->setBackground( selected_color );
         _table_model->item(row, 1)->setBackground( selected_color );
         _table_model->item(row, 2)->setBackground( selected_color );
         _table_model->item(row, 3)->setBackground( selected_color );
     }
-    for (int row = current_row+1; row <= prev_row; row++)
+    for (int row = current_row+1; row <= _prev_row; row++)
     {
         _table_model->item(row, 0)->setBackground( unselected_color );
         _table_model->item(row, 1)->setBackground( unselected_color );
@@ -276,7 +280,6 @@ void SidepanelReplay::onRowChanged(int current_row)
         node->nodeDataModel()->setNodeStyle( getStyleFromStatus( it.second.status ) );
         node->nodeGraphicsObject().update();
     }
-
     _prev_row = current_row;
 }
 
@@ -356,32 +359,10 @@ void SidepanelReplay::on_pushButtonPlay_toggled(bool checked)
 
     if(checked)
     {
-        _initial_real_time      = std::chrono::high_resolution_clock::now();
-        _initial_relative_time  = _transitions[ _prev_row ].timestamp;
-
-        size_t row = _prev_row;
-
-        while( row < _transitions.size()-1 &&
-               (_transitions[row+1].timestamp - _initial_relative_time) < 0.01 )
-        {
-            row++;
-        }
-
-        qDebug() << "START: row " << row << " time " << _transitions[row].timestamp - _transitions.front().timestamp;
-
-
-        double next_time  = _transitions[ row ].timestamp;
-        int delay_ms = (next_time - _initial_relative_time) * 1000;
-
-        _play_timer->start( delay_ms );
+        _next_row =_prev_row;
+        onPlayUpdate();
     }
     else{
-        if( !_play_timer->isActive() )
-        {
-            const QSignalBlocker blocker( _play_timer );
-            _play_timer->stop();
-        }
-
         ui->tableView->scrollTo( _table_model->index( _prev_row,0),
                                  QAbstractItemView::PositionAtCenter);
     }
@@ -397,42 +378,36 @@ void SidepanelReplay::onPlayUpdate()
     using namespace std::chrono;
     const size_t LAST_ROW = _transitions.size()-1;
 
-    auto now = high_resolution_clock::now();
-    double relative_time = _initial_relative_time + 0.001*(double) duration_cast<milliseconds>( now - _initial_real_time).count();
-    size_t row = _prev_row;
-
-    while( row < LAST_ROW &&
-           (_transitions[row+1].timestamp - relative_time) < 0.001 )
+    while( _next_row < LAST_ROW -1 &&
+           (_transitions[_next_row+1].timestamp - _transitions[_next_row].timestamp) < 0.001 )
     {
-        row++;
+        _next_row++;
     }
 
-    row = std::min( row, LAST_ROW);
+    onRowChanged( _next_row );
+    updatedSpinAndSlider( _next_row );
+    ui->tableView->scrollTo( _table_model->index(_next_row,0), QAbstractItemView::EnsureVisible  );
 
-    //qDebug() << " row " << row << " tiemstamp " << relative_time - _transitions.front().timestamp;
-    onRowChanged( row );
-    updatedSpinAndSlider( row );
-
-    if( row == LAST_ROW)
+    if( _next_row == LAST_ROW)
     {
         ui->pushButtonPlay->setChecked(false);
         return;
     }
 
-    size_t next_row = row+1 ;
+    double prev_timestamp = _transitions[_next_row].timestamp;
 
-    while( next_row < LAST_ROW &&
-           (_transitions[next_row].timestamp - relative_time) < 0.01 )
+    //qDebug() << " row " << _next_row << " timwstamp " << _transitions[_next_row].timestamp - _transitions.front().timestamp;
+
+    _next_row++;
+    while( _next_row < LAST_ROW &&
+           (_transitions[_next_row].timestamp - prev_timestamp) < 0.01 )
     {
-        next_row++;
+        _next_row++;
     }
 
-    double next_time  = _transitions[ next_row ].timestamp;
-    int delay_relative = (next_time - _initial_relative_time) * 1000;
-    auto deadline =  _initial_real_time + std::chrono::milliseconds((int)(delay_relative));
-    int delay_real = duration_cast<milliseconds>( deadline - high_resolution_clock::now() ).count();
-    delay_real = std::max( 0, delay_real );
+    int delay_relative = (_transitions[ _next_row ].timestamp - prev_timestamp) * 1000;
 
-    //qDebug() << "delay_relative " << delay_relative << " next_row " << next_row << "  delay_real " << delay_real << "\n";
-    _play_timer->start(delay_real);
+    //qDebug() << "delay_relative " << delay_relative << " next_row " << _next_row << "\n";
+
+    _play_timer->start(delay_relative);
 }
