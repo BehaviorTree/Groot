@@ -376,16 +376,19 @@ void SidepanelReplay::on_pushButtonPlay_toggled(bool checked)
 
 void SidepanelReplay::onPlayUpdate()
 {
-    if( !ui->pushButtonPlay->isChecked())
+    if( !ui->pushButtonPlay->isChecked() || _transitions.empty() )
     {
         return;
     }
 
     using namespace std::chrono;
-    const size_t LAST_ROW = _transitions.size()-1;
+    const int LAST_ROW = _transitions.size()-1;
 
+    const double TIME_DIFFERENCE_THRESHOLD = 0.01;
+
+    // move forward as long as timestamp difference is small.
     while( _next_row < LAST_ROW -1 &&
-           (_transitions[_next_row+1].timestamp - _transitions[_next_row].timestamp) < 0.001 )
+           (_transitions[_next_row+1].timestamp - _transitions[_next_row].timestamp) < TIME_DIFFERENCE_THRESHOLD )
     {
         _next_row++;
     }
@@ -400,19 +403,11 @@ void SidepanelReplay::onPlayUpdate()
         return;
     }
 
-    double prev_timestamp = _transitions[_next_row].timestamp;
-
-    //qDebug() << " row " << _next_row << " timwstamp " << _transitions[_next_row].timestamp - _transitions.front().timestamp;
+    const double prev_time = _transitions[_next_row].timestamp;
+    const double next_time = _transitions[_next_row+1].timestamp;
+    int delay_relative = (next_time - prev_time) * 1000;
 
     _next_row++;
-    while( _next_row < LAST_ROW &&
-           (_transitions[_next_row].timestamp - prev_timestamp) < 0.01 )
-    {
-        _next_row++;
-    }
-
-    int delay_relative = (_transitions[ _next_row ].timestamp - prev_timestamp) * 1000;
-
     //qDebug() << "delay_relative " << delay_relative << " next_row " << _next_row << "\n";
 
     _play_timer->start(delay_relative);
