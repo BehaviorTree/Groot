@@ -33,9 +33,9 @@ SidepanelReplay::SidepanelReplay(QWidget *parent) :
     ui->tableView->setModel(_table_model);
     ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 
-    _update_timer = new QTimer(this);
-    _update_timer->setSingleShot(true);
-    connect( _update_timer, &QTimer::timeout, this, &SidepanelReplay::onTimerUpdate );
+    _layout_update_timer = new QTimer(this);
+    _layout_update_timer->setSingleShot(true);
+    connect( _layout_update_timer, &QTimer::timeout, this, &SidepanelReplay::onTimerUpdate );
 
 
     _play_timer = new QTimer(this);
@@ -233,9 +233,12 @@ void SidepanelReplay::onRowChanged(int current_row)
 
     if( _prev_row == current_row)
     {
+        // nothing to do
         return;
     }
 
+    // disable section resize, otherwise it will be SUPER slow
+    // We will refresh this in the callback of _layout_update_timer -> onTimerUpdate
     ui->tableView->horizontalHeader()->setSectionResizeMode (QHeaderView::Fixed);
     ui->tableView->verticalHeader()->setSectionResizeMode (QHeaderView::Fixed);
 
@@ -244,36 +247,39 @@ void SidepanelReplay::onRowChanged(int current_row)
 
     for (int row = _prev_row; row <= current_row; row++)
     {
-        _table_model->item(row, 0)->setBackground( selected_color );
-        _table_model->item(row, 1)->setBackground( selected_color );
-        _table_model->item(row, 2)->setBackground( selected_color );
-        _table_model->item(row, 3)->setBackground( selected_color );
+        for (int col=0; col < 4; col++)
+        {
+            _table_model->item(row, col)->setBackground( selected_color );
+        }
     }
     for (int row = current_row+1; row <= _prev_row; row++)
     {
-        _table_model->item(row, 0)->setBackground( unselected_color );
-        _table_model->item(row, 1)->setBackground( unselected_color );
-        _table_model->item(row, 2)->setBackground( unselected_color );
-        _table_model->item(row, 3)->setBackground( unselected_color );
+        for (int col=0; col < 4; col++)
+        {
+            _table_model->item(row, col)->setBackground( unselected_color );
+        }
     }
 
-    if( !_update_timer->isActive() )
+    // cancel the refresh of the layout refresh
+    if( !_layout_update_timer->isActive() )
     {
-        _update_timer->stop();
+        _layout_update_timer->stop();
     }
-    _update_timer->start(100);
+    _layout_update_timer->start(100);
 
     for (auto& it: _loaded_tree.nodes)
     {
         it.second.status = NodeStatus::IDLE;
     }
 
+    // We can do better, but it is so fast that I don't even care... for the time being.
     for (int index = 0; index <= current_row; index++)
     {
         auto& trans = _transitions[index];
         _loaded_tree.nodes[ trans.uid ].status = trans.status;
     }
 
+    // update the graphic part
     for (auto& it: _loaded_tree.nodes)
     {
         auto& node = it.second.corresponding_node;
@@ -291,8 +297,8 @@ void SidepanelReplay::updatedSpinAndSlider(int row)
         return val < a.second;
     } );
 
-    QSignalBlocker block1( ui->spinBox );
-    QSignalBlocker block2( ui->timeSlider );
+    QSignalBlocker block_spin( ui->spinBox );
+    QSignalBlocker block_Slider( ui->timeSlider );
 
     int index = (it - _timepoint.begin()) -1;
     index = std::min( index, static_cast<int>(_timepoint.size()) -1 );
@@ -410,4 +416,19 @@ void SidepanelReplay::onPlayUpdate()
     //qDebug() << "delay_relative " << delay_relative << " next_row " << _next_row << "\n";
 
     _play_timer->start(delay_relative);
+}
+
+void SidepanelReplay::on_lineEditFilter_textChanged(const QString &filter_text)
+{
+    for (int row=0; row < _table_model->rowCount(); row++ )
+    {
+        bool show = _table_model->item(row,1)->text().contains(filter_text, Qt::CaseInsensitive);
+
+        if( show ){
+            ui->tableView->showRow(row);
+        }
+        else{
+            ui->tableView->hideRow(row);
+        }
+    }
 }

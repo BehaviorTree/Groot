@@ -120,14 +120,8 @@ void SidepanelEditor::on_lineEditFilter_textChanged(const QString &text)
     {
       auto child = it.second->child(i);
       auto modelName = child->data(0, Qt::UserRole).toString();
-      if (modelName.contains(text, Qt::CaseInsensitive))
-      {
-        child->setHidden(false);
-      }
-      else
-      {
-        child->setHidden(true);
-      }
+      bool show = modelName.contains(text, Qt::CaseInsensitive);
+      child->setHidden( !show);
     }
   }
 }

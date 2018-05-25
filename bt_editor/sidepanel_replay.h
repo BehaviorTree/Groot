@@ -35,6 +35,8 @@ private slots:
 
     void onPlayUpdate();
 
+    void on_lineEditFilter_textChanged(const QString &filter_text);
+
 signals:
     void loadBehaviorTree( AbsBehaviorTree& tree );
 
@@ -66,7 +68,7 @@ private:
 
     QStandardItemModel* _table_model;
 
-    QTimer *_update_timer;
+    QTimer *_layout_update_timer;
 
     QTimer *_play_timer;
 
