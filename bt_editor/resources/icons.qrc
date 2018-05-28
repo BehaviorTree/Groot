@@ -7,6 +7,7 @@
         <file>green-circle.png</file>
         <file>red-circle.png</file>
         <file>play.png</file>
+        <file>BT.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

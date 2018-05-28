@@ -64,24 +64,25 @@ void SidepanelReplay::updateTableModel()
         {
         case NodeStatus::SUCCESS:{
             item = new QStandardItem("SUCCESS");
-            item->setForeground(QColor::fromRgb(77, 255, 77));
+            item->setBackground(QColor::fromRgb(22, 255, 22));
         } break;
         case NodeStatus::FAILURE:{
             item = new QStandardItem("FAILURE");
-            item->setForeground(QColor::fromRgb(255, 0, 0));
+            item->setBackground(QColor::fromRgb(255, 22, 22));
         } break;
         case NodeStatus::RUNNING:{
             item = new QStandardItem("RUNNING");
-            item->setForeground(QColor::fromRgb(235, 120, 66));
+            item->setBackground(QColor::fromRgb(250, 160, 20));
         } break;
         case NodeStatus::IDLE:{
             item = new QStandardItem("IDLE");
-            item->setForeground(QColor::fromRgb(20, 20, 20));
+            item->setBackground(QColor::fromRgb(222, 222, 222));
         } break;
         }
-        auto font = item->font();
-        font.setBold(true);
-        item->setFont(font);
+//        auto font = item->font();
+//        font.setBold(true);
+//        item->setFont(font);
+        item->setForeground(QColor::fromRgb(0, 0, 0));
         return item;
     };
 

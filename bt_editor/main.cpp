@@ -26,6 +26,7 @@ main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
   app.setApplicationName("BehaviorTreeEditor");
+  app.setWindowIcon(QPixmap(":/icons/BT.png"));
 
   qRegisterMetaType<AbsBehaviorTree>();
 
