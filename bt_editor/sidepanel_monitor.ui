@@ -30,7 +30,7 @@
     <number>4</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1">
      <property name="spacing">
       <number>4</number>
      </property>
@@ -66,6 +66,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Address:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLineEdit" name="lineEdit">
        <property name="maximumSize">
         <size>
@@ -77,7 +84,7 @@
         <string/>
        </property>
        <property name="placeholderText">
-        <string>localhost:1666</string>
+        <string>localhost</string>
        </property>
        <property name="clearButtonEnabled">
         <bool>true</bool>

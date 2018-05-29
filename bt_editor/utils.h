@@ -22,7 +22,7 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree &abstract_tree );
 QString getCategory(const QtNodes::NodeDataModel* model);
 
 
-AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers( const std::vector<char>& buffer );
+AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers(const char *buffer );
 
 QtNodes::NodeStyle getStyleFromStatus(NodeStatus status);
 

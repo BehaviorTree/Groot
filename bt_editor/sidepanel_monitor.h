@@ -19,9 +19,10 @@ public:
     ~SidepanelMonitor();
 
 private slots:
-    void on_pushButtonConnect_pressed();
 
     void on_timer();
+
+    void on_pushButtonConnect_clicked();
 
 signals:
     void loadBehaviorTree( AbsBehaviorTree& tree );
@@ -31,11 +32,15 @@ private:
 
     zmq::context_t _zmq_context;
     zmq::socket_t  _zmq_subscriber;
+
     bool _connected;
-    std::string _connection_address;
+    std::string _connection_address_pub;
+    std::string _connection_address_req;
     QTimer* _timer;
     int _msg_count;
     AbsBehaviorTree _loaded_tree;
+
+    bool getTreeFromServer();
 
 };
 

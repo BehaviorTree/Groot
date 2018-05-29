@@ -412,9 +412,9 @@ void BuildSceneFromBehaviorTree(QtNodes::FlowScene* scene, AbsBehaviorTree &abst
     }
 }
 
-AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers(const std::vector<char> &buffer)
+AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers(const char* buffer)
 {
-    auto fb_behavior_tree = BT_Serialization::GetBehaviorTree( buffer.data() );
+    auto fb_behavior_tree = BT_Serialization::GetBehaviorTree( buffer );
 
     AbsBehaviorTree tree;
     tree.root_node_uid = fb_behavior_tree->root_uid();

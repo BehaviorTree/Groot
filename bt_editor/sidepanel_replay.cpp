@@ -169,11 +169,7 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
     const char* buffer = reinterpret_cast<const char*>(content.data());
 
     size_t bt_header_size = flatbuffers::ReadScalar<uint32_t>(buffer);
-    std::vector<char> fb_buffer( bt_header_size );
-
-    memcpy( fb_buffer.data(), &buffer[4], bt_header_size);
-
-    _loaded_tree = BuildBehaviorTreeFromFlatbuffers( fb_buffer );
+    _loaded_tree = BuildBehaviorTreeFromFlatbuffers( &buffer[4] );
 
     loadBehaviorTree( _loaded_tree );
 
