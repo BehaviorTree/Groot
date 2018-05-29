@@ -20,6 +20,8 @@ public:
 
     void updateTreeView();
 
+    void clear();
+
 private slots:
 
     void on_treeWidget_itemSelectionChanged();

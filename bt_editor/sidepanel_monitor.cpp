@@ -29,6 +29,11 @@ SidepanelMonitor::~SidepanelMonitor()
     delete ui;
 }
 
+void SidepanelMonitor::clear()
+{
+    if( _connected ) this->on_pushButtonConnect_clicked();
+}
+
 void SidepanelMonitor::on_timer()
 {
     if( !_connected ) return;

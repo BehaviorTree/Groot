@@ -18,6 +18,8 @@ public:
     explicit SidepanelMonitor(QWidget *parent = 0);
     ~SidepanelMonitor();
 
+    void clear();
+
 private slots:
 
     void on_timer();

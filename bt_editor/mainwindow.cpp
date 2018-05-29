@@ -613,3 +613,12 @@ void MainWindow::on_loadBehaviorTree(AbsBehaviorTree &tree)
     _redo_stack.clear();
     onPushUndo();
 }
+
+void MainWindow::on_actionClear_triggered()
+{
+    currentTabInfo()->scene()->clearScene();
+    _editor_widget->clear();
+    _monitor_widget->clear();
+    _replay_widget->clear();
+
+}

@@ -370,8 +370,9 @@ QRadioButton:unchecked{
      <string>File</string>
     </property>
     <addaction name="actionLoad"/>
-    <addaction name="actionLoadRosparam"/>
+    <addaction name="actionLoadRemote"/>
     <addaction name="actionSave"/>
+    <addaction name="actionClear"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuZoom">
@@ -434,9 +435,14 @@ QRadioButton:unchecked{
     <string>Ctrl+A</string>
    </property>
   </action>
-  <action name="actionLoadRosparam">
+  <action name="actionLoadRemote">
    <property name="text">
-    <string>Load from rosparam</string>
+    <string>Load from remote server</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="text">
+    <string>Clear</string>
    </property>
   </action>
  </widget>

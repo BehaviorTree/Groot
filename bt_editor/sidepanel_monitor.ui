@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>271</width>
     <height>516</height>
    </rect>
   </property>
@@ -14,23 +14,8 @@
    <string>Frame</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>4</number>
-   </property>
-   <property name="leftMargin">
-    <number>4</number>
-   </property>
-   <property name="topMargin">
-    <number>4</number>
-   </property>
-   <property name="rightMargin">
-    <number>4</number>
-   </property>
-   <property name="bottomMargin">
-    <number>4</number>
-   </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
      <property name="spacing">
       <number>4</number>
      </property>
@@ -66,9 +51,26 @@
       </widget>
      </item>
      <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Address:</string>
+        <string>Server IP:</string>
        </property>
       </widget>
      </item>

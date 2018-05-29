@@ -20,6 +20,8 @@ public:
     explicit SidepanelReplay(QWidget *parent = 0);
     ~SidepanelReplay();
 
+    void clear();
+
 private slots:
     void on_pushButtonLoadLog_pressed();
 

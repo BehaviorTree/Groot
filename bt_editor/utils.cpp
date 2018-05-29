@@ -406,10 +406,6 @@ void BuildSceneFromBehaviorTree(QtNodes::FlowScene* scene, AbsBehaviorTree &abst
     uint16_t root_uid = abstract_tree.root_node_uid;
     recursiveStep( &(abstract_tree.nodes[ root_uid ]), &first_qt_node, 1 );
 
-    for ( auto& it: abstract_tree.nodes )
-    {
-        qDebug() << it.second.instance_name << " =  " << it.second.corresponding_node;
-    }
 }
 
 AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers(const char* buffer)

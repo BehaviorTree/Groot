@@ -81,6 +81,8 @@ private slots:
 
     void on_loadBehaviorTree(AbsBehaviorTree& tree);
 
+    void on_actionClear_triggered();
+
 signals:
     void updateGraphic();
 

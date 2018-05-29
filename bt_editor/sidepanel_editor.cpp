@@ -75,6 +75,11 @@ void SidepanelEditor::updateTreeView()
     ui->treeWidget->expandAll();
 }
 
+void SidepanelEditor::clear()
+{
+    _tree_nodes_model.clear();
+}
+
 void SidepanelEditor::on_treeWidget_itemSelectionChanged()
 {
   auto selected_items = ui->treeWidget->selectedItems();

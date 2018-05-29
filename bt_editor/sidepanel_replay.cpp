@@ -50,6 +50,12 @@ SidepanelReplay::~SidepanelReplay()
     delete ui;
 }
 
+void SidepanelReplay::clear()
+{
+    _table_model->setColumnCount(4);
+    _table_model->setRowCount(0);
+}
+
 void SidepanelReplay::updateTableModel()
 {
     _table_model->setColumnCount(4);
