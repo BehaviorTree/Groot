@@ -32,7 +32,7 @@ struct AbstractTreeNode
     QPointF pos; // top left corner
     uint16_t uid;
     uint8_t _padding_[6];
-    std::vector<AbstractTreeNode*> children;
+    std::vector<uint16_t> children_uid;
     QtNodes::Node* corresponding_node;
     std::vector< std::pair<QString,QString> > parameters;
 };

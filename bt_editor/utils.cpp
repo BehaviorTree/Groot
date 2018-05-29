@@ -88,7 +88,7 @@ std::vector<QtNodes::Node*> getChildren(const QtNodes::FlowScene &scene,
 
 //---------------------------------------------------
 
-void RecursiveNodeReorder(AbstractTreeNode* root_node, PortLayout layout)
+void RecursiveNodeReorder(AbsBehaviorTree & tree, AbstractTreeNode* root_node, PortLayout layout)
 {
     std::function<void(unsigned, AbstractTreeNode*)> recursiveStep;
 
@@ -104,7 +104,7 @@ void RecursiveNodeReorder(AbstractTreeNode* root_node, PortLayout layout)
         nodes_by_level[current_layer].push_back( node );
 
         //------------------------------------
-        if( node->children.size() > 0 )
+        if( node->children_uid.size() > 0 )
         {
             qreal recommended_pos = NODE_SPACING * 0.5;
 
@@ -113,8 +113,9 @@ void RecursiveNodeReorder(AbstractTreeNode* root_node, PortLayout layout)
             if( layout == PortLayout::Vertical)
             {
                 recommended_pos += (node->pos.x() + node->size.width()*0.5)  ;
-                for(auto& child: node->children)
+                for(uint16_t child_uid: node->children_uid)
                 {
+                    AbstractTreeNode* child = &(tree.nodes.at( child_uid ));
                     recommended_pos -=  (child->size.width() + NODE_SPACING) * 0.5;
                 }
 
@@ -133,8 +134,9 @@ void RecursiveNodeReorder(AbstractTreeNode* root_node, PortLayout layout)
             else
             {
                 recommended_pos += node->pos.y() + node->size.height()*0.5;
-                for(auto& child: node->children)
+                for(uint16_t child_uid: node->children_uid)
                 {
+                    AbstractTreeNode* child = &(tree.nodes.at( child_uid ));
                     recommended_pos -=  (child->size.height() + NODE_SPACING) * 0.5;
                 }
 
@@ -154,9 +156,10 @@ void RecursiveNodeReorder(AbstractTreeNode* root_node, PortLayout layout)
 
             auto initial_pos = layer_cursor[current_layer];
 
-            for(auto& child: node->children)
+            for(uint16_t child_uid: node->children_uid)
             {
-               // qDebug() << node->instance_name << " " <<  node->uid << "  " << child->uid;
+                AbstractTreeNode* child = &(tree.nodes.at( child_uid ));
+
                 recursiveStep(current_layer, child);
                 if( layout == PortLayout::Vertical)
                 {
@@ -223,7 +226,7 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
     }
 
     AbstractTreeNode* root_node = &( tree.nodes.at( tree.root_node_uid ) );
-    RecursiveNodeReorder( root_node, scene.layout() );
+    RecursiveNodeReorder(tree, root_node, scene.layout() );
 
     for (auto& it: tree.nodes)
     {
@@ -269,13 +272,12 @@ AbsBehaviorTree BuildBehaviorTreeFromScene(const QtNodes::FlowScene *scene)
         QtNodes::Node* node = abs_node.corresponding_node;
 
         auto children = getChildren( *scene, *node );
-        abs_node.children.reserve( children.size() );
+        abs_node.children_uid.reserve( children.size() );
 
         for(auto& child: children )
         {
             auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(child->nodeDataModel());
-            const uint16_t uid =  bt_model->UID();
-            abs_node.children.push_back( &( tree.nodes[ uid ] ) );
+            abs_node.children_uid.push_back( bt_model->UID() );
         }
     }
     return tree;
@@ -316,9 +318,9 @@ void BuildSceneFromBehaviorTree(QtNodes::FlowScene* scene, AbsBehaviorTree &abst
     QPointF cursor(0,0);
     double x_offset = 0;
 
-    std::function<void(AbstractTreeNode*, QtNodes::Node&, int)> recursiveStep;
+    std::function<void(AbstractTreeNode*, QtNodes::Node*, int)> recursiveStep;
 
-    recursiveStep = [&](AbstractTreeNode* abs_node, QtNodes::Node& parent_node, int nest_level)
+    recursiveStep = [&](AbstractTreeNode* abs_node, QtNodes::Node* parent_node, int nest_level)
     {
         std::unique_ptr<NodeDataModel> dataModel = scene->registry().create( abs_node->registration_name );
 
@@ -350,7 +352,6 @@ void BuildSceneFromBehaviorTree(QtNodes::FlowScene* scene, AbsBehaviorTree &abst
                 };
                 scene->registry().registerModel("SubTree", node_creator);
             }
-
             dataModel = scene->registry().create( abs_node->registration_name );
         }
 
@@ -387,11 +388,12 @@ void BuildSceneFromBehaviorTree(QtNodes::FlowScene* scene, AbsBehaviorTree &abst
         abs_node->corresponding_node = &new_node;
 
         scene->createConnection( *abs_node->corresponding_node, 0,
-                                 parent_node, 0 );
+                                 *parent_node, 0 );
 
-        for ( auto& child: abs_node->children )
+        for ( uint16_t child_uid: abs_node->children_uid )
         {
-            recursiveStep( child, *(abs_node->corresponding_node), nest_level+1 );
+            AbstractTreeNode* child = &(abstract_tree.nodes.at(child_uid));
+            recursiveStep( child, abs_node->corresponding_node, nest_level+1 );
             x_offset += 30;
         }
 
@@ -401,7 +403,13 @@ void BuildSceneFromBehaviorTree(QtNodes::FlowScene* scene, AbsBehaviorTree &abst
    // start recursion
     QtNodes::Node& first_qt_node = scene->createNode( scene->registry().create("Root"), QPointF() );
 
-    recursiveStep( &abstract_tree.nodes[ abstract_tree.root_node_uid ], first_qt_node, 1 );
+    uint16_t root_uid = abstract_tree.root_node_uid;
+    recursiveStep( &(abstract_tree.nodes[ root_uid ]), &first_qt_node, 1 );
+
+    for ( auto& it: abstract_tree.nodes )
+    {
+        qDebug() << it.second.instance_name << " =  " << it.second.corresponding_node;
+    }
 }
 
 AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers(const std::vector<char> &buffer)
@@ -410,6 +418,8 @@ AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers(const std::vector<char> &buffer
 
     AbsBehaviorTree tree;
     tree.root_node_uid = fb_behavior_tree->root_uid();
+
+    tree.nodes.clear();
 
     for( const BT_Serialization::TreeNode* node: *(fb_behavior_tree->nodes()) )
     {
@@ -425,12 +435,13 @@ AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers(const std::vector<char> &buffer
 
     for( const BT_Serialization::TreeNode* node: *(fb_behavior_tree->nodes()) )
     {
-        AbstractTreeNode& abs_node = tree.nodes[ node->uid() ];
+        AbstractTreeNode& abs_node = tree.nodes.at( node->uid() );
+        abs_node.children_uid.clear();
 
         for (size_t i=0; i< node->children_uid()->size(); i++ )
         {
             uint16_t child_uid = node->children_uid()->Get(i);
-            abs_node.children.push_back( &tree.nodes[child_uid] );
+            abs_node.children_uid.push_back( child_uid );
         }
     }
     return tree;

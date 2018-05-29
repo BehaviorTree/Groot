@@ -4,6 +4,8 @@ project(behavior_tree_editor)
 
 find_package(Qt5 COMPONENTS  Core Widgets Gui OpenGL Xml)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+
 
 #############################################################
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
@@ -43,7 +45,6 @@ INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./3rdparty )
 add_subdirectory( QtNodeEditor )
 
 set(APP_CPPS
-
     ./bt_editor/models/BehaviorTreeNodeModel.cpp
     ./bt_editor/models/ActionNodeModel.cpp
     ./bt_editor/models/ControlNodeModel.cpp
@@ -63,26 +64,43 @@ set(APP_CPPS
 
     ./3rdparty/tinyXML2/tinyxml2.cpp
     ./bt_editor/XML_utilities.cpp
-
- ##   ./bt_editor/NodeFactory.cpp
     )
-
 
 qt5_add_resources(RESOURCES
     ./bt_editor/resources/icons.qrc
     )
 
-QT5_WRAP_UI(FORMS_HEADERS
+set(FORMS_UI
   ./bt_editor/mainwindow.ui
   ./bt_editor/action_form.ui
   ./bt_editor/sidepanel_editor.ui
   ./bt_editor/sidepanel_replay.ui
   )
 
+find_package(ZMQ)
+
+if( ZMQ_FOUND )
+    message(STATUS "ZeroMQ found.")
+    add_definitions( -DZMQ_FOUND )
+
+    set(APP_CPPS ${APP_CPPS} ./bt_editor/sidepanel_monitor.cpp )
+    set(FORMS_UI ${FORMS_UI} ./bt_editor/sidepanel_monitor.ui )
+
+else()
+    message(WARNING "ZeroMQ NOT found. Real-time monitoring disabled.")
+endif()
+
+QT5_WRAP_UI(FORMS_HEADERS ${FORMS_UI})
+
 add_executable(behavior_tree_editor
     ${APP_CPPS}
     ${FORMS_HEADERS}
     ${RESOURCES})
 
-target_link_libraries(behavior_tree_editor QtNodeEditor)
+if( ZMQ_FOUND )
+    target_link_libraries(behavior_tree_editor QtNodeEditor zmq)
+else()
+    target_link_libraries(behavior_tree_editor QtNodeEditor)
+endif()
+
 

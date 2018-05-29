@@ -64,6 +64,15 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->leftFrame->layout()->addWidget( _editor_widget );
   ui->leftFrame->layout()->addWidget( _replay_widget );
 
+
+#ifdef ZMQ_FOUND
+  _monitor_widget = new SidepanelMonitor(this);
+  _monitor_widget->setHidden( !ui->radioMonitor->isChecked() );
+  ui->leftFrame->layout()->addWidget( _monitor_widget );
+#endif
+
+  dynamic_cast<QVBoxLayout*>(ui->leftFrame->layout())->setStretch(1,1);
+
   createTab("Behaviortree");
 
   this->setMenuBar(ui->menubar);
@@ -86,6 +95,10 @@ MainWindow::MainWindow(QWidget *parent) :
   connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
            this, &MainWindow::on_loadBehaviorTree );
 
+#ifdef ZMQ_FOUND
+  connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
+           this, &MainWindow::on_loadBehaviorTree );
+#endif
   onSceneChanged();
 }
 
@@ -548,6 +561,9 @@ void MainWindow::on_radioEditor_toggled(bool checked)
   {
     _editor_widget->setHidden( false );
     _replay_widget->setHidden( true );
+#ifdef ZMQ_FOUND
+      _monitor_widget->setHidden( true );
+#endif
     ui->leftFrame->update();
   }
 }
@@ -556,7 +572,11 @@ void MainWindow::on_radioMonitor_toggled(bool checked)
 {
   if( checked )
   {
-
+      _editor_widget->setHidden( true );
+      _replay_widget->setHidden( true );
+#ifdef ZMQ_FOUND
+      _monitor_widget->setHidden( false );
+#endif
   }
 }
 
@@ -566,6 +586,9 @@ void MainWindow::on_radioReplay_toggled(bool checked)
   {
     _editor_widget->setHidden( true );
     _replay_widget->setHidden( false );
+#ifdef ZMQ_FOUND
+      _monitor_widget->setHidden( true );
+#endif
     ui->leftFrame->update();
   }
 }

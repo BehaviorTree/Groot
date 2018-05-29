@@ -17,6 +17,12 @@
 #include "sidepanel_editor.h"
 #include "sidepanel_replay.h"
 
+#define ZMQ_FOUND 1
+
+#ifdef ZMQ_FOUND
+    #include "sidepanel_monitor.h"
+#endif
+
 namespace Ui {
 class MainWindow;
 }
@@ -108,6 +114,9 @@ private:
 
     SidepanelEditor* _editor_widget;
     SidepanelReplay* _replay_widget;
+#ifdef ZMQ_FOUND
+    SidepanelMonitor* _monitor_widget;
+#endif
 };
 
 
