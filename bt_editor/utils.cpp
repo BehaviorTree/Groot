@@ -326,7 +326,7 @@ void BuildSceneFromBehaviorTree(QtNodes::FlowScene* scene, AbsBehaviorTree &abst
         {
             QString ID = abs_node->registration_name;
 
-            if(  abs_node->type == NodeType::ACTION )
+            if(  abs_node->type == NodeType::ACTION || abs_node->type == NodeType::CONDITION)
             {
                 DataModelRegistry::RegistryItemCreator node_creator = [ID]()
                 {
