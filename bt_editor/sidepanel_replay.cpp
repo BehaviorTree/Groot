@@ -19,7 +19,7 @@
 SidepanelReplay::SidepanelReplay(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::SidepanelReplay),
-    _prev_row(0)
+    _prev_row(-1)
 {
     ui->setupUi(this);
 
@@ -195,7 +195,7 @@ void SidepanelReplay::on_pushButtonLoadLog_pressed()
     }
 
     _timepoint.clear();
-    _prev_row = 0;
+    _prev_row = -1;
     updateTableModel();
 }
 
@@ -246,19 +246,15 @@ void SidepanelReplay::onRowChanged(int current_row)
     const auto selected_color   = QColor::fromRgb(210, 210, 210);
     const auto unselected_color = QColor::fromRgb(255, 255, 255);
 
-    for (int row = _prev_row; row <= current_row; row++)
+    for (int row = std::max(0,_prev_row); row <= current_row; row++)
     {
-        for (int col=0; col < 4; col++)
-        {
-            _table_model->item(row, col)->setBackground( selected_color );
-        }
+        _table_model->item(row, 0)->setBackground( selected_color );
+        _table_model->item(row, 1)->setBackground( selected_color );
     }
     for (int row = current_row+1; row <= _prev_row; row++)
     {
-        for (int col=0; col < 4; col++)
-        {
-            _table_model->item(row, col)->setBackground( unselected_color );
-        }
+        _table_model->item(row, 0)->setBackground( unselected_color );
+        _table_model->item(row, 1)->setBackground( unselected_color );
     }
 
     // cancel the refresh of the layout refresh
