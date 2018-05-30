@@ -68,6 +68,9 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef ZMQ_FOUND
     _monitor_widget = new SidepanelMonitor(this);
     ui->leftFrame->layout()->addWidget( _monitor_widget );
+
+    connect( ui->toolButtonConnect, &QToolButton::clicked,
+             _monitor_widget, &SidepanelMonitor::on_pushButtonConnect_clicked );
 #endif
 
     updateCurrentMode();
@@ -599,6 +602,27 @@ void MainWindow::updateCurrentMode()
     ui->toolButtonEditor->setStyleSheet(  _current_mode == Mode::EDITOR ? selected_style : default_style);
     ui->toolButtonMonitor->setStyleSheet( _current_mode == Mode::MONITOR ? selected_style : default_style);
     ui->toolButtonReplay->setStyleSheet(  _current_mode == Mode::REPLAY ? selected_style : default_style);
+
+    ui->toolButtonLoadFile->setHidden( _current_mode == Mode::MONITOR );
+    ui->toolButtonConnect->setHidden( _current_mode != Mode::MONITOR );
+    ui->toolButtonLoadRemote->setHidden( !(_current_mode == Mode::EDITOR) );
+    ui->toolButtonSaveFile->setHidden( !(_current_mode == Mode::EDITOR) );
+
+    if( _current_mode == Mode::EDITOR )
+    {
+        connect( ui->toolButtonLoadFile, &QToolButton::clicked,
+                 this, &MainWindow::on_actionLoad_triggered );
+        disconnect( ui->toolButtonLoadFile, &QToolButton::clicked,
+                    _replay_widget, &SidepanelReplay::on_pushButtonLoadLog_pressed );
+    }
+    else if( _current_mode == Mode::REPLAY )
+    {
+        disconnect( ui->toolButtonLoadFile, &QToolButton::clicked,
+                    this, &MainWindow::on_actionLoad_triggered );
+        connect( ui->toolButtonLoadFile, &QToolButton::clicked,
+                 _replay_widget, &SidepanelReplay::on_pushButtonLoadLog_pressed );
+    }
+
 }
 
 void MainWindow::on_toolButtonEditor_clicked()

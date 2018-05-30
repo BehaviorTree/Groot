@@ -22,8 +22,11 @@ public:
 
     void clear();
 
-private slots:
+public slots:
+
     void on_pushButtonLoadLog_pressed();
+
+private slots:
 
     void on_pushButtonPlay_toggled(bool checked);
 

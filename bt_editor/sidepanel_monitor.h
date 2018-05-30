@@ -20,11 +20,13 @@ public:
 
     void clear();
 
+public slots:
+
+    void on_pushButtonConnect_clicked();
+
 private slots:
 
     void on_timer();
-
-    void on_pushButtonConnect_clicked();
 
 signals:
     void loadBehaviorTree( AbsBehaviorTree& tree );

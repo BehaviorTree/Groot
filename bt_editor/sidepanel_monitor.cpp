@@ -164,7 +164,6 @@ void SidepanelMonitor::on_pushButtonConnect_clicked()
         {
             _connected = true;
             ui->lineEdit->setDisabled(true);
-            ui->pushButtonConnect->setText("Disconnect");
             _timer->start(20);
             //   ui->pushButtonConnect->setStyleSheet("background-color:  rgba(252, 175, 62, 255)");
         }

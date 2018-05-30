@@ -11,6 +11,10 @@
         <file>BT-edit.png</file>
         <file>BT-log.png</file>
         <file>BT-monitor.png</file>
+        <file>connect.png</file>
+        <file>download.png</file>
+        <file>load_file.png</file>
+        <file>save.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

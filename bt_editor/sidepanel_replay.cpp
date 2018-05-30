@@ -364,7 +364,7 @@ void SidepanelReplay::on_pushButtonPlay_toggled(bool checked)
 
     if(checked)
     {
-        _next_row =_prev_row;
+        _next_row = std::max(0, _prev_row);
         onPlayUpdate();
     }
     else{
@@ -378,10 +378,13 @@ void SidepanelReplay::onPlayUpdate()
     if( !ui->pushButtonPlay->isChecked() || _transitions.empty() )
     {
         return;
-    }
+    }  
 
     using namespace std::chrono;
     const int LAST_ROW = _transitions.size()-1;
+
+    _next_row = std::max(0, _next_row);
+    _next_row = std::min(LAST_ROW, _next_row);
 
     const double TIME_DIFFERENCE_THRESHOLD = 0.01;
 
