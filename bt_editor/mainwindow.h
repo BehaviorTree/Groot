@@ -73,20 +73,27 @@ private slots:
 
     void on_pushButtonCenterView_pressed();
 
-    void on_radioEditor_toggled(bool checked);
-
-    void on_radioMonitor_toggled(bool checked);
-
-    void on_radioReplay_toggled(bool checked);
-
     void on_loadBehaviorTree(AbsBehaviorTree& tree);
 
     void on_actionClear_triggered();
+
+    void on_toolButtonEditor_clicked();
+
+    void on_toolButtonMonitor_clicked();
+
+    void on_toolButtonReplay_clicked();
+
+    void updateCurrentMode();
 
 signals:
     void updateGraphic();
 
 private:
+
+    enum class Mode { EDITOR, MONITOR, REPLAY };
+
+    Mode _current_mode;
+
     Ui::MainWindow *ui;
 
     void lockEditing(const bool locked);

@@ -8,6 +8,9 @@
         <file>red-circle.png</file>
         <file>play.png</file>
         <file>BT.png</file>
+        <file>BT-edit.png</file>
+        <file>BT-log.png</file>
+        <file>BT-monitor.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>
