@@ -761,7 +761,7 @@ QToolButton:disabled{
      <property name="title">
       <string>Switch Mode...</string>
      </property>
-     <addaction name="actionEditor_Mode"/>
+     <addaction name="actionEditor_mode"/>
      <addaction name="actionMonitor_mode"/>
      <addaction name="actionReplay_mode"/>
     </widget>
@@ -804,7 +804,7 @@ QToolButton:disabled{
     <string>Clear</string>
    </property>
   </action>
-  <action name="actionEditor_Mode">
+  <action name="actionEditor_mode">
    <property name="text">
     <string>Editor Mode</string>
    </property>

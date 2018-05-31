@@ -35,6 +35,8 @@ public:
 
     bool containsValidTree() const;
 
+    void clearScene();
+
 signals:
 
     void undoableChange();

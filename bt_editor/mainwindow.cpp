@@ -39,8 +39,7 @@ using QtNodes::NodeState;
 MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    _current_mode(initial_mode),
-    _undo_enabled(true)
+    _current_mode(initial_mode)
 {
     ui->setupUi(this);
 
@@ -79,7 +78,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     auto arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
 
     connect( arrange_shortcut, &QShortcut::activated,
-             this,   &MainWindow::on_actionAuto_arrange_triggered  );
+             this,   &MainWindow::onAutoArrange  );
 
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 4);
@@ -92,6 +91,9 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
              this, &MainWindow::on_loadBehaviorTree );
+
+    connect( ui->toolButtonSaveFile, &QToolButton::clicked,
+             this, &MainWindow::on_actionSave_triggered );
 
 #ifdef ZMQ_FOUND
     connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
@@ -112,15 +114,26 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+
     settings.setValue("MainWindow/geometry", saveGeometry());
     settings.setValue("MainWindow/windowState", saveState());
 
-    if( _current_layout == QtNodes::PortLayout::Horizontal)
+    switch(_current_layout )
     {
-        settings.setValue("MainWindow/layout", "HORIZONTAL");
+    case QtNodes::PortLayout::Horizontal:  settings.setValue("MainWindow/layout", "HORIZONTAL");
+        break;
+    case QtNodes::PortLayout::Vertical:  settings.setValue("MainWindow/layout", "VERTICAL");
+        break;
     }
-    else{
-        settings.setValue("MainWindow/layout", "VERTICAL");
+
+    switch(_current_mode )
+    {
+    case GraphicMode::EDITOR:  settings.setValue("StartupDialog.Mode", "EDITOR");
+        break;
+    case GraphicMode::MONITOR:  settings.setValue("StartupDialog.Mode", "MONITOR");
+        break;
+    case GraphicMode::REPLAY:  settings.setValue("StartupDialog.Mode", "REPLAY");
+        break;
     }
 
     QMainWindow::closeEvent(event);
@@ -169,10 +182,8 @@ void MainWindow::loadFromXML(const QString& xml_text)
             ReadTreeNodesModel( document.RootElement(), *_model_registry, _tree_nodes_model );
             _editor_widget->updateTreeView();
 
-            {
-                const QSignalBlocker blocker( currentTabInfo() );
-                currentTabInfo()->scene()->clearScene();
-            }
+            currentTabInfo()->clearScene();
+
             bool error = false;
             QString err_message;
             QByteArray saved_state = _current_state;
@@ -357,7 +368,7 @@ void MainWindow::on_actionSave_triggered()
     settings.setValue("MainWindow.lastSaveDirectory", directory_path);
 }
 
-void MainWindow::on_actionAuto_arrange_triggered()
+void MainWindow::onAutoArrange()
 {
     currentTabInfo()->nodeReorder();
 }
@@ -382,11 +393,8 @@ void MainWindow::onSceneChanged()
         pix.load(":/icons/red-circle.png");
         ui->labelSemaphore->setToolTip("NOT a valid Tree");
     }
-
     ui->labelSemaphore->setPixmap(pix);
-    ui->labelSemaphore->setFixedSize( QSize(24,24) );
     ui->labelSemaphore->setScaledContents(true);
-
 }
 
 
@@ -446,25 +454,16 @@ void MainWindow::on_splitter_splitterMoved(int , int )
 
 void MainWindow::onPushUndo()
 {
-    if( !_undo_enabled ) return;
-
-    //-----------------
-    const QSignalBlocker blocker( currentTabInfo() );
-    _undo_enabled = false;
-
-    currentTabInfo()->scene()->update();
     const QByteArray state = currentTabInfo()->scene()->saveToMemory();
+    const bool different_from_previous = ( state != _current_state && _undo_stack.back() != _current_state);
 
-    if( _undo_stack.empty() ||
-            ( state != _current_state && _undo_stack.back() != _current_state))
+    if( _undo_stack.empty() || different_from_previous )
     {
         _undo_stack.push_back( _current_state );
         _redo_stack.clear();
     }
-
     _current_state = state;
-    _undo_enabled = true;
-    //-----------------
+
     qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
 
@@ -484,19 +483,6 @@ void MainWindow::onUndoInvoked()
     }
 }
 
-void MainWindow::loadSceneFromYAML(QByteArray state)
-{
-    {
-        const QSignalBlocker blocker( currentTabInfo() );
-        _undo_enabled = false;
-        auto scene = currentTabInfo()->scene();
-        scene->clearScene();
-        currentTabInfo()->scene()->loadFromMemory( state );
-        refreshNodesLayout( currentTabInfo()->scene()->layout() );
-        _undo_enabled = true;
-    }
-    onSceneChanged();
-}
 
 void MainWindow::onRedoInvoked()
 {
@@ -514,9 +500,20 @@ void MainWindow::onRedoInvoked()
     }
 }
 
+void MainWindow::loadSceneFromYAML(QByteArray state)
+{
+    {
+        const QSignalBlocker blocker( currentTabInfo() );
+        auto scene = currentTabInfo()->scene();
+        scene->clearScene();
+        scene->loadFromMemory( state );
+        refreshNodesLayout( scene->layout() );
+    }
+    onSceneChanged();
+}
 void MainWindow::on_toolButtonReorder_pressed()
 {
-    on_actionAuto_arrange_triggered();
+    onAutoArrange();
 }
 
 void MainWindow::on_toolButtonCenterView_pressed()
@@ -528,31 +525,21 @@ void MainWindow::on_loadBehaviorTree(AbsBehaviorTree &tree)
 {
     {
         const QSignalBlocker blocker( currentTabInfo() );
-        auto scene = currentTabInfo()->scene();
-
-        scene->clearScene();
-
-        BuildSceneFromBehaviorTree( scene, tree);
-        onSceneChanged();
-        scene->update();
-
+        BuildSceneFromBehaviorTree( currentTabInfo()->scene(), tree );
         currentTabInfo()->nodeReorder();
-
-        lockEditing( _current_mode != GraphicMode::EDITOR );
     }
     _undo_stack.clear();
     _redo_stack.clear();
+    onSceneChanged();
     onPushUndo();
 }
 
 void MainWindow::on_actionClear_triggered()
 {
-    const QSignalBlocker blocker( currentTabInfo() );
-    currentTabInfo()->scene()->clearScene();
+    currentTabInfo()->clearScene();
     _editor_widget->clear();
     _monitor_widget->clear();
     _replay_widget->clear();
-
 }
 
 
@@ -590,6 +577,9 @@ void MainWindow::updateCurrentMode()
     {
         _editor_widget->updateTreeView();
     }
+    ui->actionEditor_mode->setEnabled( _current_mode != GraphicMode::EDITOR);
+    ui->actionMonitor_mode->setEnabled( _current_mode != GraphicMode::MONITOR);
+    ui->actionReplay_mode->setEnabled( _current_mode != GraphicMode::REPLAY);
 }
 
 
@@ -640,7 +630,7 @@ void MainWindow::on_toolButtonLayout_clicked()
     }
 }
 
-void MainWindow::on_actionEditor_Mode_triggered()
+void MainWindow::on_actionEditor_mode_triggered()
 {
     _current_mode = GraphicMode::EDITOR;
     updateCurrentMode();
@@ -653,15 +643,13 @@ void MainWindow::on_actionMonitor_mode_triggered()
     if( currentTabInfo()->scene()->nodes().size() > 0)
     {
         res = QMessageBox::warning(this, tr("Carefull!"),
-                                   tr("If you switch to Monitor Mode, the current BehaviorTree in the Scene will be deleted"),
+                                   tr("If you switch to Monitor Mode, "
+                                      "the current BehaviorTree in the Scene will be deleted"),
                                    QMessageBox::Cancel | QMessageBox::Ok, QMessageBox::Cancel);
     }
     if( res == QMessageBox::Ok)
     {
-        {
-            const QSignalBlocker blocker( currentTabInfo() );
-            currentTabInfo()->scene()->clearScene();
-        }
+        currentTabInfo()->clearScene();
         _monitor_widget->clear();
         _current_mode = GraphicMode::MONITOR;
         updateCurrentMode();
@@ -675,15 +663,13 @@ void MainWindow::on_actionReplay_mode_triggered()
     if( currentTabInfo()->scene()->nodes().size() > 0)
     {
         res = QMessageBox::warning(this, tr("Carefull!"),
-                                   tr("If you switch to Log Replay Mode, the current BehaviorTree in the Scene will be deleted"),
+                                   tr("If you switch to Log Replay Mode, "
+                                      "the current BehaviorTree in the Scene will be deleted"),
                                    QMessageBox::Cancel | QMessageBox::Ok, QMessageBox::Cancel);
     }
     if( res == QMessageBox::Ok)
     {
-        {
-            const QSignalBlocker blocker( currentTabInfo() );
-            currentTabInfo()->scene()->clearScene();
-        }
+        currentTabInfo()->clearScene();
         _replay_widget->clear();
         _current_mode = GraphicMode::REPLAY;
         updateCurrentMode();

@@ -159,6 +159,12 @@ bool GraphicContainer::containsValidTree() const
     return true;
 }
 
+void GraphicContainer::clearScene()
+{
+    const QSignalBlocker blocker( this );
+    _scene->clearScene();
+}
+
 void GraphicContainer::onNodeDoubleClicked(Node &root_node)
 {
   std::function<void(QtNodes::Node&)> selectRecursively;

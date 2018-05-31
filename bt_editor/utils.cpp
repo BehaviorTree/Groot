@@ -315,6 +315,8 @@ QString getCategory(const QtNodes::NodeDataModel *dataModel)
 
 void BuildSceneFromBehaviorTree(QtNodes::FlowScene* scene, AbsBehaviorTree &abstract_tree)
 {
+    scene->clearScene();
+
     QPointF cursor(0,0);
     double x_offset = 0;
 

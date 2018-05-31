@@ -20,7 +20,7 @@
 #define ZMQ_FOUND 1
 
 #ifdef ZMQ_FOUND
-    #include "sidepanel_monitor.h"
+#include "sidepanel_monitor.h"
 #endif
 
 namespace Ui {
@@ -41,27 +41,28 @@ public:
     explicit MainWindow(GraphicMode initial_mode, QWidget *parent = 0);
     ~MainWindow();
 
-  void loadFromXML(const QString &xml_text);
+    void loadFromXML(const QString &xml_text);
 
 private slots:
 
-    void on_actionLoad_triggered();
-
-    void on_actionSave_triggered();
-
-    void on_actionAuto_arrange_triggered();
+    void onAutoArrange();
 
     void onSceneChanged();
-
-    virtual void closeEvent(QCloseEvent *event) override;
-
-    void on_splitter_splitterMoved(int pos = 0, int index = 0);
 
     void onPushUndo();
 
     void onUndoInvoked();
 
     void onRedoInvoked();
+
+private slots:
+    virtual void closeEvent(QCloseEvent *event) override;
+
+    void on_actionLoad_triggered();
+
+    void on_actionSave_triggered();
+
+    void on_splitter_splitterMoved(int pos = 0, int index = 0);
 
     void on_toolButtonReorder_pressed();
 
@@ -71,15 +72,31 @@ private slots:
 
     void on_actionClear_triggered();
 
-    void updateCurrentMode();
-
     void on_toolButtonLayout_clicked();
 
-    void on_actionEditor_Mode_triggered();
+    void on_actionEditor_mode_triggered();
 
     void on_actionMonitor_mode_triggered();
 
     void on_actionReplay_mode_triggered();
+
+private:
+
+    void updateCurrentMode();
+
+    void lockEditing(const bool locked);
+
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
+    void resizeEvent(QResizeEvent *) override;
+
+    GraphicContainer* currentTabInfo();
+
+    void createTab(const QString &name);
+
+    void refreshNodesLayout(QtNodes::PortLayout new_layout);
+
+    void loadSceneFromYAML(QByteArray state);
 
 signals:
     void updateGraphic();
@@ -90,19 +107,9 @@ private:
 
     Ui::MainWindow *ui;
 
-    void lockEditing(const bool locked);
-
-    bool eventFilter(QObject *obj, QEvent *event) override;
-
-    void resizeEvent(QResizeEvent *) override;
-
     std::shared_ptr<QtNodes::DataModelRegistry> _model_registry;
 
     std::map<QString, GraphicContainer*> _tab_info;
-
-    GraphicContainer* currentTabInfo();
-
-    void createTab(const QString &name);
 
     std::mutex _mutex;
 
@@ -111,8 +118,6 @@ private:
     QByteArray _current_state;
     QtNodes::PortLayout _current_layout;
 
-    bool _undo_enabled;
-
     TreeNodeModels _tree_nodes_model;
 
     SidepanelEditor* _editor_widget;
@@ -120,8 +125,7 @@ private:
 #ifdef ZMQ_FOUND
     SidepanelMonitor* _monitor_widget;
 #endif
-    void refreshNodesLayout(QtNodes::PortLayout new_layout);
-    void loadSceneFromYAML(QByteArray state);
+
 };
 
 
