@@ -557,14 +557,17 @@ void MainWindow::on_actionClear_triggered()
 
 void MainWindow::updateCurrentMode()
 {
-    _editor_widget->setHidden( _current_mode != GraphicMode::EDITOR );
+    bool NOT_EDITOR = _current_mode != GraphicMode::EDITOR;
+
+    _editor_widget->setHidden( NOT_EDITOR );
     _replay_widget->setHidden( _current_mode != GraphicMode::REPLAY );
     _monitor_widget->setHidden( _current_mode != GraphicMode::MONITOR );
 
     ui->toolButtonLoadFile->setHidden( _current_mode == GraphicMode::MONITOR );
     ui->toolButtonConnect->setHidden( _current_mode != GraphicMode::MONITOR );
-    ui->toolButtonLoadRemote->setHidden( !(_current_mode == GraphicMode::EDITOR) );
-    ui->toolButtonSaveFile->setHidden( !(_current_mode == GraphicMode::EDITOR) );
+    ui->toolButtonLoadRemote->setHidden( NOT_EDITOR );
+    ui->toolButtonSaveFile->setHidden( NOT_EDITOR );
+    ui->toolButtonReorder->setHidden( NOT_EDITOR );
 
     if( _current_mode == GraphicMode::EDITOR )
     {
@@ -580,6 +583,7 @@ void MainWindow::updateCurrentMode()
         connect( ui->toolButtonLoadFile, &QToolButton::clicked,
                  _replay_widget, &SidepanelReplay::on_LoadLog );
     }
+    lockEditing( NOT_EDITOR );
 }
 
 
