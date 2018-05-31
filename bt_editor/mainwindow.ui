@@ -55,18 +55,19 @@
      <widget class="QFrame" name="frame">
       <property name="minimumSize">
        <size>
-        <width>80</width>
+        <width>92</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>80</width>
+        <width>92</width>
         <height>16777215</height>
        </size>
       </property>
       <property name="styleSheet">
-       <string notr="true">background-color: rgb(70, 70, 70);</string>
+       <string notr="true">background-color: rgb(70, 70, 70);
+</string>
       </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
@@ -91,341 +92,17 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QToolButton" name="toolButtonEditor">
-         <property name="minimumSize">
-          <size>
-           <width>78</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>78</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QToolButton {
-    color:white;
-}
-
-QToolButton:checked{
-  background-color: rgb(190, 101, 0)
-}
-
-QToolButton:unchecked{
-   background-color: rgba(0, 0, 0, 0);
-}
-</string>
-         </property>
-         <property name="text">
-          <string>Editor</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/BT-edit.png</normaloff>:/icons/BT-edit.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>50</width>
-           <height>50</height>
-          </size>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextUnderIcon</enum>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="toolButtonMonitor">
-         <property name="minimumSize">
-          <size>
-           <width>78</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>78</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QToolButton {
-    color:white;
-}
-
-QToolButton:checked{
-  background-color: rgb(190, 101, 0)
-}
-
-QToolButton:unchecked{
-   background-color: rgba(0, 0, 0, 0);
-}
-</string>
-         </property>
-         <property name="text">
-          <string>Monitor</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/BT-monitor.png</normaloff>:/icons/BT-monitor.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>50</width>
-           <height>50</height>
-          </size>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextUnderIcon</enum>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-         <property name="arrowType">
-          <enum>Qt::NoArrow</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="toolButtonReplay">
-         <property name="minimumSize">
-          <size>
-           <width>78</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>78</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QToolButton {
-    color:white;
-}
-
-QToolButton:checked{
-  background-color: rgb(190, 101, 0)
-}
-
-QToolButton:unchecked{
-   background-color: rgba(0, 0, 0, 0);
-}
-</string>
-         </property>
-         <property name="text">
-          <string>Log Replay</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/BT-log.png</normaloff>:/icons/BT-log.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>45</width>
-           <height>45</height>
-          </size>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextUnderIcon</enum>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="Line" name="line_2">
-         <property name="styleSheet">
-          <string notr="true">color: white;</string>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
-         </property>
-         <property name="lineWidth">
-          <number>1</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
         <widget class="QToolButton" name="toolButtonConnect">
          <property name="minimumSize">
           <size>
-           <width>78</width>
-           <height>80</height>
+           <width>90</width>
+           <height>70</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>78</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QToolButton {
-    color:white;
-}
-
-
-QToolButton:hover{
-   background-color: rgb(110, 110, 110);
-}
-
-
-QToolButton:pressed{
-  background-color: rgb(190, 101, 0)
-}</string>
-         </property>
-         <property name="text">
-          <string>Connect</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/connect.png</normaloff>:/icons/connect.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>40</width>
-           <height>40</height>
-          </size>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextUnderIcon</enum>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="toolButtonLoadFile">
-         <property name="minimumSize">
-          <size>
-           <width>78</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>78</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QToolButton {
-    color:white;
-}
-
-
-QToolButton:hover{
-   background-color: rgb(110, 110, 110);
-}
-
-
-QToolButton:pressed{
-  background-color: rgb(190, 101, 0)
-}</string>
-         </property>
-         <property name="text">
-          <string>Load File</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/load_file.png</normaloff>:/icons/load_file.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>40</width>
-           <height>40</height>
-          </size>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextUnderIcon</enum>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="toolButtonLoadRemote">
-         <property name="minimumSize">
-          <size>
-           <width>78</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>78</width>
-           <height>80</height>
+           <width>90</width>
+           <height>70</height>
           </size>
          </property>
          <property name="font">
@@ -444,18 +121,158 @@ QToolButton:pressed{
     color:white;
 }
 
+QToolButton:hover{
+   background-color: rgb(110, 110, 110);
+}
+
+QToolButton:pressed{
+  background-color: rgb(190, 101, 0)
+}
+
+QToolButton:disabled{
+  color:gray;
+  background-color: rgb(50, 50, 50)
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Connect</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/icons.qrc">
+           <normaloff>:/icons/connect.png</normaloff>:/icons/connect.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextUnderIcon</enum>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButtonLoadFile">
+         <property name="minimumSize">
+          <size>
+           <width>90</width>
+           <height>70</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>90</width>
+           <height>70</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QToolButton {
+    color:white;
+}
 
 QToolButton:hover{
    background-color: rgb(110, 110, 110);
 }
 
+QToolButton:pressed{
+  background-color: rgb(190, 101, 0)
+}
+
+QToolButton:disabled{
+  color:gray;
+  background-color: rgb(50, 50, 50)
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Load File</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/icons.qrc">
+           <normaloff>:/icons/load_file.png</normaloff>:/icons/load_file.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextUnderIcon</enum>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButtonLoadRemote">
+         <property name="minimumSize">
+          <size>
+           <width>90</width>
+           <height>70</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>90</width>
+           <height>70</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QToolButton {
+    color:white;
+}
+
+QToolButton:hover{
+   background-color: rgb(110, 110, 110);
+}
 
 QToolButton:pressed{
   background-color: rgb(190, 101, 0)
-}</string>
+}
+
+QToolButton:disabled{
+  color:gray;
+  background-color: rgb(50, 50, 50)
+}
+</string>
          </property>
          <property name="text">
-          <string>Server</string>
+          <string>From Server</string>
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">
@@ -463,8 +280,8 @@ QToolButton:pressed{
          </property>
          <property name="iconSize">
           <size>
-           <width>50</width>
-           <height>50</height>
+           <width>32</width>
+           <height>32</height>
           </size>
          </property>
          <property name="checkable">
@@ -482,15 +299,20 @@ QToolButton:pressed{
         <widget class="QToolButton" name="toolButtonSaveFile">
          <property name="minimumSize">
           <size>
-           <width>78</width>
-           <height>80</height>
+           <width>90</width>
+           <height>70</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>78</width>
-           <height>80</height>
+           <width>90</width>
+           <height>70</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
          </property>
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
@@ -503,15 +325,19 @@ QToolButton:pressed{
     color:white;
 }
 
-
 QToolButton:hover{
    background-color: rgb(110, 110, 110);
 }
 
-
 QToolButton:pressed{
   background-color: rgb(190, 101, 0)
-}</string>
+}
+
+QToolButton:disabled{
+  color:gray;
+  background-color: rgb(50, 50, 50)
+}
+</string>
          </property>
          <property name="text">
           <string>Save</string>
@@ -522,8 +348,8 @@ QToolButton:pressed{
          </property>
          <property name="iconSize">
           <size>
-           <width>40</width>
-           <height>40</height>
+           <width>28</width>
+           <height>28</height>
           </size>
          </property>
          <property name="checkable">
@@ -535,6 +361,269 @@ QToolButton:pressed{
          <property name="autoRaise">
           <bool>true</bool>
          </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButtonCenterView">
+         <property name="minimumSize">
+          <size>
+           <width>90</width>
+           <height>70</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>90</width>
+           <height>70</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="toolTip">
+          <string>Zoom and Center view</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QToolButton {
+    color:white;
+}
+
+QToolButton:hover{
+   background-color: rgb(110, 110, 110);
+}
+
+QToolButton:pressed{
+  background-color: rgb(190, 101, 0)
+}
+
+QToolButton:disabled{
+  color:gray;
+  background-color: rgb(50, 50, 50)
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Auto-Zoom</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/icons.qrc">
+           <normaloff>:/icons/home.png</normaloff>:/icons/home.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextUnderIcon</enum>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButtonLayout">
+         <property name="minimumSize">
+          <size>
+           <width>78</width>
+           <height>70</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>90</width>
+           <height>70</height>
+          </size>
+         </property>
+         <property name="baseSize">
+          <size>
+           <width>90</width>
+           <height>65</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QToolButton {
+    color:white;
+}
+
+QToolButton:hover{
+   background-color: rgb(110, 110, 110);
+}
+
+QToolButton:pressed{
+  background-color: rgb(190, 101, 0)
+}
+
+QToolButton:disabled{
+  color:gray;
+  background-color: rgb(50, 50, 50)
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Switch Layout</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/icons.qrc">
+           <normaloff>:/icons/BT-horizontal.png</normaloff>:/icons/BT-horizontal.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>36</width>
+           <height>36</height>
+          </size>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextUnderIcon</enum>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButtonReorder">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>90</horstretch>
+           <verstretch>70</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>90</width>
+           <height>70</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QToolButton {
+    color:white;
+}
+
+QToolButton:hover{
+   background-color: rgb(110, 110, 110);
+}
+
+QToolButton:pressed{
+  background-color: rgb(190, 101, 0)
+}
+
+QToolButton:disabled{
+  color:gray;
+  background-color: rgb(50, 50, 50)
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Reorder</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/icons.qrc">
+           <normaloff>:/icons/wand.png</normaloff>:/icons/wand.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextUnderIcon</enum>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="semaphoreFrame">
+         <property name="minimumSize">
+          <size>
+           <width>90</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>90</width>
+           <height>50</height>
+          </size>
+         </property>
+         <layout class="QHBoxLayout" name="topLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <property name="bottomMargin">
+           <number>1</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="labelSemaphore">
+            <property name="minimumSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>30</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="pixmap">
+             <pixmap resource="resources/icons.qrc">:/icons/red-circle.png</pixmap>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -553,6 +642,9 @@ QToolButton:pressed{
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="handleWidth">
+       <number>3</number>
       </property>
       <widget class="QFrame" name="leftFrame">
        <property name="minimumSize">
@@ -589,7 +681,7 @@ QToolButton:pressed{
        </layout>
       </widget>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="centralLayout" stretch="0,1">
+       <layout class="QVBoxLayout" name="centralLayout" stretch="1">
         <property name="leftMargin">
          <number>4</number>
         </property>
@@ -602,135 +694,6 @@ QToolButton:pressed{
         <property name="bottomMargin">
          <number>4</number>
         </property>
-        <item>
-         <layout class="QHBoxLayout" name="topLayout">
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButtonCenterView">
-            <property name="focusPolicy">
-             <enum>Qt::NoFocus</enum>
-            </property>
-            <property name="toolTip">
-             <string>Zoom and Center view</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="resources/icons.qrc">
-              <normaloff>:/icons/home.png</normaloff>:/icons/home.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>24</width>
-              <height>24</height>
-             </size>
-            </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Layout:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="comboBoxLayout">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="focusPolicy">
-             <enum>Qt::NoFocus</enum>
-            </property>
-            <item>
-             <property name="text">
-              <string>Horizontal</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Vertical</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButtonReorder">
-            <property name="text">
-             <string>Reorder</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelSemaphore">
-            <property name="minimumSize">
-             <size>
-              <width>24</width>
-              <height>24</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>24</width>
-              <height>24</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="pixmap">
-             <pixmap resource="resources/icons.qrc">:/icons/red-circle.png</pixmap>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
         <item>
          <widget class="QTabWidget" name="tabWidget">
           <property name="sizePolicy">
@@ -777,7 +740,7 @@ QToolButton:pressed{
      <x>0</x>
      <y>0</y>
      <width>814</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLoad">
@@ -790,22 +753,22 @@ QToolButton:pressed{
     <addaction name="actionClear"/>
     <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menuZoom">
+   <widget class="QMenu" name="menuMode">
     <property name="title">
-     <string>Zoom</string>
+     <string>Tools</string>
     </property>
-    <addaction name="actionZoom_In"/>
-    <addaction name="actionZoom_ut"/>
-   </widget>
-   <widget class="QMenu" name="menuReorder">
-    <property name="title">
-     <string>Reorder</string>
-    </property>
-    <addaction name="actionAuto_arrange"/>
+    <widget class="QMenu" name="menuSwitch_To">
+     <property name="title">
+      <string>Switch Mode...</string>
+     </property>
+     <addaction name="actionEditor_Mode"/>
+     <addaction name="actionMonitor_mode"/>
+     <addaction name="actionReplay_mode"/>
+    </widget>
+    <addaction name="menuSwitch_To"/>
    </widget>
    <addaction name="menuLoad"/>
-   <addaction name="menuZoom"/>
-   <addaction name="menuReorder"/>
+   <addaction name="menuMode"/>
   </widget>
   <action name="actionLoad">
    <property name="text">
@@ -831,24 +794,6 @@ QToolButton:pressed{
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionZoom_In">
-   <property name="text">
-    <string>Zoom In</string>
-   </property>
-  </action>
-  <action name="actionZoom_ut">
-   <property name="text">
-    <string>Zoom ut</string>
-   </property>
-  </action>
-  <action name="actionAuto_arrange">
-   <property name="text">
-    <string>auto-arrange</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+A</string>
-   </property>
-  </action>
   <action name="actionLoadRemote">
    <property name="text">
     <string>Load from remote server</string>
@@ -857,6 +802,21 @@ QToolButton:pressed{
   <action name="actionClear">
    <property name="text">
     <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionEditor_Mode">
+   <property name="text">
+    <string>Editor Mode</string>
+   </property>
+  </action>
+  <action name="actionMonitor_mode">
+   <property name="text">
+    <string>Real-time Monitor</string>
+   </property>
+  </action>
+  <action name="actionReplay_mode">
+   <property name="text">
+    <string>Log Replay</string>
    </property>
   </action>
  </widget>

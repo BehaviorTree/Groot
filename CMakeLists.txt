@@ -58,6 +58,7 @@ set(APP_CPPS
     ./bt_editor/utils.cpp
     ./bt_editor/bt_editor_base.cpp
     ./bt_editor/graphic_container.cpp
+    ./bt_editor/startup_dialog.cpp
 
     ./bt_editor/sidepanel_editor.cpp
     ./bt_editor/sidepanel_replay.cpp
@@ -75,6 +76,7 @@ set(FORMS_UI
   ./bt_editor/action_form.ui
   ./bt_editor/sidepanel_editor.ui
   ./bt_editor/sidepanel_replay.ui
+  ./bt_editor/startup_dialog.ui
   )
 
 find_package(ZMQ)

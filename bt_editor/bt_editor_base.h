@@ -11,6 +11,9 @@
 enum class NodeType   { ACTION, DECORATOR, CONTROL, CONDITION, SUBTREE, ROOT, UNDEFINED };
 enum class ParamType  { INT, DOUBLE, TEXT, COMBO, UNDEFINED };
 enum class NodeStatus { IDLE, RUNNING, SUCCESS, FAILURE };
+enum class GraphicMode { EDITOR, MONITOR, REPLAY };
+
+
 
 struct TreeNodeModel
 {

@@ -36,11 +36,11 @@ using QtNodes::NodeGraphicsObject;
 using QtNodes::NodeState;
 
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
+    _current_mode(initial_mode),
     _root_node(nullptr),
-    _current_mode(Mode::EDITOR),
     _undo_enabled(true)
 {
     ui->setupUi(this);
@@ -48,6 +48,15 @@ MainWindow::MainWindow(QWidget *parent) :
     QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
     restoreGeometry(settings.value("MainWindow/geometry").toByteArray());
     restoreState(settings.value("MainWindow/windowState").toByteArray());
+    QString layout = settings.value("MainWindow/layout").toString();
+
+    if( layout == "HORIZONTAL")
+    {
+        _current_layout = QtNodes::PortLayout::Horizontal;
+    }
+    else{
+        _current_layout = QtNodes::PortLayout::Horizontal;
+    }
 
     _model_registry = std::make_shared<QtNodes::DataModelRegistry>();
 
@@ -60,17 +69,15 @@ MainWindow::MainWindow(QWidget *parent) :
     _editor_widget = new SidepanelEditor(_tree_nodes_model, this);
     _replay_widget = new SidepanelReplay(this);
 
-
     ui->leftFrame->layout()->addWidget( _editor_widget );
     ui->leftFrame->layout()->addWidget( _replay_widget );
-
 
 #ifdef ZMQ_FOUND
     _monitor_widget = new SidepanelMonitor(this);
     ui->leftFrame->layout()->addWidget( _monitor_widget );
 
     connect( ui->toolButtonConnect, &QToolButton::clicked,
-             _monitor_widget, &SidepanelMonitor::on_pushButtonConnect_clicked );
+             _monitor_widget, &SidepanelMonitor::on_Connect );
 #endif
 
     updateCurrentMode();
@@ -78,9 +85,6 @@ MainWindow::MainWindow(QWidget *parent) :
     dynamic_cast<QVBoxLayout*>(ui->leftFrame->layout())->setStretch(1,1);
 
     createTab("Behaviortree");
-
-    this->setMenuBar(ui->menubar);
-    ui->menubar->setNativeMenuBar(false);
 
     auto arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
 
@@ -116,9 +120,7 @@ void MainWindow::createTab(const QString &name)
     GraphicContainer* ti = new GraphicContainer( _model_registry, this );
     _tab_info[name] = ti;
 
-    ti->scene()->setLayout( ui->comboBoxLayout->currentIndex() == 0 ?
-                                QtNodes::PortLayout::Horizontal :
-                                QtNodes::PortLayout::Vertical );
+    ti->scene()->setLayout( _current_layout );
 
     ui->tabWidget->addTab( ti->view(), name );
 
@@ -146,29 +148,50 @@ void MainWindow::loadFromXML(const QString& xml_text)
     try{
         using namespace tinyxml2;
         XMLDocument document;
-        XMLError err = document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
-        if( !err )
+        XMLError xml_error = document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
+        if( !xml_error )
         {
             ReadTreeNodesModel( document.RootElement(), *_model_registry, _tree_nodes_model );
             _editor_widget->updateTreeView();
 
-            onPushUndo();
             {
                 const QSignalBlocker blocker( currentTabInfo() );
-
                 currentTabInfo()->scene()->clearScene();
-
-                std::cout<< "Starting parsing"<< std::endl;
-
-                CreateTreeInSceneFromXML(document.RootElement()->FirstChildElement("BehaviorTree"),
-                                         currentTabInfo()->scene() );
-
-                std::cout<<"XML Parsed Successfully!"<< std::endl;
-
-                currentTabInfo()->nodeReorder();
             }
-            onSceneChanged();
-            onPushUndo();
+            bool error = false;
+            QString err_message;
+            QByteArray saved_state = _current_state;
+            try {
+                {
+                    const QSignalBlocker blocker( currentTabInfo() );
+                    std::cout<< "Starting parsing"<< std::endl;
+                    CreateTreeInSceneFromXML(document.RootElement()->FirstChildElement("BehaviorTree"),
+                                             currentTabInfo()->scene() );
+                    std::cout<<"XML Parsed Successfully!"<< std::endl;
+                    currentTabInfo()->nodeReorder();
+                }
+            }
+            catch (std::runtime_error& err) {
+                error = true;
+                err_message = err.what();
+            }
+            catch (std::logic_error& err) {
+                error = true;
+                err_message = err.what();
+            }
+
+            if( error )
+            {
+                loadSceneFromYAML( saved_state );
+                qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+                QMessageBox::warning(this, tr("Exception!"),
+                                     tr("It was not possible to parse the file. Error:\n\n%1"). arg( err_message ),
+                                     QMessageBox::Ok);
+            }
+            else{
+                onSceneChanged();
+                onPushUndo();
+            }
         }
     }
     catch( std::runtime_error& err)
@@ -179,7 +202,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
         return;
     }
 
-    lockEditing( _current_mode != Mode::EDITOR );
+    lockEditing( _current_mode != GraphicMode::EDITOR );
 }
 
 
@@ -319,22 +342,6 @@ void MainWindow::on_actionSave_triggered()
     settings.setValue("MainWindow.lastSaveDirectory", directory_path);
 }
 
-void MainWindow::on_actionZoom_Out_triggered()
-{
-    FlowView* view = dynamic_cast<FlowView*>( ui->tabWidget->currentWidget() );
-    if(view){
-        view->scaleDown();
-    }
-}
-
-void MainWindow::on_actionZoom_In_triggered()
-{
-    FlowView* view = dynamic_cast<FlowView*>( ui->tabWidget->currentWidget() );
-    if(view){
-        view->scaleUp();
-    }
-}
-
 void MainWindow::on_actionAuto_arrange_triggered()
 {
     currentTabInfo()->nodeReorder();
@@ -344,9 +351,9 @@ void MainWindow::onSceneChanged()
 {
     bool valid_BT = (findRoots( *currentTabInfo()->scene() ).size() == 1);
 
-    ui->comboBoxLayout->setEnabled(valid_BT);
-    ui->pushButtonReorder->setEnabled(valid_BT);
-    ui->actionAuto_arrange->setEnabled(valid_BT);
+    ui->toolButtonLayout->setEnabled(valid_BT);
+    ui->toolButtonReorder->setEnabled(valid_BT);
+    ui->toolButtonReorder->setEnabled(valid_BT);
     ui->actionSave->setEnabled(valid_BT);
     QPixmap pix;
 
@@ -371,6 +378,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
     settings.setValue("MainWindow/geometry", saveGeometry());
     settings.setValue("MainWindow/windowState", saveState());
+
+    if( _current_layout == QtNodes::PortLayout::Horizontal)
+    {
+        settings.setValue("MainWindow/layout", "HORIZONTAL");
+    }
+    else{
+        settings.setValue("MainWindow/layout", "VERTICAL");
+    }
+
     QMainWindow::closeEvent(event);
 }
 
@@ -430,8 +446,6 @@ void MainWindow::on_splitter_splitterMoved(int , int )
 
 void MainWindow::onPushUndo()
 {
-    // if ( !ui->radioEditor->isChecked() ) return; //locked
-
     if( !_undo_enabled ) return;
 
     //-----------------
@@ -441,15 +455,13 @@ void MainWindow::onPushUndo()
     currentTabInfo()->scene()->update();
     const QByteArray state = currentTabInfo()->scene()->saveToMemory();
 
-    if( _current_state.size() )
+    if( _undo_stack.empty() ||
+            ( state != _current_state && _undo_stack.back() != _current_state))
     {
-        if( _undo_stack.empty() ||
-                ( state != _current_state && _undo_stack.back() != _current_state))
-        {
-            _undo_stack.push_back( _current_state );
-            _redo_stack.clear();
-        }
+        _undo_stack.push_back( _current_state );
+        _redo_stack.clear();
     }
+
     _current_state = state;
     _undo_enabled = true;
     //-----------------
@@ -458,7 +470,7 @@ void MainWindow::onPushUndo()
 
 void MainWindow::onUndoInvoked()
 {
-    if ( _current_mode != Mode::EDITOR ) return; //locked
+    if ( _current_mode != GraphicMode::EDITOR ) return; //locked
 
     if( _undo_stack.size() > 0)
     {
@@ -466,33 +478,29 @@ void MainWindow::onUndoInvoked()
         _current_state = _undo_stack.back();
         _undo_stack.pop_back();
 
-        qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
-
-        {
-            const QSignalBlocker blocker( currentTabInfo() );
-            _undo_enabled = false;
-            auto scene = currentTabInfo()->scene();
-            scene->clearScene();
-            currentTabInfo()->scene()->loadFromMemory( _current_state );
-
-            int combo_index = ( currentTabInfo()->scene()->layout() == QtNodes::PortLayout::Horizontal) ? 0 : 1;
-            if( combo_index != ui->comboBoxLayout->currentIndex() )
-            {
-                ui->comboBoxLayout->setCurrentIndex(combo_index);
-                QApplication::processEvents();
-            }
-            _undo_enabled = true;
-        }
-
-        onSceneChanged();
+        loadSceneFromYAML(_current_state);
 
         qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
 }
 
+void MainWindow::loadSceneFromYAML(QByteArray state)
+{
+    {
+        const QSignalBlocker blocker( currentTabInfo() );
+        _undo_enabled = false;
+        auto scene = currentTabInfo()->scene();
+        scene->clearScene();
+        currentTabInfo()->scene()->loadFromMemory( state );
+        refreshNodesLayout( currentTabInfo()->scene()->layout() );
+        _undo_enabled = true;
+    }
+    onSceneChanged();
+}
+
 void MainWindow::onRedoInvoked()
 {
-    if ( _current_mode != Mode::EDITOR ) return; //locked
+    if ( _current_mode != GraphicMode::EDITOR ) return; //locked
 
     if( _redo_stack.size() > 0)
     {
@@ -500,60 +508,18 @@ void MainWindow::onRedoInvoked()
         _current_state = std::move( _redo_stack.back() );
         _redo_stack.pop_back();
 
-        {
-            const QSignalBlocker blocker( currentTabInfo() );
-            _undo_enabled = false;
-            auto scene = currentTabInfo()->scene();
-            scene->clearScene();
-            currentTabInfo()->scene()->loadFromMemory( _current_state );
-
-            int combo_index = ( currentTabInfo()->scene()->layout() == QtNodes::PortLayout::Horizontal) ? 0 : 1;
-            if( combo_index != ui->comboBoxLayout->currentIndex() )
-            {
-                ui->comboBoxLayout->setCurrentIndex(combo_index);
-            }
-            _undo_enabled = true;
-        }
-        onSceneChanged();
+        loadSceneFromYAML(_current_state);
 
         qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
 }
 
-
-void MainWindow::on_comboBoxLayout_currentIndexChanged(int index)
-{
-    auto new_layout = (index==0) ? QtNodes::PortLayout::Horizontal :
-                                   QtNodes::PortLayout::Vertical;
-
-    bool refresh = false;
-    {
-        const QSignalBlocker blocker( currentTabInfo() );
-        for(auto& tab: _tab_info)
-        {
-            auto scene = tab.second->scene();
-            if( scene->layout() != new_layout )
-            {
-                auto abstract_tree = BuildBehaviorTreeFromScene( scene );
-
-                scene->setLayout( (index==0) ? QtNodes::PortLayout::Horizontal :
-                                               QtNodes::PortLayout::Vertical);
-
-                NodeReorder( *scene, abstract_tree );
-                refresh = true;
-            }
-        }
-        on_pushButtonCenterView_pressed();
-    }
-    onPushUndo();
-}
-
-void MainWindow::on_pushButtonReorder_pressed()
+void MainWindow::on_toolButtonReorder_pressed()
 {
     on_actionAuto_arrange_triggered();
 }
 
-void MainWindow::on_pushButtonCenterView_pressed()
+void MainWindow::on_toolButtonCenterView_pressed()
 {
     currentTabInfo()->zoomHomeView();
 }
@@ -572,7 +538,7 @@ void MainWindow::on_loadBehaviorTree(AbsBehaviorTree &tree)
 
         currentTabInfo()->nodeReorder();
 
-        lockEditing( _current_mode != Mode::EDITOR );
+        lockEditing( _current_mode != GraphicMode::EDITOR );
     }
     _undo_stack.clear();
     _redo_stack.clear();
@@ -591,54 +557,94 @@ void MainWindow::on_actionClear_triggered()
 
 void MainWindow::updateCurrentMode()
 {
-    _editor_widget->setHidden( _current_mode != Mode::EDITOR );
-    _replay_widget->setHidden( _current_mode != Mode::REPLAY );
-    _monitor_widget->setHidden( _current_mode != Mode::MONITOR );
+    _editor_widget->setHidden( _current_mode != GraphicMode::EDITOR );
+    _replay_widget->setHidden( _current_mode != GraphicMode::REPLAY );
+    _monitor_widget->setHidden( _current_mode != GraphicMode::MONITOR );
 
-    const QString selected_style( "color:white; background-color: rgb(190, 101, 0);" );
-    const QString default_style( "QToolButton {color:white; background-color: rgba(0, 0, 0, 0);}\n"
-                                 "QToolButton:hover {color:white; background-color: rgb(111, 111, 111);}");
+    ui->toolButtonLoadFile->setHidden( _current_mode == GraphicMode::MONITOR );
+    ui->toolButtonConnect->setHidden( _current_mode != GraphicMode::MONITOR );
+    ui->toolButtonLoadRemote->setHidden( !(_current_mode == GraphicMode::EDITOR) );
+    ui->toolButtonSaveFile->setHidden( !(_current_mode == GraphicMode::EDITOR) );
 
-    ui->toolButtonEditor->setStyleSheet(  _current_mode == Mode::EDITOR ? selected_style : default_style);
-    ui->toolButtonMonitor->setStyleSheet( _current_mode == Mode::MONITOR ? selected_style : default_style);
-    ui->toolButtonReplay->setStyleSheet(  _current_mode == Mode::REPLAY ? selected_style : default_style);
-
-    ui->toolButtonLoadFile->setHidden( _current_mode == Mode::MONITOR );
-    ui->toolButtonConnect->setHidden( _current_mode != Mode::MONITOR );
-    ui->toolButtonLoadRemote->setHidden( !(_current_mode == Mode::EDITOR) );
-    ui->toolButtonSaveFile->setHidden( !(_current_mode == Mode::EDITOR) );
-
-    if( _current_mode == Mode::EDITOR )
+    if( _current_mode == GraphicMode::EDITOR )
     {
         connect( ui->toolButtonLoadFile, &QToolButton::clicked,
                  this, &MainWindow::on_actionLoad_triggered );
         disconnect( ui->toolButtonLoadFile, &QToolButton::clicked,
-                    _replay_widget, &SidepanelReplay::on_pushButtonLoadLog_pressed );
+                    _replay_widget, &SidepanelReplay::on_LoadLog );
     }
-    else if( _current_mode == Mode::REPLAY )
+    else if( _current_mode == GraphicMode::REPLAY )
     {
         disconnect( ui->toolButtonLoadFile, &QToolButton::clicked,
                     this, &MainWindow::on_actionLoad_triggered );
         connect( ui->toolButtonLoadFile, &QToolButton::clicked,
-                 _replay_widget, &SidepanelReplay::on_pushButtonLoadLog_pressed );
+                 _replay_widget, &SidepanelReplay::on_LoadLog );
+    }
+}
+
+
+void MainWindow::refreshNodesLayout(QtNodes::PortLayout new_layout)
+{
+
+    if( new_layout != _current_layout)
+    {
+        QString icon_name = ( new_layout == QtNodes::PortLayout::Horizontal ) ?
+                    ":/icons/BT-horizontal.png" :
+                    ":/icons/BT-vertical.png";
+        QIcon icon;
+        icon.addFile(icon_name, QSize(), QIcon::Normal, QIcon::Off);
+        ui->toolButtonLayout->setIcon(icon);
+        ui->toolButtonLayout->update();
     }
 
+    bool refreshed = false;
+    {
+        const QSignalBlocker blocker( currentTabInfo() );
+        for(auto& tab: _tab_info)
+        {
+            auto scene = tab.second->scene();
+            if( scene->layout() != new_layout )
+            {
+                auto abstract_tree = BuildBehaviorTreeFromScene( scene );
+                scene->setLayout( new_layout );
+                NodeReorder( *scene, abstract_tree );
+                refreshed = true;
+            }
+        }
+        on_toolButtonCenterView_pressed();
+    }
+    _current_layout = new_layout;
+    if(refreshed)
+    {
+        onPushUndo();
+    }
 }
 
-void MainWindow::on_toolButtonEditor_clicked()
+void MainWindow::on_toolButtonLayout_clicked()
 {
-    _current_mode = Mode::EDITOR;
+    if( _current_layout == QtNodes::PortLayout::Horizontal)
+    {
+        refreshNodesLayout( QtNodes::PortLayout::Vertical );
+    }
+    else{
+        refreshNodesLayout( QtNodes::PortLayout::Horizontal );
+    }
+}
+
+void MainWindow::on_actionEditor_Mode_triggered()
+{
+    _current_mode = GraphicMode::EDITOR;
     updateCurrentMode();
 }
 
-void MainWindow::on_toolButtonMonitor_clicked()
+void MainWindow::on_actionMonitor_mode_triggered()
 {
-    _current_mode = Mode::MONITOR;
+    _current_mode = GraphicMode::MONITOR;
     updateCurrentMode();
 }
 
-void MainWindow::on_toolButtonReplay_clicked()
+void MainWindow::on_actionReplay_mode_triggered()
 {
-    _current_mode = Mode::REPLAY;
+    _current_mode = GraphicMode::REPLAY;
     updateCurrentMode();
 }

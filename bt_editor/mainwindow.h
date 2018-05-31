@@ -38,7 +38,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(GraphicMode initial_mode, QWidget *parent = 0);
     ~MainWindow();
 
   void loadFromXML(const QString &xml_text);
@@ -48,10 +48,6 @@ private slots:
     void on_actionLoad_triggered();
 
     void on_actionSave_triggered();
-
-    void on_actionZoom_Out_triggered();
-
-    void on_actionZoom_In_triggered();
 
     void on_actionAuto_arrange_triggered();
 
@@ -67,32 +63,30 @@ private slots:
 
     void onRedoInvoked();
 
-    void on_comboBoxLayout_currentIndexChanged(int index);
+    void on_toolButtonReorder_pressed();
 
-    void on_pushButtonReorder_pressed();
-
-    void on_pushButtonCenterView_pressed();
+    void on_toolButtonCenterView_pressed();
 
     void on_loadBehaviorTree(AbsBehaviorTree& tree);
 
     void on_actionClear_triggered();
 
-    void on_toolButtonEditor_clicked();
-
-    void on_toolButtonMonitor_clicked();
-
-    void on_toolButtonReplay_clicked();
-
     void updateCurrentMode();
+
+    void on_toolButtonLayout_clicked();
+
+    void on_actionEditor_Mode_triggered();
+
+    void on_actionMonitor_mode_triggered();
+
+    void on_actionReplay_mode_triggered();
 
 signals:
     void updateGraphic();
 
 private:
 
-    enum class Mode { EDITOR, MONITOR, REPLAY };
-
-    Mode _current_mode;
+    GraphicMode _current_mode;
 
     Ui::MainWindow *ui;
 
@@ -117,6 +111,8 @@ private:
     std::deque<QByteArray> _undo_stack;
     std::deque<QByteArray> _redo_stack;
     QByteArray _current_state;
+    QtNodes::PortLayout _current_layout;
+
     bool _undo_enabled;
 
     TreeNodeModels _tree_nodes_model;
@@ -126,6 +122,8 @@ private:
 #ifdef ZMQ_FOUND
     SidepanelMonitor* _monitor_widget;
 #endif
+    void refreshNodesLayout(QtNodes::PortLayout new_layout);
+    void loadSceneFromYAML(QByteArray state);
 };
 
 

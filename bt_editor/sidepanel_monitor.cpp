@@ -31,7 +31,7 @@ SidepanelMonitor::~SidepanelMonitor()
 
 void SidepanelMonitor::clear()
 {
-    if( _connected ) this->on_pushButtonConnect_clicked();
+    if( _connected ) this->on_Connect();
 }
 
 void SidepanelMonitor::on_timer()
@@ -122,7 +122,7 @@ bool SidepanelMonitor::getTreeFromServer()
     return true;
 }
 
-void SidepanelMonitor::on_pushButtonConnect_clicked()
+void SidepanelMonitor::on_Connect()
 {
     if( !_connected)
     {
@@ -148,7 +148,6 @@ void SidepanelMonitor::on_pushButtonConnect_clicked()
                 {
                     failed = true;
                     _connected = false;
-                    _zmq_subscriber.disconnect( _connection_address_pub );
                 }
             }
             catch(zmq::error_t& err)
@@ -175,7 +174,6 @@ void SidepanelMonitor::on_pushButtonConnect_clicked()
         }
     }
     else{
-        _zmq_subscriber.disconnect( _connection_address_pub );
         _connected = false;
         ui->lineEdit->setDisabled(false);
         _timer->stop();

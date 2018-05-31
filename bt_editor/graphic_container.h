@@ -18,7 +18,7 @@ class GraphicContainer : public QObject
     Q_OBJECT
 public:
     explicit GraphicContainer(std::shared_ptr<QtNodes::DataModelRegistry> registry,
-                              QObject *parent = nullptr);
+                              QWidget *parent = nullptr);
 
     EditorFlowScene* scene() { return _scene; }
     QtNodes::FlowView*  view() { return _view; }

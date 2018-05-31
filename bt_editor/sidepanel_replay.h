@@ -24,7 +24,7 @@ public:
 
 public slots:
 
-    void on_pushButtonLoadLog_pressed();
+    void on_LoadLog();
 
 private slots:
 

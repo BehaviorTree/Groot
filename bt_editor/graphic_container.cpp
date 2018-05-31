@@ -10,13 +10,13 @@
 using namespace QtNodes;
 
 GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_registry,
-                                   QObject *parent) :
+                                   QWidget *parent) :
   QObject(parent),
   _model_registry(model_registry),
   _signal_was_blocked(true)
 {
-  _scene = new EditorFlowScene( model_registry );
-  _view  = new FlowView( _scene );
+  _scene = new EditorFlowScene( model_registry, parent );
+  _view  = new FlowView( _scene, parent );
 
   connect( _scene, &QtNodes::FlowScene::nodeDoubleClicked,
            this, &GraphicContainer::onNodeDoubleClicked);

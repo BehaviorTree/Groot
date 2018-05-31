@@ -15,6 +15,10 @@
         <file>download.png</file>
         <file>load_file.png</file>
         <file>save.png</file>
+        <file>BTE-Logo.png</file>
+        <file>wand.png</file>
+        <file>BT-vertical.png</file>
+        <file>BT-horizontal.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

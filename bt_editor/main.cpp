@@ -3,6 +3,7 @@
 #include <nodes/NodeStyle>
 #include <nodes/FlowViewStyle>
 #include <nodes/ConnectionStyle>
+#include <QDialog>
 
 #include "models/ControlNodeModel.hpp"
 #include "mainwindow.h"
@@ -11,6 +12,7 @@
 
 #include <nodes/DataModelRegistry>
 #include "XML_utilities.hpp"
+#include "startup_dialog.h"
 
 #ifdef USING_ROS
 #include <ros/ros.h>
@@ -24,30 +26,38 @@ using QtNodes::ConnectionStyle;
 int
 main(int argc, char *argv[])
 {
-  QApplication app(argc, argv);
-  app.setApplicationName("BehaviorTreeEditor");
-  app.setWindowIcon(QPixmap(":/icons/BT.png"));
+    QApplication app(argc, argv);
+    app.setApplicationName("BehaviorTreeEditor");
+    app.setWindowIcon(QPixmap(":/icons/BT.png"));
 
-  qRegisterMetaType<AbsBehaviorTree>();
+    qRegisterMetaType<AbsBehaviorTree>();
 
-  QCommandLineParser parser;
-  parser.setApplicationDescription("BehaviorTreeEditor: just a fancy XML editor");
-  parser.addHelpOption();
+    QCommandLineParser parser;
+    parser.setApplicationDescription("BehaviorTreeEditor: just a fancy XML editor");
+    parser.addHelpOption();
 
-  QCommandLineOption test_option(QStringList() << "t" << "test",
-                                 QCoreApplication::translate("main", "Load dummy"));
-  parser.addOption(test_option);
-  parser.process( app );
+    QCommandLineOption test_option(QStringList() << "t" << "test",
+                                   QCoreApplication::translate("main", "Load dummy"));
+    parser.addOption(test_option);
+    parser.process( app );
 
-  MainWindow win;
+    if( parser.isSet(test_option) )
+    {
+        MainWindow win( GraphicMode::EDITOR );
+        win.show();
+        win.loadFromXML( gTestXML );
+        return app.exec();
+    }
+    else{
+        StartupDialog dialog;
+        dialog.setWindowFlags( Qt::SplashScreen );
 
-  win.show();
-
-  if( parser.isSet(test_option) )
-  {
-    win.loadFromXML( gTestXML );
-  }
-
-
-  return app.exec();
+        if( dialog.exec() == QDialog::Accepted)
+        {
+            MainWindow win( dialog.getGraphicMode() );
+            win.show();
+            return app.exec();
+        }
+    }
+    return 0;
 }

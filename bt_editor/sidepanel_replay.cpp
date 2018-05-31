@@ -147,7 +147,7 @@ void SidepanelReplay::updateTableModel()
     ui->pushButtonPlay->setEnabled( !_timepoint.empty() );
 }
 
-void SidepanelReplay::on_pushButtonLoadLog_pressed()
+void SidepanelReplay::on_LoadLog()
 {
     QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
     QString directory_path  = settings.value("SidepanelReplay.lastLoadDirectory",

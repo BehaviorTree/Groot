@@ -22,7 +22,7 @@ public:
 
 public slots:
 
-    void on_pushButtonConnect_clicked();
+    void on_Connect();
 
 private slots:
 
