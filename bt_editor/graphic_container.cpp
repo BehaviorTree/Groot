@@ -113,6 +113,52 @@ void GraphicContainer::zoomHomeView()
   _view->scaleDown();
 }
 
+bool GraphicContainer::containsValidTree() const
+{
+    if( _scene->nodes().empty())
+    {
+        return false;
+    }
+
+    auto connections =  _scene->connections();
+
+    std::set<const QtNodes::Node*> nodes_with_input;
+    std::set<const QtNodes::Node*> nodes_with_output;
+
+    for (const auto& it: _scene->connections())
+    {
+        const QtNodes::Connection* connection = it.second.get();
+        auto node = connection->getNode( QtNodes::PortType::In);
+        if( node ){
+            nodes_with_input.insert( node );
+        }
+        node = connection->getNode( QtNodes::PortType::Out);
+        if( node ){
+            nodes_with_output.insert( node );
+        }
+    }
+
+    for (const auto& it: _scene->nodes())
+    {
+        const QtNodes::Node* node = it.second.get();
+        if( node->nodeDataModel()->nPorts(QtNodes::PortType::In) == 1 )
+        {
+            if( nodes_with_input.find(node) == nodes_with_input.end() )
+            {
+                return false;
+            }
+        }
+        if( node->nodeDataModel()->nPorts(QtNodes::PortType::Out) == 1 )
+        {
+            if( nodes_with_output.find(node) == nodes_with_output.end() )
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 void GraphicContainer::onNodeDoubleClicked(Node &root_node)
 {
   std::function<void(QtNodes::Node&)> selectRecursively;

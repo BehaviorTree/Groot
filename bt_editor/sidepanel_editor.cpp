@@ -33,13 +33,13 @@ void SidepanelEditor::updateTreeView()
     ui->treeWidget->clear();
     _tree_view_category_items.clear();
 
-    for (const QString& cat : {"Root", "Action", "Control", "Decorator", "SubTree" } )
+    for (const QString& category : {"Root", "Action", "Control", "Decorator", "SubTree" } )
     {
-      auto item = new QTreeWidgetItem(ui->treeWidget, {cat});
+      auto item = new QTreeWidgetItem(ui->treeWidget, {category});
       AdjustFont(item, 11, true);
       item->setFlags( item->flags() ^ Qt::ItemIsDragEnabled );
       item->setFlags( item->flags() ^ Qt::ItemIsSelectable );
-      _tree_view_category_items[ cat ] = item;
+      _tree_view_category_items[ category ] = item;
     }
 
     for (auto const &it : _tree_nodes_model)
@@ -77,7 +77,7 @@ void SidepanelEditor::updateTreeView()
 
 void SidepanelEditor::clear()
 {
-    _tree_nodes_model.clear();
+
 }
 
 void SidepanelEditor::on_treeWidget_itemSelectionChanged()

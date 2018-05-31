@@ -40,7 +40,6 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     _current_mode(initial_mode),
-    _root_node(nullptr),
     _undo_enabled(true)
 {
     ui->setupUi(this);
@@ -48,15 +47,6 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
     restoreGeometry(settings.value("MainWindow/geometry").toByteArray());
     restoreState(settings.value("MainWindow/windowState").toByteArray());
-    QString layout = settings.value("MainWindow/layout").toString();
-
-    if( layout == "HORIZONTAL")
-    {
-        _current_layout = QtNodes::PortLayout::Horizontal;
-    }
-    else{
-        _current_layout = QtNodes::PortLayout::Horizontal;
-    }
 
     _model_registry = std::make_shared<QtNodes::DataModelRegistry>();
 
@@ -108,6 +98,32 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
              this, &MainWindow::on_loadBehaviorTree );
 #endif
     onSceneChanged();
+
+    const QString layout = settings.value("MainWindow/layout").toString();
+    if( layout == "HORIZONTAL")
+    {
+        refreshNodesLayout( QtNodes::PortLayout::Horizontal );
+    }
+    else{
+        refreshNodesLayout( QtNodes::PortLayout::Vertical );
+    }
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+    settings.setValue("MainWindow/geometry", saveGeometry());
+    settings.setValue("MainWindow/windowState", saveState());
+
+    if( _current_layout == QtNodes::PortLayout::Horizontal)
+    {
+        settings.setValue("MainWindow/layout", "HORIZONTAL");
+    }
+    else{
+        settings.setValue("MainWindow/layout", "VERTICAL");
+    }
+
+    QMainWindow::closeEvent(event);
 }
 
 
@@ -141,7 +157,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
 
 void MainWindow::loadFromXML(const QString& xml_text)
 {
@@ -349,11 +364,12 @@ void MainWindow::on_actionAuto_arrange_triggered()
 
 void MainWindow::onSceneChanged()
 {
-    bool valid_BT = (findRoots( *currentTabInfo()->scene() ).size() == 1);
+    const bool valid_BT = currentTabInfo()->containsValidTree();
 
     ui->toolButtonLayout->setEnabled(valid_BT);
     ui->toolButtonReorder->setEnabled(valid_BT);
     ui->toolButtonReorder->setEnabled(valid_BT);
+
     ui->actionSave->setEnabled(valid_BT);
     QPixmap pix;
 
@@ -373,22 +389,6 @@ void MainWindow::onSceneChanged()
 
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
-{
-    QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
-    settings.setValue("MainWindow/geometry", saveGeometry());
-    settings.setValue("MainWindow/windowState", saveState());
-
-    if( _current_layout == QtNodes::PortLayout::Horizontal)
-    {
-        settings.setValue("MainWindow/layout", "HORIZONTAL");
-    }
-    else{
-        settings.setValue("MainWindow/layout", "VERTICAL");
-    }
-
-    QMainWindow::closeEvent(event);
-}
 
 GraphicContainer* MainWindow::currentTabInfo()
 {
@@ -547,6 +547,7 @@ void MainWindow::on_loadBehaviorTree(AbsBehaviorTree &tree)
 
 void MainWindow::on_actionClear_triggered()
 {
+    const QSignalBlocker blocker( currentTabInfo() );
     currentTabInfo()->scene()->clearScene();
     _editor_widget->clear();
     _monitor_widget->clear();
@@ -557,7 +558,7 @@ void MainWindow::on_actionClear_triggered()
 
 void MainWindow::updateCurrentMode()
 {
-    bool NOT_EDITOR = _current_mode != GraphicMode::EDITOR;
+    const bool NOT_EDITOR = _current_mode != GraphicMode::EDITOR;
 
     _editor_widget->setHidden( NOT_EDITOR );
     _replay_widget->setHidden( _current_mode != GraphicMode::REPLAY );
@@ -584,12 +585,16 @@ void MainWindow::updateCurrentMode()
                  _replay_widget, &SidepanelReplay::on_LoadLog );
     }
     lockEditing( NOT_EDITOR );
+
+    if( _current_mode == GraphicMode::EDITOR)
+    {
+        _editor_widget->updateTreeView();
+    }
 }
 
 
 void MainWindow::refreshNodesLayout(QtNodes::PortLayout new_layout)
 {
-
     if( new_layout != _current_layout)
     {
         QString icon_name = ( new_layout == QtNodes::PortLayout::Horizontal ) ?
@@ -643,12 +648,44 @@ void MainWindow::on_actionEditor_Mode_triggered()
 
 void MainWindow::on_actionMonitor_mode_triggered()
 {
-    _current_mode = GraphicMode::MONITOR;
-    updateCurrentMode();
+    QMessageBox::StandardButton res = QMessageBox::Ok;
+
+    if( currentTabInfo()->scene()->nodes().size() > 0)
+    {
+        res = QMessageBox::warning(this, tr("Carefull!"),
+                                   tr("If you switch to Monitor Mode, the current BehaviorTree in the Scene will be deleted"),
+                                   QMessageBox::Cancel | QMessageBox::Ok, QMessageBox::Cancel);
+    }
+    if( res == QMessageBox::Ok)
+    {
+        {
+            const QSignalBlocker blocker( currentTabInfo() );
+            currentTabInfo()->scene()->clearScene();
+        }
+        _monitor_widget->clear();
+        _current_mode = GraphicMode::MONITOR;
+        updateCurrentMode();
+    }
 }
 
 void MainWindow::on_actionReplay_mode_triggered()
 {
-    _current_mode = GraphicMode::REPLAY;
-    updateCurrentMode();
+    QMessageBox::StandardButton res = QMessageBox::Ok;
+
+    if( currentTabInfo()->scene()->nodes().size() > 0)
+    {
+        res = QMessageBox::warning(this, tr("Carefull!"),
+                                   tr("If you switch to Log Replay Mode, the current BehaviorTree in the Scene will be deleted"),
+                                   QMessageBox::Cancel | QMessageBox::Ok, QMessageBox::Cancel);
+    }
+    if( res == QMessageBox::Ok)
+    {
+        {
+            const QSignalBlocker blocker( currentTabInfo() );
+            currentTabInfo()->scene()->clearScene();
+        }
+        _replay_widget->clear();
+        _current_mode = GraphicMode::REPLAY;
+        updateCurrentMode();
+    }
 }

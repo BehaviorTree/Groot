@@ -33,6 +33,8 @@ public:
 
     void zoomHomeView();
 
+    bool containsValidTree() const;
+
 signals:
 
     void undoableChange();
