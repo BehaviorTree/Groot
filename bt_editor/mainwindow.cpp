@@ -455,9 +455,8 @@ void MainWindow::on_splitter_splitterMoved(int , int )
 void MainWindow::onPushUndo()
 {
     const QByteArray state = currentTabInfo()->scene()->saveToMemory();
-    const bool different_from_previous = ( state != _current_state && _undo_stack.back() != _current_state);
 
-    if( _undo_stack.empty() || different_from_previous )
+    if( _undo_stack.empty() || ( state != _current_state &&  _undo_stack.back() != _current_state) )
     {
         _undo_stack.push_back( _current_state );
         _redo_stack.clear();
