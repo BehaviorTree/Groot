@@ -55,6 +55,8 @@ private slots:
 
     void onRedoInvoked();
 
+    void onConnectionUpdate(bool connected);
+
 private slots:
     virtual void closeEvent(QCloseEvent *event) override;
 

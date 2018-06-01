@@ -167,7 +167,7 @@ void SidepanelMonitor::on_Connect()
             _connected = true;
             ui->lineEdit->setDisabled(true);
             _timer->start(20);
-            //   ui->pushButtonConnect->setStyleSheet("background-color:  rgba(252, 175, 62, 255)");
+            connectionUpdate(true);
         }
         else{
             QMessageBox::warning(this,
@@ -180,6 +180,7 @@ void SidepanelMonitor::on_Connect()
         _connected = false;
         ui->lineEdit->setDisabled(false);
         _timer->stop();
-        // ui->pushButtonConnect->setStyleSheet("background-color:  rgba(0, 0, 0, 0)");
+
+        connectionUpdate(false);
     }
 }

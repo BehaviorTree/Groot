@@ -31,6 +31,8 @@ private slots:
 signals:
     void loadBehaviorTree( AbsBehaviorTree& tree );
 
+    void connectionUpdate(bool connected);
+
 private:
     Ui::SidepanelMonitor *ui;
 

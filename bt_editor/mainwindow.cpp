@@ -67,6 +67,9 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     connect( ui->toolButtonConnect, &QToolButton::clicked,
              _monitor_widget, &SidepanelMonitor::on_Connect );
+
+    connect( _monitor_widget, &SidepanelMonitor::connectionUpdate,
+             this, &MainWindow::onConnectionUpdate );
 #endif
 
     updateCurrentMode();
@@ -491,6 +494,23 @@ void MainWindow::onRedoInvoked()
     }
 }
 
+void MainWindow::onConnectionUpdate(bool connected)
+{
+    if(connected)
+    {
+        ui->toolButtonConnect->setStyleSheet("background-color: rgb(190, 101, 0); color:white");
+        ui->toolButtonConnect->setText("Disconnect");
+    }
+    else{
+        ui->toolButtonConnect->setStyleSheet(
+                    "QToolButton {color:white; }"
+                    "QToolButton:hover{ background-color: rgb(110, 110, 110); }"
+                    "QToolButton:pressed{ background-color: rgb(190, 101, 0) }"
+                    "QToolButton:disabled{color:gray; background-color: rgb(50, 50, 50) }");
+        ui->toolButtonConnect->setText("Connect");
+    }
+}
+
 void MainWindow::loadSceneFromYAML(QByteArray state)
 {
     {
@@ -630,6 +650,9 @@ void MainWindow::on_actionEditor_mode_triggered()
 {
     _current_mode = GraphicMode::EDITOR;
     updateCurrentMode();
+
+    _monitor_widget->clear();
+    _replay_widget->clear();
 }
 
 void MainWindow::on_actionMonitor_mode_triggered()
