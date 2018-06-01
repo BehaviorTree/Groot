@@ -1,6 +1,7 @@
 #include "startup_dialog.h"
 #include "ui_startup_dialog.h"
 
+#include <QTime>
 #include <QSettings>
 #include <QShortcut>
 
@@ -13,19 +14,8 @@ StartupDialog::StartupDialog(QWidget *parent) :
 
     QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
     QString mode  = settings.value("StartupDialog.Mode", "EDITOR").toString();
+    _mode = getGraphicModeFromString( mode );
 
-    if( mode == "EDITOR")
-    {
-        _mode = GraphicMode::EDITOR;
-    }
-    else if( mode == "MONITOR")
-    {
-        _mode = GraphicMode::MONITOR;
-    }
-    else if( mode == "REPLAY")
-    {
-        _mode = GraphicMode::REPLAY;
-    }
     updateCurrentMode();
 
     QShortcut* close_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
@@ -41,18 +31,51 @@ void StartupDialog::on_toolButtonEditor_clicked()
 {
     _mode = GraphicMode::EDITOR;
     updateCurrentMode();
+
+    QTime now = QTime::currentTime();
+    static QTime prev_click_time = now;
+    int ms_delay = prev_click_time.msecsTo( now );
+    if( ms_delay > 0 && ms_delay <=  QApplication::doubleClickInterval())
+    {
+        on_toolButtonStart_clicked();
+    }
+    else{
+        prev_click_time = now;
+    }
 }
 
 void StartupDialog::on_toolButtonMonitor_clicked()
 {
     _mode = GraphicMode::MONITOR;
     updateCurrentMode();
+
+    QTime now = QTime::currentTime();
+    static QTime prev_click_time = now;
+    int ms_delay = prev_click_time.msecsTo( now );
+    if( ms_delay > 0 && ms_delay <=  QApplication::doubleClickInterval())
+    {
+        on_toolButtonStart_clicked();
+    }
+    else{
+        prev_click_time = now;
+    }
 }
 
 void StartupDialog::on_toolButtonReplay_clicked()
 {
     _mode = GraphicMode::REPLAY;
     updateCurrentMode();
+
+    QTime now = QTime::currentTime();
+    static QTime prev_click_time = now;
+    int ms_delay = prev_click_time.msecsTo( now );
+    if( ms_delay > 0 && ms_delay <=  QApplication::doubleClickInterval())
+    {
+        on_toolButtonStart_clicked();
+    }
+    else{
+        prev_click_time = now;
+    }
 }
 
 void StartupDialog::updateCurrentMode()
@@ -91,18 +114,7 @@ void StartupDialog::updateCurrentMode()
 void StartupDialog::on_toolButtonStart_clicked()
 {
     QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+    settings.setValue("StartupDialog.Mode", toStr(_mode) );
 
-    if( _mode == GraphicMode::EDITOR)
-    {
-        settings.setValue("StartupDialog.Mode", "EDITOR");
-    }
-    else if( _mode == GraphicMode::MONITOR)
-    {
-        settings.setValue("StartupDialog.Mode", "MONITOR");
-    }
-    else if( _mode == GraphicMode::REPLAY)
-    {
-        settings.setValue("StartupDialog.Mode", "REPLAY");
-    }
     this->accept();
 }

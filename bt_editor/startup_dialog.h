@@ -2,6 +2,7 @@
 #define STARTUP_DIALOG_H
 
 #include <QDialog>
+#include <QTime>
 #include "bt_editor_base.h"
 
 namespace Ui {
@@ -33,6 +34,7 @@ private:
     Ui::StartupDialog *ui;
 
     GraphicMode _mode;
+
 };
 
 #endif // STARTUP_DIALOG_H

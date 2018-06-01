@@ -126,15 +126,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         break;
     }
 
-    switch(_current_mode )
-    {
-    case GraphicMode::EDITOR:  settings.setValue("StartupDialog.Mode", "EDITOR");
-        break;
-    case GraphicMode::MONITOR:  settings.setValue("StartupDialog.Mode", "MONITOR");
-        break;
-    case GraphicMode::REPLAY:  settings.setValue("StartupDialog.Mode", "REPLAY");
-        break;
-    }
+    settings.setValue("StartupDialog.Mode", toStr( _current_mode ) );
 
     QMainWindow::closeEvent(event);
 }

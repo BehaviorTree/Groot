@@ -40,8 +40,7 @@ void SidepanelMonitor::on_timer()
 
     zmq::message_t msg;
     try{
-        bool received = _zmq_subscriber.recv(&msg);
-        if( received )
+        while(  _zmq_subscriber.recv(&msg) )
         {
             _msg_count++;
             ui->labelCount->setText( QString("Messages received: %1").arg(_msg_count) );
@@ -58,20 +57,20 @@ void SidepanelMonitor::on_timer()
                 node.status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+2] ));
             }
 
-            for(size_t t=0; t<num_transitions; t++)
+            for(size_t t=0; t < num_transitions; t++)
             {
                 size_t index = 8 + header_size + 12*t;
 
-                const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[index] );
-                const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[index+4] );
-                double timestamp = t_sec + t_usec* 0.000001;
+                //const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[index] );
+                //const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[index+4] );
+                //double timestamp = t_sec + t_usec* 0.000001;
                 uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[index+8]);
-                NodeStatus prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
+                //NodeStatus prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
                 NodeStatus status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+11] ));
 
                 _loaded_tree.nodeAtUID( uid ).status = status;
+                //qDebug() << _loaded_tree.nodeAtUID( uid ).instance_name << " : " << toStr(status);
             }
-
             // update the graphic part
             for (size_t index = 0; index < _loaded_tree.nodesCount(); index++)
             {

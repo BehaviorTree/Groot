@@ -14,65 +14,19 @@ enum class NodeStatus { IDLE, RUNNING, SUCCESS, FAILURE };
 enum class GraphicMode { EDITOR, MONITOR, REPLAY };
 
 
-inline
-ParamType getParamTypeFromString(const QString& str)
-{
-  if( str == "Text")  return ParamType::TEXT;
-  if( str == "Int")    return ParamType::INT;
-  if( str == "Double") return ParamType::DOUBLE;
-  if( str == "Combo")  return ParamType::COMBO;
-  return ParamType::UNDEFINED;
-};
+ParamType getParamTypeFromString(const QString& str);;
 
-inline NodeType getNodeTypeFromString(const QString& str)
-{
-  if( str == "Action")    return NodeType::ACTION;
-  if( str == "Decorator") return NodeType::DECORATOR;
-  if( str == "Condition") return NodeType::CONDITION;
-  if( str == "SubTree")   return NodeType::SUBTREE;
-  if( str == "Control")   return NodeType::CONTROL;
-  if( str == "Root")   return NodeType::ROOT;
-  return NodeType::UNDEFINED;
-};
+NodeType getNodeTypeFromString(const QString& str);;
 
-inline GraphicMode getGraphicModeFromString(const QString& str)
-{
-  if( str == "EDITOR")
-      return GraphicMode::EDITOR;
-  else if( str == "MONITOR")
-      return GraphicMode::MONITOR;
-  return GraphicMode::REPLAY;
-};
+GraphicMode getGraphicModeFromString(const QString& str);;
 
+const char* toStr(NodeStatus type);
 
-inline const char* toStr(NodeType type)
-{
-  if( type == NodeType::ACTION )   return "Action";
-  if( type == NodeType::DECORATOR) return "Decorator";
-  if( type == NodeType::CONDITION) return "Decorator";
-  if( type == NodeType::SUBTREE)   return "SubTree";
-  if( type == NodeType::CONTROL)   return "Control";
-  if( type == NodeType::CONTROL)   return "Root";
-  return nullptr;
-};
+const char* toStr(NodeType type);
 
-inline const char* toStr(ParamType type)
-{
-  if( type == ParamType::TEXT)   return "Text";
-  if( type == ParamType::INT )   return "Int";
-  if( type == ParamType::DOUBLE) return "Double";
-  if( type == ParamType::COMBO)  return "Combo";
-  return nullptr;
-};
+const char* toStr(ParamType type);
 
-inline const char* toStr(GraphicMode type)
-{
-  if( type == GraphicMode::EDITOR)   return "EDITOR";
-  if( type == GraphicMode::MONITOR ) return "MONITOR";
-  if( type == GraphicMode::REPLAY)   return "REPLAY";
-  return nullptr;
-};
-
+const char* toStr(GraphicMode type);
 
 struct TreeNodeModel
 {
