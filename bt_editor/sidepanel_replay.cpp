@@ -100,7 +100,7 @@ void SidepanelReplay::updateTableModel()
         for(size_t row=0; row < transitions_count; row++)
         {
             auto& trans = _transitions[row];
-            auto& node = _loaded_tree.nodes[ trans.uid ];
+            auto& node = _loaded_tree.nodeAtIndex( trans.index );
 
             QString timestamp;
             timestamp.sprintf("%.3f", trans.timestamp - first_timestamp);
@@ -175,7 +175,10 @@ void SidepanelReplay::on_LoadLog()
     const char* buffer = reinterpret_cast<const char*>(content.data());
 
     size_t bt_header_size = flatbuffers::ReadScalar<uint32_t>(buffer);
-    _loaded_tree = BuildBehaviorTreeFromFlatbuffers( &buffer[4] );
+
+    auto fb_behavior_tree = BT_Serialization::GetBehaviorTree( &buffer[4] );
+
+    _loaded_tree = BuildTreeFromFlatbuffers( fb_behavior_tree );
 
     loadBehaviorTree( _loaded_tree );
 
@@ -189,7 +192,8 @@ void SidepanelReplay::on_LoadLog()
         const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[index+4] );
         double timestamp = t_sec + t_usec* 0.000001;
         transition.timestamp = timestamp;
-        transition.uid = flatbuffers::ReadScalar<uint16_t>(&buffer[index+8]);
+        auto UID = flatbuffers::ReadScalar<uint16_t>(&buffer[index+8]);
+        transition.index = _loaded_tree.UidToIndex( UID );
         transition.prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
         transition.status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+11] ));
 
@@ -266,23 +270,26 @@ void SidepanelReplay::onRowChanged(int current_row)
     }
     _layout_update_timer->start(100);
 
-    for (auto& it: _loaded_tree.nodes)
+    for (size_t index = 0; index < _loaded_tree.nodesCount(); index++)
     {
-        it.second.status = NodeStatus::IDLE;
+        auto& abs_node = _loaded_tree.nodeAtIndex(index);
+        abs_node.status = NodeStatus::IDLE;
     }
 
     // We can do better, but it is so fast that I don't even care... for the time being.
-    for (int index = 0; index <= current_row; index++)
+    for (int t = 0; t <= current_row; t++)
     {
-        auto& trans = _transitions[index];
-        _loaded_tree.nodes[ trans.uid ].status = trans.status;
+        auto& trans = _transitions[t];
+        auto& abs_node = _loaded_tree.nodeAtIndex( trans.index );
+        abs_node.status = trans.status;
     }
 
     // update the graphic part
-    for (auto& it: _loaded_tree.nodes)
+    for (size_t index = 0; index < _loaded_tree.nodesCount(); index++)
     {
-        auto& node = it.second.corresponding_node;
-        node->nodeDataModel()->setNodeStyle( getStyleFromStatus( it.second.status ) );
+        auto& abs_node = _loaded_tree.nodeAtIndex(index);
+        auto& node = abs_node.corresponding_node;
+        node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node.status ) );
         node->nodeGraphicsObject().update();
     }
     _prev_row = current_row;

@@ -11,8 +11,6 @@
 
 
 
-void CreateTreeInSceneFromXML(const tinyxml2::XMLElement* bt_root, QtNodes::FlowScene* scene );
-
 void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
                         QtNodes::DataModelRegistry& registry,
                         TreeNodeModels& models_list);
@@ -22,46 +20,7 @@ void RecursivelyCreateXml(const QtNodes::FlowScene &scene,
                           tinyxml2::XMLElement* parent_element,
                           const QtNodes::Node* node);
 
-inline
-ParamType getParamTypeFromString(const QString& str)
-{
-  if( str == "Int")    return ParamType::INT;
-  if( str == "Double") return ParamType::DOUBLE;
-  if( str == "Combo")  return ParamType::COMBO;
-  if( str == "Combo")  return ParamType::TEXT;
-  return ParamType::UNDEFINED;
-};
 
-inline
-NodeType getNodeTypeFromString(const QString& str)
-{
-  if( str == "Action")    return NodeType::ACTION;
-  if( str == "Decorator") return NodeType::DECORATOR;
-  if( str == "SubTree")   return NodeType::SUBTREE;
-  if( str == "Control")   return NodeType::CONTROL;
-  return NodeType::UNDEFINED;
-};
-
-
-inline
-const char* toStr(NodeType type)
-{
-  if( type == NodeType::ACTION )   return   "Action";
-  if( type == NodeType::DECORATOR) return "Decorator";
-  if( type == NodeType::SUBTREE)   return   "SubTree";
-  if( type == NodeType::CONTROL)   return   "Control";
-  return nullptr;
-};
-
-inline
-const char* toStr(ParamType type)
-{
-  if( type == ParamType::TEXT)   return "Text";
-  if( type == ParamType::INT )   return "Int";
-  if( type == ParamType::DOUBLE) return "Double";
-  if( type == ParamType::COMBO)  return "Combo";
-  return nullptr;
-};
 
 //--------------------------------------------------------
 

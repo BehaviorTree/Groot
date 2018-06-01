@@ -76,9 +76,9 @@ public:
 
   virtual const char* className() const = 0;
 
-  void setUID(uint16_t uid) { _uid = uid; }
+  void setUID(int16_t uid) { _uid = uid; }
 
-  uint16_t UID() const { return _uid; }
+  int16_t UID() const { return _uid; }
 
   virtual NodeType nodeType() const = 0;
 
@@ -89,7 +89,7 @@ protected:
   QFormLayout *_form_layout;
   QLabel*    _label_ID;
   QLineEdit* _line_edit_name;
-  uint16_t _uid;
+  int16_t _uid;
 private:
   const QString _registration_name;
   QString _instance_name;

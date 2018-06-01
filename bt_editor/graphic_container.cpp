@@ -98,7 +98,7 @@ void GraphicContainer::nodeReorder()
 {
   {
     const QSignalBlocker blocker(this);
-    auto abstract_tree = BuildBehaviorTreeFromScene( _scene );
+    auto abstract_tree = BuildTreeFromScene( _scene );
     NodeReorder( *_scene, abstract_tree );
     zoomHomeView();
   }

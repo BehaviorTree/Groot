@@ -8,24 +8,28 @@
 #include "bt_editor_base.h"
 #include "BT_logger_generated.h"
 
+namespace tinyxml2{
+    class XMLElement;
+}
+
 std::vector<QtNodes::Node*> findRoots(const QtNodes::FlowScene &scene);
 
 std::vector<QtNodes::Node *> getChildren(const QtNodes::FlowScene &scene,
                                          const QtNodes::Node &parent_node);
 
-AbsBehaviorTree BuildBehaviorTreeFromScene(const QtNodes::FlowScene* scene);
+AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene* scene);
 
-void BuildSceneFromBehaviorTree(QtNodes::FlowScene *scene , AbsBehaviorTree& abstract_tree);
+AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree* bt );
+
+void BuildSceneFromTree(AbsBehaviorTree& tree, QtNodes::FlowScene *scene);
+
+AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root);
 
 void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree &abstract_tree );
 
 QString getCategory(const QtNodes::NodeDataModel* model);
 
-
-AbsBehaviorTree BuildBehaviorTreeFromFlatbuffers(const char *buffer );
-
 QtNodes::NodeStyle getStyleFromStatus(NodeStatus status);
-
 
 inline NodeType convert(const BT_Serialization::Type& type)
 {

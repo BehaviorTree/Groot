@@ -11,78 +11,79 @@
 using namespace tinyxml2;
 using namespace QtNodes;
 
-void CreateTreeInSceneFromXML(const XMLElement* bt_root, QtNodes::FlowScene* scene )
-{
-    QPointF cursor(0,0);
-    double x_offset = 0;
+//AbsBehaviorTree CreateTreeInSceneFromXML(const XMLElement* bt_root )
+//{
+//    AbsBehaviorTree tree;
+//    QPointF cursor(0,0);
+//    double x_offset = 0;
 
-    if( strcmp( bt_root->Name(), "BehaviorTree" ) != 0)
-    {
-        throw std::runtime_error( "expecting a node called <BehaviorTree>");
-    }
+//    if( strcmp( bt_root->Name(), "BehaviorTree" ) != 0)
+//    {
+//        throw std::runtime_error( "expecting a node called <BehaviorTree>");
+//    }
 
-    std::function<void(const XMLElement*, Node&, int)> recursiveStep;
+//    std::function<void(const XMLElement*, Node&, int)> recursiveStep;
 
-    recursiveStep = [&recursiveStep, &scene, &cursor, &x_offset]
-            (const XMLElement* xml_node, Node& parent_qtnode, int nest_level)
-    {
-        // The nodes with a ID used that QString to insert into the registry()
-        QString modelID = xml_node->Name();
-        if( xml_node->Attribute("ID") )
-        {
-            modelID = xml_node->Attribute("ID");
-        }
+//    recursiveStep = [&recursiveStep, &tree, &cursor, &x_offset]
+//            (const XMLElement* xml_node, Node& parent_qtnode, int nest_level)
+//    {
+//        // The nodes with a ID used that QString to insert into the registry()
+//        QString modelID = xml_node->Name();
+//        if( xml_node->Attribute("ID") )
+//        {
+//            modelID = xml_node->Attribute("ID");
+//        }
 
-        std::unique_ptr<NodeDataModel> dataModel = scene->registry().create( modelID );
-        BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( dataModel.get() );
+//        std::unique_ptr<NodeDataModel> dataModel = scene->registry().create( modelID );
+//        BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( dataModel.get() );
 
-        if( bt_node )
-        {
-            if( xml_node->Attribute("name") )
-            {
-                bt_node->setInstanceName( xml_node->Attribute("name") );
-            }
-            for( const XMLAttribute* attribute= xml_node->FirstAttribute();
-                 attribute != nullptr;
-                 attribute = attribute->Next() )
-            {
-                const QString attr_name( attribute->Name() );
-                if( attr_name!= "ID" && attr_name != "name")
-                {
-                    bt_node->setParameterValue( attr_name, attribute->Value() );
-                }
-            }
-        }
+//        if( bt_node )
+//        {
+//            if( xml_node->Attribute("name") )
+//            {
+//                bt_node->setInstanceName( xml_node->Attribute("name") );
+//            }
+//            for( const XMLAttribute* attribute= xml_node->FirstAttribute();
+//                 attribute != nullptr;
+//                 attribute = attribute->Next() )
+//            {
+//                const QString attr_name( attribute->Name() );
+//                if( attr_name!= "ID" && attr_name != "name")
+//                {
+//                    bt_node->setParameterValue( attr_name, attribute->Value() );
+//                }
+//            }
+//        }
 
-        if (!dataModel){
-            char buffer[250];
-            sprintf(buffer, "No registered model with name: [%s](%s)",
-                    xml_node->Name(),
-                    modelID.toStdString().c_str() );
-            throw std::logic_error( buffer );
-        }
+//        if (!dataModel){
+//            char buffer[250];
+//            sprintf(buffer, "No registered model with name: [%s](%s)",
+//                    xml_node->Name(),
+//                    modelID.toStdString().c_str() );
+//            throw std::logic_error( buffer );
+//        }
 
-        cursor.setY( cursor.y() + 65);
-        cursor.setX( nest_level * 400 + x_offset );
+//        cursor.setY( cursor.y() + 65);
+//        cursor.setX( nest_level * 400 + x_offset );
 
-        Node& new_node = scene->createNode( std::move(dataModel), cursor);
-        scene->createConnection(new_node, 0, parent_qtnode, 0 );
+//        Node& new_node = scene->createNode( std::move(dataModel), cursor);
+//        scene->createConnection(new_node, 0, parent_qtnode, 0 );
 
-        for (const XMLElement*  child = xml_node->FirstChildElement( )  ;
-             child != nullptr;
-             child = child->NextSiblingElement( ) )
-        {
-            recursiveStep( child, new_node, nest_level+1 );
-            x_offset += 30;
-        }
+//        for (const XMLElement*  child = xml_node->FirstChildElement( )  ;
+//             child != nullptr;
+//             child = child->NextSiblingElement( ) )
+//        {
+//            recursiveStep( child, new_node, nest_level+1 );
+//            x_offset += 30;
+//        }
 
-        return;
-    };
+//        return;
+//    };
 
-    // start recursion
-    QtNodes::Node& first_qt_node = scene->createNode( scene->registry().create("Root"), QPointF() );
-    recursiveStep( bt_root->FirstChildElement(), first_qt_node, 0 );
-}
+//    // start recursion
+//    QtNodes::Node& first_qt_node = scene->createNode( scene->registry().create("Root"), QPointF() );
+//    recursiveStep( bt_root->FirstChildElement(), first_qt_node, 0 );
+//}
 //------------------------------------------------------------------
 
 ParameterWidgetCreator buildWidgetCreator(const QString& label,ParamType type, const QString& combo_options)

@@ -68,7 +68,7 @@ private slots:
 
     void on_toolButtonCenterView_pressed();
 
-    void on_loadBehaviorTree(AbsBehaviorTree& tree);
+    void onLoadAbsBehaviorTree(AbsBehaviorTree& tree);
 
     void on_actionClear_triggered();
 
@@ -125,6 +125,8 @@ private:
 #ifdef ZMQ_FOUND
     SidepanelMonitor* _monitor_widget;
 #endif
+
+    AbsBehaviorTree _abstract_tree;
 
 };
 

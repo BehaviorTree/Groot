@@ -54,8 +54,8 @@ void SidepanelMonitor::on_timer()
             for(size_t index = 4; index < header_size +4; index +=3 )
             {
                 uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[index]);
-                NodeStatus status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+2] ));
-                _loaded_tree.nodes[uid].status = status;
+                AbstractTreeNode& node = _loaded_tree.nodeAtUID( uid );
+                node.status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+2] ));
             }
 
             for(size_t t=0; t<num_transitions; t++)
@@ -69,16 +69,17 @@ void SidepanelMonitor::on_timer()
                 NodeStatus prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
                 NodeStatus status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+11] ));
 
-                _loaded_tree.nodes[uid].status = status;
+                _loaded_tree.nodeAtUID( uid ).status = status;
             }
 
             // update the graphic part
-            for (auto& it: _loaded_tree.nodes)
+            for (size_t index = 0; index < _loaded_tree.nodesCount(); index++)
             {
-                auto& node = it.second.corresponding_node;
+                auto& abs_node = _loaded_tree.nodeAtIndex( index );
+                auto& node = abs_node.corresponding_node;
                 if( node )
                 {
-                    node->nodeDataModel()->setNodeStyle( getStyleFromStatus( it.second.status ) );
+                    node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node.status ) );
                     node->nodeGraphicsObject().update();
                 }
             }
@@ -111,7 +112,10 @@ bool SidepanelMonitor::getTreeFromServer()
         }
 
         const char* buffer = reinterpret_cast<const char*>(reply.data());
-        _loaded_tree = BuildBehaviorTreeFromFlatbuffers( buffer );
+        auto fb_behavior_tree = BT_Serialization::GetBehaviorTree( buffer );
+
+        _loaded_tree = BuildTreeFromFlatbuffers( fb_behavior_tree );
+
         loadBehaviorTree( _loaded_tree );
     }
     catch( zmq::error_t& err)

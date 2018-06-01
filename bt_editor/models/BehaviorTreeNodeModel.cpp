@@ -7,9 +7,9 @@
 #include <QDebug>
 #include <QFile>
 
-static uint16_t GetUID()
+static int16_t GetUID()
 {
-    static uint16_t uid = 1;
+    static int16_t uid = 10000;
     return uid++;
 }
 

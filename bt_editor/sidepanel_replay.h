@@ -56,7 +56,7 @@ private:
     Ui::SidepanelReplay *ui;
 
     struct Transition{
-        uint16_t uid;
+        int16_t index;
         double timestamp;
         NodeStatus prev_status;
         NodeStatus status;

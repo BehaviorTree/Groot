@@ -90,14 +90,14 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
     connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
-             this, &MainWindow::on_loadBehaviorTree );
+             this, &MainWindow::onLoadAbsBehaviorTree );
 
     connect( ui->toolButtonSaveFile, &QToolButton::clicked,
              this, &MainWindow::on_actionSave_triggered );
 
 #ifdef ZMQ_FOUND
     connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
-             this, &MainWindow::on_loadBehaviorTree );
+             this, &MainWindow::onLoadAbsBehaviorTree );
 #endif
     onSceneChanged();
 
@@ -191,8 +191,8 @@ void MainWindow::loadFromXML(const QString& xml_text)
                 {
                     const QSignalBlocker blocker( currentTabInfo() );
                     std::cout<< "Starting parsing"<< std::endl;
-                    CreateTreeInSceneFromXML(document.RootElement()->FirstChildElement("BehaviorTree"),
-                                             currentTabInfo()->scene() );
+                    _abstract_tree = BuildTreeFromXML(document.RootElement()->FirstChildElement("BehaviorTree") );
+                    onLoadAbsBehaviorTree(_abstract_tree);
                     std::cout<<"XML Parsed Successfully!"<< std::endl;
                     currentTabInfo()->nodeReorder();
                 }
@@ -520,12 +520,17 @@ void MainWindow::on_toolButtonCenterView_pressed()
     currentTabInfo()->zoomHomeView();
 }
 
-void MainWindow::on_loadBehaviorTree(AbsBehaviorTree &tree)
+void MainWindow::onLoadAbsBehaviorTree(AbsBehaviorTree &tree)
 {
     {
         const QSignalBlocker blocker( currentTabInfo() );
-        BuildSceneFromBehaviorTree( currentTabInfo()->scene(), tree );
+        BuildSceneFromTree( tree, currentTabInfo()->scene() );
         currentTabInfo()->nodeReorder();
+
+        if( &_abstract_tree != &tree )
+        {
+            _abstract_tree = tree;
+        }
     }
     _undo_stack.clear();
     _redo_stack.clear();
@@ -603,7 +608,7 @@ void MainWindow::refreshNodesLayout(QtNodes::PortLayout new_layout)
             auto scene = tab.second->scene();
             if( scene->layout() != new_layout )
             {
-                auto abstract_tree = BuildBehaviorTreeFromScene( scene );
+                auto abstract_tree = BuildTreeFromScene( scene );
                 scene->setLayout( new_layout );
                 NodeReorder( *scene, abstract_tree );
                 refreshed = true;
