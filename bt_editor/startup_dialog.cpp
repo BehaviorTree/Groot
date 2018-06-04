@@ -118,3 +118,8 @@ void StartupDialog::on_toolButtonStart_clicked()
 
     this->accept();
 }
+
+void StartupDialog::on_pushButtonClose_clicked()
+{
+    this->reject();
+}

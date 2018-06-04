@@ -19,6 +19,7 @@
         <file>wand.png</file>
         <file>BT-vertical.png</file>
         <file>BT-horizontal.png</file>
+        <file>close_x.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

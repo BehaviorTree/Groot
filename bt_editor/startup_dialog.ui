@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>360</height>
+    <height>398</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -44,6 +44,32 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
+   <item alignment="Qt::AlignRight">
+    <widget class="QPushButton" name="pushButtonClose">
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Close&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="resources/icons.qrc">
+       <normaloff>:/icons/close_x.png</normaloff>:/icons/close_x.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>24</width>
+       <height>24</height>
+      </size>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="QFrame" name="frame">
      <property name="minimumSize">
@@ -307,6 +333,9 @@ border-radius: 10px;
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; color:#eeeeec;&quot;&gt;Launch the application&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="styleSheet">
         <string notr="true">color: orange</string>
        </property>
@@ -363,7 +392,7 @@ border-radius: 10px;
       <string notr="true">color: rgb(238, 238, 236);</string>
      </property>
      <property name="text">
-      <string/>
+      <string>Placeholder text</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

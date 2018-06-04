@@ -30,6 +30,8 @@ private slots:
 
     void on_toolButtonStart_clicked();
 
+    void on_pushButtonClose_clicked();
+
 private:
     Ui::StartupDialog *ui;
 
