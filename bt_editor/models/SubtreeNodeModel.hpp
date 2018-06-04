@@ -9,13 +9,17 @@ public:
     SubtreeNodeModel(const QString& subtree_ID,
                      const ParameterWidgetCreators &creators);
 
-    virtual ~SubtreeNodeModel() = default;
+    ~SubtreeNodeModel() = default;
 
     virtual unsigned int  nPorts(PortType portType) const override;
 
     virtual const char* className() const override final
     {
       return "SubTree";
+    }
+
+   QString caption() const override {
+        return "SubTree";
     }
 
     virtual NodeType nodeType() const override final { return NodeType::SUBTREE; }

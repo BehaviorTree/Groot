@@ -14,8 +14,9 @@ public:
 
     virtual const char* className() const override final
     {
-        return "Action";
+        return ActionNodeModel::Name();
     }
+    static const char* Name() { return "Action"; }
 
     QString caption() const override {
         return "Action";
@@ -25,8 +26,5 @@ public:
 
 private:
 
-    void init();
-
-    virtual void setInstanceName(const QString& name) override;
 };
 

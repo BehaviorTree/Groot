@@ -58,7 +58,6 @@ public:
   QString name() const override final { return registrationName(); }
 
   const QString& instanceName() const;
-  virtual void setInstanceName(const QString& name);
 
   std::vector<std::pair<QString, QString> > getCurrentParameters() const;
 
@@ -82,14 +81,22 @@ public:
 
   virtual NodeType nodeType() const = 0;
 
+public slots:
+
+  void updateNodeSize();
+
+  void setInstanceName(const QString& name);
+
 protected:
-  QWidget*   _main_widget;
-  QWidget*   _params_widget;
-  std::map<QString,QWidget*>   _params_map;
-  QFormLayout *_form_layout;
-  QLabel*    _label_ID;
+  QWidget*  _main_widget;
+  QFrame*   _params_widget;
+  QLabel*   _label_ID;
+
   QLineEdit* _line_edit_name;
+
+  std::map<QString, QWidget*> _params_map;
   int16_t _uid;
+
 private:
   const QString _registration_name;
   QString _instance_name;
@@ -101,4 +108,5 @@ signals:
   void parameterUpdated(QString, QWidget*);
 
   void instanceNameChanged();
+
 };

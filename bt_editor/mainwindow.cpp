@@ -50,11 +50,10 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     _model_registry = std::make_shared<QtNodes::DataModelRegistry>();
 
-    _model_registry->registerModel("Root", [](){ return std::make_unique<RootNodeModel>();} );
-
-    _model_registry->registerModel("Control", [](){ return std::make_unique<SequenceModel>();} );
-    _model_registry->registerModel("Control", [](){ return std::make_unique<SequenceStarModel>();} );
-    _model_registry->registerModel("Control", [](){ return std::make_unique<FallbackModel>();} );
+    _model_registry->registerModel<RootNodeModel>("Root");
+    _model_registry->registerModel<SequenceModel>("Control");
+    _model_registry->registerModel<SequenceStarModel>("Control");
+    _model_registry->registerModel<FallbackModel>("Control");
 
     _editor_widget = new SidepanelEditor(_tree_nodes_model, this);
     _replay_widget = new SidepanelReplay(this);
@@ -183,7 +182,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
             ReadTreeNodesModel( document_root, *_model_registry, _tree_nodes_model );
             _editor_widget->updateTreeView();
 
-            currentTabInfo()->clearScene();
+            on_actionClear_triggered(false);
 
             bool error = false;
             QString err_message;
@@ -192,12 +191,17 @@ void MainWindow::loadFromXML(const QString& xml_text)
                 const QSignalBlocker blocker( currentTabInfo() );
                 std::cout<< "Starting parsing"<< std::endl;
 
+
                 for (auto bt_root = document_root->FirstChildElement("BehaviorTree");
                      bt_root != nullptr;
                      bt_root = bt_root->NextSiblingElement("BehaviorTree"))
                 {
                     auto tree = BuildTreeFromXML( bt_root );
-                    QString tree_name( bt_root->Attribute("ID") );
+                    QString tree_name("BehaviorTree");
+                    if( bt_root->Attribute("ID") )
+                    {
+                        tree_name = bt_root->Attribute("ID");
+                    }
 
                     onLoadAbsBehaviorTree(tree, tree_name);
 
@@ -585,9 +589,20 @@ void MainWindow::onLoadAbsBehaviorTree(AbsBehaviorTree &tree, QString bt_name)
     onPushUndo();
 }
 
-void MainWindow::on_actionClear_triggered()
+void MainWindow::on_actionClear_triggered(bool create_new)
 {
-    currentTabInfo()->clearScene();
+    for (auto& it: _tab_info)
+    {
+        it.second->clearScene();
+    }
+    _tab_info.clear();
+
+    ui->tabWidget->clear();
+    if( create_new )
+    {
+        createTab("BehaviorTree");
+    }
+
     _editor_widget->clear();
     _monitor_widget->clear();
     _replay_widget->clear();
@@ -734,6 +749,9 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 {
     QString tab_name = ui->tabWidget->tabText(index);
     auto tab = getTabByName(tab_name);
-    const QSignalBlocker blocker( tab );
-    tab->nodeReorder();
+    if( tab )
+    {
+        const QSignalBlocker blocker( tab );
+        tab->nodeReorder();
+    }
 }

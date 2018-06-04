@@ -24,22 +24,15 @@ class ControlNodeModel : public BehaviorTreeDataModel
 public:
     ControlNodeModel(const QString& ID, const ParameterWidgetCreators &parameters);
 
-    virtual ~ControlNodeModel() = default;
+    virtual ~ControlNodeModel() override = default;
 
     unsigned int  nPorts(PortType) const override final
     { return 1; }
 
-
-    virtual void setInstanceName(const QString &name) override;
-
     virtual NodeType nodeType() const override final { return NodeType::CONTROL; }
 
-    //    virtual void restore(QJsonObject const &modelJson) override final
-    //    {
-    //      setInstanceName( modelJson["alias"].toString() );
-    //    }
 private:
-    void init();
+
 };
 //------------------------------------------------
 
@@ -48,11 +41,11 @@ class ControlNodeModelBase : public ControlNodeModel
 {
 public:
     ControlNodeModelBase();
-    virtual ~ControlNodeModelBase() {}
+    virtual ~ControlNodeModelBase() override = default;
 
     virtual const char* className() const override final
     {
-        return T::staticName();
+        return T::Name();
     }
 
 protected:
@@ -63,9 +56,9 @@ protected:
 //-------------------------------------------------
 template<typename T> inline
 ControlNodeModelBase<T>::ControlNodeModelBase():
-    ControlNodeModel(T::staticName(), ParameterWidgetCreators() )
+    ControlNodeModel(T::Name(), ParameterWidgetCreators() )
 {
-    _main_widget->setToolTip( T::staticName() );
+    _main_widget->setToolTip( T::Name() );
 }
 
 template<typename T> inline
@@ -91,7 +84,7 @@ public:
     SequenceModel();
     virtual ~SequenceModel() = default;
 
-    static const char* staticName() { return ("Sequence"); }
+    static const char* Name() { return ("Sequence"); }
 };
 
 
@@ -100,7 +93,7 @@ class FallbackModel: public  ControlNodeModelBase<FallbackModel>
 public:
     FallbackModel();
     virtual ~FallbackModel()  = default;
-    static const char* staticName() { return ("Fallback"); }
+    static const char* Name() { return ("Fallback"); }
 };
 
 
@@ -109,7 +102,7 @@ class SequenceStarModel: public ControlNodeModelBase<SequenceStarModel>
 public:
     SequenceStarModel();
     virtual ~SequenceStarModel()  = default;
-    static const char* staticName() { return ("SequenceStar"); }
+    static const char* Name() { return ("SequenceStar"); }
 
 };
 
@@ -120,7 +113,7 @@ class IfThenElseModel: public  ControlNodeModelBase<IfThenElseModel>
 public:
     IfThenElseModel();
     virtual ~IfThenElseModel()  = default;
-    static const char* staticName() { return ("IfThenElse"); }
+    static const char* Name() { return ("IfThenElse"); }
 };
 
 

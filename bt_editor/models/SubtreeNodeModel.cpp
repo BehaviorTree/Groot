@@ -5,16 +5,8 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
                                    const ParameterWidgetCreators& creators):
     BehaviorTreeDataModel ("SubTree", subtree_ID, creators )
 {
-    auto style = this->nodeStyle();
-    style.NormalBoundaryColor = QColor(255,210,0);
-    this->setNodeStyle(style);
-
     _line_edit_name->setReadOnly(true);
-    _line_edit_name->setAlignment(Qt::AlignCenter);
-    QFontMetrics fm = _line_edit_name->fontMetrics();
-    _line_edit_name->setFixedWidth(fm.boundingRect(subtree_ID).width() + 12);
-    _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
-    _main_widget->adjustSize();
+    updateNodeSize();
 }
 
 unsigned int SubtreeNodeModel::nPorts(QtNodes::PortType portType) const

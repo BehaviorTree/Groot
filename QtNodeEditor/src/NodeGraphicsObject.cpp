@@ -137,25 +137,19 @@ void
 NodeGraphicsObject::
 moveConnections() const
 {
-
   NodeState const & nodeState = _node.nodeState();
 
-  auto moveConnections =
-    [&](PortType portType)
-    {
+  for(auto portType: { PortType::In, PortType::Out } )
+  {
       auto const & connectionEntries =
-        nodeState.getEntries(portType);
+              nodeState.getEntries(portType);
 
       for (auto const & connections : connectionEntries)
       {
-        for (auto & con : connections)
-          con.second->getConnectionGraphicsObject().move();
+          for (auto & con : connections)
+              con.second->getConnectionGraphicsObject().move();
       }
-    };
-
-  moveConnections(PortType::In);
-
-  moveConnections(PortType::Out);
+  };
 }
 
 void NodeGraphicsObject::lock(bool locked)
@@ -197,8 +191,6 @@ NodeGraphicsObject::
 mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
   if(_locked) return;
-
- // event->setModifiers(event->modifiers() | Qt::ControlModifier);
 
   // deselect all other items after this one is selected
   if (!isSelected() &&
@@ -424,7 +416,7 @@ mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
 {
   QGraphicsItem::mouseDoubleClickEvent(event);
   _double_clicked = true;
-  _scene.nodeDoubleClicked(node());
+  emit _scene.nodeDoubleClicked(node());
 }
 
 void

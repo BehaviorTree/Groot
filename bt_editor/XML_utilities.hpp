@@ -28,30 +28,9 @@ const QString gTestXML = R"(
 
 <root main_tree_to_execute = "MainTree" >
 
-    <BehaviorTree ID="door_closed_sequence">
-        <Sequence>
-            <Decorator ID="Negation">
-                <Action ID="IsDoorOpen" />
-            </Decorator>
-                <Decorator ID="RetryUntilSuccesful" num_attempts="4">
-                    <Action ID="OpenDoor"/>
-            </Decorator>
-            <Action ID="PassThroughDoor" />
-            <Action ID="CloseDoor" />
-        </Sequence>
-    </BehaviorTree>
-
     <BehaviorTree ID="MainTree">
-        <Fallback name="root_Fallback">
-
-            <Sequence name="door_open_sequence">
-                <Action ID="IsDoorOpen" />
-                <Action ID="PassThroughDoor" />
-            </Sequence>
-
-            <SubTree name="door_closed_sequence" />
+        <Fallback name="pepito">
             <Action ID="PassThroughWindow" />
-
         </Fallback>
     </BehaviorTree>
 

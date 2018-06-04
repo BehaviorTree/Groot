@@ -25,8 +25,9 @@ public:
 
   virtual const char* className() const override final
   {
-    return "Root";
+      return RootNodeModel::Name();
   }
+  static const char* Name() { return "Root"; }
 
   virtual NodeType nodeType() const override final { return NodeType::ROOT; }
 };

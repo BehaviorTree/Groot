@@ -99,6 +99,9 @@ public slots: // data propagation
   void
   onDataUpdated(PortIndex index);
 
+  void
+  onSizeUpdated() const;
+
 private:
 
   // addressing

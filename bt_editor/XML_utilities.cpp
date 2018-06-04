@@ -203,7 +203,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
         {
             return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, parameters) );
         };
-        registry.registerModel("Action", node_creator);
+        registry.registerModel("Action", node_creator, ID);
     }
     else if( node_type == NodeType::DECORATOR )
     {
@@ -211,7 +211,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
         {
             return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, parameters) );
         };
-        registry.registerModel("Decorator", node_creator);
+        registry.registerModel("Decorator", node_creator, ID);
     }
     else if( node_type == NodeType::SUBTREE )
     {
@@ -219,7 +219,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
         {
             return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID,parameters) );
         };
-        registry.registerModel("SubTree", node_creator);
+        registry.registerModel("SubTree", node_creator, ID);
     }
 
     if( node_type != NodeType::UNDEFINED)

@@ -72,7 +72,7 @@ private slots:
 
     void onLoadAbsBehaviorTree(AbsBehaviorTree& tree, QString bt_name);
 
-    void on_actionClear_triggered();
+    void on_actionClear_triggered(bool create_new = true);
 
     void on_toolButtonLayout_clicked();
 

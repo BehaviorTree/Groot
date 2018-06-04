@@ -192,10 +192,7 @@ propagateData(std::shared_ptr<NodeData> nodeData,
   _nodeDataModel->setInData(nodeData, inPortIndex);
 
   //Recalculate the nodes visuals. A data change can result in the node taking more space than before, so this forces a recalculate+repaint on the affected node
-  _nodeGraphicsObject->setGeometryChanged();
-  _nodeGeometry.recalculateSize();
-  _nodeGraphicsObject->update();
-  _nodeGraphicsObject->moveConnections();
+  onSizeUpdated();
 }
 
 
@@ -209,5 +206,13 @@ onDataUpdated(PortIndex index)
     _nodeState.connections(PortType::Out, index);
 
   for (auto const & c : connections)
-    c.second->propagateData(nodeData);
+      c.second->propagateData(nodeData);
+}
+
+void Node::onSizeUpdated() const
+{
+    _nodeGraphicsObject->setGeometryChanged();
+    _nodeGraphicsObject->update();
+    _nodeGeometry.recalculateSize();
+    _nodeGraphicsObject->moveConnections();
 }
