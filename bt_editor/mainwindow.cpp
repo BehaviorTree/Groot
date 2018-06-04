@@ -186,8 +186,11 @@ void MainWindow::loadFromXML(const QString& xml_text)
                 {
                     const QSignalBlocker blocker( currentTabInfo() );
                     std::cout<< "Starting parsing"<< std::endl;
-                    _abstract_tree = BuildTreeFromXML(document.RootElement()->FirstChildElement("BehaviorTree") );
-                    onLoadAbsBehaviorTree(_abstract_tree);
+                    auto bt_root = document.RootElement()->FirstChildElement("BehaviorTree");
+                    if( bt_root ){
+                        _abstract_tree = BuildTreeFromXML(document.RootElement()->FirstChildElement("BehaviorTree") );
+                        onLoadAbsBehaviorTree(_abstract_tree);
+                    }
                     std::cout<<"XML Parsed Successfully!"<< std::endl;
                     currentTabInfo()->nodeReorder();
                 }
