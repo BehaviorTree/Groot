@@ -49,11 +49,11 @@ std::vector<Node*> findRoots(const FlowScene &scene)
 }
 
 std::vector<Node*> getChildren(const QtNodes::FlowScene &scene,
-                                        const Node& parent_node)
+                               const Node& parent_node)
 {
     std::vector<Node*> children;
 
-    for (auto it: scene.connections())
+    for (auto& it: scene.connections())
     {
         std::shared_ptr<QtNodes::Connection> connection = it.second;
 

@@ -38,7 +38,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(GraphicMode initial_mode, QWidget *parent = 0);
+    explicit MainWindow(GraphicMode initial_mode, QWidget *parent = nullptr);
     ~MainWindow();
 
     void loadFromXML(const QString &xml_text);
@@ -70,7 +70,7 @@ private slots:
 
     void on_toolButtonCenterView_pressed();
 
-    void onLoadAbsBehaviorTree(AbsBehaviorTree& tree);
+    void onLoadAbsBehaviorTree(AbsBehaviorTree& tree, QString bt_name);
 
     void on_actionClear_triggered();
 
@@ -81,6 +81,8 @@ private slots:
     void on_actionMonitor_mode_triggered();
 
     void on_actionReplay_mode_triggered();
+
+    void on_tabWidget_currentChanged(int index);
 
 private:
 
@@ -94,7 +96,9 @@ private:
 
     GraphicContainer* currentTabInfo();
 
-    void createTab(const QString &name);
+    GraphicContainer *getTabByName(const QString& name);
+
+    GraphicContainer* createTab(const QString &name);
 
     void refreshNodesLayout(QtNodes::PortLayout new_layout);
 
@@ -128,7 +132,7 @@ private:
     SidepanelMonitor* _monitor_widget;
 #endif
 
-    AbsBehaviorTree _abstract_tree;
+    std::map<QString,AbsBehaviorTree> _abstract_trees;
 
 };
 

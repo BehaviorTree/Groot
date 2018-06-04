@@ -42,6 +42,7 @@ inline NodeType convert(const BT_Serialization::Type& type)
     case BT_Serialization::Type::CONDITION : return  NodeType::CONDITION;
     case BT_Serialization::Type::UNDEFINED : return  NodeType::UNDEFINED;
     }
+    return NodeType::UNDEFINED;
 }
 
 inline NodeStatus convert(const BT_Serialization::Status& status)
@@ -53,6 +54,7 @@ inline NodeStatus convert(const BT_Serialization::Status& status)
     case BT_Serialization::Status::SUCCESS : return NodeStatus::SUCCESS;
     case BT_Serialization::Status::FAILURE : return NodeStatus::FAILURE;
     }
+    return NodeStatus::IDLE;
 }
 
 #endif // NODE_UTILS_H

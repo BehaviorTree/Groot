@@ -12,6 +12,7 @@
 #include <QWidgetAction>
 #include <QTreeWidgetItem>
 #include <QShortcut>
+#include <QTabBar>
 #include <nodes/Node>
 #include <nodes/NodeData>
 #include <nodes/NodeStyle>
@@ -92,15 +93,17 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QShortcut* redo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this);
     connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
-    connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
-             this, &MainWindow::onLoadAbsBehaviorTree );
+    // TODO / FIXME
+//    connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
+//             this, &MainWindow::onLoadAbsBehaviorTree );
 
     connect( ui->toolButtonSaveFile, &QToolButton::clicked,
              this, &MainWindow::on_actionSave_triggered );
 
 #ifdef ZMQ_FOUND
-    connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
-             this, &MainWindow::onLoadAbsBehaviorTree );
+    // TODO / FIXME
+//    connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
+//             this, &MainWindow::onLoadAbsBehaviorTree );
 #endif
     onSceneChanged();
 
@@ -135,7 +138,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 
-void MainWindow::createTab(const QString &name)
+GraphicContainer* MainWindow::createTab(const QString &name)
 {
     if( _tab_info.count(name) > 0)
     {
@@ -159,6 +162,8 @@ void MainWindow::createTab(const QString &name)
     //--------------------------------
 
     ti->view()->update();
+
+    return ti;
 }
 
 MainWindow::~MainWindow()
@@ -172,9 +177,10 @@ void MainWindow::loadFromXML(const QString& xml_text)
         using namespace tinyxml2;
         XMLDocument document;
         XMLError xml_error = document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
-        if( !xml_error )
+        auto document_root = document.RootElement();
+        if( !xml_error && document_root )
         {
-            ReadTreeNodesModel( document.RootElement(), *_model_registry, _tree_nodes_model );
+            ReadTreeNodesModel( document_root, *_model_registry, _tree_nodes_model );
             _editor_widget->updateTreeView();
 
             currentTabInfo()->clearScene();
@@ -183,14 +189,37 @@ void MainWindow::loadFromXML(const QString& xml_text)
             QString err_message;
             QByteArray saved_state = _current_state;
             try {
+                const QSignalBlocker blocker( currentTabInfo() );
+                std::cout<< "Starting parsing"<< std::endl;
+
+                for (auto bt_root = document_root->FirstChildElement("BehaviorTree");
+                     bt_root != nullptr;
+                     bt_root = bt_root->NextSiblingElement("BehaviorTree"))
                 {
-                    const QSignalBlocker blocker( currentTabInfo() );
-                    std::cout<< "Starting parsing"<< std::endl;
-                    _abstract_tree = BuildTreeFromXML(document.RootElement()->FirstChildElement("BehaviorTree") );
-                    onLoadAbsBehaviorTree(_abstract_tree);
-                    std::cout<<"XML Parsed Successfully!"<< std::endl;
-                    currentTabInfo()->nodeReorder();
+                    auto tree = BuildTreeFromXML( bt_root );
+                    QString tree_name( bt_root->Attribute("ID") );
+
+                    onLoadAbsBehaviorTree(tree, tree_name);
+
+                    _abstract_trees.insert( { tree_name, std::move(tree)} );
                 }
+                std::cout<<"XML Parsed Successfully!"<< std::endl;
+
+                if( document_root->Attribute("main_tree_to_execute"))
+                {
+                    QString main_bt_name = document_root->Attribute("main_tree_to_execute");
+                    for (int i=0; i< ui->tabWidget->count(); i++)
+                    {
+                        if( ui->tabWidget->tabText( i ) == main_bt_name)
+                        {
+                            ui->tabWidget->setCurrentIndex(i);
+                            ui->tabWidget->tabBar()->moveTab(i, 0);
+                            break;
+                        }
+                    }
+                }
+
+                currentTabInfo()->nodeReorder();
             }
             catch (std::runtime_error& err) {
                 error = true;
@@ -397,7 +426,11 @@ GraphicContainer* MainWindow::currentTabInfo()
 {
     int index = ui->tabWidget->currentIndex();
     QString tab_name = ui->tabWidget->tabText(index);
+    return getTabByName(tab_name);
+}
 
+GraphicContainer *MainWindow::getTabByName(const QString &tab_name)
+{
     auto it = _tab_info.find( tab_name );
     return (it != _tab_info.end()) ? (it->second) : nullptr;
 }
@@ -532,20 +565,22 @@ void MainWindow::on_toolButtonCenterView_pressed()
     currentTabInfo()->zoomHomeView();
 }
 
-void MainWindow::onLoadAbsBehaviorTree(AbsBehaviorTree &tree)
+void MainWindow::onLoadAbsBehaviorTree(AbsBehaviorTree &tree, QString bt_name)
 {
     {
-        const QSignalBlocker blocker( currentTabInfo() );
-        BuildSceneFromTree( tree, currentTabInfo()->scene() );
-        currentTabInfo()->nodeReorder();
-
-        if( &_abstract_tree != &tree )
+        auto container = getTabByName(bt_name);
+        if( !container )
         {
-            _abstract_tree = tree;
+            container = createTab(bt_name);
         }
+        const QSignalBlocker blocker( container );
+
+        BuildSceneFromTree( tree, container->scene() );
+        container->nodeReorder();
+        _abstract_trees[bt_name] = tree;
     }
-    _undo_stack.clear();
-    _redo_stack.clear();
+//    _undo_stack.clear();
+//    _redo_stack.clear();
     onSceneChanged();
     onPushUndo();
 }
@@ -693,4 +728,12 @@ void MainWindow::on_actionReplay_mode_triggered()
         _current_mode = GraphicMode::REPLAY;
         updateCurrentMode();
     }
+}
+
+void MainWindow::on_tabWidget_currentChanged(int index)
+{
+    QString tab_name = ui->tabWidget->tabText(index);
+    auto tab = getTabByName(tab_name);
+    const QSignalBlocker blocker( tab );
+    tab->nodeReorder();
 }
