@@ -76,7 +76,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     dynamic_cast<QVBoxLayout*>(ui->leftFrame->layout())->setStretch(1,1);
 
-    createTab("Behaviortree");
+    createTab("BehaviorTree");
 
     auto arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
 
@@ -92,12 +92,15 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QShortcut* redo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this);
     connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
-    // TODO / FIXME
-//    connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
-//             this, &MainWindow::onLoadAbsBehaviorTree );
+
+    connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
+             this, &MainWindow::onLoadAbsBehaviorTree );
 
     connect( ui->toolButtonSaveFile, &QToolButton::clicked,
              this, &MainWindow::on_actionSave_triggered );
+
+    connect( _replay_widget, &SidepanelReplay::changeNodeStyle,
+             this, &MainWindow::onChangeNodesStyle);
 
 #ifdef ZMQ_FOUND
     // TODO / FIXME
@@ -575,6 +578,25 @@ void MainWindow::on_toolButtonCenterView_pressed()
     currentTabInfo()->zoomHomeView();
 }
 
+void MainWindow::onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name)
+{
+    {
+        auto container = getTabByName(bt_name);
+        if( !container )
+        {
+            container = createTab(bt_name);
+        }
+        const QSignalBlocker blocker( container );
+
+        container->loadSceneFromTree( tree );
+        container->nodeReorder();
+    }
+    _undo_stack.clear();
+    _redo_stack.clear();
+    onSceneChanged();
+    onPushUndo();
+}
+
 
 
 void MainWindow::on_actionClear_triggered(bool create_new)
@@ -726,7 +748,7 @@ void MainWindow::on_actionReplay_mode_triggered()
     }
     if( res == QMessageBox::Ok)
     {
-        currentTabInfo()->clearScene();
+        on_actionClear_triggered();
         _replay_widget->clear();
         _current_mode = GraphicMode::REPLAY;
         updateCurrentMode();
@@ -752,7 +774,7 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
     {
         return false;
     }
-    for(auto it: json_states  )
+    for(auto& it: json_states  )
     {
         if( it.second != other.json_states.at( it.first ))
         {
@@ -761,3 +783,30 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
     }
     return true;
 }
+
+void MainWindow::onChangeNodesStyle(const QString& bt_name,
+                                    const std::unordered_map<int, NodeStatus>& node_status)
+{
+    auto& tree = _tab_info[bt_name]->loadedTree();
+
+    for (size_t index = 0; index < tree.nodesCount(); index++)
+    {
+        auto& abs_node = tree.nodeAtIndex(index);
+        abs_node.status = NodeStatus::IDLE;
+    }
+
+    for (auto& it: node_status)
+    {
+        auto& abs_node = tree.nodeAtIndex(it.first);
+        abs_node.status = it.second;
+    }
+
+    for (size_t index = 0; index < tree.nodesCount(); index++)
+    {
+        auto& abs_node = tree.nodeAtIndex(index);
+        auto& node = abs_node.corresponding_node;
+        node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node.status ) );
+        node->nodeGraphicsObject().update();
+    }
+}
+

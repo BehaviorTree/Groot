@@ -70,24 +70,9 @@ private slots:
 
     void on_toolButtonCenterView_pressed();
 
-    void onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name)
-    {
-        {
-            auto container = getTabByName(bt_name);
-            if( !container )
-            {
-                container = createTab(bt_name);
-            }
-            const QSignalBlocker blocker( container );
+    void onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name);
 
-            container->loadSceneFromTree( tree );
-            container->nodeReorder();
-        }
-        _undo_stack.clear();
-        _redo_stack.clear();
-        onSceneChanged();
-        onPushUndo();
-    }
+    void onChangeNodesStyle(const QString& bt_name, const std::unordered_map<int, NodeStatus>& node_status);
 
     void on_actionClear_triggered(bool create_new = true);
 

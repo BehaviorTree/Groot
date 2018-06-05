@@ -63,7 +63,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _main_widget->setAttribute(Qt::WA_NoSystemBackground);
 
     _main_widget->setStyleSheet("background-color: transparent; color: white; ");
-    _line_edit_name->setStyleSheet("color: white; background-color: rgb(50,50,50);border: 0px;");
+    _line_edit_name->setStyleSheet("color: white; background-color: rgba(0,0,0, 50); border: 0px;");
 
     //--------------------------------------
 
