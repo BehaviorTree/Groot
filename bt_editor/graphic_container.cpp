@@ -16,7 +16,7 @@ using namespace QtNodes;
 GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_registry,
                                    QWidget *parent) :
     QObject(parent),
-    _model_registry(model_registry),
+    _model_registry( std::move(model_registry) ),
     _signal_was_blocked(true)
 {
     _scene = new EditorFlowScene( model_registry, parent );
@@ -46,12 +46,14 @@ GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_regi
     connect( _scene, &QtNodes::FlowScene::connectionDeleted,
              this,   &GraphicContainer::undoableChange  );
 
-    connect( _view, &QtNodes::FlowView::startNodeDelete, [this]()
+    connect( _view, &QtNodes::FlowView::startNodeDelete,
+             this, [this]()
     {
         _signal_was_blocked = this->blockSignals(true);
     } );
 
-    connect( _view, &QtNodes::FlowView::finishNodeDelete, [this]()
+    connect( _view, &QtNodes::FlowView::finishNodeDelete,
+             this, [this]()
     {
         this->blockSignals(_signal_was_blocked);
         this->undoableChange();
@@ -59,7 +61,7 @@ GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_regi
 
 
     connect( _scene, &QtNodes::FlowScene::connectionCreated,
-             [this](QtNodes::Connection &c )
+             this, [this](QtNodes::Connection &c )
     {
         if( c.getNode(QtNodes::PortType::In) && c.getNode(QtNodes::PortType::Out))
         {
@@ -200,7 +202,7 @@ void GraphicContainer::onNodeCreated(Node &node)
     undoableChange();
 }
 
-void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &pos)
+void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &)
 {
     QMenu* nodeMenu = new QMenu(_view);
 
@@ -210,11 +212,14 @@ void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &pos)
     auto *remove = new QAction("Remove ", nodeMenu);
     nodeMenu->addAction(remove);
 
-    connect( remove, &QAction::triggered, [this,&node]()
+    auto scene = _scene;
+
+    connect( remove, &QAction::triggered,
+             this, [this, &node, scene]()
     {
         {
             const QSignalBlocker blocker(this);
-            _scene->removeNode(node);
+            scene->removeNode(node);
         }
         undoableChange();
     });
@@ -243,7 +248,7 @@ void GraphicContainer::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
             auto action = new QAction(name, morph_submenu);
             morph_submenu->addAction(action);
 
-            connect( action, &QAction::triggered, [this, &node, name]
+            connect( action, &QAction::triggered, this, [this, &node, name]
             {
                 {
                     const QSignalBlocker blocker(this);
@@ -280,16 +285,18 @@ void GraphicContainer::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeM
         }
         else{
             auto node_ptr = &node;
-            connect( smart_remove, &QAction::triggered, [this, node_ptr, parent_node, conn_out]()
+            auto scene = _scene;
+            connect( smart_remove, &QAction::triggered,
+                     this, [this, node_ptr, parent_node, conn_out, scene]()
             {
                 {
                     const QSignalBlocker blocker(this);
                     for( auto& it: conn_out)
                     {
                         auto child_node = it.second->getNode(PortType::In);
-                        _scene->createConnection( *child_node, 0, *parent_node, 0 );
+                        scene->createConnection( *child_node, 0, *parent_node, 0 );
                     }
-                    _scene->removeNode( *node_ptr );
+                    scene->removeNode( *node_ptr );
                     nodeReorder();
                 }
                 undoableChange();
@@ -342,7 +349,8 @@ void GraphicContainer::onConnectionContextMenu(QtNodes::Connection &connection, 
             {
                 auto action = new QAction(name, submenu);
                 submenu->addAction(action);
-                connect( action, &QAction::triggered, [this, &connection, name]
+                connect( action, &QAction::triggered,
+                         this,  [this, &connection, name]
                 {
                     this->insertNodeInConnection( connection, name);
                 });

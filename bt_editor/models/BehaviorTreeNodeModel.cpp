@@ -116,7 +116,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _main_widget->adjustSize();
 
     connect( _line_edit_name, &QLineEdit::editingFinished,
-             [this]()
+             this, [this]()
     {
         setInstanceName( _line_edit_name->text() );
     });
