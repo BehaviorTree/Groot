@@ -16,7 +16,7 @@ using namespace QtNodes;
 GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_registry,
                                    QWidget *parent) :
     QObject(parent),
-    _model_registry( std::move(model_registry) ),
+    _model_registry( model_registry ),
     _signal_was_blocked(true)
 {
     _scene = new EditorFlowScene( model_registry, parent );
@@ -31,14 +31,11 @@ GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_regi
     connect( _scene, &QtNodes::FlowScene::nodeContextMenu,
              this, &GraphicContainer::onNodeContextMenu );
 
-
     connect( _scene, &QtNodes::FlowScene::connectionContextMenu,
              this, &GraphicContainer::onConnectionContextMenu );
 
-
     connect( _scene, &QtNodes::FlowScene::nodeDeleted,
              this,   &GraphicContainer::undoableChange  );
-
 
     connect( _scene, &QtNodes::FlowScene::nodeMoved,
              this,   &GraphicContainer::undoableChange  );
