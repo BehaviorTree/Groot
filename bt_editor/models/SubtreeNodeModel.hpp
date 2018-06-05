@@ -13,7 +13,7 @@ public:
 
     virtual unsigned int  nPorts(PortType portType) const override;
 
-    virtual const char* className() const override final
+    virtual const char* className() const final
     {
       return "SubTree";
     }
@@ -22,7 +22,7 @@ public:
         return "SubTree";
     }
 
-    virtual NodeType nodeType() const override final { return NodeType::SUBTREE; }
+    virtual NodeType nodeType() const final { return NodeType::SUBTREE; }
 };
 
 

@@ -70,7 +70,24 @@ private slots:
 
     void on_toolButtonCenterView_pressed();
 
-    void onLoadAbsBehaviorTree(AbsBehaviorTree& tree, QString bt_name);
+    void onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name)
+    {
+        {
+            auto container = getTabByName(bt_name);
+            if( !container )
+            {
+                container = createTab(bt_name);
+            }
+            const QSignalBlocker blocker( container );
+
+            container->loadSceneFromTree( tree );
+            container->nodeReorder();
+        }
+        _undo_stack.clear();
+        _redo_stack.clear();
+        onSceneChanged();
+        onPushUndo();
+    }
 
     void on_actionClear_triggered(bool create_new = true);
 
@@ -111,7 +128,7 @@ private:
         bool operator !=( const SavedState& other) const { return !( *this == other); }
     };
 
-    void loadSceneFromYAML(const SavedState &state);
+    void loadSavedStateFromJson(const SavedState &state);
 
 signals:
     void updateGraphic();
@@ -140,8 +157,6 @@ private:
 #ifdef ZMQ_FOUND
     SidepanelMonitor* _monitor_widget;
 #endif
-
-    std::map<QString,AbsBehaviorTree> _abstract_trees;
 
 };
 

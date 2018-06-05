@@ -177,7 +177,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
         XMLDocument document;
         XMLError xml_error = document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
         auto document_root = document.RootElement();
-        if( !xml_error && document_root )
+        if( xml_error == XMLError::XML_SUCCESS && document_root )
         {
             ReadTreeNodesModel( document_root, *_model_registry, _tree_nodes_model );
             _editor_widget->updateTreeView();
@@ -204,8 +204,6 @@ void MainWindow::loadFromXML(const QString& xml_text)
                     }
 
                     onLoadAbsBehaviorTree(tree, tree_name);
-
-                    _abstract_trees.insert( { tree_name, std::move(tree)} );
                 }
                 std::cout<<"XML Parsed Successfully!"<< std::endl;
 
@@ -236,7 +234,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
             if( error )
             {
-                loadSceneFromYAML( saved_state );
+                loadSavedStateFromJson( saved_state );
                 qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
                 QMessageBox::warning(this, tr("Exception!"),
                                      tr("It was not possible to parse the file. Error:\n\n%1"). arg( err_message ),
@@ -296,30 +294,16 @@ void MainWindow::on_actionLoad_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-    const QtNodes::FlowScene* scene = currentTabInfo()->scene();
-
-    std::vector<QtNodes::Node*> roots = findRoots( *scene );
-    bool valid_root = (roots.size() == 1) && ( dynamic_cast<RootNodeModel*>(roots.front()->nodeDataModel() ));
-
-    QtNodes::Node* current_node = nullptr;
-
-    if( valid_root )
+    for (auto& it: _tab_info)
     {
-        auto root_children = getChildren(*scene, *roots.front() );
-        if( root_children.size() == 1){
-            current_node = root_children.front();
+        auto& container = it.second;
+        if( !container->containsValidTree() )
+        {
+            QMessageBox::warning(this, tr("Oops!"),
+                                 tr("Malformed behavior tree. File can not be saved"),
+                                 QMessageBox::Cancel);
+            return;
         }
-        else{
-            valid_root = false;
-        }
-    }
-
-    if( !valid_root || !current_node)
-    {
-        QMessageBox::warning(this, tr("Oops!"),
-                             tr("Malformed behavior tree. There must be only 1 root node"),
-                             QMessageBox::Ok);
-        return;
     }
 
     //----------------------------
@@ -327,12 +311,20 @@ void MainWindow::on_actionSave_triggered()
     XMLDocument doc;
     XMLNode* root = doc.InsertEndChild( doc.NewElement( "root" ) );
 
-    root->InsertEndChild( doc.NewComment("-----------------------------------") );
-    XMLElement* root_tree = doc.NewElement("BehaviorTree");
-    root->InsertEndChild(root_tree);
+    for (auto& it: _tab_info)
+    {
+        auto& container = it.second;
+        auto  scene = container->scene();
 
-    RecursivelyCreateXml(*scene, doc, root_tree, current_node );
+        QtNodes::Node* root_node = container->loadedTree().rootNode()->corresponding_node;
 
+        root->InsertEndChild( doc.NewComment("-----------------------------------") );
+        XMLElement* root_element = doc.NewElement("BehaviorTree");
+        root_element->SetAttribute("ID", it.first.toStdString().c_str());
+        root->InsertEndChild(root_element);
+
+        RecursivelyCreateXml(*scene, doc, root_element, root_node );
+    }
     root->InsertEndChild( doc.NewComment("-----------------------------------") );
 
     XMLElement* root_models = doc.NewElement("TreeNodesModel");
@@ -515,7 +507,7 @@ void MainWindow::onUndoInvoked()
         _current_state = _undo_stack.back();
         _undo_stack.pop_back();
 
-        loadSceneFromYAML(_current_state);
+        loadSavedStateFromJson(_current_state);
 
         qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
@@ -532,7 +524,7 @@ void MainWindow::onRedoInvoked()
         _current_state = std::move( _redo_stack.back() );
         _redo_stack.pop_back();
 
-        loadSceneFromYAML(_current_state);
+        loadSavedStateFromJson(_current_state);
 
         qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
@@ -555,14 +547,12 @@ void MainWindow::onConnectionUpdate(bool connected)
     }
 }
 
-void MainWindow::loadSceneFromYAML(const SavedState& saved_state)
+void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
 {
     for(auto& it: saved_state.json_states)
     {
         auto container = getTabByName( it.first );
-        const QSignalBlocker blocker( container );
-        container->clearScene();
-        container->scene()->loadFromMemory( it.second );
+        container->loadFromJson( it.second );
         refreshNodesLayout( container->scene()->layout() );
     }
     for (int i=0; i< ui->tabWidget->count(); i++)
@@ -585,25 +575,7 @@ void MainWindow::on_toolButtonCenterView_pressed()
     currentTabInfo()->zoomHomeView();
 }
 
-void MainWindow::onLoadAbsBehaviorTree(AbsBehaviorTree &tree, QString bt_name)
-{
-    {
-        auto container = getTabByName(bt_name);
-        if( !container )
-        {
-            container = createTab(bt_name);
-        }
-        const QSignalBlocker blocker( container );
 
-        BuildSceneFromTree( tree, container->scene() );
-        container->nodeReorder();
-        _abstract_trees[bt_name] = tree;
-    }
-    _undo_stack.clear();
-    _redo_stack.clear();
-    onSceneChanged();
-    onPushUndo();
-}
 
 void MainWindow::on_actionClear_triggered(bool create_new)
 {

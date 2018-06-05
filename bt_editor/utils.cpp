@@ -23,7 +23,7 @@ std::vector<Node*> findRoots(const FlowScene &scene)
         roots.insert( it.first );
     }
 
-    for (auto it: scene.connections())
+    for (auto& it: scene.connections())
     {
         std::shared_ptr<QtNodes::Connection> connection = it.second;
         const Node* child  = connection->getNode( QtNodes::PortType::In );
@@ -34,7 +34,7 @@ std::vector<Node*> findRoots(const FlowScene &scene)
     }
 
     std::vector<Node*> sorted_roots;
-    for (auto uuid: roots)
+    for (auto& uuid: roots)
     {
         sorted_roots.push_back( scene.nodes().find(uuid)->second.get() );
     }
@@ -318,101 +318,6 @@ QString getCategory(const NodeDataModel *dataModel)
     return category;
 }
 
-
-void BuildSceneFromTree(AbsBehaviorTree &tree, QtNodes::FlowScene* scene)
-{
-    scene->clearScene();
-
-    QPointF cursor(0,0);
-    double x_offset = 0;
-
-    std::function<void(AbstractTreeNode*, Node*, int)> recursiveStep;
-
-    recursiveStep = [&](AbstractTreeNode* abs_node, Node* parent_node, int nest_level)
-    {
-        std::unique_ptr<NodeDataModel> dataModel = scene->registry().create( abs_node->registration_name );
-
-        if (!dataModel)
-        {
-            QString ID = abs_node->registration_name;
-
-            if(  abs_node->type == NodeType::ACTION || abs_node->type == NodeType::CONDITION)
-            {
-                DataModelRegistry::RegistryItemCreator node_creator = [ID]()
-                {
-                    return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, ParameterWidgetCreators() ) );
-                };
-                scene->registry().registerModel("Action", node_creator);
-            }
-            else if( abs_node->type == NodeType::DECORATOR )
-            {
-                DataModelRegistry::RegistryItemCreator node_creator = [ID]()
-                {
-                    return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, ParameterWidgetCreators()) );
-                };
-                scene->registry().registerModel("Decorator", node_creator);
-            }
-            else if( abs_node->type == NodeType::SUBTREE )
-            {
-                DataModelRegistry::RegistryItemCreator node_creator = [ID]()
-                {
-                    return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID, ParameterWidgetCreators()) );
-                };
-                scene->registry().registerModel("SubTree", node_creator);
-            }
-            dataModel = scene->registry().create( abs_node->registration_name );
-        }
-
-        if (!dataModel){
-            char buffer[250];
-            sprintf(buffer, "No registered model with name: [%s](%s)",
-                    abs_node->registration_name.toStdString().c_str(),
-                    abs_node->instance_name.toStdString().c_str() );
-            throw std::runtime_error( buffer );
-        }
-
-        BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( dataModel.get() );
-
-        bt_node->setInstanceName( abs_node->instance_name );
-        bt_node->setUID( abs_node->index );
-
-        for (auto& it: abs_node->parameters)
-        {
-            bt_node->setParameterValue( it.first, it.second );
-        }
-
-        cursor.setY( cursor.y() + 65);
-        cursor.setX( nest_level * 400 + x_offset );
-
-        Node& new_node = scene->createNode( std::move(dataModel), cursor);
-        abs_node->pos = cursor;
-        abs_node->size = scene->getNodeSize( new_node );
-
-        // free if it was already present
-        if( abs_node->corresponding_node )
-        {
-            scene->removeNode( *abs_node->corresponding_node );
-        }
-        abs_node->corresponding_node = &new_node;
-
-        scene->createConnection( *abs_node->corresponding_node, 0,
-                                 *parent_node, 0 );
-
-        for ( int16_t index: abs_node->children_index )
-        {
-            AbstractTreeNode* child = &(tree.nodeAtIndex(index));
-            recursiveStep( child, abs_node->corresponding_node, nest_level+1 );
-            x_offset += 30;
-        }
-
-        return;
-    };
-
-   // start recursion
-    Node& first_qt_node = scene->createNode( scene->registry().create("Root"), QPointF() );
-    recursiveStep( tree.rootNode(), &first_qt_node, 1 );
-
-}
 
 AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
 {

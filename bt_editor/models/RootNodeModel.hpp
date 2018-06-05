@@ -23,12 +23,12 @@ public:
 
   virtual ConnectionPolicy portOutConnectionPolicy(PortIndex) const override;
 
-  virtual const char* className() const override final
+  virtual const char* className() const final
   {
       return RootNodeModel::Name();
   }
   static const char* Name() { return "Root"; }
 
-  virtual NodeType nodeType() const override final { return NodeType::ROOT; }
+  virtual NodeType nodeType() const final { return NodeType::ROOT; }
 };
 

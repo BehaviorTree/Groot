@@ -12,7 +12,7 @@ public:
 
     virtual unsigned int  nPorts(PortType portType) const override;
 
-    virtual const char* className() const override final
+    virtual const char* className() const final
     {
         return ActionNodeModel::Name();
     }
@@ -22,7 +22,7 @@ public:
         return "Action";
     }
 
-    virtual NodeType nodeType() const override final { return NodeType::ACTION; }
+    virtual NodeType nodeType() const final { return NodeType::ACTION; }
 
 private:
 

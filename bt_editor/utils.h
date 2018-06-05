@@ -21,8 +21,6 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene* scene);
 
 AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree* bt );
 
-void BuildSceneFromTree(AbsBehaviorTree& tree, QtNodes::FlowScene *scene);
-
 AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root);
 
 void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree &abstract_tree );

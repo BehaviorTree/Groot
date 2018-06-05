@@ -27,10 +27,10 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _line_edit_name = new QLineEdit();
     _params_widget = new QFrame();
 
-    QVBoxLayout *main_layout = new QVBoxLayout();
+    auto main_layout = new QVBoxLayout();
     _main_widget->setLayout( main_layout );
 
-    QHBoxLayout *top_layout = new QHBoxLayout();
+    auto top_layout = new QHBoxLayout();
     main_layout->addLayout(top_layout);
 
     top_layout->addWidget( _label_ID, 0 );

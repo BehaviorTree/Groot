@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QWidget>
 
+#include "bt_editor_base.h"
 #include "editor_flowscene.h"
 
 #include <nodes/Node>
@@ -37,6 +38,14 @@ public:
 
     void clearScene();
 
+    AbsBehaviorTree& loadedTree() { return _abstract_tree; }
+
+    const AbsBehaviorTree& loadedTree() const { return _abstract_tree; }
+
+    void loadSceneFromTree(const AbsBehaviorTree &tree);
+
+    void loadFromJson(const QByteArray& data);
+
 signals:
 
     void undoableChange();
@@ -65,6 +74,8 @@ private:
    std::shared_ptr<QtNodes::DataModelRegistry> _model_registry;
 
    bool _signal_was_blocked;
+
+   AbsBehaviorTree _abstract_tree;
 
 };
 

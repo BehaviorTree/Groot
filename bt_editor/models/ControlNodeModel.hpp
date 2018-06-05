@@ -26,10 +26,10 @@ public:
 
     virtual ~ControlNodeModel() override = default;
 
-    unsigned int  nPorts(PortType) const override final
+    unsigned int  nPorts(PortType) const final
     { return 1; }
 
-    virtual NodeType nodeType() const override final { return NodeType::CONTROL; }
+    virtual NodeType nodeType() const final { return NodeType::CONTROL; }
 
 private:
 
@@ -43,7 +43,7 @@ public:
     ControlNodeModelBase();
     virtual ~ControlNodeModelBase() override = default;
 
-    virtual const char* className() const override final
+    virtual const char* className() const final
     {
         return T::Name();
     }

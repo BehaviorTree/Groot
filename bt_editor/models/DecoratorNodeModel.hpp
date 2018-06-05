@@ -10,15 +10,15 @@ public:
 
     virtual ~DecoratorNodeModel() = default;
 
-    unsigned int  nPorts(PortType) const override final
+    unsigned int  nPorts(PortType) const final
     { return 1; }
 
-    ConnectionPolicy portOutConnectionPolicy(PortIndex) const override final
+    ConnectionPolicy portOutConnectionPolicy(PortIndex) const final
     {
         return ConnectionPolicy::One;
     }
 
-    virtual const char* className() const override final
+    virtual const char* className() const final
     {
       return "Decorator";
     }
@@ -27,7 +27,7 @@ public:
       return "Decorator";
     }
 
-     virtual NodeType nodeType() const override final { return NodeType::DECORATOR; }
+     virtual NodeType nodeType() const final { return NodeType::DECORATOR; }
 
 private:
 
