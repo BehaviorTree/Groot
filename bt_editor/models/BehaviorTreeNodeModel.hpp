@@ -88,9 +88,9 @@ public slots:
   void setInstanceName(const QString& name);
 
 protected:
-  QWidget*  _main_widget;
-  QFrame*   _params_widget;
-  QLabel*   _label_ID;
+  QFrame*  _main_widget;
+  QFrame*  _params_widget;
+  QLabel*  _label_ID;
 
   QLineEdit* _line_edit_name;
 

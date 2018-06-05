@@ -117,8 +117,6 @@ move()
             QTransform sceneTransform = this->sceneTransform();
             QPointF connectionPos = sceneTransform.inverted().map(scenePos);
 
-            qDebug() << connectionPos;
-
             _connection.connectionGeometry().setEndPoint(portType,
                                                          connectionPos);
         }

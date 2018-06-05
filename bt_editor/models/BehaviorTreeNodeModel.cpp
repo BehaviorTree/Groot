@@ -22,24 +22,34 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _registration_name(registration_name),
     _instance_name(registration_name)
 {
-    _main_widget = new QWidget;
+    _main_widget = new QFrame();
+    _label_ID = new QLabel();
+    _line_edit_name = new QLineEdit();
+    _params_widget = new QFrame();
 
-    _label_ID = new QLabel( _main_widget );
+    QVBoxLayout *main_layout = new QVBoxLayout();
+    _main_widget->setLayout( main_layout );
+
+    QHBoxLayout *top_layout = new QHBoxLayout();
+    main_layout->addLayout(top_layout);
+
+    top_layout->addWidget( _label_ID, 0 );
+    top_layout->addWidget( _line_edit_name, 1 );
+
+    main_layout->setMargin(0);
+    main_layout->setSpacing(0);
+
+    top_layout->setMargin(0);
+    top_layout->setSpacing(0);
+
+    //----------------------------
+
     _label_ID->setHidden(true);
     _label_ID->setText( label_name );
     _label_ID->setAlignment(Qt::AlignCenter);
 
-    _line_edit_name = new QLineEdit( _main_widget );
     _line_edit_name->setAlignment( Qt::AlignCenter );
-
-    QHBoxLayout *top_layout  = new QHBoxLayout(  );
-
-    top_layout->addWidget( _label_ID,0 );
-    top_layout->addWidget( _line_edit_name, 1 );
-    top_layout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
-
-    QVBoxLayout *main_layout = new QVBoxLayout( _main_widget );
-    main_layout->addLayout(top_layout);
+  //  top_layout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
 
     QFont font = _label_ID->font();
     font.setPointSize(10);
@@ -51,15 +61,11 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _label_ID->setPalette(palette);
 
     _main_widget->setAttribute(Qt::WA_NoSystemBackground);
-    _main_widget->setLayout( main_layout );
 
-    main_layout->setMargin(0);
     _main_widget->setStyleSheet("background-color: transparent; color: white; ");
-
     _line_edit_name->setStyleSheet("color: white; background-color: rgb(50,50,50);border: 0px;");
 
     //--------------------------------------
-    _params_widget = new QFrame( _main_widget );
 
     if( !creators.empty() )
     {
@@ -67,9 +73,9 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
         _params_widget->setStyleSheet("color: white;");
 
         QFormLayout* form_layout = new QFormLayout( _params_widget );
-        form_layout->setHorizontalSpacing(2);
-        form_layout->setVerticalSpacing(2);
-        form_layout->setContentsMargins(0, 0, 0, 0);
+        form_layout->setHorizontalSpacing(0);
+        form_layout->setVerticalSpacing(0);
+        form_layout->setContentsMargins(0, 6, 0, 0);
 
         for(const auto& param_creator: creators )
         {
@@ -81,8 +87,8 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
 
             field_widget->setStyleSheet("color: white; "
                                         "background-color: gray; "
-                                        "border: 1px solid #FFFFFF; "
-                                        "padding: 1px 0px 1px 3px;");
+                                        "border: 0px; "
+                                        "padding: 0px 0px 0px 0px;");
 
             form_layout->addRow( field_label, field_widget );
 
@@ -239,12 +245,12 @@ void BehaviorTreeDataModel::setParameterValue(const QString &label, const QStrin
 
 void BehaviorTreeDataModel::updateNodeSize()
 {
-    QFontMetrics fm = _line_edit_name->fontMetrics();
-    const QString& txt = _line_edit_name->text();
-    double new_width = std::max( 100, fm.boundingRect(txt).width() + 20);
-    _line_edit_name->setFixedWidth(new_width);
-    _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
-    _main_widget->adjustSize();
+//    QFontMetrics fm = _line_edit_name->fontMetrics();
+//    const QString& txt = _line_edit_name->text();
+//    double new_width = std::max( 100, fm.boundingRect(txt).width() + 20);
+//    _line_edit_name->setFixedWidth(new_width);
+//    _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
+//    _main_widget->adjustSize();
 }
 
 void BehaviorTreeDataModel::setInstanceName(const QString &name)

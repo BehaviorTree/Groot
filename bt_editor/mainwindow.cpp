@@ -186,7 +186,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
             bool error = false;
             QString err_message;
-            QByteArray saved_state = _current_state;
+            auto saved_state = _current_state;
             try {
                 const QSignalBlocker blocker( currentTabInfo() );
                 std::cout<< "Starting parsing"<< std::endl;
@@ -216,8 +216,8 @@ void MainWindow::loadFromXML(const QString& xml_text)
                     {
                         if( ui->tabWidget->tabText( i ) == main_bt_name)
                         {
-                            ui->tabWidget->setCurrentIndex(i);
                             ui->tabWidget->tabBar()->moveTab(i, 0);
+                            ui->tabWidget->setCurrentIndex(0);
                             break;
                         }
                     }
@@ -486,14 +486,21 @@ void MainWindow::on_splitter_splitterMoved(int , int )
 
 void MainWindow::onPushUndo()
 {
-    const QByteArray state = currentTabInfo()->scene()->saveToMemory();
+    SavedState saved;
+    int index = ui->tabWidget->currentIndex();
+    saved.current_tab_name =   ui->tabWidget->tabText(index);
 
-    if( _undo_stack.empty() || ( state != _current_state &&  _undo_stack.back() != _current_state) )
+    for (auto& it: _tab_info)
     {
-        _undo_stack.push_back( _current_state );
+        saved.json_states[it.first] = it.second->scene()->saveToMemory();
+    }
+
+    if( _undo_stack.empty() || ( saved != _current_state &&  _undo_stack.back() != _current_state) )
+    {
+        _undo_stack.push_back( std::move(_current_state) );
         _redo_stack.clear();
     }
-    _current_state = state;
+    _current_state = saved;
 
     qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
@@ -504,7 +511,7 @@ void MainWindow::onUndoInvoked()
 
     if( _undo_stack.size() > 0)
     {
-        _redo_stack.push_back( _current_state );
+        _redo_stack.push_back( std::move(_current_state) );
         _current_state = _undo_stack.back();
         _undo_stack.pop_back();
 
@@ -548,14 +555,23 @@ void MainWindow::onConnectionUpdate(bool connected)
     }
 }
 
-void MainWindow::loadSceneFromYAML(QByteArray state)
+void MainWindow::loadSceneFromYAML(const SavedState& saved_state)
 {
+    for(auto& it: saved_state.json_states)
     {
-        const QSignalBlocker blocker( currentTabInfo() );
-        auto scene = currentTabInfo()->scene();
-        scene->clearScene();
-        scene->loadFromMemory( state );
-        refreshNodesLayout( scene->layout() );
+        auto container = getTabByName( it.first );
+        const QSignalBlocker blocker( container );
+        container->clearScene();
+        container->scene()->loadFromMemory( it.second );
+        refreshNodesLayout( container->scene()->layout() );
+    }
+    for (int i=0; i< ui->tabWidget->count(); i++)
+    {
+        if( ui->tabWidget->tabText( i ) == saved_state.current_tab_name)
+        {
+            ui->tabWidget->setCurrentIndex(i);
+            break;
+        }
     }
     onSceneChanged();
 }
@@ -583,8 +599,8 @@ void MainWindow::onLoadAbsBehaviorTree(AbsBehaviorTree &tree, QString bt_name)
         container->nodeReorder();
         _abstract_trees[bt_name] = tree;
     }
-//    _undo_stack.clear();
-//    _redo_stack.clear();
+    _undo_stack.clear();
+    _redo_stack.clear();
     onSceneChanged();
     onPushUndo();
 }
@@ -753,5 +769,23 @@ void MainWindow::on_tabWidget_currentChanged(int index)
     {
         const QSignalBlocker blocker( tab );
         tab->nodeReorder();
+        _current_state.current_tab_name = ui->tabWidget->tabText( index );
     }
+}
+
+bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) const
+{
+    if( current_tab_name != other.current_tab_name ||
+        json_states.size() != other.json_states.size())
+    {
+        return false;
+    }
+    for(auto it: json_states  )
+    {
+        if( it.second != other.json_states.at( it.first ))
+        {
+            return false;
+        }
+    }
+    return true;
 }

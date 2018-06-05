@@ -102,7 +102,16 @@ private:
 
     void refreshNodesLayout(QtNodes::PortLayout new_layout);
 
-    void loadSceneFromYAML(QByteArray state);
+
+    struct SavedState
+    {
+        QString current_tab_name;
+        std::map<QString, QByteArray> json_states;
+        bool operator ==( const SavedState& other) const;
+        bool operator !=( const SavedState& other) const { return !( *this == other); }
+    };
+
+    void loadSceneFromYAML(const SavedState &state);
 
 signals:
     void updateGraphic();
@@ -119,9 +128,9 @@ private:
 
     std::mutex _mutex;
 
-    std::deque<QByteArray> _undo_stack;
-    std::deque<QByteArray> _redo_stack;
-    QByteArray _current_state;
+    std::deque<SavedState> _undo_stack;
+    std::deque<SavedState> _redo_stack;
+    SavedState _current_state;
     QtNodes::PortLayout _current_layout;
 
     TreeNodeModels _tree_nodes_model;
