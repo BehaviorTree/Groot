@@ -1,6 +1,7 @@
 #include "FlowScene.hpp"
 
 #include <stdexcept>
+#include <utility>
 
 #include <QtWidgets/QGraphicsSceneMoveEvent>
 #include <QtWidgets/QFileDialog>
@@ -8,9 +9,11 @@
 #include <QtCore/QBuffer>
 #include <QtCore/QDataStream>
 #include <QtCore/QFile>
+
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonArray>
+
 #include <QDebug>
 
 #include "Node.hpp"
@@ -39,7 +42,7 @@ FlowScene::
 FlowScene(std::shared_ptr<DataModelRegistry> registry,
           QObject * parent)
   : QGraphicsScene(parent)
-  , _registry(registry)
+  , _registry(std::move(registry))
 {
   setItemIndexMethod(QGraphicsScene::NoIndex);
 }
@@ -68,7 +71,7 @@ createConnection(PortType connectedPort,
 {
   auto connection = std::make_shared<Connection>(connectedPort, node, portIndex);
 
-  auto cgo = std::make_unique<ConnectionGraphicsObject>(*this, *connection);
+  auto cgo = detail::make_unique<ConnectionGraphicsObject>(*this, *connection);
 
   // after this function connection points are set to node port
   connection->setGraphicsObject(std::move(cgo));
@@ -96,7 +99,7 @@ createConnection(Node& nodeIn,
                                  portIndexOut,
                                  converter);
 
-  auto cgo = std::make_unique<ConnectionGraphicsObject>(*this, *connection);
+  auto cgo = detail::make_unique<ConnectionGraphicsObject>(*this, *connection);
 
   nodeIn.nodeState().setConnection(PortType::In, portIndexIn, *connection);
   nodeOut.nodeState().setConnection(PortType::Out, portIndexOut, *connection);
@@ -183,8 +186,8 @@ Node&
 FlowScene::
 createNode(std::unique_ptr<NodeDataModel> && dataModel, QPointF pos)
 {
-  auto node = std::make_unique<Node>(std::move(dataModel));
-  auto ngo  = std::make_unique<NodeGraphicsObject>(*this, *node);
+  auto node = detail::make_unique<Node>(std::move(dataModel));
+  auto ngo  = detail::make_unique<NodeGraphicsObject>(*this, *node);
 
   ngo->setPos(pos);
 
@@ -211,8 +214,8 @@ restoreNode(QJsonObject const& nodeJson)
     throw std::logic_error(std::string("No registered model with name ") +
                            modelName.toLocal8Bit().data());
 
-  auto node = std::make_unique<Node>(std::move(dataModel));
-  auto ngo  = std::make_unique<NodeGraphicsObject>(*this, *node);
+  auto node = detail::make_unique<Node>(std::move(dataModel));
+  auto ngo  = detail::make_unique<NodeGraphicsObject>(*this, *node);
   node->setGraphicsObject(std::move(ngo));
 
   node->restore(nodeJson);
@@ -261,13 +264,13 @@ void
 FlowScene::
 setRegistry(std::shared_ptr<DataModelRegistry> registry)
 {
-  _registry = registry;
+  _registry = std::move(registry);
 }
 
 
 void
 FlowScene::
-iterateOverNodes(std::function<void(Node*)> visitor)
+iterateOverNodes(std::function<void(Node*)> const & visitor)
 {
   for (const auto& _node : _nodes)
   {
@@ -278,7 +281,7 @@ iterateOverNodes(std::function<void(Node*)> visitor)
 
 void
 FlowScene::
-iterateOverNodeData(std::function<void(NodeDataModel*)> visitor)
+iterateOverNodeData(std::function<void(NodeDataModel*)> const & visitor)
 {
   for (const auto& _node : _nodes)
   {
@@ -289,7 +292,7 @@ iterateOverNodeData(std::function<void(NodeDataModel*)> visitor)
 
 void
 FlowScene::
-iterateOverNodeDataDependentOrder(std::function<void(NodeDataModel*)> visitor)
+iterateOverNodeDataDependentOrder(std::function<void(NodeDataModel*)> const & visitor)
 {
   std::set<QUuid> visitedNodesSet;
 
@@ -508,7 +511,7 @@ saveToMemory() const
 
   QJsonArray nodesJsonArray;
 
-  for (auto& pair : _nodes)
+  for (auto const & pair : _nodes)
   {
     const FlowScene::UniqueNode &node = pair.second;
     if(node)
@@ -554,16 +557,16 @@ loadFromMemory(const QByteArray& data)
 
   QJsonArray nodesJsonArray = jsonDocument["nodes"].toArray();
 
-  for (int i = 0; i < nodesJsonArray.size(); ++i)
+  for (QJsonValueRef node : nodesJsonArray)
   {
-    restoreNode(nodesJsonArray[i].toObject());
+    restoreNode(node.toObject());
   }
 
   QJsonArray connectionJsonArray = jsonDocument["connections"].toArray();
 
-  for (int i = 0; i < connectionJsonArray.size(); ++i)
+  for (QJsonValueRef connection : connectionJsonArray)
   {
-    restoreConnection(connectionJsonArray[i].toObject());
+    restoreConnection(connection.toObject());
   }
 }
 
@@ -592,7 +595,7 @@ namespace QtNodes
 
 Node*
 locateNodeAt(QPointF scenePoint, FlowScene &scene,
-             QTransform viewTransform)
+             QTransform const & viewTransform)
 {
   // items under cursor
   QList<QGraphicsItem*> items =
@@ -624,6 +627,4 @@ locateNodeAt(QPointF scenePoint, FlowScene &scene,
 
   return resultNode;
 }
-
-
 }

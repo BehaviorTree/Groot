@@ -5,7 +5,6 @@
 #include <QtWidgets/QGraphicsBlurEffect>
 #include <QtWidgets/QStyleOptionGraphicsItem>
 #include <QtWidgets/QGraphicsView>
-#include <QDebug>
 
 #include "FlowScene.hpp"
 
@@ -81,7 +80,7 @@ shape() const
 
 #else
   auto const &geom =
-    _connection.connectionGeometry();
+      _connection.connectionGeometry();
 
   return ConnectionPainter::getPainterStroke(geom);
 
@@ -101,28 +100,29 @@ void
 ConnectionGraphicsObject::
 move()
 {
-    for(auto portType: { PortType::In, PortType::Out } )
+  for(PortType portType: { PortType::In, PortType::Out } )
+  {
+    if (auto node = _connection.getNode(portType))
     {
-        if (auto node = _connection.getNode(portType))
-        {
-            auto const &nodeGraphics = node->nodeGraphicsObject();
+      auto const &nodeGraphics = node->nodeGraphicsObject();
 
-            auto const &nodeGeom = node->nodeGeometry();
+      auto const &nodeGeom = node->nodeGeometry();
 
-            QPointF scenePos =
-                    nodeGeom.portScenePosition(_connection.getPortIndex(portType),
-                                               portType,
-                                               nodeGraphics.sceneTransform());
+      QPointF scenePos =
+        nodeGeom.portScenePosition(_connection.getPortIndex(portType),
+                                   portType,
+                                   nodeGraphics.sceneTransform());
 
-            QTransform sceneTransform = this->sceneTransform();
-            QPointF connectionPos = sceneTransform.inverted().map(scenePos);
+      QTransform sceneTransform = this->sceneTransform();
 
-            _connection.connectionGeometry().setEndPoint(portType,
-                                                         connectionPos);
-        }
-    };
-    setGeometryChanged();
-    update();
+      QPointF connectionPos = sceneTransform.inverted().map(scenePos);
+
+      _connection.connectionGeometry().setEndPoint(portType,
+                                                   connectionPos);
+    }
+  };
+  setGeometryChanged();
+  update();
 }
 
 void ConnectionGraphicsObject::lock(bool locked)

@@ -139,16 +139,16 @@ moveConnections() const
 {
   NodeState const & nodeState = _node.nodeState();
 
-  for(auto portType: { PortType::In, PortType::Out } )
+  for(PortType portType: {PortType::In, PortType::Out})
   {
-      auto const & connectionEntries =
-              nodeState.getEntries(portType);
+    auto const & connectionEntries =
+        nodeState.getEntries(portType);
 
-      for (auto const & connections : connectionEntries)
-      {
-          for (auto & con : connections)
-              con.second->getConnectionGraphicsObject().move();
-      }
+    for (auto const & connections : connectionEntries)
+    {
+      for (auto & con : connections)
+        con.second->getConnectionGraphicsObject().move();
+    }
   };
 }
 
@@ -199,37 +199,37 @@ mousePressEvent(QGraphicsSceneMouseEvent * event)
     _scene.clearSelection();
   }
 
-  auto clickPort =
-    [&](PortType portToCheck)
+  for(PortType portToCheck: {PortType::In, PortType::Out})
+  {
+    NodeGeometry & nodeGeometry = _node.nodeGeometry();
+
+    // TODO do not pass sceneTransform
+    int portIndex = nodeGeometry.checkHitScenePoint(portToCheck,
+                                                    event->scenePos(),
+                                                    sceneTransform());
+
+    if (portIndex != INVALID)
     {
-      NodeGeometry & nodeGeometry = _node.nodeGeometry();
+      NodeState const & nodeState = _node.nodeState();
 
-      // TODO do not pass sceneTransform
-      int portIndex = nodeGeometry.checkHitScenePoint(portToCheck,
-                                                      event->scenePos(),
-                                                      sceneTransform());
-
-      if (portIndex != INVALID)
-      {
-        NodeState const & nodeState = _node.nodeState();
-
-        std::unordered_map<QUuid, Connection*> connections =
+      std::unordered_map<QUuid, Connection*> connections =
           nodeState.connections(portToCheck, portIndex);
 
-        // start dragging existing connection
-        if (!connections.empty() && portToCheck == PortType::In)
-        {
-          auto con = connections.begin()->second;
+      // start dragging existing connection
+      if (!connections.empty() && portToCheck == PortType::In)
+      {
+        auto con = connections.begin()->second;
 
-          NodeConnectionInteraction interaction(_node, *con, _scene);
+        NodeConnectionInteraction interaction(_node, *con, _scene);
 
-          interaction.disconnect(portToCheck);
-        }
-        else // initialize new Connection
+        interaction.disconnect(portToCheck);
+      }
+      else // initialize new Connection
+      {
+        if (portToCheck == PortType::Out)
         {
           const auto outPolicy = _node.nodeDataModel()->portOutConnectionPolicy(portIndex);
           if (!connections.empty() &&
-              portToCheck == PortType::Out &&
               outPolicy == NodeDataModel::ConnectionPolicy::One)
           {
             _scene.deleteConnection( *connections.begin()->second );
@@ -247,10 +247,8 @@ mousePressEvent(QGraphicsSceneMouseEvent * event)
           connection->getConnectionGraphicsObject().grabMouse();
         }
       }
-    };
-
-  clickPort(PortType::In);
-  clickPort(PortType::Out);
+    }
+  }
 
   auto pos     = event->pos();
   auto & geom  = _node.nodeGeometry();
@@ -347,7 +345,7 @@ mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 
   if( (event->screenPos() - _press_pos).manhattanLength() > 20 )
   {
-      _scene.nodeMoved(_node, pos());
+    _scene.nodeMoved(_node, pos());
   }
 
 }

@@ -28,8 +28,6 @@ NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
   , _entryHeight(5)
   , _spacing(5)
   , _hovered(false)
-  , _nSources(dataModel->nPorts(PortType::Out))
-  , _nSinks(dataModel->nPorts(PortType::In))
   , _draggingPos(-1000, -1000)
   , _dataModel(dataModel)
   , _fontMetrics(QFont())
@@ -41,6 +39,17 @@ NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
   _boldFontMetrics = QFontMetrics(f);
 }
 
+unsigned int
+NodeGeometry::nSources() const
+{
+  return _dataModel->nPorts(PortType::Out);
+}
+
+unsigned int
+NodeGeometry::nSinks() const
+{
+  return _dataModel->nPorts(PortType::In);
+}
 
 QRectF
 NodeGeometry::
@@ -77,7 +86,7 @@ recalculateSize() const
   _entryHeight = _fontMetrics.height();
 
   {
-    unsigned int maxNumOfEntries = std::max(_nSinks, _nSources);
+    unsigned int maxNumOfEntries = std::max(nSinks(), nSources());
     unsigned int step = _entryHeight + _spacing;
     _height = step * maxNumOfEntries;
   }
@@ -136,7 +145,7 @@ QPointF
 NodeGeometry::
 portScenePosition(PortIndex index,
                   PortType portType,
-                  QTransform t) const
+                  QTransform const & t) const
 {
   auto const connectionDiameter = StyleCollection::nodeStyle().ConnectionPointDiameter;
 
@@ -152,7 +161,7 @@ portScenePosition(PortIndex index,
   }
   else
   {
-    unsigned int nPorts = (portType == PortType::In ) ? nSinks() : nSources();
+    unsigned int nPorts = _dataModel->nPorts(portType);
     unsigned int step = _width / (nPorts + 1);
     double x = step * (index+1);
 
@@ -167,7 +176,7 @@ PortIndex
 NodeGeometry::
 checkHitScenePoint(PortType portType,
                    QPointF const scenePoint,
-                   QTransform sceneTransform) const
+                   QTransform const & sceneTransform) const
 {
   auto const &nodeStyle = StyleCollection::nodeStyle();
 

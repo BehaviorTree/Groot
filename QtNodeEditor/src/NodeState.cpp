@@ -110,7 +110,7 @@ setReaction(ReactToConnectionState reaction,
 
   _reactingPortType = reactingPortType;
 
-  _reactingDataType = reactingDataType;
+  _reactingDataType = std::move(reactingDataType);
 }
 
 
@@ -135,4 +135,11 @@ NodeState::
 resizing() const
 {
   return _resizing;
+}
+
+void
+NodeState::changeNumberOfPorts(int portsIn, int portsOut)
+{
+  _inConnections.resize(portsIn);
+  _outConnections.resize(portsOut);
 }

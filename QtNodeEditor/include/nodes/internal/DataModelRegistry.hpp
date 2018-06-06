@@ -1,10 +1,11 @@
 #pragma once
 
-#include <unordered_map>
-#include <unordered_set>
 #include <set>
 #include <memory>
 #include <functional>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include <QtCore/QString>
 
@@ -12,6 +13,7 @@
 #include "TypeConverter.hpp"
 #include "Export.hpp"
 #include "QStringStdHash.hpp"
+#include "memory.hpp"
 
 namespace QtNodes
 {
@@ -58,7 +60,7 @@ public:
   template<typename ModelType>
   void registerModel(QString const &category)
   {
-    RegistryItemCreator creator = [](){ return std::make_unique<ModelType>(); };
+    RegistryItemCreator creator = [](){ return detail::make_unique<ModelType>(); };
 
     QString const name = ModelType::Name();
 

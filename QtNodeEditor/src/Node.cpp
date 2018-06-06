@@ -2,6 +2,7 @@
 
 #include <QtCore/QObject>
 
+#include <utility>
 #include <iostream>
 
 #include "FlowScene.hpp"
@@ -39,7 +40,7 @@ Node(std::unique_ptr<NodeDataModel> && dataModel)
 
 
 Node::
-~Node() {}
+~Node() = default;
 
 QJsonObject
 Node::
@@ -86,7 +87,7 @@ id() const
 void
 Node::
 reactToPossibleConnection(PortType reactingPortType,
-                          NodeDataType reactingDataType,
+                          NodeDataType const &reactingDataType,
                           QPointF const &scenePoint)
 {
   QTransform const t = _nodeGraphicsObject->sceneTransform();

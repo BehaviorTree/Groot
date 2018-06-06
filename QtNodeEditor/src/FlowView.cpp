@@ -251,6 +251,9 @@ void
 FlowView::
 deleteSelectedNodes()
 {
+  // Delete the selected connections first, ensuring that they won't be
+  // automatically deleted when selected nodes are deleted (deleting a node
+  // deletes some connections as well)
   startNodeDelete();
 
   for (QGraphicsItem * item : _scene->selectedItems())
@@ -259,13 +262,14 @@ deleteSelectedNodes()
       _scene->deleteConnection(c->connection());
   }
 
-  // delete the nodes, this will delete many of the connections
-  for (QGraphicsItem* item : _scene->selectedItems())
+  // Delete the nodes; this will delete many of the connections.
+  // Selected connections were already deleted prior to this loop, otherwise
+  // qgraphicsitem_cast<NodeGraphicsObject*>(item) could be a use-after-free
+  // when a selected connection is deleted by deleting the node.
+  for (QGraphicsItem * item : _scene->selectedItems())
   {
-    NodeGraphicsObject* ngo = qgraphicsitem_cast<NodeGraphicsObject*>(item);
-    if (ngo){
-      _scene->removeNode(ngo->node());
-    }
+    if (auto n = qgraphicsitem_cast<NodeGraphicsObject*>(item))
+      _scene->removeNode(n->node());
   }
 
   finishNodeDelete();
