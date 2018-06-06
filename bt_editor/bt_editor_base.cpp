@@ -55,6 +55,27 @@ void AbsBehaviorTree::updateRootIndex()
     }
 }
 
+void AbsBehaviorTree::debugPrint()
+{
+  std::function<void(const AbstractTreeNode*,int)> recursiveStep;
+
+  recursiveStep = [&](const AbstractTreeNode* node, int indent)
+  {
+    for(int i=0; i< indent; i++) printf("    ");
+
+    printf("%s (%s)\n",
+           node->instance_name.toStdString().c_str(),
+           node->registration_name.toStdString().c_str() );
+
+    for(auto& child_index: node->children_index)
+    {
+      recursiveStep( nodeAtIndex(child_index), indent+1);
+    }
+  };
+
+  recursiveStep( rootNode(), 0 );
+}
+
 ParamType getParamTypeFromString(const QString &str)
 {
     if( str == "Text")  return ParamType::TEXT;

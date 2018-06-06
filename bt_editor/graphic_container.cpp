@@ -453,23 +453,16 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
 }
 
 
-void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree, Node *first_qt_node)
+void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
 {
     _abstract_tree = tree;
 
     QPointF cursor(0,0);
     double x_offset = 0;
 
-   // start recursion
-    if( !first_qt_node )
-    {
-      _scene->clearScene();
-      first_qt_node = &(_scene->createNode( _scene->registry().create("Root"),
-                                            QPointF() ));
-    }
-    else{
-      cursor = _scene->getNodePosition( *first_qt_node );
-    }
+    _scene->clearScene();
+    auto first_qt_node = &(_scene->createNode( _scene->registry().create("Root"),
+                                          cursor ));
 
     auto root_node = _abstract_tree.rootNode();
     if( root_node->registration_name == "Root" && root_node->instance_name == "Root")
@@ -479,7 +472,15 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree, Node *firs
 
     recursiveLoadStep(cursor, x_offset, root_node, first_qt_node, 1 );
 
-    _abstract_tree = BuildTreeFromScene( scene() );
+    std::cout << "-------" << std::endl;
+    _abstract_tree.debugPrint();
+    std::cout << "---" << std::endl;
+
+}
+
+void GraphicContainer::appendTreeToNode(Node &node, const AbsBehaviorTree &tree)
+{
+
 }
 
 void GraphicContainer::loadFromJson(const QByteArray &data)

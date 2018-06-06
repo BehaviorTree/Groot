@@ -252,8 +252,6 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
 
     std::map<int,int> UID_to_index;
 
-    const Node* root_node = roots.front();
-
     for (const auto& it: scene->nodes() )
     {
         Node* node = (it.second.get());

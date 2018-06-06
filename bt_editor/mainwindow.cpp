@@ -557,8 +557,31 @@ void MainWindow::onRequestSubTreeAppend(GraphicContainer& container,
                                         QtNodes::Node& node)
 {
   auto sub_model = dynamic_cast< SubtreeNodeModel*>( node.nodeDataModel() );
-  const auto& tree = _tab_info.at( sub_model->instanceName() )->loadedTree();
-  container.loadSceneFromTree( tree, &node );
+
+  auto  maintree = container.loadedTree();
+  const auto& subtree  = _tab_info.at( sub_model->instanceName() )->loadedTree();
+
+  for (int i=0; i< subtree.nodesCount();i++ )
+  {
+    auto abs_node = maintree.nodeAtIndex(i);
+    if( abs_node->corresponding_node == &node)
+    {
+      abs_node->children_index.push_back( maintree.nodesCount() + subtree.rootIndex() );
+      break;
+    }
+  }
+
+  for (int i=0; i< subtree.nodesCount();i++ )
+  {
+    AbstractTreeNode abs_node = *(subtree.nodeAtIndex(i));
+    abs_node.corresponding_node = nullptr;
+    maintree.pushBack( GetUID(), abs_node );
+  }
+
+  maintree.debugPrint();
+  std::cout << "---" << std::endl;
+
+  container.loadSceneFromTree( maintree );
 }
 
 void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)

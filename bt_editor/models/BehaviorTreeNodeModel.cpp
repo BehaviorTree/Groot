@@ -8,12 +8,6 @@
 #include <QFile>
 #include <QFont>
 
-static int16_t GetUID()
-{
-    static int16_t uid = 10000;
-    return uid++;
-}
-
 BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
                                              const QString& registration_name,
                                              const ParameterWidgetCreators &creators):

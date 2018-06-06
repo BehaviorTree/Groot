@@ -31,5 +31,6 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
 
 unsigned int SubtreeNodeModel::nPorts(QtNodes::PortType portType) const
 {
-    return (portType==PortType::In) ? 1: (_expand ? 1: 0);
+  return (portType==PortType::In) ? 1: (_expand ? 1: 0);
 }
+
