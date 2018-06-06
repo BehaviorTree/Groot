@@ -100,7 +100,7 @@ void SidepanelReplay::updateTableModel(const AbsBehaviorTree& locaded_tree)
         for(size_t row=0; row < transitions_count; row++)
         {
             auto& trans = _transitions[row];
-            auto& node  = locaded_tree.nodeAtIndex( trans.index );
+            auto node  = locaded_tree.nodeAtIndex( trans.index );
 
             QString timestamp;
             timestamp.sprintf("%.3f", trans.timestamp - first_timestamp);
@@ -121,7 +121,7 @@ void SidepanelReplay::updateTableModel(const AbsBehaviorTree& locaded_tree)
 
             QList<QStandardItem *> rowData;
             rowData << timestamp_item;
-            rowData << new QStandardItem( node.instance_name );
+            rowData << new QStandardItem( node->instance_name );
             rowData << createStatusItem( trans.prev_status );
             rowData << createStatusItem( trans.status );
             _table_model->appendRow(rowData);

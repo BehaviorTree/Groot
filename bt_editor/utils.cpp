@@ -118,7 +118,7 @@ void RecursiveNodeReorder(AbsBehaviorTree & tree, AbstractTreeNode* root_node, P
                 recommended_pos += (node->pos.x() + node->size.width()*0.5)  ;
                 for(int16_t index: node->children_index)
                 {
-                    AbstractTreeNode* child = &(tree.nodeAtIndex( index ));
+                    AbstractTreeNode* child = (tree.nodeAtIndex( index ));
                     recommended_pos -=  (child->size.width() + NODE_SPACING) * 0.5;
                 }
 
@@ -139,7 +139,7 @@ void RecursiveNodeReorder(AbsBehaviorTree & tree, AbstractTreeNode* root_node, P
                 recommended_pos += node->pos.y() + node->size.height()*0.5;
                 for(int index: node->children_index)
                 {
-                    AbstractTreeNode* child = &(tree.nodeAtIndex( index ));
+                    AbstractTreeNode* child = (tree.nodeAtIndex( index ));
                     recommended_pos -=  (child->size.height() + NODE_SPACING) * 0.5;
                 }
 
@@ -161,7 +161,7 @@ void RecursiveNodeReorder(AbsBehaviorTree & tree, AbstractTreeNode* root_node, P
 
             for(int index: node->children_index)
             {
-                AbstractTreeNode* child = &(tree.nodeAtIndex( index ));
+                AbstractTreeNode* child = (tree.nodeAtIndex( index ));
 
                 recursiveStep(current_layer, child);
                 if( layout == PortLayout::Vertical)
@@ -233,9 +233,9 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 
     for (size_t index = 0; index < tree.nodesCount(); index++)
     {
-        auto& abs_node = tree.nodeAtIndex(index);
-        Node& node = *( abs_node.corresponding_node);
-        scene.setNodePosition( node, abs_node.pos );
+        auto abs_node = tree.nodeAtIndex(index);
+        Node& node = *( abs_node->corresponding_node);
+        scene.setNodePosition( node, abs_node->pos );
     }
 }
 
@@ -251,6 +251,8 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
     AbsBehaviorTree tree;
 
     std::map<int,int> UID_to_index;
+
+    const Node* root_node = roots.front();
 
     for (const auto& it: scene->nodes() )
     {
@@ -274,16 +276,16 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
 
     for (size_t index = 0; index < tree.nodesCount(); index++)
     {
-        auto& abs_node = tree.nodeAtIndex( index );
-        Node* node = abs_node.corresponding_node;
+        auto abs_node = tree.nodeAtIndex( index );
+        Node* node = abs_node->corresponding_node;
 
         auto children = getChildren( *scene, *node );
-        abs_node.children_index.reserve( children.size() );
+        abs_node->children_index.reserve( children.size() );
 
         for(auto& child: children )
         {
             auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(child->nodeDataModel());
-            abs_node.children_index.push_back( UID_to_index[bt_model->UID()] );
+            abs_node->children_index.push_back( UID_to_index[bt_model->UID()] );
         }
     }
     tree.updateRootIndex();
@@ -369,8 +371,8 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
 
         if( parent_index >= 0 )
         {
-            auto& parent_node = tree.nodeAtIndex(parent_index);
-            parent_node.children_index.push_back( CURRENT_INDEX );
+            auto parent_node = tree.nodeAtIndex(parent_index);
+            parent_node->children_index.push_back( CURRENT_INDEX );
         }
 
         for (const XMLElement*  child = xml_node->FirstChildElement( )  ;
@@ -408,12 +410,12 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
     for(size_t index = 0; index < fb_behavior_tree->nodes()->size(); index++ )
     {
         const BT_Serialization::TreeNode* fb_node = fb_behavior_tree->nodes()->Get(index);
-        AbstractTreeNode& abs_node = tree.nodeAtIndex( index );
+        AbstractTreeNode* abs_node = tree.nodeAtIndex( index );
 
         for( const auto child_uid: *(fb_node->children_uid()) )
         {
             int child_index = tree.UidToIndex( child_uid );
-            abs_node.children_index.push_back( child_index );
+            abs_node->children_index.push_back( child_index );
         }
     }
 

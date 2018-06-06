@@ -161,6 +161,9 @@ GraphicContainer* MainWindow::createTab(const QString &name)
     connect( ti, &GraphicContainer::undoableChange,
              this, &MainWindow::onSceneChanged );
 
+    connect( ti, &GraphicContainer::requestSubTreeAppend,
+             this, &MainWindow::onRequestSubTreeAppend );
+
     //--------------------------------
 
     ti->view()->update();
@@ -550,6 +553,14 @@ void MainWindow::onConnectionUpdate(bool connected)
     }
 }
 
+void MainWindow::onRequestSubTreeAppend(GraphicContainer& container,
+                                        QtNodes::Node& node)
+{
+  auto sub_model = dynamic_cast< SubtreeNodeModel*>( node.nodeDataModel() );
+  const auto& tree = _tab_info.at( sub_model->instanceName() )->loadedTree();
+  container.loadSceneFromTree( tree, &node );
+}
+
 void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
 {
     for(auto& it: saved_state.json_states)
@@ -791,21 +802,21 @@ void MainWindow::onChangeNodesStyle(const QString& bt_name,
 
     for (size_t index = 0; index < tree.nodesCount(); index++)
     {
-        auto& abs_node = tree.nodeAtIndex(index);
-        abs_node.status = NodeStatus::IDLE;
+        auto abs_node = tree.nodeAtIndex(index);
+        abs_node->status = NodeStatus::IDLE;
     }
 
     for (auto& it: node_status)
     {
-        auto& abs_node = tree.nodeAtIndex(it.first);
-        abs_node.status = it.second;
+        auto* abs_node = tree.nodeAtIndex(it.first);
+        abs_node->status = it.second;
     }
 
     for (size_t index = 0; index < tree.nodesCount(); index++)
     {
-        auto& abs_node = tree.nodeAtIndex(index);
-        auto& node = abs_node.corresponding_node;
-        node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node.status ) );
+        auto abs_node = tree.nodeAtIndex(index);
+        auto& node = abs_node->corresponding_node;
+        node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node->status ) );
         node->nodeGraphicsObject().update();
     }
 }

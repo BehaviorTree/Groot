@@ -53,8 +53,8 @@ void SidepanelMonitor::on_timer()
             for(size_t index = 4; index < header_size +4; index +=3 )
             {
                 uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[index]);
-                AbstractTreeNode& node = _loaded_tree.nodeAtUID( uid );
-                node.status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+2] ));
+                AbstractTreeNode* node = _loaded_tree.nodeAtUID( uid );
+                node->status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+2] ));
             }
 
             for(size_t t=0; t < num_transitions; t++)
@@ -68,17 +68,17 @@ void SidepanelMonitor::on_timer()
                 //NodeStatus prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
                 NodeStatus status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+11] ));
 
-                _loaded_tree.nodeAtUID( uid ).status = status;
+                _loaded_tree.nodeAtUID( uid )->status = status;
                 //qDebug() << _loaded_tree.nodeAtUID( uid ).instance_name << " : " << toStr(status);
             }
             // update the graphic part
             for (size_t index = 0; index < _loaded_tree.nodesCount(); index++)
             {
-                auto& abs_node = _loaded_tree.nodeAtIndex( index );
-                auto& node = abs_node.corresponding_node;
+                auto abs_node = _loaded_tree.nodeAtIndex( index );
+                auto& node = abs_node->corresponding_node;
                 if( node )
                 {
-                    node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node.status ) );
+                    node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node->status ) );
                     node->nodeGraphicsObject().update();
                 }
             }

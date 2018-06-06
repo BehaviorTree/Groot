@@ -42,13 +42,16 @@ public:
 
     const AbsBehaviorTree& loadedTree() const { return _abstract_tree; }
 
-    void loadSceneFromTree(const AbsBehaviorTree &tree);
+    void loadSceneFromTree(const AbsBehaviorTree &tree, QtNodes::Node* first_qt_node = nullptr);
 
     void loadFromJson(const QByteArray& data);
 
 signals:
 
     void undoableChange();
+
+    void requestSubTreeAppend(GraphicContainer& container,
+                              QtNodes::Node& node);
 
 public slots:
 
@@ -70,6 +73,10 @@ private:
    void createSmartRemoveAction(QtNodes::Node &node, QMenu *nodeMenu);
 
    void insertNodeInConnection(QtNodes::Connection &connection, QString node_name);
+
+   void recursiveLoadStep(QPointF &cursor, double &x_offset,
+                          AbstractTreeNode* abs_node,
+                          QtNodes::Node* parent_node, int nest_level);
 
    std::shared_ptr<QtNodes::DataModelRegistry> _model_registry;
 

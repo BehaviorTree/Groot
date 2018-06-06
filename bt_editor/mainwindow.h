@@ -57,6 +57,9 @@ private slots:
 
     void onConnectionUpdate(bool connected);
 
+    void onRequestSubTreeAppend(GraphicContainer& container,
+                                QtNodes::Node& node);
+
 private slots:
     virtual void closeEvent(QCloseEvent *event) override;
 

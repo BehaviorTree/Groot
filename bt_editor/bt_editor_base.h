@@ -63,22 +63,22 @@ public:
 
     AbstractTreeNode* rootNode();
 
-    AbstractTreeNode& nodeAtIndex( int16_t index ) {
-        return _nodes.at( index );
+    AbstractTreeNode* nodeAtIndex( int16_t index ) {
+        return &_nodes.at( index );
     }
 
-    AbstractTreeNode& nodeAtUID( uint16_t uid ) {
-        return _nodes.at( UidToIndex(uid) );
+    AbstractTreeNode* nodeAtUID( uint16_t uid ) {
+        return &_nodes.at( UidToIndex(uid) );
     }
 
     const AbstractTreeNode* rootNode() const;
 
-    const AbstractTreeNode& nodeAtIndex( int16_t index ) const{
-        return _nodes.at( index );
+    const AbstractTreeNode* nodeAtIndex( int16_t index ) const{
+        return &_nodes.at( index );
     }
 
-    const AbstractTreeNode& nodeAtUID( uint16_t uid ) const{
-        return _nodes.at( UidToIndex(uid) );
+    const AbstractTreeNode* nodeAtUID( uint16_t uid ) const{
+        return &_nodes.at( UidToIndex(uid) );
     }
 
     void pushBack( uint16_t UID, AbstractTreeNode node );

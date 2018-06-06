@@ -51,7 +51,7 @@ void AbsBehaviorTree::updateRootIndex()
     }
     if( root_count != 1)
     {
-        throw std::logic_error("Malformed AbsBehaviorTree");
+       // throw std::logic_error("Malformed AbsBehaviorTree");
     }
 }
 
