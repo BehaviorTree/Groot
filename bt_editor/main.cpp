@@ -44,6 +44,7 @@ main(int argc, char *argv[])
     if( parser.isSet(test_option) )
     {
         MainWindow win( GraphicMode::EDITOR );
+        win.setWindowTitle("BehaviorTree Editor");
         win.show();
         win.loadFromXML( gTestXML );
         return app.exec();

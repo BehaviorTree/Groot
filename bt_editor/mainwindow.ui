@@ -681,7 +681,7 @@ QToolButton:disabled{
        </layout>
       </widget>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="centralLayout" stretch="1">
+       <layout class="QVBoxLayout" name="centralLayout" stretch="0">
         <property name="leftMargin">
          <number>4</number>
         </property>
@@ -722,15 +722,6 @@ QToolButton:disabled{
           </property>
           <property name="styleSheet">
            <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
-          </property>
-          <property name="tabShape">
-           <enum>QTabWidget::Rounded</enum>
-          </property>
-          <property name="currentIndex">
-           <number>-1</number>
-          </property>
-          <property name="movable">
-           <bool>true</bool>
           </property>
          </widget>
         </item>

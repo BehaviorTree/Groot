@@ -250,7 +250,7 @@ void BehaviorTreeDataModel::updateNodeSize()
 //    double new_width = std::max( 100, fm.boundingRect(txt).width() + 20);
 //    _line_edit_name->setFixedWidth(new_width);
 //    _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
-//    _main_widget->adjustSize();
+      _main_widget->adjustSize();
 }
 
 void BehaviorTreeDataModel::setInstanceName(const QString &name)

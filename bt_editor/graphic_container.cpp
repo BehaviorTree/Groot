@@ -194,6 +194,17 @@ void GraphicContainer::onNodeCreated(Node &node)
 
         connect( bt_node, &BehaviorTreeDataModel::instanceNameChanged,
                  this, &GraphicContainer::undoableChange );
+
+        if( auto sub_node = dynamic_cast<SubtreeNodeModel*>( bt_node ) )
+        {
+          connect( sub_node, &SubtreeNodeModel::numberOfPortsChanged,
+                   &(node), [&node]()
+          {
+            node.nodeState().changeNumberOfPorts(
+                  node.nodeDataModel()->nPorts(PortType::In),
+                  node.nodeDataModel()->nPorts(PortType::Out) );
+          });
+        }
     }
 
     undoableChange();
