@@ -17,7 +17,7 @@ std::vector<QtNodes::Node*> findRoots(const QtNodes::FlowScene &scene);
 std::vector<QtNodes::Node *> getChildren(const QtNodes::FlowScene &scene,
                                          const QtNodes::Node &parent_node);
 
-AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene* scene);
+AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene);
 
 AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree* bt );
 

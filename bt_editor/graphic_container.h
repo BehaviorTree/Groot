@@ -44,15 +44,19 @@ public:
 
     void loadSceneFromTree(const AbsBehaviorTree &tree);
 
-    void appendTreeToNode(QtNodes::Node& node, const AbsBehaviorTree &tree);
+    void appendTreeToNode(QtNodes::Node& node, AbsBehaviorTree subtree);
 
     void loadFromJson(const QByteArray& data);
+
+    QtNodes::Node *substituteNode(QtNodes::Node& node, const QString& new_node_name);
+
+    void deleteSubTreeRecurively(QtNodes::Node& node);
 
 signals:
 
     void undoableChange();
 
-    void requestSubTreeAppend(GraphicContainer& container,
+    void requestSubTreeExpand(GraphicContainer& container,
                               QtNodes::Node& node);
 
 public slots:
@@ -76,7 +80,7 @@ private:
 
    void insertNodeInConnection(QtNodes::Connection &connection, QString node_name);
 
-   void recursiveLoadStep(QPointF &cursor, double &x_offset,
+   void recursiveLoadStep(QPointF &cursor, double &x_offset, AbsBehaviorTree &tree,
                           AbstractTreeNode* abs_node,
                           QtNodes::Node* parent_node, int nest_level);
 

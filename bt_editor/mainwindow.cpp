@@ -161,8 +161,8 @@ GraphicContainer* MainWindow::createTab(const QString &name)
     connect( ti, &GraphicContainer::undoableChange,
              this, &MainWindow::onSceneChanged );
 
-    connect( ti, &GraphicContainer::requestSubTreeAppend,
-             this, &MainWindow::onRequestSubTreeAppend );
+    connect( ti, &GraphicContainer::requestSubTreeExpand,
+             this, &MainWindow::onRequestSubTreeExpand );
 
     //--------------------------------
 
@@ -553,35 +553,52 @@ void MainWindow::onConnectionUpdate(bool connected)
     }
 }
 
-void MainWindow::onRequestSubTreeAppend(GraphicContainer& container,
+void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
                                         QtNodes::Node& node)
 {
-  auto sub_model = dynamic_cast< SubtreeNodeModel*>( node.nodeDataModel() );
+    const QSignalBlocker blocker( this );
+    const QString SUFFIX("[expanded]");
 
-  auto  maintree = container.loadedTree();
-  const auto& subtree  = _tab_info.at( sub_model->instanceName() )->loadedTree();
-
-  for (int i=0; i< subtree.nodesCount();i++ )
-  {
-    auto abs_node = maintree.nodeAtIndex(i);
-    if( abs_node->corresponding_node == &node)
+    // expand case
+    if( auto node_model =  dynamic_cast< SubtreeNodeModel*>( node.nodeDataModel() ) )
     {
-      abs_node->children_index.push_back( maintree.nodesCount() + subtree.rootIndex() );
-      break;
+        const QString& subtree_name = node_model->registrationName();
+
+        auto it = _tab_info.find( subtree_name );
+        if( it != _tab_info.end())
+        {
+            auto new_node_ptr = container.substituteNode(node, subtree_name + SUFFIX );
+            if( new_node_ptr )
+            {
+                const auto& subtree  = it->second->loadedTree();
+                container.appendTreeToNode( *new_node_ptr, subtree );
+                container.nodeReorder();
+            }
+        }
+        else{
+            qDebug() << "ERROR: not found " << subtree_name;
+        }
     }
-  }
+    // collapse case
+    else if(auto node_model =  dynamic_cast< SubtreeExpandedNodeModel*>( node.nodeDataModel() ))
+    {
+        const QString& subtree_name = node_model->registrationName();
 
-  for (int i=0; i< subtree.nodesCount();i++ )
-  {
-    AbstractTreeNode abs_node = *(subtree.nodeAtIndex(i));
-    abs_node.corresponding_node = nullptr;
-    maintree.pushBack( GetUID(), abs_node );
-  }
+        // save child
+        const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
+        QtNodes::Node* child_node = nullptr;
+        if(conn_out.size() == 1)
+        {
+            child_node = conn_out.begin()->second->getNode( PortType::In );
+        }
 
-  maintree.debugPrint();
-  std::cout << "---" << std::endl;
-
-  container.loadSceneFromTree( maintree );
+        auto new_node_ptr = container.substituteNode(node, subtree_name.left( SUFFIX.length() ) );
+        if( new_node_ptr && child_node)
+        {
+            container.deleteSubTreeRecurively( *child_node );
+            container.nodeReorder();
+        }
+    }
 }
 
 void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)

@@ -137,9 +137,3 @@ resizing() const
   return _resizing;
 }
 
-void
-NodeState::changeNumberOfPorts(int portsIn, int portsOut)
-{
-  _inConnections.resize(portsIn);
-  _outConnections.resize(portsOut);
-}

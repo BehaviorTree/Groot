@@ -1,18 +1,24 @@
 #include "bt_editor_base.h"
-
+#include <QDebug>
 
 AbstractTreeNode *AbsBehaviorTree::rootNode()
 {
-    if( _root_node_index < 0)
+    if( _root_node_index < 0 ||
+        _root_node_index >= static_cast<int>(_nodes.size()) )
+    {
         return nullptr;
+    }
     else
         return &_nodes.at( _root_node_index );
 }
 
 const AbstractTreeNode *AbsBehaviorTree::rootNode() const
 {
-    if( _root_node_index < 0)
+    if( _root_node_index < 0 ||
+        _root_node_index >= static_cast<int>(_nodes.size()) )
+    {
         return nullptr;
+    }
     else
         return &_nodes.at( _root_node_index );
 }
@@ -35,8 +41,13 @@ void AbsBehaviorTree::updateRootIndex()
 
     for(const auto& node: _nodes)
     {
+        //qDebug() << "----\nparent node " << node.instance_name ;
+
         for(int child_index: node.children_index)
         {
+//            qDebug() << "node " << nodeAtIndex( child_index )->instance_name <<
+//                        " with index " << child_index <<
+//                        " has parent ";
             index_has_parent[ child_index ] = true;
         }
     }
@@ -51,7 +62,15 @@ void AbsBehaviorTree::updateRootIndex()
     }
     if( root_count != 1)
     {
-       // throw std::logic_error("Malformed AbsBehaviorTree");
+        for(size_t index = 0; index < index_has_parent.size(); index++)
+        {
+            if (! index_has_parent[index] )
+            {
+                qDebug() << nodeAtIndex(index)->instance_name << " is root ?";
+            }
+        }
+
+        qDebug() << "Malformed AbsBehaviorTree";
     }
 }
 
@@ -73,7 +92,14 @@ void AbsBehaviorTree::debugPrint()
     }
   };
 
-  recursiveStep( rootNode(), 0 );
+  if(  !rootNode() )
+  {
+      printf("AbsBehaviorTree has root %d and size of nodes vector %d\n",
+             rootIndex(), (int)_nodes.size() );
+  }
+  else {
+    recursiveStep( rootNode(), 0 );
+  }
 }
 
 ParamType getParamTypeFromString(const QString &str)

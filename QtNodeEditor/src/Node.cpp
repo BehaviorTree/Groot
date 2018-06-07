@@ -178,11 +178,11 @@ nodeDataModel() const
   return _nodeDataModel.get();
 }
 
-void Node:: changeDataModel(std::unique_ptr<QtNodes::NodeDataModel> new_model)
-{
-  _nodeDataModel.swap( new_model );
-  _nodeGraphicsObject->updateEmbeddedQWidget();
-}
+//void Node:: changeDataModel(std::unique_ptr<QtNodes::NodeDataModel> new_model)
+//{
+//  _nodeDataModel.swap( new_model );
+//  _nodeGraphicsObject->updateEmbeddedQWidget();
+//}
 
 
 void

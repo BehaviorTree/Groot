@@ -57,7 +57,7 @@ private slots:
 
     void onConnectionUpdate(bool connected);
 
-    void onRequestSubTreeAppend(GraphicContainer& container,
+    void onRequestSubTreeExpand(GraphicContainer& container,
                                 QtNodes::Node& node);
 
 private slots:

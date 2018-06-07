@@ -61,6 +61,10 @@ public:
         return _nodes.size();
     }
 
+    const std::vector<AbstractTreeNode>& nodes() const { return _nodes; }
+
+    std::vector<AbstractTreeNode>& nodes() { return _nodes; }
+
     AbstractTreeNode* rootNode();
 
     AbstractTreeNode* nodeAtIndex( int16_t index ) {

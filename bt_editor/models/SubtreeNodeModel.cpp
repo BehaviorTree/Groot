@@ -4,8 +4,7 @@
 
 SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
                                    const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel ("SubTree", subtree_ID, creators ),
-    _expand(false)
+    BehaviorTreeDataModel ("SubTree", subtree_ID, creators )
 {
     _line_edit_name->setReadOnly(true);
 
@@ -19,18 +18,32 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
     _expand_button->setFocusPolicy(Qt::NoFocus);
 
     connect( _expand_button, &QPushButton::clicked,
-             this, [this]()
-    {
-      _expand = !_expand;
-      emit numberOfPortsChanged(1, (_expand ? 1: 0));
-      updateNodeSize();
-    } );
+             this, &SubtreeNodeModel::expandButtonPushed );
 
     updateNodeSize();
 }
 
-unsigned int SubtreeNodeModel::nPorts(QtNodes::PortType portType) const
+SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
+        const QString &subtree_ID,
+        const ParameterWidgetCreators& creators):
+    BehaviorTreeDataModel ("SubTree", subtree_ID, creators )
 {
-  return (portType==PortType::In) ? 1: (_expand ? 1: 0);
+    _line_edit_name->setReadOnly(true);
+
+    auto vlayout = dynamic_cast<QVBoxLayout*>(_main_widget->layout());
+
+    _collapse_button = new QPushButton("Collapse", _main_widget );
+    vlayout->addWidget(_collapse_button);
+
+    _collapse_button->setStyleSheet("color: black; background-color: white; border: 1px orange;");
+    _collapse_button->setFlat(false);
+    _collapse_button->setFocusPolicy(Qt::NoFocus);
+
+    connect( _collapse_button, &QPushButton::clicked,
+             this, &SubtreeExpandedNodeModel::collapseButtonPushed );
+
+    updateNodeSize();
 }
+
+
 

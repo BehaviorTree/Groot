@@ -6,36 +6,77 @@
 
 class SubtreeNodeModel : public BehaviorTreeDataModel
 {
-  Q_OBJECT
+    Q_OBJECT
 public:
 
     SubtreeNodeModel(const QString& subtree_ID,
                      const ParameterWidgetCreators &creators);
 
-    ~SubtreeNodeModel() = default;
+    ~SubtreeNodeModel() override = default;
 
-    virtual unsigned int  nPorts(PortType portType) const override;
-
-    virtual const char* className() const final
+    unsigned int  nPorts(PortType portType) const override
     {
-      return "SubTree";
+        return portType == PortType::In ? 1:0;
     }
 
-   QString caption() const override {
+    const char* className() const final
+    {
         return "SubTree";
     }
 
-    virtual NodeType nodeType() const final { return NodeType::SUBTREE; }
+    QString caption() const override {
+        return "SubTree";
+    }
+
+    NodeType nodeType() const final { return NodeType::SUBTREE; }
 
 signals:
-   void numberOfPortsChanged(int portsIn, int portsOut);
+    void expandButtonPushed();
 
 private:
-   bool _expand;
-
-   QPushButton* _expand_button;
+    QPushButton* _expand_button;
 
 };
+
+class SubtreeExpandedNodeModel : public BehaviorTreeDataModel
+{
+    Q_OBJECT
+public:
+
+    SubtreeExpandedNodeModel(const QString& subtree_ID,
+                             const ParameterWidgetCreators &creators);
+
+    ~SubtreeExpandedNodeModel() override = default;
+
+    unsigned int  nPorts(PortType) const override {
+        return 1;
+    }
+
+    const char* className() const final
+    {
+        return "SubTreeExpanded";
+    }
+
+    QString caption() const override {
+        return "SubTreeExpanded";
+    }
+
+    ConnectionPolicy portOutConnectionPolicy(PortIndex) const final
+    {
+        return ConnectionPolicy::One;
+    }
+
+    NodeType nodeType() const final { return NodeType::SUBTREE; }
+
+signals:
+    void collapseButtonPushed();
+
+private:
+
+    QPushButton* _collapse_button;
+
+};
+
 
 
 #endif // SUBTREE_NODEMODEL_HPP

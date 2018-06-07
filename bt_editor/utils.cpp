@@ -18,40 +18,27 @@ using QtNodes::FlowScene;
 
 std::vector<Node*> findRoots(const FlowScene &scene)
 {
-    std::set<QUuid> roots;
-    for (auto& it: scene.nodes() ){
-        roots.insert( it.first );
-    }
-
-    for (auto& it: scene.connections())
+     std::vector<Node*> roots;
+    for (auto& it: scene.nodes() )
     {
-        std::shared_ptr<QtNodes::Connection> connection = it.second;
-        const Node* child  = connection->getNode( QtNodes::PortType::In );
-
-        if( child ) {
-            roots.erase( child->id() );
+        Node* node = it.second.get();
+        if( node->nodeDataModel()->nPorts( PortType::In ) == 0 )
+        {
+            roots.push_back(node);
+        }
+        else if( node->nodeState().connections( PortType::In, 0 ).empty() )
+        {
+           roots.push_back(node);
         }
     }
-
-    std::vector<Node*> sorted_roots;
-    for (auto& uuid: roots)
-    {
-        sorted_roots.push_back( scene.nodes().find(uuid)->second.get() );
-    }
-
-    auto CompareFunction = [&](const Node* a, const Node* b)
-    {
-        return scene.getNodePosition( *a ).y() <  scene.getNodePosition( *b ).y();
-    };
-    std::sort(sorted_roots.begin(), sorted_roots.end(), CompareFunction );
-
-    return sorted_roots;
+    return roots;
 }
 
 std::vector<Node*> getChildren(const QtNodes::FlowScene &scene,
                                const Node& parent_node)
 {
     std::vector<Node*> children;
+    children.reserve( scene.connections().size() );
 
     for (auto& it: scene.connections())
     {
@@ -245,16 +232,22 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
     auto roots = findRoots( *scene );
     if( roots.size() != 1)
     {
+        qDebug() << "Error: can not create a tree from a scene with "
+                 << roots.size() << " nodes";
+        for (auto& root: roots)
+        {
+            qDebug() << "This is a root: " << root->nodeDataModel()->name();
+        }
         return AbsBehaviorTree();
     }
 
     AbsBehaviorTree tree;
 
-    std::map<int,int> UID_to_index;
+    std::map<QtNodes::Node*,int> node_to_index;
 
-    for (const auto& it: scene->nodes() )
+    std::function<void(QtNodes::Node*)> pushRecursively;
+    pushRecursively = [&](QtNodes::Node* node)
     {
-        Node* node = (it.second.get());
         AbstractTreeNode abs_node;
 
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
@@ -265,28 +258,39 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
         abs_node.size = scene->getNodeSize(*node);
         abs_node.corresponding_node = node;
         abs_node.parameters = bt_model->getCurrentParameters();
+        abs_node.index = tree.nodesCount();
 
-        abs_node.index  = tree.nodesCount();
-
-        UID_to_index.insert( { bt_model->UID(), abs_node.index } );
+        node_to_index.insert( { node, abs_node.index } );
         tree.pushBack( bt_model->UID(), abs_node );
-    }
-
-    for (size_t index = 0; index < tree.nodesCount(); index++)
-    {
-        auto abs_node = tree.nodeAtIndex( index );
-        Node* node = abs_node->corresponding_node;
 
         auto children = getChildren( *scene, *node );
-        abs_node->children_index.reserve( children.size() );
 
-        for(auto& child: children )
+        for(auto& child_node: children )
         {
-            auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(child->nodeDataModel());
-            abs_node->children_index.push_back( UID_to_index[bt_model->UID()] );
+            pushRecursively( child_node );
+        }
+    };
+
+    pushRecursively( roots.front() );
+
+    for( auto& abs_node: tree.nodes())
+    {
+        auto node = abs_node.corresponding_node;
+        auto children = getChildren( *scene, *node );
+
+        abs_node.children_index.reserve( children.size() );
+
+        for(auto& child_node: children )
+        {
+            abs_node.children_index.push_back( node_to_index[child_node] );
         }
     }
+
     tree.updateRootIndex();
+
+    std::cout << "--------------" << std::endl;
+    tree.debugPrint();
+    std::cout << "------- "<< tree.rootIndex() <<" -------" << std::endl;
 
     return tree;
 }
@@ -386,6 +390,10 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
 
     tree.updateRootIndex();
 
+    std::cout << "--------------" << std::endl;
+    tree.debugPrint();
+    std::cout << "--------------" << std::endl;
+
     return tree;
 }
 
@@ -418,6 +426,10 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
     }
 
     tree.updateRootIndex();
+
+    std::cout << "--------------" << std::endl;
+    tree.debugPrint();
+    std::cout << "--------------" << std::endl;
 
     return tree;
 }
