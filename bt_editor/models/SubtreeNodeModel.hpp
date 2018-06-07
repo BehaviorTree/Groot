@@ -19,7 +19,12 @@ public:
         return portType == PortType::In ? 1:0;
     }
 
-    const char* className() const final
+    virtual const char* className() const final
+    {
+        return Name();
+    }
+
+    static const char* Name()
     {
         return "SubTree";
     }
@@ -52,7 +57,12 @@ public:
         return 1;
     }
 
-    const char* className() const final
+    virtual const char* className() const final
+    {
+        return Name();
+    }
+
+    static const char* Name()
     {
         return "SubTreeExpanded";
     }

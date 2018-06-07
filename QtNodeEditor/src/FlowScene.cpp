@@ -165,6 +165,9 @@ restoreConnection(QJsonObject const &connectionJson)
       return std::shared_ptr<Connection>();
   }
 
+  qDebug() << "connecting " << nodeIn->nodeDataModel()->name()
+           << " and " << nodeOut->nodeDataModel()->name();
+
   std::shared_ptr<Connection> connection =
     createConnection(*nodeIn, portIndexIn,
                      *nodeOut, portIndexOut,
@@ -231,8 +234,6 @@ restoreNode(QJsonObject const& nodeJson)
   nodePtr->nodeGeometry().setPortLayout( layout() );
   auto id = node->id();
   _nodes[ id ] = std::move(node);
-
-  qDebug() << "INFO: added node witn " << id;
 
   nodeCreated(*nodePtr);
   return *nodePtr;
@@ -560,7 +561,6 @@ void
 FlowScene::
 loadFromMemory(const QByteArray& data)
 {
-
   std::cout << data.toStdString() << std::endl; ;
   QJsonObject const jsonDocument = QJsonDocument::fromJson(data).object();
 

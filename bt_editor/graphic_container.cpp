@@ -585,7 +585,17 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
     //--------------------------------------
     QPointF cursor = _scene->getNodePosition(node) + QPointF(100,100);
     double x_offset = 0;
-    recursiveLoadStep(cursor, x_offset, subtree, subtree.rootNode() , &node, 1 );
+
+    auto root_node = subtree.rootNode();
+
+    if( root_node->registration_name == "Root" &&
+        root_node->corresponding_node->nodeDataModel()->nPorts(PortType::In) == 0 &&
+        root_node->children_index.size() == 1 )
+    {
+        root_node = subtree.nodeAtIndex( root_node->children_index.front() );
+    }
+
+    recursiveLoadStep(cursor, x_offset, subtree, root_node , &node, 1 );
 
     _abstract_tree = BuildTreeFromScene( scene() );
 

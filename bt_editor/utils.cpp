@@ -38,21 +38,21 @@ std::vector<Node*> getChildren(const QtNodes::FlowScene &scene,
                                const Node& parent_node)
 {
     std::vector<Node*> children;
-    children.reserve( scene.connections().size() );
 
-    for (auto& it: scene.connections())
+    if( parent_node.nodeDataModel()->nPorts(PortType::Out) == 0)
     {
-        std::shared_ptr<QtNodes::Connection> connection = it.second;
+        return children;
+    }
 
-        Node* parent = connection->getNode( QtNodes::PortType::Out );
-        Node* child  = connection->getNode( QtNodes::PortType::In );
+    const auto& conn_out = parent_node.nodeState().connections(PortType::Out, 0);
+    children.reserve( conn_out.size() );
 
-        if( parent && child )
+    for( auto& it: conn_out)
+    {
+        auto child_node = it.second->getNode(PortType::In);
+        if( child_node )
         {
-            if( parent->id() == parent_node.id())
-            {
-                children.push_back( child );
-            }
+            children.push_back( child_node );
         }
     }
 
