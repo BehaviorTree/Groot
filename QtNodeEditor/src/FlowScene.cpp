@@ -157,15 +157,21 @@ restoreConnection(QJsonObject const &connectionJson)
     return TypeConverter{};
   };
 
+  if( !nodeIn || !nodeOut)
+  {
+      qDebug() << "ERROR: invalid connection with UIDS "
+               << nodeInId << " and " << nodeOutId;
+
+      return std::shared_ptr<Connection>();
+  }
+
   std::shared_ptr<Connection> connection =
     createConnection(*nodeIn, portIndexIn,
                      *nodeOut, portIndexOut,
                      getConverter());
 
-  if( nodeIn &&  nodeOut)
-  {
-    connectionCreated(*connection);
-  }
+  connectionCreated(*connection);
+
 
   connection->connectionGeometry().setPortLayout( layout() );
   return connection;
@@ -195,7 +201,8 @@ createNode(std::unique_ptr<NodeDataModel> && dataModel, QPointF pos)
 
   auto nodePtr = node.get();
   nodePtr->nodeGeometry().setPortLayout( layout() );
-  _nodes[node->id()] = std::move(node);
+  auto id = node->id();
+  _nodes[id] = std::move(node);
 
   nodeCreated(*nodePtr);
   return *nodePtr;
@@ -222,7 +229,10 @@ restoreNode(QJsonObject const& nodeJson)
 
   auto nodePtr = node.get();
   nodePtr->nodeGeometry().setPortLayout( layout() );
-  _nodes[node->id()] = std::move(node);
+  auto id = node->id();
+  _nodes[ id ] = std::move(node);
+
+  qDebug() << "INFO: added node witn " << id;
 
   nodeCreated(*nodePtr);
   return *nodePtr;
@@ -550,6 +560,8 @@ void
 FlowScene::
 loadFromMemory(const QByteArray& data)
 {
+
+  std::cout << data.toStdString() << std::endl; ;
   QJsonObject const jsonDocument = QJsonDocument::fromJson(data).object();
 
   QString layout = jsonDocument["layout"].toString();
