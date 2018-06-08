@@ -178,22 +178,19 @@ nodeDataModel() const
   return _nodeDataModel.get();
 }
 
-//void Node:: changeDataModel(std::unique_ptr<QtNodes::NodeDataModel> new_model)
-//{
-//  _nodeDataModel.swap( new_model );
-//  _nodeGraphicsObject->updateEmbeddedQWidget();
-//}
-
 
 void
 Node::
 propagateData(std::shared_ptr<NodeData> nodeData,
               PortIndex inPortIndex) const
 {
-  _nodeDataModel->setInData(nodeData, inPortIndex);
+  _nodeDataModel->setInData(std::move(nodeData), inPortIndex);
 
   //Recalculate the nodes visuals. A data change can result in the node taking more space than before, so this forces a recalculate+repaint on the affected node
-  onSizeUpdated();
+  _nodeGraphicsObject->setGeometryChanged();
+  _nodeGeometry.recalculateSize();
+  _nodeGraphicsObject->update();
+  _nodeGraphicsObject->moveConnections();
 }
 
 
@@ -207,13 +204,5 @@ onDataUpdated(PortIndex index)
     _nodeState.connections(PortType::Out, index);
 
   for (auto const & c : connections)
-      c.second->propagateData(nodeData);
-}
-
-void Node::onSizeUpdated() const
-{
-    _nodeGraphicsObject->setGeometryChanged();
-    _nodeGraphicsObject->update();
-    _nodeGeometry.recalculateSize();
-    _nodeGraphicsObject->moveConnections();
+    c.second->propagateData(nodeData);
 }

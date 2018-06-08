@@ -80,7 +80,7 @@ shape() const
 
 #else
   auto const &geom =
-      _connection.connectionGeometry();
+    _connection.connectionGeometry();
 
   return ConnectionPainter::getPainterStroke(geom);
 
@@ -119,10 +119,12 @@ move()
 
       _connection.connectionGeometry().setEndPoint(portType,
                                                    connectionPos);
+
+      _connection.getConnectionGraphicsObject().setGeometryChanged();
+      _connection.getConnectionGraphicsObject().update();
     }
-  };
-  setGeometryChanged();
-  update();
+  }
+
 }
 
 void ConnectionGraphicsObject::lock(bool locked)

@@ -168,6 +168,12 @@ void GraphicContainer::clearScene()
     _scene->clearScene();
 }
 
+
+AbsBehaviorTree GraphicContainer::loadedTree() const
+{
+    return BuildTreeFromScene( _scene );
+}
+
 void GraphicContainer::onNodeDoubleClicked(Node &root_node)
 {
     std::function<void(QtNodes::Node&)> selectRecursively;
@@ -212,10 +218,7 @@ void GraphicContainer::onNodeCreated(Node &node)
             emit requestSubTreeExpand( *this, node );
           });
         }
-
-
     }
-
     undoableChange();
 }
 
@@ -309,8 +312,6 @@ void GraphicContainer::deleteSubTreeRecurively(Node &node)
     {
         _scene->removeNode( *delete_me );
     }
-
-    _abstract_tree = BuildTreeFromScene(_scene);
 }
 
 void GraphicContainer::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
@@ -506,10 +507,10 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
     abs_node->size = _scene->getNodeSize( new_node );
 
     // free if it was already present
-    if( abs_node->corresponding_node )
-    {
-        _scene->removeNode( *abs_node->corresponding_node );
-    }
+//    if( abs_node->corresponding_node )
+//    {
+//        _scene->removeNode( *abs_node->corresponding_node );
+//    }
     abs_node->corresponding_node = &new_node;
 
     _scene->createConnection( *abs_node->corresponding_node, 0,
@@ -526,7 +527,7 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
 
 void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
 {
-    _abstract_tree = tree;
+    AbsBehaviorTree abstract_tree = tree;
 
     QPointF cursor(0,0);
     double x_offset = 0;
@@ -535,16 +536,16 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
     auto first_qt_node = &(_scene->createNode( _scene->registry().create("Root"),
                                           cursor ));
 
-    auto root_node = _abstract_tree.rootNode();
+    auto root_node = abstract_tree.rootNode();
     if( root_node->registration_name == "Root" && root_node->instance_name == "Root")
     {
-      root_node = _abstract_tree.nodeAtIndex( root_node->children_index.front() );
+      root_node = abstract_tree.nodeAtIndex( root_node->children_index.front() );
     }
 
-    recursiveLoadStep(cursor, x_offset, _abstract_tree, root_node, first_qt_node, 1 );
+    recursiveLoadStep(cursor, x_offset, abstract_tree, root_node, first_qt_node, 1 );
 
     std::cout << "<<<<<<<" << std::endl;
-    _abstract_tree.debugPrint();
+    abstract_tree.debugPrint();
     std::cout << "<<<<<<<" << std::endl;
 
 }
@@ -552,30 +553,6 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
 void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
 {
     const QSignalBlocker blocker( this );
-//    const int index_offset = _abstract_tree.nodesCount();
-
-//    for (auto& abs_node: _abstract_tree.nodes() )
-//    {
-//      if( abs_node.corresponding_node == &node)
-//      {
-//        abs_node.children_index.push_back(  index_offset + subtree.rootIndex() );
-//        break;
-//      }
-//    }
-
-//    // copy, NOT reference. it is intentional
-//    for (auto abs_node: subtree.nodes() )
-//    {
-//      for (auto& child: abs_node.children_index )
-//      {
-//          child += index_offset;
-//      }
-//      abs_node.corresponding_node = nullptr;
-//      _abstract_tree.pushBack( GetUID(), std::move(abs_node) );
-//    }
-
-//    _abstract_tree.debugPrint();
-//    std::cout << "---" << std::endl;
 
     for (auto abs_node: subtree.nodes() )
     {
@@ -596,12 +573,6 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
     }
 
     recursiveLoadStep(cursor, x_offset, subtree, root_node , &node, 1 );
-
-    _abstract_tree = BuildTreeFromScene( scene() );
-
-    std::cout << ">>>>>>" << std::endl;
-    _abstract_tree.debugPrint();
-    std::cout << ">>>>>>" << std::endl;
 }
 
 void GraphicContainer::loadFromJson(const QByteArray &data)
@@ -609,7 +580,6 @@ void GraphicContainer::loadFromJson(const QByteArray &data)
     const QSignalBlocker blocker( this );
     clearScene();
     scene()->loadFromMemory( data );
-    _abstract_tree = BuildTreeFromScene( scene() );
 }
 
 

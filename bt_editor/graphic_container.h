@@ -38,9 +38,7 @@ public:
 
     void clearScene();
 
-    AbsBehaviorTree& loadedTree() { return _abstract_tree; }
-
-    const AbsBehaviorTree& loadedTree() const { return _abstract_tree; }
+    AbsBehaviorTree loadedTree() const;
 
     void loadSceneFromTree(const AbsBehaviorTree &tree);
 
@@ -88,7 +86,6 @@ private:
 
    bool _signal_was_blocked;
 
-   AbsBehaviorTree _abstract_tree;
 
 };
 

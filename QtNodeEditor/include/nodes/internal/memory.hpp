@@ -19,7 +19,7 @@ namespace QtNodes
     template<typename T, typename... Args>
     std::unique_ptr<T> make_unique(Args&&... args)
     {
-      return detail::make_unique<T>(std::forward<Args>(args)...);
+      return std::make_unique<T>(std::forward<Args>(args)...);
     }
 #endif
   }

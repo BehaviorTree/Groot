@@ -85,8 +85,6 @@ public:
   NodeDataModel*
   nodeDataModel() const;
 
-  // changeDataModel( std::unique_ptr<NodeDataModel> new_model );
-
 public slots: // data propagation
 
   /// Propagates incoming data to the underlying model.
@@ -98,9 +96,6 @@ public slots: // data propagation
   /// and propagates it to the connection
   void
   onDataUpdated(PortIndex index);
-
-  void
-  onSizeUpdated() const;
 
 private:
 

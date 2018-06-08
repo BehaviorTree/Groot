@@ -562,6 +562,17 @@ void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
     // expand case
     if( auto node_model =  dynamic_cast< SubtreeNodeModel*>( node.nodeDataModel() ) )
     {
+        std::set<QtNodes::Node*> old_nodes;
+        std::set<QtNodes::Connection*> old_connections;
+        for(const auto& pair : container.scene()->nodes() )
+        {
+            old_nodes.insert( pair.second.get() );
+        }
+        for(const auto& pair : container.scene()->connections() )
+        {
+            old_connections.insert( pair.second.get() );
+        }
+
         const QString& subtree_name = node_model->registrationName();
 
         auto it = _tab_info.find( subtree_name );
@@ -573,6 +584,27 @@ void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
                 const auto& subtree  = it->second->loadedTree();
                 container.appendTreeToNode( *new_node_ptr, subtree );
                 container.nodeReorder();
+            }
+            for(const auto& pair : container.scene()->nodes() )
+            {
+                QtNodes::Node* node = pair.second.get();
+                if( old_nodes.count( node) == 0 )
+                {
+                    node->nodeGraphicsObject().lock( true );
+
+                    if(  auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() ) )
+                    {
+                        bt_model->lock(true);
+                    }
+                }
+            }
+            for(const auto& pair : container.scene()->connections() )
+            {
+                QtNodes::Connection* conn = pair.second.get();
+                if( old_connections.count( conn ) == 0 )
+                {
+                    conn->getConnectionGraphicsObject().lock( true );
+                }
             }
         }
         else{
@@ -838,7 +870,7 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
 void MainWindow::onChangeNodesStyle(const QString& bt_name,
                                     const std::unordered_map<int, NodeStatus>& node_status)
 {
-    auto& tree = _tab_info[bt_name]->loadedTree();
+    auto tree = _tab_info[bt_name]->loadedTree();
 
     for (size_t index = 0; index < tree.nodesCount(); index++)
     {
