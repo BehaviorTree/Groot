@@ -21,20 +21,20 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _line_edit_name = new QLineEdit();
     _params_widget = new QFrame();
 
-    auto main_layout = new QVBoxLayout();
-    _main_widget->setLayout( main_layout );
+    _main_layout = new QVBoxLayout();
+    _main_widget->setLayout( _main_layout );
 
-    auto top_layout = new QHBoxLayout();
-    main_layout->addLayout(top_layout);
+    _top_layout = new QHBoxLayout();
+    _main_layout->addLayout(_top_layout);
 
-    top_layout->addWidget( _label_ID, 0 );
-    top_layout->addWidget( _line_edit_name, 1 );
+    _top_layout->addWidget( _label_ID, 0 );
+    _top_layout->addWidget( _line_edit_name, 1 );
 
-    main_layout->setMargin(0);
-    main_layout->setSpacing(0);
+    _main_layout->setMargin(0);
+    _main_layout->setSpacing(0);
 
-    top_layout->setMargin(0);
-    top_layout->setSpacing(0);
+    _top_layout->setMargin(0);
+    _top_layout->setSpacing(0);
 
     //----------------------------
 
@@ -43,7 +43,6 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _label_ID->setAlignment(Qt::AlignCenter);
 
     _line_edit_name->setAlignment( Qt::AlignCenter );
-  //  top_layout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
 
     QFont font = _label_ID->font();
     font.setPointSize(10);
@@ -63,13 +62,13 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
 
     if( !creators.empty() )
     {
-        main_layout->addWidget(_params_widget);
+        _main_layout->addWidget(_params_widget);
         _params_widget->setStyleSheet("color: white;");
 
-        QFormLayout* form_layout = new QFormLayout( _params_widget );
-        form_layout->setHorizontalSpacing(0);
-        form_layout->setVerticalSpacing(0);
-        form_layout->setContentsMargins(0, 6, 0, 0);
+        _form_layout = new QFormLayout( _params_widget );
+        _form_layout->setHorizontalSpacing(0);
+        _form_layout->setVerticalSpacing(0);
+        _form_layout->setContentsMargins(0, 6, 0, 0);
 
         for(const auto& param_creator: creators )
         {
@@ -84,7 +83,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
                                         "border: 0px; "
                                         "padding: 0px 0px 0px 0px;");
 
-            form_layout->addRow( field_label, field_widget );
+            _form_layout->addRow( field_label, field_widget );
 
             auto paramUpdated = [this,label,field_widget]()
             {
@@ -101,21 +100,18 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
             }
 
         }
-        main_layout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
-        form_layout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
         _params_widget->adjustSize();
-        _params_widget->setLayout( form_layout );
+        _params_widget->setLayout( _form_layout );
     }
 
-    _main_widget->adjustSize();
+    _main_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
+    _top_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
 
     connect( _line_edit_name, &QLineEdit::editingFinished,
              this, [this]()
     {
         setInstanceName( _line_edit_name->text() );
     });
-
-    setInstanceName( _instance_name );
 }
 
 QtNodes::NodeDataType BehaviorTreeDataModel::dataType(QtNodes::PortType, QtNodes::PortIndex) const
@@ -239,12 +235,11 @@ void BehaviorTreeDataModel::setParameterValue(const QString &label, const QStrin
 
 void BehaviorTreeDataModel::updateNodeSize()
 {
-//    QFontMetrics fm = _line_edit_name->fontMetrics();
-//    const QString& txt = _line_edit_name->text();
-//    double new_width = std::max( 100, fm.boundingRect(txt).width() + 20);
-//    _line_edit_name->setFixedWidth(new_width);
-//    _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
-      _main_widget->adjustSize();
+    QFontMetrics fm = _line_edit_name->fontMetrics();
+    const QString& txt = _line_edit_name->text();
+    double new_width = std::max( 100, fm.boundingRect(txt).width() + 20);
+    _line_edit_name->setFixedWidth(new_width);
+    emit embeddedWidgetSizeUpdated();
 }
 
 void BehaviorTreeDataModel::setInstanceName(const QString &name)

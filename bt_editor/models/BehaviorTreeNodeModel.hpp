@@ -99,9 +99,11 @@ private:
   const QString _registration_name;
   QString _instance_name;
 
-signals:
+  QFormLayout* _form_layout;
+  QHBoxLayout* _top_layout;
+  QVBoxLayout* _main_layout;
 
-  void adjustSize();
+signals:
 
   void parameterUpdated(QString, QWidget*);
 

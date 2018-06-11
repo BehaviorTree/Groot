@@ -16,10 +16,10 @@ using namespace QtNodes;
 GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_registry,
                                    QWidget *parent) :
     QObject(parent),
-    _model_registry( model_registry ),
+    _model_registry( std::move(model_registry) ),
     _signal_was_blocked(true)
 {
-    _scene = new EditorFlowScene( model_registry, parent );
+    _scene = new EditorFlowScene( _model_registry, parent );
     _view  = new FlowView( _scene, parent );
 
     connect( _scene, &QtNodes::FlowScene::nodeDoubleClicked,
@@ -139,7 +139,7 @@ void GraphicContainer::nodeReorder()
         NodeReorder( *_scene, abstract_tree );
         zoomHomeView();
     }
-    undoableChange();
+    emit undoableChange();
 }
 
 void GraphicContainer::zoomHomeView()

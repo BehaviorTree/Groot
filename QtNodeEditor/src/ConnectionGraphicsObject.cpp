@@ -141,7 +141,7 @@ paint(QPainter* painter,
       QStyleOptionGraphicsItem const* option,
       QWidget*)
 {
-  painter->setClipRect(option->exposedRect);
+    painter->setClipRect(option->exposedRect);
 
   ConnectionPainter::paint(painter,
                            _connection);
