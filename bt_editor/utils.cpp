@@ -16,26 +16,30 @@ using QtNodes::DataModelRegistry;
 using QtNodes::Node;
 using QtNodes::FlowScene;
 
-std::vector<Node*> findRoots(const FlowScene &scene)
+QtNodes::Node* findRoot(const QtNodes::FlowScene &scene)
 {
-     std::vector<Node*> roots;
+    Node* root = nullptr;
+
     for (auto& it: scene.nodes() )
     {
         Node* node = it.second.get();
         if( node->nodeDataModel()->nPorts( PortType::In ) == 0 )
         {
-            roots.push_back(node);
+            if( !root ) root = node;
+            else return nullptr;
         }
         else if( node->nodeState().connections( PortType::In, 0 ).empty() )
         {
-           roots.push_back(node);
+            if( !root ) root = node;
+            else return nullptr;
         }
     }
-    return roots;
+    return root;
 }
 
 std::vector<Node*> getChildren(const QtNodes::FlowScene &scene,
-                               const Node& parent_node)
+                               const Node& parent_node,
+                               bool ordered)
 {
     std::vector<Node*> children;
 
@@ -56,22 +60,24 @@ std::vector<Node*> getChildren(const QtNodes::FlowScene &scene,
         }
     }
 
-    if( scene.layout() == PortLayout::Vertical)
+    if( ordered )
     {
-        std::sort(children.begin(), children.end(),
-                  [&](const Node* a, const Node* b)
+        if( scene.layout() == PortLayout::Vertical)
         {
-            return scene.getNodePosition( *a ).x() <  scene.getNodePosition( *b ).x();
-        } );
+            std::sort(children.begin(), children.end(),
+                      [&](const Node* a, const Node* b)
+            {
+                return scene.getNodePosition( *a ).x() <  scene.getNodePosition( *b ).x();
+            } );
+        }
+        else{
+            std::sort(children.begin(), children.end(),
+                      [&](const Node* a, const Node* b)
+            {
+                return scene.getNodePosition( *a ).y() <  scene.getNodePosition( *b ).y();
+            } );
+        }
     }
-    else{
-        std::sort(children.begin(), children.end(),
-                  [&](const Node* a, const Node* b)
-        {
-            return scene.getNodePosition( *a ).y() <  scene.getNodePosition( *b ).y();
-        } );
-    }
-
     return children;
 }
 
@@ -229,15 +235,10 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 
 AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
 {
-    auto roots = findRoots( *scene );
-    if( roots.size() != 1)
+    auto root_node = findRoot( *scene );
+    if( !root_node )
     {
-        qDebug() << "Error: can not create a tree from a scene with "
-                 << roots.size() << " nodes";
-        for (auto& root: roots)
-        {
-            qDebug() << "This is a root: " << root->nodeDataModel()->name();
-        }
+        qDebug() << "Error: can not create a tree from a scene unless it has a single root node ";
         return AbsBehaviorTree();
     }
 
@@ -263,7 +264,7 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
         node_to_index.insert( { node, abs_node.index } );
         tree.pushBack( bt_model->UID(), abs_node );
 
-        auto children = getChildren( *scene, *node );
+        auto children = getChildren( *scene, *node, true );
 
         for(auto& child_node: children )
         {
@@ -271,12 +272,12 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
         }
     };
 
-    pushRecursively( roots.front() );
+    pushRecursively( root_node );
 
     for( auto& abs_node: tree.nodes())
     {
         auto node = abs_node.corresponding_node;
-        auto children = getChildren( *scene, *node );
+        auto children = getChildren( *scene, *node, true );
 
         abs_node.children_index.reserve( children.size() );
 
@@ -287,10 +288,6 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
     }
 
     tree.updateRootIndex();
-
-    std::cout << "--------------" << std::endl;
-    tree.debugPrint();
-    std::cout << "------- "<< tree.rootIndex() <<" -------" << std::endl;
 
     return tree;
 }
@@ -390,10 +387,6 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
 
     tree.updateRootIndex();
 
-    std::cout << "--------------" << std::endl;
-    tree.debugPrint();
-    std::cout << "--------------" << std::endl;
-
     return tree;
 }
 
@@ -426,10 +419,6 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
     }
 
     tree.updateRootIndex();
-
-    std::cout << "--------------" << std::endl;
-    tree.debugPrint();
-    std::cout << "--------------" << std::endl;
 
     return tree;
 }

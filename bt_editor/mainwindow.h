@@ -37,6 +37,11 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+    enum SubtreeExpandOption{ SUBTREE_EXPAND,
+                              SUBTREE_COLLAPSE,
+                              SUBTREE_CHANGE,
+                              SUBTREE_REFRESH};
+
 public:
     explicit MainWindow(GraphicMode initial_mode, QWidget *parent = nullptr);
     ~MainWindow();
@@ -59,7 +64,7 @@ private slots:
 
     void onRequestSubTreeExpand(GraphicContainer& container,
                                 QtNodes::Node& node);
-
+    
 private slots:
     virtual void closeEvent(QCloseEvent *event) override;
 
@@ -107,7 +112,8 @@ private:
 
     void refreshNodesLayout(QtNodes::PortLayout new_layout);
 
-
+    void refreshExpandedSubtrees();
+    
     struct SavedState
     {
         QString current_tab_name;
@@ -117,6 +123,10 @@ private:
     };
 
     void loadSavedStateFromJson(const SavedState &state);
+
+    void subTreeExpand(GraphicContainer& container,
+                       QtNodes::Node& node,
+                       SubtreeExpandOption option);
 
 signals:
     void updateGraphic();
@@ -145,8 +155,9 @@ private:
 #ifdef ZMQ_FOUND
     SidepanelMonitor* _monitor_widget;
 #endif
-
+    
 };
+
 
 
 

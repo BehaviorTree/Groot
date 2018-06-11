@@ -12,10 +12,11 @@ namespace tinyxml2{
     class XMLElement;
 }
 
-std::vector<QtNodes::Node*> findRoots(const QtNodes::FlowScene &scene);
+QtNodes::Node* findRoot(const QtNodes::FlowScene &scene);
 
 std::vector<QtNodes::Node *> getChildren(const QtNodes::FlowScene &scene,
-                                         const QtNodes::Node &parent_node);
+                                         const QtNodes::Node &parent_node,
+                                         bool ordered);
 
 AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene);
 

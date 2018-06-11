@@ -146,7 +146,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
         };
         registry.registerModel("SubTree", node_creator, ID);
 
-        auto otherID = ID + "[expanded]";
+        auto otherID = ID + EXPANDED_SUFFIX;
         node_creator = [otherID, parameters]()
         {
             return std::unique_ptr<SubtreeExpandedNodeModel>(
@@ -212,15 +212,24 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
     const QtNodes::NodeDataModel* node_model = node->nodeDataModel();
     const std::string model_name = node_model->name().toStdString();
 
+    const bool is_subtree_expanded = dynamic_cast<const SubtreeExpandedNodeModel*>(node_model) != nullptr;
+
     const auto* bt_node = dynamic_cast<const BehaviorTreeDataModel*>(node_model);
 
     XMLElement* element = doc.NewElement( bt_node->className() );
 
     if( !bt_node ) return;
 
-    if( dynamic_cast<const ActionNodeModel*>(node_model) ||
-            dynamic_cast<const DecoratorNodeModel*>(node_model) ||
-            dynamic_cast<const SubtreeNodeModel*>(node_model) )
+    if( is_subtree_expanded )
+    {
+        element->SetName( SubtreeNodeModel::Name() );
+        auto registration_name = bt_node->registrationName().left( EXPANDED_SUFFIX.length() );
+        element->SetAttribute("ID", registration_name.toStdString().c_str() );
+    }
+
+    else if( dynamic_cast<const ActionNodeModel*>(node_model) ||
+             dynamic_cast<const DecoratorNodeModel*>(node_model) ||
+             dynamic_cast<const SubtreeNodeModel*>(node_model) )
     {
         element->SetAttribute("ID", bt_node->registrationName().toStdString().c_str() );
     }
@@ -238,9 +247,12 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
     }
     parent_element->InsertEndChild( element );
 
-    auto node_children = getChildren(scene, *node );
-    for(const QtNodes::Node* child : node_children)
+    if( !is_subtree_expanded )
     {
-        RecursivelyCreateXml(scene, doc, element, child );
+        auto node_children = getChildren(scene, *node, true );
+        for(const QtNodes::Node* child : node_children)
+        {
+            RecursivelyCreateXml(scene, doc, element, child );
+        }
     }
 }

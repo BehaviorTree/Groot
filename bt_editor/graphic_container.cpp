@@ -97,6 +97,40 @@ void GraphicContainer::lockEditing(bool locked)
     }
 }
 
+void GraphicContainer::lockSubtreeEditing(Node &node, bool locked)
+{
+    auto nodes = getSubtreeNodesRecursively( node );
+
+    for (auto node: nodes )
+    {
+        node->nodeGraphicsObject().lock( locked );
+
+        auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() );
+        if( bt_model )
+        {
+            bt_model->lock(locked);
+        }
+
+        if( !locked ) //TODO : change style
+        {
+            node->nodeGraphicsObject().setGeometryChanged();
+            QtNodes::NodeStyle style;
+            node->nodeDataModel()->setNodeStyle( style );
+            node->nodeGraphicsObject().update();
+        }
+
+        auto connections = node->nodeState().getEntries(PortType::Out);
+        for (auto& conn_by_port: connections )
+        {
+            for (auto& conn_it: conn_by_port )
+            {
+                QtNodes::Connection* conn = conn_it.second;
+                conn->getConnectionGraphicsObject().lock( locked );
+            }
+        }
+    }
+}
+
 void GraphicContainer::nodeReorder()
 {
     {
@@ -174,14 +208,15 @@ AbsBehaviorTree GraphicContainer::loadedTree() const
     return BuildTreeFromScene( _scene );
 }
 
-void GraphicContainer::onNodeDoubleClicked(Node &root_node)
+std::set<QtNodes::Node*> GraphicContainer::getSubtreeNodesRecursively(Node &root_node)
 {
+    std::set<QtNodes::Node*> nodes;
     std::function<void(QtNodes::Node&)> selectRecursively;
 
     selectRecursively = [&](QtNodes::Node& node)
     {
-        node.nodeGraphicsObject().setSelected(true);
-        auto children = getChildren(*_scene,node);
+        nodes.insert( &node );
+        auto children = getChildren(*_scene, node, false);
         for (auto& child: children)
         {
             selectRecursively(*child);
@@ -189,6 +224,16 @@ void GraphicContainer::onNodeDoubleClicked(Node &root_node)
     };
 
     selectRecursively(root_node);
+    return nodes;
+}
+
+void GraphicContainer::onNodeDoubleClicked(Node &root_node)
+{
+    auto nodes = getSubtreeNodesRecursively(root_node);
+    for(auto node: nodes)
+    {
+        node->nodeGraphicsObject().setSelected(true);
+    }
 }
 
 void GraphicContainer::onNodeCreated(Node &node)
@@ -249,10 +294,10 @@ void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &)
     nodeMenu->exec( QCursor::pos() );
 }
 
-QtNodes::Node* GraphicContainer::substituteNode(QtNodes::Node& node, const QString& new_node_name)
+QtNodes::Node* GraphicContainer::substituteNode(Node *node, const QString& new_node_name)
 {
     const QSignalBlocker blocker(this);
-    auto pos = _scene->getNodePosition( node );
+    auto pos = _scene->getNodePosition( *node );
     auto new_datamodel = _model_registry->create(new_node_name);
 
     if( !new_datamodel )
@@ -262,10 +307,10 @@ QtNodes::Node* GraphicContainer::substituteNode(QtNodes::Node& node, const QStri
 
     auto& new_node = _scene->createNode( std::move(new_datamodel), pos );
 
-    if( node.nodeDataModel()->nPorts( PortType::In ) == 1 &&
+    if( node->nodeDataModel()->nPorts( PortType::In ) == 1 &&
         new_node.nodeDataModel()->nPorts( PortType::In ) == 1 )
     {
-        auto conn_in  = node.nodeState().connections(PortType::In, 0);
+        auto conn_in  = node->nodeState().connections(PortType::In, 0);
         for(auto it: conn_in)
         {
             auto child_node = it.second->getNode(PortType::Out);
@@ -273,46 +318,31 @@ QtNodes::Node* GraphicContainer::substituteNode(QtNodes::Node& node, const QStri
         }
     }
 
-    if( node.nodeDataModel()->nPorts( PortType::Out ) == 1 &&
+    if( node->nodeDataModel()->nPorts( PortType::Out ) == 1 &&
         new_node.nodeDataModel()->nPorts( PortType::Out ) == 1 )
     {
-        auto conn_in  = node.nodeState().connections(PortType::Out, 0);
+        auto conn_in  = node->nodeState().connections(PortType::Out, 0);
         for(auto it: conn_in)
         {
             auto child_node = it.second->getNode(PortType::In);
             _scene->createConnection( *child_node, 0, new_node, 0 );
         }
     }
-    _scene->removeNode(node);
+    _scene->removeNode(*node);
 
     return &new_node;
 }
 
-void GraphicContainer::deleteSubTreeRecurively(Node &node)
+void GraphicContainer::deleteSubTreeRecursively(Node &root_node)
 {
     const QSignalBlocker blocker( this );
-    std::set<QtNodes::Node*> nodes_to_delete;
-
-    std::function<void(QtNodes::Node*)> selectRecursively;
-
-    selectRecursively = [&](QtNodes::Node* node)
-    {
-        nodes_to_delete.insert( node );
-
-        auto children = getChildren( *_scene, *node );
-        for(auto child_node: children)
-        {
-            selectRecursively(child_node);
-        }
-    };
-
-    selectRecursively(&node);
-
+    auto nodes_to_delete = getSubtreeNodesRecursively(root_node);
     for(auto delete_me: nodes_to_delete)
     {
         _scene->removeNode( *delete_me );
     }
 }
+
 
 void GraphicContainer::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
 {
@@ -335,7 +365,7 @@ void GraphicContainer::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
 
             connect( action, &QAction::triggered, this, [this, &node, name]
             {
-                substituteNode( node, name);
+                substituteNode( &node, name);
                 undoableChange();
             });
         }
@@ -543,11 +573,6 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
     }
 
     recursiveLoadStep(cursor, x_offset, abstract_tree, root_node, first_qt_node, 1 );
-
-    std::cout << "<<<<<<<" << std::endl;
-    abstract_tree.debugPrint();
-    std::cout << "<<<<<<<" << std::endl;
-
 }
 
 void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)

@@ -43,6 +43,8 @@ private:
 
 };
 
+static const QString EXPANDED_SUFFIX("[expanded]");
+
 class SubtreeExpandedNodeModel : public BehaviorTreeDataModel
 {
     Q_OBJECT

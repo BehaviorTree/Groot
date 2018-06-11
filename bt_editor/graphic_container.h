@@ -26,9 +26,11 @@ public:
 
 
     const EditorFlowScene* scene()  const{ return _scene; }
-    const QtNodes::FlowView*  view() const { return _view; }
+    const QtNodes::FlowView* view() const { return _view; }
 
     void lockEditing(bool locked);
+
+    void lockSubtreeEditing(QtNodes::Node& node, bool locked);
 
     void nodeReorder();
 
@@ -46,9 +48,11 @@ public:
 
     void loadFromJson(const QByteArray& data);
 
-    QtNodes::Node *substituteNode(QtNodes::Node& node, const QString& new_node_name);
+    QtNodes::Node* substituteNode(QtNodes::Node* node, const QString& new_node_name);
 
-    void deleteSubTreeRecurively(QtNodes::Node& node);
+    void deleteSubTreeRecursively(QtNodes::Node& node);
+
+    std::set<QtNodes::Node*> getSubtreeNodesRecursively(QtNodes::Node &root_node);
 
 signals:
 

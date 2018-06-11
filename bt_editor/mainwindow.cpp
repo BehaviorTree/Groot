@@ -556,80 +556,21 @@ void MainWindow::onConnectionUpdate(bool connected)
 void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
                                         QtNodes::Node& node)
 {
-    const QSignalBlocker blocker( this );
-    const QString SUFFIX("[expanded]");
+    bool is_expanded_subtree  = dynamic_cast< SubtreeExpandedNodeModel*>( node.nodeDataModel() );
+    bool is_collapsed_subtree = dynamic_cast< SubtreeNodeModel*>( node.nodeDataModel() );
 
-    // expand case
-    if( auto node_model =  dynamic_cast< SubtreeNodeModel*>( node.nodeDataModel() ) )
+    if( !is_expanded_subtree && !is_collapsed_subtree )
     {
-        std::set<QtNodes::Node*> old_nodes;
-        std::set<QtNodes::Connection*> old_connections;
-        for(const auto& pair : container.scene()->nodes() )
-        {
-            old_nodes.insert( pair.second.get() );
-        }
-        for(const auto& pair : container.scene()->connections() )
-        {
-            old_connections.insert( pair.second.get() );
-        }
-
-        const QString& subtree_name = node_model->registrationName();
-
-        auto it = _tab_info.find( subtree_name );
-        if( it != _tab_info.end())
-        {
-            auto new_node_ptr = container.substituteNode(node, subtree_name + SUFFIX );
-            if( new_node_ptr )
-            {
-                const auto& subtree  = it->second->loadedTree();
-                container.appendTreeToNode( *new_node_ptr, subtree );
-                container.nodeReorder();
-            }
-            for(const auto& pair : container.scene()->nodes() )
-            {
-                QtNodes::Node* node = pair.second.get();
-                if( old_nodes.count( node) == 0 )
-                {
-                    node->nodeGraphicsObject().lock( true );
-
-                    if(  auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() ) )
-                    {
-                        bt_model->lock(true);
-                    }
-                }
-            }
-            for(const auto& pair : container.scene()->connections() )
-            {
-                QtNodes::Connection* conn = pair.second.get();
-                if( old_connections.count( conn ) == 0 )
-                {
-                    conn->getConnectionGraphicsObject().lock( true );
-                }
-            }
-        }
-        else{
-            qDebug() << "ERROR: not found " << subtree_name;
-        }
+        throw std::logic_error("passing to onRequestSubTreeExpand something that is not a SubTree");
     }
-    // collapse case
-    else if(auto node_model =  dynamic_cast< SubtreeExpandedNodeModel*>( node.nodeDataModel() ))
+
+    if( is_expanded_subtree )
     {
-        const QString& subtree_name = node_model->registrationName();
-
-        // save child
-        const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
-        QtNodes::Node* child_node = nullptr;
-        if(conn_out.size() == 1)
-        {
-            child_node = conn_out.begin()->second->getNode( PortType::In );
-        }
-
-        auto new_node_ptr = container.substituteNode(node, subtree_name.left( SUFFIX.length() ) );
-        if( new_node_ptr && child_node)
-        {
-            container.deleteSubTreeRecurively( *child_node );
-            container.nodeReorder();
-        }
+        subTreeExpand( container, node, SUBTREE_COLLAPSE );
+    }
+    else if( is_collapsed_subtree )
+    {
+        subTreeExpand( container, node, SUBTREE_EXPAND );
     }
 }
 
@@ -651,6 +592,76 @@ void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
     }
     onSceneChanged();
 }
+
+void MainWindow::subTreeExpand(GraphicContainer &container,
+                               QtNodes::Node &node,
+                               MainWindow::SubtreeExpandOption option)
+{
+    const QSignalBlocker blocker( this );
+    const QString& subtree_name = dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() )->registrationName();
+
+    if( option == SUBTREE_EXPAND )
+    {
+        auto it = _tab_info.find( subtree_name );
+        if( it == _tab_info.end())
+        {
+            qDebug() << "ERROR: not found " << subtree_name;
+            return;
+        }
+        const auto& subtree  = it->second->loadedTree();
+        auto new_node_ptr = container.substituteNode( &node, subtree_name + EXPANDED_SUFFIX );
+        if( new_node_ptr )
+        {
+            container.appendTreeToNode( *new_node_ptr, subtree );
+            container.nodeReorder();
+            container.lockSubtreeEditing( *new_node_ptr, true );
+        }
+    }
+    else if( option == SUBTREE_COLLAPSE )
+    {
+        const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
+        QtNodes::Node* child_node = nullptr;
+        if(conn_out.size() == 1)
+        {
+            child_node = conn_out.begin()->second->getNode( PortType::In );
+        }
+        else{
+            return;
+        }
+
+        auto new_node_ptr = container.substituteNode( &node, subtree_name.left( EXPANDED_SUFFIX.length() ) );
+        if( new_node_ptr && child_node)
+        {
+            container.deleteSubTreeRecursively( *child_node );
+            container.nodeReorder();
+        }
+    }
+    else if( option == SUBTREE_REFRESH && dynamic_cast<SubtreeExpandedNodeModel*>(node.nodeDataModel()) )
+    {
+        const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
+        if(conn_out.size() != 1)
+        {
+           throw std::logic_error("subTreeExpand with SUBTREE_REFRESH, but not an expanded SubTree");
+        }
+
+        QtNodes::Node* child_node = conn_out.begin()->second->getNode( PortType::In );
+
+        auto original_subtree_name =  subtree_name.left( EXPANDED_SUFFIX.length() );
+        auto it = _tab_info.find(  original_subtree_name );
+        if( it == _tab_info.end())
+        {
+            qDebug() << "ERROR: not found " <<  original_subtree_name;
+            return;
+        }
+        const auto& subtree  = it->second->loadedTree();
+
+        container.deleteSubTreeRecursively( *child_node );
+        container.appendTreeToNode( node, subtree );
+        container.nodeReorder();
+        container.lockSubtreeEditing( node, true );
+    }
+}
+
 void MainWindow::on_toolButtonReorder_pressed()
 {
     onAutoArrange();
@@ -778,6 +789,44 @@ void MainWindow::refreshNodesLayout(QtNodes::PortLayout new_layout)
     }
 }
 
+void MainWindow::refreshExpandedSubtrees()
+{
+    auto container = currentTabInfo();
+    if( !container){
+        return;
+    }
+    auto scene = container->scene();
+    auto root_node = findRoot( *scene );
+    if( !root_node )
+    {
+        return;
+    }
+
+    std::vector<QtNodes::Node*> subtree_nodes;
+    std::function<void(QtNodes::Node*)> selectRecursively;
+
+    selectRecursively = [&](QtNodes::Node* node)
+    {
+        if(dynamic_cast<SubtreeExpandedNodeModel*>(node->nodeDataModel()))
+        {
+            subtree_nodes.push_back( node );
+        }
+        else{
+            auto children = getChildren( scene, *node, false );
+            for(auto child_node: children)
+            {
+                selectRecursively(child_node);
+            }
+        }
+    };
+    selectRecursively( root_node );
+
+    for (auto subtree_node: subtree_nodes)
+    {
+        subTreeExpand( *container, *subtree_node, SUBTREE_REFRESH );
+    }
+}
+
 void MainWindow::on_toolButtonLayout_clicked()
 {
     if( _current_layout == QtNodes::PortLayout::Horizontal)
@@ -847,7 +896,8 @@ void MainWindow::on_tabWidget_currentChanged(int index)
         const QSignalBlocker blocker( tab );
         tab->nodeReorder();
         _current_state.current_tab_name = ui->tabWidget->tabText( index );
-    }
+        refreshExpandedSubtrees();
+    }  
 }
 
 bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) const

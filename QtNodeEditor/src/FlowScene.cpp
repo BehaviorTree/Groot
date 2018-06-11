@@ -165,16 +165,12 @@ restoreConnection(QJsonObject const &connectionJson)
       return std::shared_ptr<Connection>();
   }
 
-  qDebug() << "connecting " << nodeIn->nodeDataModel()->name()
-           << " and " << nodeOut->nodeDataModel()->name();
-
   std::shared_ptr<Connection> connection =
     createConnection(*nodeIn, portIndexIn,
                      *nodeOut, portIndexOut,
                      getConverter());
 
   connectionCreated(*connection);
-
 
   connection->connectionGeometry().setPortLayout( layout() );
   return connection;
@@ -560,7 +556,6 @@ void
 FlowScene::
 loadFromMemory(const QByteArray& data)
 {
-  std::cout << data.toStdString() << std::endl; ;
   QJsonObject const jsonDocument = QJsonDocument::fromJson(data).object();
 
   QString layout = jsonDocument["layout"].toString();
