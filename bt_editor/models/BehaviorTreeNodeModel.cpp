@@ -112,6 +112,8 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     {
         setInstanceName( _line_edit_name->text() );
     });
+
+    setInstanceName( _instance_name );
 }
 
 QtNodes::NodeDataType BehaviorTreeDataModel::dataType(QtNodes::PortType, QtNodes::PortIndex) const

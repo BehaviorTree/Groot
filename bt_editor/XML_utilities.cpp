@@ -147,10 +147,13 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
         registry.registerModel("SubTree", node_creator, ID);
 
         auto otherID = ID + EXPANDED_SUFFIX;
-        node_creator = [otherID, parameters]()
+        node_creator = [ID, otherID, parameters]()
         {
-            return std::unique_ptr<SubtreeExpandedNodeModel>(
-                        new SubtreeExpandedNodeModel(otherID,parameters) );
+          auto node = std::unique_ptr<SubtreeExpandedNodeModel>(
+                new SubtreeExpandedNodeModel(otherID, parameters) );
+
+          node->setInstanceName(ID);
+          return node;
         };
         registry.registerModel("SubTreeExpanded", node_creator, otherID);
     }
