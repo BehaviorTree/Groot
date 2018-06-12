@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 
 project(behavior_tree_editor)
 
-find_package(Qt5 COMPONENTS  Core Widgets Gui OpenGL Xml)
+find_package(Qt5 COMPONENTS  Core Widgets Gui OpenGL Xml Svg)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -100,9 +100,9 @@ add_executable(behavior_tree_editor
     ${RESOURCES})
 
 if( ZMQ_FOUND )
-    target_link_libraries(behavior_tree_editor QtNodeEditor zmq)
+    target_link_libraries(behavior_tree_editor QtNodeEditor zmq )
 else()
-    target_link_libraries(behavior_tree_editor QtNodeEditor)
+    target_link_libraries(behavior_tree_editor QtNodeEditor )
 endif()
 
 

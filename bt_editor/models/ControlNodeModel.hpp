@@ -10,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <QXmlStreamWriter>
+#include <QSvgRenderer>
 #include "BehaviorTreeNodeModel.hpp"
 
 using QtNodes::PortType;
@@ -31,8 +32,11 @@ public:
 
     virtual NodeType nodeType() const final { return NodeType::CONTROL; }
 
-private:
+    virtual QSvgRenderer* icon() const override { return _renderer; }
 
+protected:
+
+    QSvgRenderer* _renderer;
 };
 //------------------------------------------------
 
@@ -47,10 +51,6 @@ public:
     {
         return T::Name();
     }
-
-protected:
-
-    void setLabelImage(QString pixmap_address);
 };
 
 //-------------------------------------------------
@@ -61,20 +61,7 @@ ControlNodeModelBase<T>::ControlNodeModelBase():
     _main_widget->setToolTip( T::Name() );
 }
 
-template<typename T> inline
-void ControlNodeModelBase<T>::setLabelImage(QString pixmap_address)
-{
-    QPixmap pix;
-    if( pix.load(pixmap_address))
-    {
-        _label_ID->setPixmap(pix);
-        _label_ID->setFixedSize( QSize(30,30) );
-        _label_ID->setScaledContents(true);
-    }
-    else{
-        _label_ID->setText( name() );
-    }
-}
+
 
 
 //-------------------------------------------------

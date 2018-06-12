@@ -240,6 +240,17 @@ void BehaviorTreeDataModel::updateNodeSize()
     QFontMetrics fm = _line_edit_name->fontMetrics();
     const QString& txt = _line_edit_name->text();
     double new_width = std::max( 100, fm.boundingRect(txt).width() + 20);
+
+    QFont f;
+    f.setBold(true);
+    QFontMetrics boldFontMetrics(f);
+    double caption_width = boldFontMetrics.boundingRect( caption() ).width();
+    if ( icon() )
+    {
+      caption_width += 40;
+    }
+    new_width = std::max( new_width, caption_width);
+
     _line_edit_name->setFixedWidth(new_width);
     emit embeddedWidgetSizeUpdated();
 }

@@ -249,7 +249,10 @@ captionHeight() const
 
   QString name = _dataModel->caption();
 
-  return _boldFontMetrics.boundingRect(name).height();
+  if ( _dataModel->icon() )
+    return std::max(30, _boldFontMetrics.boundingRect(name).height() );
+  else
+    return _boldFontMetrics.boundingRect(name).height();
 }
 
 
@@ -262,7 +265,10 @@ captionWidth() const
 
   QString name = _dataModel->caption();
 
-  return _boldFontMetrics.boundingRect(name).width();
+  if ( _dataModel->icon() )
+    return ( 40 + _boldFontMetrics.boundingRect(name).width() );
+  else
+    return _boldFontMetrics.boundingRect(name).width();
 }
 
 

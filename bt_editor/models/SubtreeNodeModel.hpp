@@ -14,32 +14,26 @@ public:
 
     ~SubtreeNodeModel() override = default;
 
-    unsigned int  nPorts(PortType portType) const override
-    {
+    unsigned int  nPorts(PortType portType) const override {
         return portType == PortType::In ? 1:0;
     }
 
-    virtual const char* className() const final
-    {
-        return Name();
-    }
+    virtual const char* className() const final { return Name(); }
 
-    static const char* Name()
-    {
-        return "SubTree";
-    }
+    static const char* Name() { return "SubTree";  }
 
-    QString caption() const override {
-        return "SubTree";
-    }
+    QString caption() const override { return "SubTree";  }
 
     NodeType nodeType() const final { return NodeType::SUBTREE; }
+
+    virtual QSvgRenderer* icon() const override { return _renderer; }
 
 signals:
     void expandButtonPushed();
 
 private:
     QPushButton* _expand_button;
+    QSvgRenderer* _renderer;
 
 };
 
@@ -55,30 +49,19 @@ public:
 
     ~SubtreeExpandedNodeModel() override = default;
 
-    unsigned int  nPorts(PortType) const override {
-        return 1;
-    }
+    unsigned int  nPorts(PortType) const override { return 1; }
 
-    virtual const char* className() const final
-    {
-        return Name();
-    }
+    virtual const char* className() const final { return Name(); }
 
-    static const char* Name()
-    {
-        return "SubTreeExpanded";
-    }
+    static const char* Name() { return "SubTreeExpanded";  }
 
-    QString caption() const override {
-        return "SubTreeExpanded";
-    }
+    QString caption() const override {  return "SubTreeExpanded"; }
 
-    ConnectionPolicy portOutConnectionPolicy(PortIndex) const final
-    {
-        return ConnectionPolicy::One;
-    }
+    ConnectionPolicy portOutConnectionPolicy(PortIndex) const final;
 
     NodeType nodeType() const final { return NodeType::SUBTREE; }
+
+    virtual QSvgRenderer* icon() const override { return _renderer; }
 
 signals:
     void collapseButtonPushed();
@@ -86,6 +69,7 @@ signals:
 private:
 
     QPushButton* _collapse_button;
+    QSvgRenderer* _renderer;
 
 };
 

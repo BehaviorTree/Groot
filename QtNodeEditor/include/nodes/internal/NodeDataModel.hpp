@@ -2,6 +2,7 @@
 
 
 #include <QtWidgets/QWidget>
+#include <QtSvg/QSvgRenderer>
 
 #include "PortType.hpp"
 #include "NodeData.hpp"
@@ -40,6 +41,9 @@ public:
   /// Caption is used in GUI
   virtual QString
   caption() const = 0;
+
+  virtual QSvgRenderer*
+  icon() const { return nullptr; }
 
   /// It is possible to hide caption in GUI
   virtual bool

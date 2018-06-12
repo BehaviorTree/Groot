@@ -4,7 +4,8 @@
 
 SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
                                    const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel ("SubTree", subtree_ID, creators )
+    BehaviorTreeDataModel ("SubTree", subtree_ID, creators ),
+    _renderer(nullptr)
 {
     _line_edit_name->setReadOnly(true);
 
@@ -21,12 +22,15 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
              this, &SubtreeNodeModel::expandButtonPushed );
 
     updateNodeSize();
+
+    _renderer = new QSvgRenderer( QString(":/icons/svg/subtree.svg") );
 }
 
 SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
         const QString &subtree_ID,
         const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel ("SubTree", subtree_ID, creators )
+    BehaviorTreeDataModel ("SubTree", subtree_ID, creators ),
+    _renderer(nullptr)
 {
     _line_edit_name->setReadOnly(true);
 
@@ -43,6 +47,13 @@ SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
              this, &SubtreeExpandedNodeModel::collapseButtonPushed );
 
     updateNodeSize();
+
+    _renderer = new QSvgRenderer( QString(":/icons/svg/subtree.svg") );
+}
+
+NodeDataModel::ConnectionPolicy SubtreeExpandedNodeModel::portOutConnectionPolicy(QtNodes::PortIndex) const
+{
+  return ConnectionPolicy::One;
 }
 
 

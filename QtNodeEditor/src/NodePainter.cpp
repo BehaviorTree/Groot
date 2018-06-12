@@ -12,6 +12,7 @@
 #include "NodeDataModel.hpp"
 #include "Node.hpp"
 #include "FlowScene.hpp"
+#include <QSvgRenderer>
 
 using QtNodes::NodePainter;
 using QtNodes::NodeGeometry;
@@ -258,12 +259,20 @@ drawModelName(QPainter * painter,
   QPointF position((geom.width() - rect.width()) / 2.0,
                    (geom.spacing() + geom.entryHeight()) / 2.0);
 
+  if( model->icon() )
+  {
+      model->icon()->render( painter, QRectF( position.x() - 20 ,0,28,28) );
+      position.setX( position.x() + 20 );
+      position.setY( position.y() + 8 );
+  }
+
   painter->setFont(f);
   painter->setPen(nodeStyle.FontColor);
   painter->drawText(position, name);
 
   f.setBold(false);
   painter->setFont(f);
+
 }
 
 
