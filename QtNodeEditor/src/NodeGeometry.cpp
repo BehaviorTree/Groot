@@ -266,7 +266,7 @@ captionWidth() const
   QString name = _dataModel->caption();
 
   if ( _dataModel->icon() )
-    return ( 40 + _boldFontMetrics.boundingRect(name).width() );
+    return ( 50 + _boldFontMetrics.boundingRect(name).width() );
   else
     return _boldFontMetrics.boundingRect(name).width();
 }

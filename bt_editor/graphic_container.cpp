@@ -105,6 +105,17 @@ void GraphicContainer::lockSubtreeEditing(Node &node, bool locked)
     {
         node->nodeGraphicsObject().lock( locked );
 
+        if( locked)
+        {
+          QtNodes::NodeStyle style;
+
+          style.GradientColor0
+                  = style.GradientColor1
+                  = style.GradientColor2
+                  = style.GradientColor3 = QColor(50, 50, 50);
+          node->nodeDataModel()->setNodeStyle(style);
+        }
+
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() );
         if( bt_model )
         {
@@ -483,13 +494,21 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
     {
         QString ID = abs_node->registration_name;
 
-        if(  abs_node->type == NodeType::ACTION || abs_node->type == NodeType::CONDITION)
+        if(  abs_node->type == NodeType::ACTION )
         {
             DataModelRegistry::RegistryItemCreator node_creator = [ID]()
             {
                 return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, ParameterWidgetCreators() ) );
             };
             _scene->registry().registerModel("Action", node_creator);
+        }
+        else if( abs_node->type == NodeType::CONDITION)
+        {
+            DataModelRegistry::RegistryItemCreator node_creator = [ID]()
+            {
+                return std::unique_ptr<ConditionNodeModel>( new ConditionNodeModel(ID, ParameterWidgetCreators() ) );
+            };
+            _scene->registry().registerModel("Condition", node_creator);
         }
         else if( abs_node->type == NodeType::DECORATOR )
         {
@@ -536,11 +555,6 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
     abs_node->pos = cursor;
     abs_node->size = _scene->getNodeSize( new_node );
 
-    // free if it was already present
-//    if( abs_node->corresponding_node )
-//    {
-//        _scene->removeNode( *abs_node->corresponding_node );
-//    }
     abs_node->corresponding_node = &new_node;
 
     _scene->createConnection( *abs_node->corresponding_node, 0,

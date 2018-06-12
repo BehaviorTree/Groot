@@ -250,6 +250,7 @@ drawModelName(QPainter * painter,
 
   QFont f = painter->font();
 
+  f.setPointSize(13);
   f.setBold(true);
 
   QFontMetrics metrics(f);
@@ -261,9 +262,10 @@ drawModelName(QPainter * painter,
 
   if( model->icon() )
   {
-      model->icon()->render( painter, QRectF( position.x() - 20 ,0,28,28) );
-      position.setX( position.x() + 20 );
-      position.setY( position.y() + 8 );
+    position.setX( position.x() + 15 );
+    position.setY( position.y() + 8 );
+    model->icon()->render( painter,
+                           QRectF( position.x() - 35 ,0,30,30) );
   }
 
   painter->setFont(f);

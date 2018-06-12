@@ -33,7 +33,7 @@ void SidepanelEditor::updateTreeView()
     ui->treeWidget->clear();
     _tree_view_category_items.clear();
 
-    for (const QString& category : {"Root", "Action", "Control", "Decorator", "SubTree" } )
+    for (const QString& category : {"Root", "Action", "Condition", "Control", "Decorator", "SubTree" } )
     {
       auto item = new QTreeWidgetItem(ui->treeWidget, {category});
       AdjustFont(item, 11, true);

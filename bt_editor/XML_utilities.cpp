@@ -130,6 +130,14 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
         };
         registry.registerModel("Action", node_creator, ID);
     }
+    else if( node_type == NodeType::CONDITION )
+    {
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+        {
+            return std::unique_ptr<ConditionNodeModel>( new ConditionNodeModel(ID, parameters) );
+        };
+        registry.registerModel("Condition", node_creator, ID);
+    }
     else if( node_type == NodeType::DECORATOR )
     {
         DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
@@ -231,6 +239,7 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
     }
 
     else if( dynamic_cast<const ActionNodeModel*>(node_model) ||
+             dynamic_cast<const ConditionNodeModel*>(node_model) ||
              dynamic_cast<const DecoratorNodeModel*>(node_model) ||
              dynamic_cast<const SubtreeNodeModel*>(node_model) )
     {

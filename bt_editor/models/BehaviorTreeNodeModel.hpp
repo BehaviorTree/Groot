@@ -95,13 +95,14 @@ protected:
   std::map<QString, QWidget*> _params_map;
   int16_t _uid;
 
+  QFormLayout* _form_layout;
+  QHBoxLayout* _top_layout;
+  QVBoxLayout* _main_layout;
+
 private:
   const QString _registration_name;
   QString _instance_name;
 
-  QFormLayout* _form_layout;
-  QHBoxLayout* _top_layout;
-  QVBoxLayout* _main_layout;
 
 signals:
 

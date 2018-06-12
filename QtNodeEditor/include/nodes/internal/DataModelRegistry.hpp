@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <QtCore/QString>
+#include <QDebug>
 
 #include "NodeDataModel.hpp"
 #include "TypeConverter.hpp"
@@ -121,6 +122,9 @@ DataModelRegistry::
     _registeredItemCreators[name] = std::move(creator);
     _categories.insert(category);
     _registeredModelsCategory[name] = category;
+  }
+  else{
+    qDebug() << "WARNING: tryin to register twice " << name;
   }
 }
 

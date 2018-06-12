@@ -31,7 +31,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _top_layout->addWidget( _line_edit_name, 1 );
 
     _main_layout->setMargin(0);
-    _main_layout->setSpacing(0);
+    _main_layout->setSpacing(6);
 
     _top_layout->setMargin(0);
     _top_layout->setSpacing(0);
@@ -56,7 +56,9 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _main_widget->setAttribute(Qt::WA_NoSystemBackground);
 
     _main_widget->setStyleSheet("background-color: transparent; color: white; ");
-    _line_edit_name->setStyleSheet("color: white; background-color: rgba(0,0,0, 50); border: 0px;");
+    _line_edit_name->setStyleSheet("color: white; "
+                                   "background-color: "
+                                   "rgba(0,0,0,0); border: 0px;");
 
     //--------------------------------------
 
@@ -66,7 +68,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
         _params_widget->setStyleSheet("color: white;");
 
         _form_layout = new QFormLayout( _params_widget );
-        _form_layout->setHorizontalSpacing(0);
+        _form_layout->setHorizontalSpacing(4);
         _form_layout->setVerticalSpacing(0);
         _form_layout->setContentsMargins(0, 6, 0, 0);
 
@@ -102,6 +104,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
         }
         _params_widget->adjustSize();
         _params_widget->setLayout( _form_layout );
+        _form_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
     }
 
     _main_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);

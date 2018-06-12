@@ -55,6 +55,10 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _model_registry->registerModel<SequenceStarModel>("Control");
     _model_registry->registerModel<FallbackModel>("Control");
 
+    _model_registry->registerModel<RetryNodeModel>("Decorator");
+    _model_registry->registerModel<NegationNodeModel>("Decorator");
+    _model_registry->registerModel<RepeatNodeModel>("Decorator");
+
     _editor_widget = new SidepanelEditor(_tree_nodes_model, this);
     _replay_widget = new SidepanelReplay(this);
 

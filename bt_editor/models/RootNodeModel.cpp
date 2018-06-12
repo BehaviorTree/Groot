@@ -3,7 +3,9 @@
 #include <QDebug>
 
 RootNodeModel::RootNodeModel():
-    BehaviorTreeDataModel ( "Root", "Root", ParameterWidgetCreators() )
+    BehaviorTreeDataModel ( RootNodeModel::Name(),
+                            RootNodeModel::Name(),
+                            ParameterWidgetCreators() )
 {
     _line_edit_name->setHidden(true);
     _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
