@@ -55,10 +55,13 @@ void SidepanelEditor::updateTreeView()
     }
 
     const std::map<QString,QString> builtin_nodes = {
-      { "Sequence", "Control"},
-      { "SequenceStar", "Control"},
-      { "Fallback", "Control"},
-      { "Root", "Root"},
+        { "Sequence", "Control"},
+        { "SequenceStar", "Control"},
+        { "Fallback", "Control"},
+        { "Root", "Root"},
+        { "Negation", "Decorator"},
+        { "RetryUntilSuccesful", "Decorator"},
+        { "Repeat", "Decorator"}
     };
 
     for (auto const &it : builtin_nodes)

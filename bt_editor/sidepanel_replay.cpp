@@ -85,9 +85,6 @@ void SidepanelReplay::updateTableModel(const AbsBehaviorTree& locaded_tree)
             item->setBackground(QColor::fromRgb(222, 222, 222));
         } break;
         }
-//        auto font = item->font();
-//        font.setBold(true);
-//        item->setFont(font);
         item->setForeground(QColor::fromRgb(0, 0, 0));
         return item;
     };

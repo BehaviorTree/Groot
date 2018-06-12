@@ -272,6 +272,7 @@ drawModelName(QPainter * painter,
   painter->setPen(nodeStyle.FontColor);
   painter->drawText(position, name);
 
+  f.setPointSize(12);
   f.setBold(false);
   painter->setFont(f);
 

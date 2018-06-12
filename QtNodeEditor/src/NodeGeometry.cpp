@@ -34,7 +34,9 @@ NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
   , _boldFontMetrics(QFont())
   , _ports_layout(PortLayout::Vertical  )
 {
-  QFont f; f.setBold(true);
+  QFont f;
+  f.setPointSize(13);
+  f.setBold(true);
 
   _boldFontMetrics = QFontMetrics(f);
 }
@@ -127,6 +129,7 @@ recalculateSize(QFont const & font) const
   QFontMetrics fontMetrics(font);
   QFont boldFont = font;
 
+  boldFont.setPointSize(13);
   boldFont.setBold(true);
 
   QFontMetrics boldFontMetrics(boldFont);

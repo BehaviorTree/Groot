@@ -8,8 +8,6 @@ RootNodeModel::RootNodeModel():
                             ParameterWidgetCreators() )
 {
     _line_edit_name->setHidden(true);
-    _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
-    _main_widget->adjustSize();
     setUID( std::numeric_limits<uint16_t>::max() );
 }
 

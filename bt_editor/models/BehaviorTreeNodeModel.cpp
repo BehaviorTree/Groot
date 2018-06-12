@@ -245,6 +245,7 @@ void BehaviorTreeDataModel::updateNodeSize()
     double new_width = std::max( 100, fm.boundingRect(txt).width() + 20);
 
     QFont f;
+    f.setPointSize(13);
     f.setBold(true);
     QFontMetrics boldFontMetrics(f);
     double caption_width = boldFontMetrics.boundingRect( caption() ).width();
