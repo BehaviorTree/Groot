@@ -61,24 +61,33 @@ public:
         return _nodes.size();
     }
 
+    const std::vector<AbstractTreeNode>& nodes() const { return _nodes; }
+
+    std::vector<AbstractTreeNode>& nodes() { return _nodes; }
+
     AbstractTreeNode* rootNode();
 
-    AbstractTreeNode& nodeAtIndex( int16_t index ) {
-        return _nodes.at( index );
+    AbstractTreeNode* nodeAtIndex( int16_t index ) {
+        return &_nodes.at( index );
     }
 
-    AbstractTreeNode& nodeAtUID( uint16_t uid ) {
-        return _nodes.at( UidToIndex(uid) );
+    AbstractTreeNode* nodeAtUID( uint16_t uid ) {
+        return &_nodes.at( UidToIndex(uid) );
+    }
+
+    int rootIndex() const
+    {
+      return _root_node_index;
     }
 
     const AbstractTreeNode* rootNode() const;
 
-    const AbstractTreeNode& nodeAtIndex( int16_t index ) const{
-        return _nodes.at( index );
+    const AbstractTreeNode* nodeAtIndex( int16_t index ) const{
+        return &_nodes.at( index );
     }
 
-    const AbstractTreeNode& nodeAtUID( uint16_t uid ) const{
-        return _nodes.at( UidToIndex(uid) );
+    const AbstractTreeNode* nodeAtUID( uint16_t uid ) const{
+        return &_nodes.at( UidToIndex(uid) );
     }
 
     void pushBack( uint16_t UID, AbstractTreeNode node );
@@ -87,11 +96,19 @@ public:
 
     void updateRootIndex();
 
+    void debugPrint();
+
 private:
     std::vector<AbstractTreeNode> _nodes;
     std::unordered_map<uint16_t, int16_t> _UID_to_index;
     int16_t _root_node_index;
 };
+
+static int16_t GetUID()
+{
+    static int16_t uid = 10000;
+    return uid++;
+}
 
 Q_DECLARE_METATYPE(AbsBehaviorTree);
 

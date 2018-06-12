@@ -10,27 +10,57 @@ public:
 
     virtual ~DecoratorNodeModel() = default;
 
-    unsigned int  nPorts(PortType) const override final
-    { return 1; }
+    unsigned int  nPorts(PortType) const final { return 1; }
 
-    ConnectionPolicy portOutConnectionPolicy(PortIndex) const override final
-    {
-        return ConnectionPolicy::One;
-    }
+    ConnectionPolicy portOutConnectionPolicy(PortIndex) const final { return ConnectionPolicy::One; }
 
-    virtual const char* className() const override final
-    {
-      return "Decorator";
-    }
+    virtual const char* className() const final {  return "Decorator"; }
 
-    QString caption() const override {
-      return "Decorator";
-    }
+    QString caption() const override { return "Decorator"; }
 
-     virtual NodeType nodeType() const override final { return NodeType::DECORATOR; }
+    virtual NodeType nodeType() const final { return NodeType::DECORATOR; }
 
-private:
 
+    virtual QSvgRenderer* icon() const override { return _renderer; }
+
+protected:
+
+    QSvgRenderer* _renderer;
+};
+
+ParameterWidgetCreator buildWidgetCreator(const QString& label,
+                                          ParamType type,
+                                          const QString& combo_options);
+
+
+class RetryNodeModel : public DecoratorNodeModel
+{
+public:
+    RetryNodeModel(const ParameterWidgetCreators &parameters =
+    { buildWidgetCreator("num_attempts", ParamType::INT, "") });
+
+    static const char* Name() {  return "RetryUntilSuccesful"; }
+    QString caption() const override { return RetryNodeModel::Name(); }
+};
+
+
+class NegationNodeModel : public DecoratorNodeModel
+{
+public:
+    NegationNodeModel(const ParameterWidgetCreators &parameters = ParameterWidgetCreators());
+
+    static const char* Name() {  return "Negation"; }
+    QString caption() const override { return NegationNodeModel::Name(); }
+};
+
+class RepeatNodeModel : public DecoratorNodeModel
+{
+public:
+    RepeatNodeModel(const ParameterWidgetCreators &parameters =
+    { buildWidgetCreator("num_cycles", ParamType::INT, "") });
+
+    static const char* Name() {  return "Repeat"; }
+    QString caption() const override { return RepeatNodeModel::Name(); }
 };
 
 

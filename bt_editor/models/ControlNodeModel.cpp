@@ -3,44 +3,32 @@
 #include <QtDebug>
 
 ControlNodeModel::ControlNodeModel(const QString &ID, const ParameterWidgetCreators &parameters ):
-    BehaviorTreeDataModel("Control", ID , parameters)
+    BehaviorTreeDataModel("Control", ID , parameters),
+    _renderer(nullptr)
 {
+    _line_edit_name->setEnabled(true);
+    _line_edit_name->setReadOnly(false);
 
-}
-
-void ControlNodeModel::init()
-{
-  QFontMetrics fm = _line_edit_name->fontMetrics();
-  const QString& txt = _line_edit_name->text();
-  const int new_width = std::max( 120, fm.boundingRect(txt).width() + 12 );
-  _line_edit_name->setFixedWidth(new_width);
-  _main_widget->layout()->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
-  _main_widget->adjustSize();
-}
-
-
-void ControlNodeModel::setInstanceName(const QString &name)
-{
-  BehaviorTreeDataModel::setInstanceName(name);
-  init();
+    _line_edit_name->setStyleSheet("color: black; "
+                                   "background-color: rgb(200,200,200);"
+                                   "border: 0px;");
 }
 
 
 SequenceModel::SequenceModel(): ControlNodeModelBase()
 {
-  setLabelImage(":/icons/arrow_sequence.png");
+  _renderer = new QSvgRenderer( QString(":/icons/svg/arrow_right.svg") );
 }
 
 FallbackModel::FallbackModel(): ControlNodeModelBase()  {
-  setLabelImage(":/icons/question_mark.png");
+  _renderer = new QSvgRenderer( QString(":/icons/svg/question_mark.svg") );
 }
 
 SequenceStarModel::SequenceStarModel(): ControlNodeModelBase() {
-  setLabelImage(":/icons/arrow_sequence_star.png");
+  _renderer = new QSvgRenderer( QString(":/icons/svg/arrow_right.svg") );
 }
 
-
 IfThenElseModel::IfThenElseModel(): ControlNodeModelBase() {
-  _label_ID->setText( name() );
+
 }
 

@@ -28,19 +28,30 @@ NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
   , _entryHeight(5)
   , _spacing(5)
   , _hovered(false)
-  , _nSources(dataModel->nPorts(PortType::Out))
-  , _nSinks(dataModel->nPorts(PortType::In))
   , _draggingPos(-1000, -1000)
   , _dataModel(dataModel)
   , _fontMetrics(QFont())
   , _boldFontMetrics(QFont())
   , _ports_layout(PortLayout::Vertical  )
 {
-  QFont f; f.setBold(true);
+  QFont f;
+  f.setPointSize(13);
+  f.setBold(true);
 
   _boldFontMetrics = QFontMetrics(f);
 }
 
+unsigned int
+NodeGeometry::nSources() const
+{
+  return _dataModel->nPorts(PortType::Out);
+}
+
+unsigned int
+NodeGeometry::nSinks() const
+{
+  return _dataModel->nPorts(PortType::In);
+}
 
 QRectF
 NodeGeometry::
@@ -77,7 +88,7 @@ recalculateSize() const
   _entryHeight = _fontMetrics.height();
 
   {
-    unsigned int maxNumOfEntries = std::max(_nSinks, _nSources);
+    unsigned int maxNumOfEntries = std::max(nSinks(), nSources());
     unsigned int step = _entryHeight + _spacing;
     _height = step * maxNumOfEntries;
   }
@@ -118,6 +129,7 @@ recalculateSize(QFont const & font) const
   QFontMetrics fontMetrics(font);
   QFont boldFont = font;
 
+  boldFont.setPointSize(13);
   boldFont.setBold(true);
 
   QFontMetrics boldFontMetrics(boldFont);
@@ -136,7 +148,7 @@ QPointF
 NodeGeometry::
 portScenePosition(PortIndex index,
                   PortType portType,
-                  QTransform t) const
+                  QTransform const & t) const
 {
   auto const connectionDiameter = StyleCollection::nodeStyle().ConnectionPointDiameter;
 
@@ -152,7 +164,7 @@ portScenePosition(PortIndex index,
   }
   else
   {
-    unsigned int nPorts = (portType == PortType::In ) ? nSinks() : nSources();
+    unsigned int nPorts = _dataModel->nPorts(portType);
     unsigned int step = _width / (nPorts + 1);
     double x = step * (index+1);
 
@@ -167,7 +179,7 @@ PortIndex
 NodeGeometry::
 checkHitScenePoint(PortType portType,
                    QPointF const scenePoint,
-                   QTransform sceneTransform) const
+                   QTransform const & sceneTransform) const
 {
   auto const &nodeStyle = StyleCollection::nodeStyle();
 
@@ -240,7 +252,10 @@ captionHeight() const
 
   QString name = _dataModel->caption();
 
-  return _boldFontMetrics.boundingRect(name).height();
+  if ( _dataModel->icon() )
+    return std::max(30, _boldFontMetrics.boundingRect(name).height() );
+  else
+    return _boldFontMetrics.boundingRect(name).height();
 }
 
 
@@ -253,7 +268,10 @@ captionWidth() const
 
   QString name = _dataModel->caption();
 
-  return _boldFontMetrics.boundingRect(name).width();
+  if ( _dataModel->icon() )
+    return ( 50 + _boldFontMetrics.boundingRect(name).width() );
+  else
+    return _boldFontMetrics.boundingRect(name).width();
 }
 
 

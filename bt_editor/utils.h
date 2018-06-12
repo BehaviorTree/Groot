@@ -12,16 +12,15 @@ namespace tinyxml2{
     class XMLElement;
 }
 
-std::vector<QtNodes::Node*> findRoots(const QtNodes::FlowScene &scene);
+QtNodes::Node* findRoot(const QtNodes::FlowScene &scene);
 
 std::vector<QtNodes::Node *> getChildren(const QtNodes::FlowScene &scene,
-                                         const QtNodes::Node &parent_node);
+                                         const QtNodes::Node &parent_node,
+                                         bool ordered);
 
-AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene* scene);
+AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene);
 
 AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree* bt );
-
-void BuildSceneFromTree(AbsBehaviorTree& tree, QtNodes::FlowScene *scene);
 
 AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root);
 
@@ -42,6 +41,7 @@ inline NodeType convert(const BT_Serialization::Type& type)
     case BT_Serialization::Type::CONDITION : return  NodeType::CONDITION;
     case BT_Serialization::Type::UNDEFINED : return  NodeType::UNDEFINED;
     }
+    return NodeType::UNDEFINED;
 }
 
 inline NodeStatus convert(const BT_Serialization::Status& status)
@@ -53,6 +53,7 @@ inline NodeStatus convert(const BT_Serialization::Status& status)
     case BT_Serialization::Status::SUCCESS : return NodeStatus::SUCCESS;
     case BT_Serialization::Status::FAILURE : return NodeStatus::FAILURE;
     }
+    return NodeStatus::IDLE;
 }
 
 #endif // NODE_UTILS_H

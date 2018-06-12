@@ -37,8 +37,13 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+    enum SubtreeExpandOption{ SUBTREE_EXPAND,
+                              SUBTREE_COLLAPSE,
+                              SUBTREE_CHANGE,
+                              SUBTREE_REFRESH};
+
 public:
-    explicit MainWindow(GraphicMode initial_mode, QWidget *parent = 0);
+    explicit MainWindow(GraphicMode initial_mode, QWidget *parent = nullptr);
     ~MainWindow();
 
     void loadFromXML(const QString &xml_text);
@@ -57,6 +62,9 @@ private slots:
 
     void onConnectionUpdate(bool connected);
 
+    void onRequestSubTreeExpand(GraphicContainer& container,
+                                QtNodes::Node& node);
+    
 private slots:
     virtual void closeEvent(QCloseEvent *event) override;
 
@@ -70,9 +78,11 @@ private slots:
 
     void on_toolButtonCenterView_pressed();
 
-    void onLoadAbsBehaviorTree(AbsBehaviorTree& tree);
+    void onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name);
 
-    void on_actionClear_triggered();
+    void onChangeNodesStyle(const QString& bt_name, const std::unordered_map<int, NodeStatus>& node_status);
+
+    void on_actionClear_triggered(bool create_new = true);
 
     void on_toolButtonLayout_clicked();
 
@@ -81,6 +91,8 @@ private slots:
     void on_actionMonitor_mode_triggered();
 
     void on_actionReplay_mode_triggered();
+
+    void on_tabWidget_currentChanged(int index);
 
 private:
 
@@ -94,11 +106,27 @@ private:
 
     GraphicContainer* currentTabInfo();
 
-    void createTab(const QString &name);
+    GraphicContainer *getTabByName(const QString& name);
+
+    GraphicContainer* createTab(const QString &name);
 
     void refreshNodesLayout(QtNodes::PortLayout new_layout);
 
-    void loadSceneFromYAML(QByteArray state);
+    void refreshExpandedSubtrees();
+    
+    struct SavedState
+    {
+        QString current_tab_name;
+        std::map<QString, QByteArray> json_states;
+        bool operator ==( const SavedState& other) const;
+        bool operator !=( const SavedState& other) const { return !( *this == other); }
+    };
+
+    void loadSavedStateFromJson(const SavedState &state);
+
+    void subTreeExpand(GraphicContainer& container,
+                       QtNodes::Node& node,
+                       SubtreeExpandOption option);
 
 signals:
     void updateGraphic();
@@ -115,9 +143,9 @@ private:
 
     std::mutex _mutex;
 
-    std::deque<QByteArray> _undo_stack;
-    std::deque<QByteArray> _redo_stack;
-    QByteArray _current_state;
+    std::deque<SavedState> _undo_stack;
+    std::deque<SavedState> _redo_stack;
+    SavedState _current_state;
     QtNodes::PortLayout _current_layout;
 
     TreeNodeModels _tree_nodes_model;
@@ -127,10 +155,9 @@ private:
 #ifdef ZMQ_FOUND
     SidepanelMonitor* _monitor_widget;
 #endif
-
-    AbsBehaviorTree _abstract_tree;
-
+    
 };
+
 
 
 

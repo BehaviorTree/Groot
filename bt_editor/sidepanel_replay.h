@@ -43,7 +43,9 @@ private slots:
     void on_lineEditFilter_textChanged(const QString &filter_text);
 
 signals:
-    void loadBehaviorTree( AbsBehaviorTree& tree );
+    void loadBehaviorTree(const AbsBehaviorTree& tree, const QString& name );
+
+    void changeNodeStyle(const QString& bt_name, const std::unordered_map<int, NodeStatus>& node_status);
 
 private:
 
@@ -67,7 +69,7 @@ private:
     int _prev_row;
     int _next_row;
 
-    AbsBehaviorTree _loaded_tree;
+   //AbsBehaviorTree _loaded_tree;
 
     void updatedSpinAndSlider(int row);
 
@@ -77,7 +79,7 @@ private:
 
     QTimer *_play_timer;
 
-    void updateTableModel();
+    void updateTableModel(const AbsBehaviorTree &tree);
 };
 
 #endif // SIDEPANEL_REPLAY_H

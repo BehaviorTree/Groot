@@ -2,6 +2,7 @@
 
 #include <QtCore/QFile>
 #include <QtWidgets/QMessageBox>
+#include <QDebug>
 
 using QtNodes::DataModelRegistry;
 using QtNodes::NodeDataModel;
@@ -19,6 +20,12 @@ create(QString const &modelName)
     return it->second();
   }
 
+  qDebug() << "DataModelRegistry::create : unable to create [" <<
+              modelName << "]\nCandidates are:\n";
+  for(auto& creator_it: _registeredItemCreators)
+  {
+      qDebug() << "   " << creator_it.first;
+  }
   return nullptr;
 }
 

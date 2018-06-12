@@ -1,17 +1,20 @@
 #pragma once
 
-#include <unordered_map>
-#include <unordered_set>
 #include <set>
 #include <memory>
 #include <functional>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include <QtCore/QString>
+#include <QDebug>
 
 #include "NodeDataModel.hpp"
 #include "TypeConverter.hpp"
 #include "Export.hpp"
 #include "QStringStdHash.hpp"
+#include "memory.hpp"
 
 namespace QtNodes
 {
@@ -51,22 +54,24 @@ public:
 public:
 
 
-  void registerModel(RegistryItemCreator creator,
-                     QString const &category);
-
-
   void registerModel(QString const &category,
-                     RegistryItemCreator creator)
-  {
-    registerModel(std::move(creator), category);
-  }
+                     RegistryItemCreator creator,
+                     QString ID = "");
 
-//  template<typename ModelType>
-//  void registerModel(QString const &category)
-//  {
-//    RegistryItemCreator creator = [](){ return std::make_unique<ModelType>(); };
-//    registerModel(std::move(creator), category);
-//  }
+  template<typename ModelType>
+  void registerModel(QString const &category)
+  {
+    RegistryItemCreator creator = [](){ return detail::make_unique<ModelType>(); };
+
+    QString const name = ModelType::Name();
+
+    if (_registeredItemCreators.count(name) == 0)
+    {
+      _registeredItemCreators[name] = std::move(creator);
+      _categories.insert(category);
+      _registeredModelsCategory[name] = category;
+    }
+  }
 
   void registerTypeConverter(TypeConverterId const & id,
                              TypeConverter typeConverter)
@@ -102,16 +107,24 @@ private:
 
 inline void
 DataModelRegistry::
-    registerModel(RegistryItemCreator creator, QString const &category)
+    registerModel(QString const &category,
+                  RegistryItemCreator creator,
+                  QString name)
 {
-  RegistryItemPtr prototypeInstance = creator();
-  QString const name = prototypeInstance->name();
+  if( name.isEmpty() )
+  {
+      RegistryItemPtr prototypeInstance = creator();
+      name = prototypeInstance->name();
+  }
 
   if (_registeredItemCreators.count(name) == 0)
   {
     _registeredItemCreators[name] = std::move(creator);
     _categories.insert(category);
     _registeredModelsCategory[name] = category;
+  }
+  else{
+    qDebug() << "WARNING: tryin to register twice " << name;
   }
 }
 

@@ -2,6 +2,7 @@
 
 #include <QtCore/QObject>
 
+#include <utility>
 #include <iostream>
 
 #include "FlowScene.hpp"
@@ -35,11 +36,14 @@ Node(std::unique_ptr<NodeDataModel> && dataModel)
   // propagate data: model => node
   connect(_nodeDataModel.get(), &NodeDataModel::dataUpdated,
           this, &Node::onDataUpdated);
+
+  connect(_nodeDataModel.get(), &NodeDataModel::embeddedWidgetSizeUpdated,
+          this, &Node::onNodeSizeUpdated );
 }
 
 
 Node::
-~Node() {}
+~Node() = default;
 
 QJsonObject
 Node::
@@ -86,7 +90,7 @@ id() const
 void
 Node::
 reactToPossibleConnection(PortType reactingPortType,
-                          NodeDataType reactingDataType,
+                          NodeDataType const &reactingDataType,
                           QPointF const &scenePoint)
 {
   QTransform const t = _nodeGraphicsObject->sceneTransform();
@@ -177,19 +181,13 @@ nodeDataModel() const
   return _nodeDataModel.get();
 }
 
-void Node:: changeDataModel(std::unique_ptr<QtNodes::NodeDataModel> new_model)
-{
-  _nodeDataModel.swap( new_model );
-  _nodeGraphicsObject->updateEmbeddedQWidget();
-}
-
 
 void
 Node::
 propagateData(std::shared_ptr<NodeData> nodeData,
               PortIndex inPortIndex) const
 {
-  _nodeDataModel->setInData(nodeData, inPortIndex);
+  _nodeDataModel->setInData(std::move(nodeData), inPortIndex);
 
   //Recalculate the nodes visuals. A data change can result in the node taking more space than before, so this forces a recalculate+repaint on the affected node
   _nodeGraphicsObject->setGeometryChanged();
@@ -210,4 +208,26 @@ onDataUpdated(PortIndex index)
 
   for (auto const & c : connections)
     c.second->propagateData(nodeData);
+}
+
+void
+Node::
+onNodeSizeUpdated()
+{
+    if( nodeDataModel()->embeddedWidget() )
+    {
+        nodeDataModel()->embeddedWidget()->adjustSize();
+    }
+    nodeGeometry().recalculateSize();
+    for(PortType type: {PortType::In, PortType::Out})
+    {
+        for(auto& conn_set : nodeState().getEntries(type))
+        {
+            for(auto& pair: conn_set)
+            {
+                Connection* conn = pair.second;
+                conn->getConnectionGraphicsObject().move();
+            }
+        }
+    }
 }

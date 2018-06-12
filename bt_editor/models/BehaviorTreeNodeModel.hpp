@@ -24,9 +24,7 @@ struct ParameterWidgetCreator{
     std::function<QWidget*()> instance_factory;
 };
 
-typedef std::vector<ParameterWidgetCreator> ParameterWidgetCreators;
-
-
+using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
 
 
 class BehaviorTreeDataModel : public NodeDataModel
@@ -38,39 +36,38 @@ public:
                         const QString &instance_name,
                         const ParameterWidgetCreators &parameters );
 
-  virtual ~BehaviorTreeDataModel() {}
+  ~BehaviorTreeDataModel() override = default;
 
-  virtual bool captionVisible() const override final
+  bool captionVisible() const final
   { return true; }
 
 public:
 
-  NodeDataType dataType(PortType , PortIndex ) const override final;
+  NodeDataType dataType(PortType , PortIndex ) const final;
 
-  virtual std::shared_ptr<NodeData> outData(PortIndex port) override final;
+  std::shared_ptr<NodeData> outData(PortIndex port) final;
 
-  void setInData(std::shared_ptr<NodeData>, int) override final {}
+  void setInData(std::shared_ptr<NodeData>, int) final {}
 
-  virtual QString caption() const override;
+  QString caption() const override;
 
   const QString& registrationName() const;
 
-  QString name() const override final { return registrationName(); }
+  QString name() const final { return registrationName(); }
 
   const QString& instanceName() const;
-  virtual void setInstanceName(const QString& name);
 
   std::vector<std::pair<QString, QString> > getCurrentParameters() const;
 
-  virtual QWidget *embeddedWidget() override final { return _main_widget; }
+  QWidget *embeddedWidget() final { return _main_widget; }
 
-  virtual QWidget *parametersWidget() { return _params_widget; }
+  QWidget *parametersWidget() { return _params_widget; }
 
-  virtual QJsonObject save() const override final;
+  QJsonObject save() const final;
 
-  virtual void restore(QJsonObject const &) override final;
+  void restore(QJsonObject const &) final;
 
-  virtual void lock(bool locked) final;
+  void lock(bool locked);
 
   void setParameterValue(const QString& label, const QString& value);
 
@@ -82,23 +79,35 @@ public:
 
   virtual NodeType nodeType() const = 0;
 
+public slots:
+
+  void updateNodeSize();
+
+  void setInstanceName(const QString& name);
+
 protected:
-  QWidget*   _main_widget;
-  QWidget*   _params_widget;
-  std::map<QString,QWidget*>   _params_map;
-  QFormLayout *_form_layout;
-  QLabel*    _label_ID;
+  QFrame*  _main_widget;
+  QFrame*  _params_widget;
+  QLabel*  _label_ID;
+
   QLineEdit* _line_edit_name;
+
+  std::map<QString, QWidget*> _params_map;
   int16_t _uid;
+
+  QFormLayout* _form_layout;
+  QHBoxLayout* _top_layout;
+  QVBoxLayout* _main_layout;
+
 private:
   const QString _registration_name;
   QString _instance_name;
 
-signals:
 
-  void adjustSize();
+signals:
 
   void parameterUpdated(QString, QWidget*);
 
   void instanceNameChanged();
+
 };
