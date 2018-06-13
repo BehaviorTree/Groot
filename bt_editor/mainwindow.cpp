@@ -209,7 +209,6 @@ void MainWindow::loadFromXML(const QString& xml_text)
                 const QSignalBlocker blocker( currentTabInfo() );
                 std::cout<< "Starting parsing"<< std::endl;
 
-
                 for (auto bt_root = document_root->FirstChildElement("BehaviorTree");
                      bt_root != nullptr;
                      bt_root = bt_root->NextSiblingElement("BehaviorTree"))
@@ -238,8 +237,13 @@ void MainWindow::loadFromXML(const QString& xml_text)
                         }
                     }
                 }
-
-                currentTabInfo()->nodeReorder();
+                if( currentTabInfo() == nullptr)
+                {
+                    createTab("BehaviorTree");
+                }
+                else{
+                    currentTabInfo()->nodeReorder();
+                }
             }
             catch (std::runtime_error& err) {
                 error = true;
