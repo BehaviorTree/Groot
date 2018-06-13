@@ -20,6 +20,16 @@ StartupDialog::StartupDialog(QWidget *parent) :
 
     QShortcut* close_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
     connect( close_shortcut, &QShortcut::activated, this, &QDialog::reject );
+
+#ifndef ZMQ_FOUND
+    ui->toolButtonMonitor->setEnabled(false);
+    ui->toolButtonMonitor->setStyleSheet(
+                "color:gray;"
+                "border: 2px solid gray; "
+                "border-radius: 10px;"
+                " background-color: rgb(0, 0, 0);"
+                );
+#endif
 }
 
 StartupDialog::~StartupDialog()
@@ -107,7 +117,9 @@ void StartupDialog::updateCurrentMode()
     }
 
     ui->toolButtonEditor->setStyleSheet(  _mode == GraphicMode::EDITOR ? selected_style : default_style);
+#ifdef ZMQ_FOUND
     ui->toolButtonMonitor->setStyleSheet( _mode == GraphicMode::MONITOR ? selected_style : default_style);
+#endif
     ui->toolButtonReplay->setStyleSheet(  _mode == GraphicMode::REPLAY ? selected_style : default_style);
 }
 

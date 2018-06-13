@@ -17,8 +17,6 @@
 #include "sidepanel_editor.h"
 #include "sidepanel_replay.h"
 
-#define ZMQ_FOUND 1
-
 #ifdef ZMQ_FOUND
 #include "sidepanel_monitor.h"
 #endif

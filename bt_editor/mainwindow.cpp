@@ -82,6 +82,8 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     connect( _monitor_widget, &SidepanelMonitor::connectionUpdate,
              this, &MainWindow::onConnectionUpdate );
+#else
+    ui->actionMonitor_mode->setVisible(false);
 #endif
 
     updateCurrentMode();
@@ -116,8 +118,8 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
 #ifdef ZMQ_FOUND
     // TODO / FIXME
-//    connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
-//             this, &MainWindow::onLoadAbsBehaviorTree );
+    //    connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
+    //             this, &MainWindow::onLoadAbsBehaviorTree );
 #endif
     onSceneChanged();
 
@@ -657,7 +659,7 @@ void MainWindow::subTreeExpand(GraphicContainer &container,
         const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
         if(conn_out.size() != 1)
         {
-           throw std::logic_error("subTreeExpand with SUBTREE_REFRESH, but not an expanded SubTree");
+            throw std::logic_error("subTreeExpand with SUBTREE_REFRESH, but not an expanded SubTree");
         }
 
         QtNodes::Node* child_node = conn_out.begin()->second->getNode( PortType::In );
@@ -724,8 +726,10 @@ void MainWindow::on_actionClear_triggered(bool create_new)
     }
 
     _editor_widget->clear();
-    _monitor_widget->clear();
     _replay_widget->clear();
+#ifdef ZMQ_FOUND
+    _monitor_widget->clear();
+#endif
 }
 
 
@@ -735,7 +739,9 @@ void MainWindow::updateCurrentMode()
 
     _editor_widget->setHidden( NOT_EDITOR );
     _replay_widget->setHidden( _current_mode != GraphicMode::REPLAY );
+#ifdef ZMQ_FOUND
     _monitor_widget->setHidden( _current_mode != GraphicMode::MONITOR );
+#endif
 
     ui->toolButtonLoadFile->setHidden( _current_mode == GraphicMode::MONITOR );
     ui->toolButtonConnect->setHidden( _current_mode != GraphicMode::MONITOR );
@@ -764,7 +770,9 @@ void MainWindow::updateCurrentMode()
         _editor_widget->updateTreeView();
     }
     ui->actionEditor_mode->setEnabled( _current_mode != GraphicMode::EDITOR);
+#ifdef ZMQ_FOUND
     ui->actionMonitor_mode->setEnabled( _current_mode != GraphicMode::MONITOR);
+#endif
     ui->actionReplay_mode->setEnabled( _current_mode != GraphicMode::REPLAY);
 }
 
@@ -859,12 +867,16 @@ void MainWindow::on_actionEditor_mode_triggered()
     _current_mode = GraphicMode::EDITOR;
     updateCurrentMode();
 
+#ifdef ZMQ_FOUND
     _monitor_widget->clear();
+#endif
+
     _replay_widget->clear();
 }
 
 void MainWindow::on_actionMonitor_mode_triggered()
 {
+#ifdef ZMQ_FOUND
     QMessageBox::StandardButton res = QMessageBox::Ok;
 
     if( currentTabInfo()->scene()->nodes().size() > 0)
@@ -881,6 +893,7 @@ void MainWindow::on_actionMonitor_mode_triggered()
         _current_mode = GraphicMode::MONITOR;
         updateCurrentMode();
     }
+#endif
 }
 
 void MainWindow::on_actionReplay_mode_triggered()
@@ -913,13 +926,13 @@ void MainWindow::on_tabWidget_currentChanged(int index)
         tab->nodeReorder();
         _current_state.current_tab_name = ui->tabWidget->tabText( index );
         refreshExpandedSubtrees();
-    }  
+    }
 }
 
 bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) const
 {
     if( current_tab_name != other.current_tab_name ||
-        json_states.size() != other.json_states.size())
+            json_states.size() != other.json_states.size())
     {
         return false;
     }
