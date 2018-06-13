@@ -19,13 +19,6 @@ public:
     QString caption() const override { return "Decorator"; }
 
     virtual NodeType nodeType() const final { return NodeType::DECORATOR; }
-
-
-    virtual QSvgRenderer* icon() const override { return _renderer; }
-
-protected:
-
-    QSvgRenderer* _renderer;
 };
 
 ParameterWidgetCreator buildWidgetCreator(const QString& label,
@@ -41,6 +34,11 @@ public:
 
     static const char* Name() {  return "RetryUntilSuccesful"; }
     QString caption() const override { return RetryNodeModel::Name(); }
+
+    virtual QSvgRenderer* icon() const override {
+        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/retry.svg"));
+        return renderer;
+    }
 };
 
 
@@ -51,6 +49,11 @@ public:
 
     static const char* Name() {  return "Negation"; }
     QString caption() const override { return NegationNodeModel::Name(); }
+
+    virtual QSvgRenderer* icon() const override {
+        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/exclaimation_mark.svg"));
+        return renderer;
+    }
 };
 
 class RepeatNodeModel : public DecoratorNodeModel
@@ -61,6 +64,11 @@ public:
 
     static const char* Name() {  return "Repeat"; }
     QString caption() const override { return RepeatNodeModel::Name(); }
+
+    virtual QSvgRenderer* icon() const override {
+        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/repeat.svg"));
+        return renderer;
+    }
 };
 
 

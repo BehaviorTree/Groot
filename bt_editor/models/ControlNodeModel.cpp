@@ -3,8 +3,7 @@
 #include <QtDebug>
 
 ControlNodeModel::ControlNodeModel(const QString &ID, const ParameterWidgetCreators &parameters ):
-    BehaviorTreeDataModel("Control", ID , parameters),
-    _renderer(nullptr)
+    BehaviorTreeDataModel("Control", ID , parameters)
 {
     _line_edit_name->setEnabled(true);
     _line_edit_name->setReadOnly(false);
@@ -17,15 +16,15 @@ ControlNodeModel::ControlNodeModel(const QString &ID, const ParameterWidgetCreat
 
 SequenceModel::SequenceModel(): ControlNodeModelBase()
 {
-  _renderer = new QSvgRenderer( QString(":/icons/svg/arrow_right.svg") );
+
 }
 
 FallbackModel::FallbackModel(): ControlNodeModelBase()  {
-  _renderer = new QSvgRenderer( QString(":/icons/svg/question_mark.svg") );
+
 }
 
 SequenceStarModel::SequenceStarModel(): ControlNodeModelBase() {
-  _renderer = new QSvgRenderer( QString(":/icons/svg/arrow_right.svg") );
+
 }
 
 IfThenElseModel::IfThenElseModel(): ControlNodeModelBase() {

@@ -17,11 +17,11 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _instance_name(registration_name)
 {
     _main_widget = new QFrame();
-    _label_ID = new QLabel();
-    _line_edit_name = new QLineEdit();
+    _label_ID = new QLabel(_main_widget);
+    _line_edit_name = new QLineEdit(_main_widget);
     _params_widget = new QFrame();
 
-    _main_layout = new QVBoxLayout();
+    _main_layout = new QVBoxLayout(_main_widget);
     _main_widget->setLayout( _main_layout );
 
     _top_layout = new QHBoxLayout();
@@ -103,7 +103,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
 
         }
         _params_widget->adjustSize();
-        _params_widget->setLayout( _form_layout );
+       // _params_widget->setLayout( _form_layout );
         _form_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
     }
 

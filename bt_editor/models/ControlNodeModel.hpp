@@ -32,11 +32,6 @@ public:
 
     virtual NodeType nodeType() const final { return NodeType::CONTROL; }
 
-    virtual QSvgRenderer* icon() const override { return _renderer; }
-
-protected:
-
-    QSvgRenderer* _renderer;
 };
 //------------------------------------------------
 
@@ -69,9 +64,12 @@ class SequenceModel: public ControlNodeModelBase<SequenceModel>
 {
 public:
     SequenceModel();
-    virtual ~SequenceModel() = default;
-
     static const char* Name() { return ("Sequence"); }
+
+    virtual QSvgRenderer* icon() const override {
+        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/arrow_right.svg"));
+        return renderer;
+    }
 };
 
 
@@ -79,8 +77,12 @@ class FallbackModel: public  ControlNodeModelBase<FallbackModel>
 {
 public:
     FallbackModel();
-    virtual ~FallbackModel()  = default;
     static const char* Name() { return ("Fallback"); }
+
+    virtual QSvgRenderer* icon() const override {
+        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/question_mark.svg"));
+        return renderer;
+    }
 };
 
 
@@ -88,9 +90,12 @@ class SequenceStarModel: public ControlNodeModelBase<SequenceStarModel>
 {
 public:
     SequenceStarModel();
-    virtual ~SequenceStarModel()  = default;
     static const char* Name() { return ("SequenceStar"); }
 
+    virtual QSvgRenderer* icon() const override {
+        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/arrow_right.svg"));
+        return renderer;
+    }
 };
 
 

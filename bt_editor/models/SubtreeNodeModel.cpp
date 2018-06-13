@@ -23,7 +23,7 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
 
     updateNodeSize();
 
-    _renderer = new QSvgRenderer( QString(":/icons/svg/subtree.svg") );
+    _renderer = new QSvgRenderer( QString(":/icons/svg/subtree.svg"), this );
 }
 
 SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
