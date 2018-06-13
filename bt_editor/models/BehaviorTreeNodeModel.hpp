@@ -12,20 +12,13 @@
 #include <map>
 #include <functional>
 #include "bt_editor/bt_editor_base.h"
+#include "bt_editor/utils.h"
 
 using QtNodes::PortType;
 using QtNodes::PortIndex;
 using QtNodes::NodeData;
 using QtNodes::NodeDataType;
 using QtNodes::NodeDataModel;
-
-struct ParameterWidgetCreator{
-    QString label;
-    std::function<QWidget*()> instance_factory;
-};
-
-using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
-
 
 class BehaviorTreeDataModel : public NodeDataModel
 {

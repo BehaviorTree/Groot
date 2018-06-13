@@ -56,4 +56,6 @@ inline NodeStatus convert(const BT_Serialization::Status& status)
     return NodeStatus::IDLE;
 }
 
+ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param);
+
 #endif // NODE_UTILS_H

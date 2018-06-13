@@ -28,10 +28,25 @@ const char* toStr(ParamType type);
 
 const char* toStr(GraphicMode type);
 
+struct ParameterWidgetCreator{
+    QString label;
+    std::function<QWidget*()> instance_factory;
+};
+
+using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
+
+
 struct TreeNodeModel
 {
   NodeType node_type;
-  std::map<QString, ParamType> params;
+
+  struct Param
+  {
+     QString label;
+     ParamType type;
+     QString default_value;
+  };
+  std::vector<Param> params;
 };
 
 typedef std::map<QString, TreeNodeModel> TreeNodeModels;

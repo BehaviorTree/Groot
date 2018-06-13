@@ -54,27 +54,6 @@ void SidepanelEditor::updateTreeView()
       item->setData(0, Qt::UserRole, ID);
     }
 
-    const std::map<QString,QString> builtin_nodes = {
-        { "Sequence", "Control"},
-        { "SequenceStar", "Control"},
-        { "Fallback", "Control"},
-        { "Root", "Root"},
-        { "Negation", "Decorator"},
-        { "RetryUntilSuccesful", "Decorator"},
-        { "Repeat", "Decorator"}
-    };
-
-    for (auto const &it : builtin_nodes)
-    {
-      const QString& ID = it.first;
-      const QString& category = it.second;
-
-      auto parent = _tree_view_category_items[category];
-      auto item = new QTreeWidgetItem(parent, {ID});
-      AdjustFont(item, 11, false);
-      item->setData(0, Qt::UserRole, ID);
-    }
-
     ui->treeWidget->expandAll();
 }
 
@@ -103,14 +82,10 @@ void SidepanelEditor::on_treeWidget_itemSelectionChanged()
 
     connect( ui->parametersTableWidget,  &QTableWidget::cellChanged, this, &SidepanelEditor::on_parameterChanged);
 
-    for (auto& it: model.params)
+    for (auto& param: model.params)
     {
-      ui->parametersTableWidget->setItem(row,0, new QTableWidgetItem(it.first));
-      ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem(toStr(it.second)));
-//      auto combo = new QComboBox();
-//      combo->addItems( {"Int", "Double", "Text"} );
-//      combo->setMaximumWidth(80);
-//      ui->parametersTableWidget->setCellWidget(row, 1, combo);
+      ui->parametersTableWidget->setItem(row,0, new QTableWidgetItem( param.label ));
+      ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem( toStr(param.type) ));
       row++;
     }
 

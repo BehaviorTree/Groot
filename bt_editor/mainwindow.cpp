@@ -59,6 +59,14 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _model_registry->registerModel<NegationNodeModel>("Decorator");
     _model_registry->registerModel<RepeatNodeModel>("Decorator");
 
+    _tree_nodes_model["Root"]         = { NodeType::ROOT, {} };
+    _tree_nodes_model["Sequence"]     = { NodeType::CONTROL, {} };
+    _tree_nodes_model["SequenceStar"] = { NodeType::CONTROL, {} };
+    _tree_nodes_model["Fallback"]     = { NodeType::CONTROL, {} };
+    _tree_nodes_model["Negation"]            = { NodeType::DECORATOR, {} };
+    _tree_nodes_model["RetryUntilSuccesful"] = RetryNodeModel::NodeModel();
+    _tree_nodes_model["Repeat"]              = RepeatNodeModel::NodeModel();
+
     _editor_widget = new SidepanelEditor(_tree_nodes_model, this);
     _replay_widget = new SidepanelReplay(this);
 
@@ -339,22 +347,22 @@ void MainWindow::on_actionSave_triggered()
 
     XMLElement* root_models = doc.NewElement("TreeNodesModel");
 
-    for(const auto& it: _tree_nodes_model)
+    for(const auto& tree_it: _tree_nodes_model)
     {
-        const auto& ID    = it.first;
-        const auto& model = it.second;
+        const auto& ID    = tree_it.first;
+        const auto& model = tree_it.second;
 
         XMLElement* node = doc.NewElement( toStr(model.node_type) );
 
         if( node )
         {
             node->SetAttribute("ID", ID.toStdString().c_str());
-            for(const auto& it: model.params)
+            for(const auto& param: model.params)
             {
                 XMLElement* param_node = doc.NewElement( "Parameter" );
                 param_node->InsertEndChild(root_models);
-                param_node->SetAttribute("label", it.first.toStdString().c_str() );
-                param_node->SetAttribute("type",  toStr( it.second ) );
+                param_node->SetAttribute("label", param.label.toStdString().c_str() );
+                param_node->SetAttribute("type",  toStr( param.type ) );
                 node->InsertEndChild(param_node);
             }
         }

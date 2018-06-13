@@ -21,16 +21,17 @@ public:
     virtual NodeType nodeType() const final { return NodeType::DECORATOR; }
 };
 
-ParameterWidgetCreator buildWidgetCreator(const QString& label,
-                                          ParamType type,
-                                          const QString& combo_options);
-
-
 class RetryNodeModel : public DecoratorNodeModel
 {
 public:
     RetryNodeModel(const ParameterWidgetCreators &parameters =
-    { buildWidgetCreator("num_attempts", ParamType::INT, "") });
+    { buildWidgetCreator( NodeModel().params.front() ) } );
+
+    static const TreeNodeModel& NodeModel()
+    {
+        static TreeNodeModel model = { NodeType::DECORATOR, { {tr("num_attempts"), ParamType::INT} } };
+        return model;
+    }
 
     static const char* Name() {  return "RetryUntilSuccesful"; }
     QString caption() const override { return RetryNodeModel::Name(); }
@@ -60,7 +61,13 @@ class RepeatNodeModel : public DecoratorNodeModel
 {
 public:
     RepeatNodeModel(const ParameterWidgetCreators &parameters =
-    { buildWidgetCreator("num_cycles", ParamType::INT, "") });
+    { buildWidgetCreator( NodeModel().params.front() ) });
+
+    static const TreeNodeModel& NodeModel()
+    {
+        static TreeNodeModel model = { NodeType::DECORATOR, { {tr("num_cycles"), ParamType::INT} } };
+        return model;
+    }
 
     static const char* Name() {  return "Repeat"; }
     QString caption() const override { return RepeatNodeModel::Name(); }

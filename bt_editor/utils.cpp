@@ -460,3 +460,57 @@ QtNodes::NodeStyle getStyleFromStatus(NodeStatus status)
     return style;
 }
 
+ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
+{
+    ParameterWidgetCreator creator;
+    creator.label = param.label;
+
+    if( param.type == ParamType::TEXT)
+    {
+        creator.instance_factory = [param]()
+        {
+            QLineEdit* line = new QLineEdit();
+            line->setAlignment( Qt::AlignHCenter);
+            line->setMaximumWidth(150);
+            line->setText( param.default_value );
+            return line;
+        };
+    }
+    else if( param.type == ParamType::INT)
+    {
+        creator.instance_factory = [param]()
+        {
+            QLineEdit* line = new QLineEdit();
+            line->setValidator( new QIntValidator( line ));
+            line->setAlignment( Qt::AlignHCenter);
+            line->setMaximumWidth(80);
+            line->setText( param.default_value );
+            return line;
+        };
+    }
+    else if( param.type == ParamType::DOUBLE)
+    {
+        creator.instance_factory = [param]()
+        {
+            QLineEdit* line = new QLineEdit();
+            line->setValidator( new QDoubleValidator( line ));
+            line->setAlignment( Qt::AlignHCenter);
+            line->setMaximumWidth(120);
+            line->setText( param.default_value );
+            return line;
+        };
+    }
+    else if( param.type == ParamType::COMBO)
+    {
+        QStringList option_list = param.default_value.split(";", QString::SkipEmptyParts);
+        creator.instance_factory = [option_list]()
+        {
+            QComboBox* combo = new QComboBox();
+            combo->addItems(option_list);
+            combo->setMaximumWidth(150);
+            return combo;
+        };
+    }
+    return creator;
+}
+

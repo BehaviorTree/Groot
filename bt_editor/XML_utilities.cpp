@@ -11,57 +11,6 @@
 using namespace tinyxml2;
 using namespace QtNodes;
 
-ParameterWidgetCreator buildWidgetCreator(const QString& label,ParamType type, const QString& combo_options)
-{
-    ParameterWidgetCreator creator;
-    creator.label = label;
-
-    if( type == ParamType::TEXT)
-    {
-        creator.instance_factory = []()
-        {
-            QLineEdit* line = new QLineEdit();
-            line->setAlignment( Qt::AlignHCenter);
-            line->setMaximumWidth(150);
-            return line;
-        };
-    }
-    else if( type == ParamType::INT)
-    {
-        creator.instance_factory = []()
-        {
-            QLineEdit* line = new QLineEdit();
-            line->setValidator( new QIntValidator( line ));
-            line->setAlignment( Qt::AlignHCenter);
-            line->setMaximumWidth(80);
-            return line;
-        };
-    }
-    else if( type == ParamType::DOUBLE)
-    {
-        creator.instance_factory = []()
-        {
-            QLineEdit* line = new QLineEdit();
-            line->setValidator( new QDoubleValidator( line ));
-            line->setAlignment( Qt::AlignHCenter);
-            line->setMaximumWidth(120);
-            return line;
-        };
-    }
-    else if( type == ParamType::COMBO)
-    {
-        QStringList option_list = combo_options.split(";", QString::SkipEmptyParts);
-        creator.instance_factory = [option_list]()
-        {
-            QComboBox* combo = new QComboBox();
-            combo->addItems(option_list);
-            combo->setMaximumWidth(150);
-            return combo;
-        };
-    }
-    return creator;
-}
-
 static
 void buildTreeNodeModel(const tinyxml2::XMLElement* node,
                         QtNodes::DataModelRegistry& registry,
@@ -94,13 +43,16 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
              param_node != nullptr;
              param_node = param_node->NextSiblingElement("Parameter") )
         {
-            const auto param_type = getParamTypeFromString( param_node->Attribute("type"));
-            const auto param_name = param_node->Attribute("label");
+            TreeNodeModel::Param model_param;
+            model_param.type  = getParamTypeFromString( param_node->Attribute("type"));
+            model_param.label = param_node->Attribute("label");
 
-            auto widget_creator = buildWidgetCreator( param_name, param_type,
-                                                      param_node->Attribute("options") );
+            if( param_node->Attribute("default") ){
+                model_param.default_value = param_node->Attribute("default");
+            }
+            auto widget_creator = buildWidgetCreator( model_param );
             parameters.push_back(widget_creator);
-            node_model.params.insert( std::make_pair(param_name, param_type) );
+            node_model.params.push_back( std::move(model_param) );
         }
     }
     else
@@ -112,12 +64,14 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
             QString attr_name( attr->Name() );
             if(attr_name != "ID" && attr_name != "name")
             {
-                const auto& param_type = ParamType::TEXT;
-                const auto  param_name = attr_name;
+                TreeNodeModel::Param model_param;
+                model_param.type  = ParamType::TEXT;
+                model_param.label = attr_name;
+                model_param.default_value = attr->Value();
 
-                auto widget_creator = buildWidgetCreator( param_name, param_type, QString() );
+                auto widget_creator = buildWidgetCreator( model_param );
                 parameters.push_back(widget_creator);
-                node_model.params.insert( std::make_pair(param_name, param_type) );
+                node_model.params.push_back( std::move(model_param) );
             }
         }
     }
