@@ -395,6 +395,14 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
 {
     AbsBehaviorTree tree;
 
+    AbstractTreeNode root_node;
+    root_node.instance_name = "Root";
+    root_node.registration_name = "Root";
+    root_node.type = NodeType::ROOT;
+    root_node.children_index.push_back( 1 );
+
+    tree.pushBack( std::numeric_limits<uint16_t>::max(), root_node );
+
     for( const BT_Serialization::TreeNode* node: *(fb_behavior_tree->nodes()) )
     {
         AbstractTreeNode abs_node;
@@ -409,7 +417,8 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
     for(size_t index = 0; index < fb_behavior_tree->nodes()->size(); index++ )
     {
         const BT_Serialization::TreeNode* fb_node = fb_behavior_tree->nodes()->Get(index);
-        AbstractTreeNode* abs_node = tree.nodeAtIndex( index );
+        // index+1 because we added the Root
+        AbstractTreeNode* abs_node = tree.nodeAtIndex( index+1 );
 
         for( const auto child_uid: *(fb_node->children_uid()) )
         {
@@ -419,7 +428,8 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
     }
 
     tree.updateRootIndex();
-
+//    tree.debugPrint();
+//    std::cout << " .....  " << std::endl;
     return tree;
 }
 

@@ -177,7 +177,7 @@ void SidepanelReplay::on_LoadLog()
 
     AbsBehaviorTree loaded_tree = BuildTreeFromFlatbuffers( fb_behavior_tree );
 
-    loadBehaviorTree( loaded_tree, "BehaviorTree" );
+    emit loadBehaviorTree( loaded_tree, "BehaviorTree" );
 
     _transitions.clear();
     _transitions.reserve( (content.size() - 4 - bt_header_size) / 12 );
@@ -276,6 +276,7 @@ void SidepanelReplay::onRowChanged(int current_row)
     {
         auto& trans = _transitions[t];
         node_status[ trans.index ] = trans.status;
+        qDebug() << trans.index << " : " << tr(toStr(trans.status));
     }
     emit changeNodeStyle( bt_name, node_status );
 

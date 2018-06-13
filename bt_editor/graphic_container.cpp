@@ -581,8 +581,9 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
                                           cursor ));
 
     auto root_node = abstract_tree.rootNode();
-    if( root_node->registration_name == "Root" && root_node->instance_name == "Root")
+    if( root_node->type == NodeType::ROOT)
     {
+      root_node->corresponding_node = first_qt_node;
       root_node = abstract_tree.nodeAtIndex( root_node->children_index.front() );
     }
 

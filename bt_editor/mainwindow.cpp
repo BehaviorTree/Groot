@@ -949,6 +949,7 @@ void MainWindow::onChangeNodesStyle(const QString& bt_name,
     for (size_t index = 0; index < tree.nodesCount(); index++)
     {
         auto abs_node = tree.nodeAtIndex(index);
+        qDebug() << abs_node->instance_name << " -> " << tr(toStr(abs_node->status));
         auto& node = abs_node->corresponding_node;
         node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node->status ) );
         node->nodeGraphicsObject().update();

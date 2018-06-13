@@ -19,13 +19,18 @@ const AbstractTreeNode *AbsBehaviorTree::rootNode() const
     {
         return nullptr;
     }
-    else
+    else{
         return &_nodes.at( _root_node_index );
+    }
 }
 
 void AbsBehaviorTree::pushBack(uint16_t UID, AbstractTreeNode node)
 {
     node.index = _nodes.size();
+    if( _UID_to_index.count(UID) > 0 )
+    {
+        throw std::logic_error("Duplicated UID in AbsBehaviorTree::pushBack");
+    }
     _UID_to_index.insert( {UID, node.index} );
     _nodes.push_back( std::move(node) );
 }
