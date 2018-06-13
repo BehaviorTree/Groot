@@ -5,13 +5,13 @@
 
 #include <unordered_map>
 #include <tuple>
-#include <memory>
 #include <functional>
 
 #include "QUuidStdHash.hpp"
 #include "Export.hpp"
 #include "DataModelRegistry.hpp"
 #include "TypeConverter.hpp"
+#include "memory.hpp"
 
 namespace QtNodes
 {
@@ -66,11 +66,11 @@ public:
 
   void setRegistry(std::shared_ptr<DataModelRegistry> registry);
 
-  void iterateOverNodes(std::function<void(Node*)> visitor);
+  void iterateOverNodes(std::function<void(Node*)> const & visitor);
 
-  void iterateOverNodeData(std::function<void(NodeDataModel*)> visitor);
+  void iterateOverNodeData(std::function<void(NodeDataModel*)> const & visitor);
 
-  void iterateOverNodeDataDependentOrder(std::function<void(NodeDataModel*)> visitor);
+  void iterateOverNodeDataDependentOrder(std::function<void(NodeDataModel*)> const & visitor);
 
   QPointF getNodePosition(const Node& node) const;
 
@@ -142,5 +142,5 @@ private:
 
 Node*
 locateNodeAt(QPointF scenePoint, FlowScene &scene,
-             QTransform viewTransform);
+             QTransform const & viewTransform);
 }

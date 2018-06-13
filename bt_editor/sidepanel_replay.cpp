@@ -56,7 +56,7 @@ void SidepanelReplay::clear()
     _table_model->setRowCount(0);
 }
 
-void SidepanelReplay::updateTableModel()
+void SidepanelReplay::updateTableModel(const AbsBehaviorTree& locaded_tree)
 {
     _table_model->setColumnCount(4);
     _table_model->setRowCount(0);
@@ -85,9 +85,6 @@ void SidepanelReplay::updateTableModel()
             item->setBackground(QColor::fromRgb(222, 222, 222));
         } break;
         }
-//        auto font = item->font();
-//        font.setBold(true);
-//        item->setFont(font);
         item->setForeground(QColor::fromRgb(0, 0, 0));
         return item;
     };
@@ -100,7 +97,7 @@ void SidepanelReplay::updateTableModel()
         for(size_t row=0; row < transitions_count; row++)
         {
             auto& trans = _transitions[row];
-            auto& node = _loaded_tree.nodeAtIndex( trans.index );
+            auto node  = locaded_tree.nodeAtIndex( trans.index );
 
             QString timestamp;
             timestamp.sprintf("%.3f", trans.timestamp - first_timestamp);
@@ -121,7 +118,7 @@ void SidepanelReplay::updateTableModel()
 
             QList<QStandardItem *> rowData;
             rowData << timestamp_item;
-            rowData << new QStandardItem( node.instance_name );
+            rowData << new QStandardItem( node->instance_name );
             rowData << createStatusItem( trans.prev_status );
             rowData << createStatusItem( trans.status );
             _table_model->appendRow(rowData);
@@ -178,9 +175,9 @@ void SidepanelReplay::on_LoadLog()
 
     auto fb_behavior_tree = BT_Serialization::GetBehaviorTree( &buffer[4] );
 
-    _loaded_tree = BuildTreeFromFlatbuffers( fb_behavior_tree );
+    AbsBehaviorTree loaded_tree = BuildTreeFromFlatbuffers( fb_behavior_tree );
 
-    loadBehaviorTree( _loaded_tree );
+    loadBehaviorTree( loaded_tree, "BehaviorTree" );
 
     _transitions.clear();
     _transitions.reserve( (content.size() - 4 - bt_header_size) / 12 );
@@ -193,7 +190,7 @@ void SidepanelReplay::on_LoadLog()
         double timestamp = t_sec + t_usec* 0.000001;
         transition.timestamp = timestamp;
         auto UID = flatbuffers::ReadScalar<uint16_t>(&buffer[index+8]);
-        transition.index = _loaded_tree.UidToIndex( UID );
+        transition.index = loaded_tree.UidToIndex( UID );
         transition.prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
         transition.status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+11] ));
 
@@ -202,7 +199,7 @@ void SidepanelReplay::on_LoadLog()
 
     _timepoint.clear();
     _prev_row = -1;
-    updateTableModel();
+    updateTableModel(loaded_tree);
 }
 
 
@@ -270,28 +267,18 @@ void SidepanelReplay::onRowChanged(int current_row)
     }
     _layout_update_timer->start(100);
 
-    for (size_t index = 0; index < _loaded_tree.nodesCount(); index++)
-    {
-        auto& abs_node = _loaded_tree.nodeAtIndex(index);
-        abs_node.status = NodeStatus::IDLE;
-    }
+    const QString bt_name("BehaviorTree");
+
+    std::unordered_map<int, NodeStatus> node_status;
 
     // We can do better, but it is so fast that I don't even care... for the time being.
     for (int t = 0; t <= current_row; t++)
     {
         auto& trans = _transitions[t];
-        auto& abs_node = _loaded_tree.nodeAtIndex( trans.index );
-        abs_node.status = trans.status;
+        node_status[ trans.index ] = trans.status;
     }
+    emit changeNodeStyle( bt_name, node_status );
 
-    // update the graphic part
-    for (size_t index = 0; index < _loaded_tree.nodesCount(); index++)
-    {
-        auto& abs_node = _loaded_tree.nodeAtIndex(index);
-        auto& node = abs_node.corresponding_node;
-        node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node.status ) );
-        node->nodeGraphicsObject().update();
-    }
     _prev_row = current_row;
 }
 

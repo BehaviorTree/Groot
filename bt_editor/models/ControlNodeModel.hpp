@@ -10,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <QXmlStreamWriter>
+#include <QSvgRenderer>
 #include "BehaviorTreeNodeModel.hpp"
 
 using QtNodes::PortType;
@@ -24,22 +25,18 @@ class ControlNodeModel : public BehaviorTreeDataModel
 public:
     ControlNodeModel(const QString& ID, const ParameterWidgetCreators &parameters);
 
-    virtual ~ControlNodeModel() = default;
+    virtual ~ControlNodeModel() override = default;
 
-    unsigned int  nPorts(PortType) const override final
+    unsigned int  nPorts(PortType) const final
     { return 1; }
 
+    virtual NodeType nodeType() const final { return NodeType::CONTROL; }
 
-    virtual void setInstanceName(const QString &name) override;
+    virtual QSvgRenderer* icon() const override { return _renderer; }
 
-    virtual NodeType nodeType() const override final { return NodeType::CONTROL; }
+protected:
 
-    //    virtual void restore(QJsonObject const &modelJson) override final
-    //    {
-    //      setInstanceName( modelJson["alias"].toString() );
-    //    }
-private:
-    void init();
+    QSvgRenderer* _renderer;
 };
 //------------------------------------------------
 
@@ -48,40 +45,23 @@ class ControlNodeModelBase : public ControlNodeModel
 {
 public:
     ControlNodeModelBase();
-    virtual ~ControlNodeModelBase() {}
+    virtual ~ControlNodeModelBase() override = default;
 
-    virtual const char* className() const override final
+    virtual const char* className() const final
     {
-        return T::staticName();
+        return T::Name();
     }
-
-protected:
-
-    void setLabelImage(QString pixmap_address);
 };
 
 //-------------------------------------------------
 template<typename T> inline
 ControlNodeModelBase<T>::ControlNodeModelBase():
-    ControlNodeModel(T::staticName(), ParameterWidgetCreators() )
+    ControlNodeModel(T::Name(), ParameterWidgetCreators() )
 {
-    _main_widget->setToolTip( T::staticName() );
+    _main_widget->setToolTip( T::Name() );
 }
 
-template<typename T> inline
-void ControlNodeModelBase<T>::setLabelImage(QString pixmap_address)
-{
-    QPixmap pix;
-    if( pix.load(pixmap_address))
-    {
-        _label_ID->setPixmap(pix);
-        _label_ID->setFixedSize( QSize(30,30) );
-        _label_ID->setScaledContents(true);
-    }
-    else{
-        _label_ID->setText( name() );
-    }
-}
+
 
 
 //-------------------------------------------------
@@ -91,7 +71,7 @@ public:
     SequenceModel();
     virtual ~SequenceModel() = default;
 
-    static const char* staticName() { return ("Sequence"); }
+    static const char* Name() { return ("Sequence"); }
 };
 
 
@@ -100,7 +80,7 @@ class FallbackModel: public  ControlNodeModelBase<FallbackModel>
 public:
     FallbackModel();
     virtual ~FallbackModel()  = default;
-    static const char* staticName() { return ("Fallback"); }
+    static const char* Name() { return ("Fallback"); }
 };
 
 
@@ -109,7 +89,7 @@ class SequenceStarModel: public ControlNodeModelBase<SequenceStarModel>
 public:
     SequenceStarModel();
     virtual ~SequenceStarModel()  = default;
-    static const char* staticName() { return ("SequenceStar"); }
+    static const char* Name() { return ("SequenceStar"); }
 
 };
 
@@ -120,7 +100,7 @@ class IfThenElseModel: public  ControlNodeModelBase<IfThenElseModel>
 public:
     IfThenElseModel();
     virtual ~IfThenElseModel()  = default;
-    static const char* staticName() { return ("IfThenElse"); }
+    static const char* Name() { return ("IfThenElse"); }
 };
 
 

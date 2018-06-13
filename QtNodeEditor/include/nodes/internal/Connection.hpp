@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #include <QtCore/QObject>
 #include <QtCore/QUuid>
 #include <QtCore/QVariant>
@@ -15,6 +13,7 @@
 #include "TypeConverter.hpp"
 #include "QUuidStdHash.hpp"
 #include "Export.hpp"
+#include "memory.hpp"
 
 class QPointF;
 
@@ -46,7 +45,7 @@ public:
              PortIndex portIndexIn,
              Node& nodeOut,
              PortIndex portIndexOut,
-             TypeConverter const & converter =
+             TypeConverter converter =
                TypeConverter{});
 
   Connection(const Connection&) = delete;

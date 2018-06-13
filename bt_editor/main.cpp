@@ -14,10 +14,6 @@
 #include "XML_utilities.hpp"
 #include "startup_dialog.h"
 
-#ifdef USING_ROS
-#include <ros/ros.h>
-#endif
-
 using QtNodes::DataModelRegistry;
 using QtNodes::FlowViewStyle;
 using QtNodes::NodeStyle;
@@ -44,6 +40,7 @@ main(int argc, char *argv[])
     if( parser.isSet(test_option) )
     {
         MainWindow win( GraphicMode::EDITOR );
+        win.setWindowTitle("BehaviorTree Editor");
         win.show();
         win.loadFromXML( gTestXML );
         return app.exec();

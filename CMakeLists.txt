@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 
 project(behavior_tree_editor)
 
-find_package(Qt5 COMPONENTS  Core Widgets Gui OpenGL Xml)
+find_package(Qt5 COMPONENTS  Core Widgets Gui OpenGL Xml Svg)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -35,7 +35,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_definitions(${Qt5Widgets_DEFINITIONS} -DNODE_EDITOR_STATIC -std=c++11 )
-set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} -Werror=return-type")
 
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
@@ -100,9 +100,9 @@ add_executable(behavior_tree_editor
     ${RESOURCES})
 
 if( ZMQ_FOUND )
-    target_link_libraries(behavior_tree_editor QtNodeEditor zmq)
+    target_link_libraries(behavior_tree_editor QtNodeEditor zmq )
 else()
-    target_link_libraries(behavior_tree_editor QtNodeEditor)
+    target_link_libraries(behavior_tree_editor QtNodeEditor )
 endif()
 
 

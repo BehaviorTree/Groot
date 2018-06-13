@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QWidget>
 
+#include "bt_editor_base.h"
 #include "editor_flowscene.h"
 
 #include <nodes/Node>
@@ -25,9 +26,11 @@ public:
 
 
     const EditorFlowScene* scene()  const{ return _scene; }
-    const QtNodes::FlowView*  view() const { return _view; }
+    const QtNodes::FlowView* view() const { return _view; }
 
     void lockEditing(bool locked);
+
+    void lockSubtreeEditing(QtNodes::Node& node, bool locked);
 
     void nodeReorder();
 
@@ -37,9 +40,26 @@ public:
 
     void clearScene();
 
+    AbsBehaviorTree loadedTree() const;
+
+    void loadSceneFromTree(const AbsBehaviorTree &tree);
+
+    void appendTreeToNode(QtNodes::Node& node, AbsBehaviorTree subtree);
+
+    void loadFromJson(const QByteArray& data);
+
+    QtNodes::Node* substituteNode(QtNodes::Node* node, const QString& new_node_name);
+
+    void deleteSubTreeRecursively(QtNodes::Node& node);
+
+    std::set<QtNodes::Node*> getSubtreeNodesRecursively(QtNodes::Node &root_node);
+
 signals:
 
     void undoableChange();
+
+    void requestSubTreeExpand(GraphicContainer& container,
+                              QtNodes::Node& node);
 
 public slots:
 
@@ -62,9 +82,14 @@ private:
 
    void insertNodeInConnection(QtNodes::Connection &connection, QString node_name);
 
+   void recursiveLoadStep(QPointF &cursor, double &x_offset, AbsBehaviorTree &tree,
+                          AbstractTreeNode* abs_node,
+                          QtNodes::Node* parent_node, int nest_level);
+
    std::shared_ptr<QtNodes::DataModelRegistry> _model_registry;
 
    bool _signal_was_blocked;
+
 
 };
 

@@ -12,6 +12,7 @@
 #include <QWidgetAction>
 #include <QTreeWidgetItem>
 #include <QShortcut>
+#include <QTabBar>
 #include <nodes/Node>
 #include <nodes/NodeData>
 #include <nodes/NodeStyle>
@@ -49,11 +50,14 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     _model_registry = std::make_shared<QtNodes::DataModelRegistry>();
 
-    _model_registry->registerModel("Root", [](){ return std::make_unique<RootNodeModel>();} );
+    _model_registry->registerModel<RootNodeModel>("Root");
+    _model_registry->registerModel<SequenceModel>("Control");
+    _model_registry->registerModel<SequenceStarModel>("Control");
+    _model_registry->registerModel<FallbackModel>("Control");
 
-    _model_registry->registerModel("Control", [](){ return std::make_unique<SequenceModel>();} );
-    _model_registry->registerModel("Control", [](){ return std::make_unique<SequenceStarModel>();} );
-    _model_registry->registerModel("Control", [](){ return std::make_unique<FallbackModel>();} );
+    _model_registry->registerModel<RetryNodeModel>("Decorator");
+    _model_registry->registerModel<NegationNodeModel>("Decorator");
+    _model_registry->registerModel<RepeatNodeModel>("Decorator");
 
     _editor_widget = new SidepanelEditor(_tree_nodes_model, this);
     _replay_widget = new SidepanelReplay(this);
@@ -76,7 +80,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     dynamic_cast<QVBoxLayout*>(ui->leftFrame->layout())->setStretch(1,1);
 
-    createTab("Behaviortree");
+    createTab("BehaviorTree");
 
     auto arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
 
@@ -92,15 +96,20 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QShortcut* redo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this);
     connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
+
     connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
              this, &MainWindow::onLoadAbsBehaviorTree );
 
     connect( ui->toolButtonSaveFile, &QToolButton::clicked,
              this, &MainWindow::on_actionSave_triggered );
 
+    connect( _replay_widget, &SidepanelReplay::changeNodeStyle,
+             this, &MainWindow::onChangeNodesStyle);
+
 #ifdef ZMQ_FOUND
-    connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
-             this, &MainWindow::onLoadAbsBehaviorTree );
+    // TODO / FIXME
+//    connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
+//             this, &MainWindow::onLoadAbsBehaviorTree );
 #endif
     onSceneChanged();
 
@@ -135,7 +144,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 
-void MainWindow::createTab(const QString &name)
+GraphicContainer* MainWindow::createTab(const QString &name)
 {
     if( _tab_info.count(name) > 0)
     {
@@ -156,9 +165,14 @@ void MainWindow::createTab(const QString &name)
     connect( ti, &GraphicContainer::undoableChange,
              this, &MainWindow::onSceneChanged );
 
+    connect( ti, &GraphicContainer::requestSubTreeExpand,
+             this, &MainWindow::onRequestSubTreeExpand );
+
     //--------------------------------
 
     ti->view()->update();
+
+    return ti;
 }
 
 MainWindow::~MainWindow()
@@ -172,28 +186,52 @@ void MainWindow::loadFromXML(const QString& xml_text)
         using namespace tinyxml2;
         XMLDocument document;
         XMLError xml_error = document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
-        if( !xml_error )
+        auto document_root = document.RootElement();
+        if( xml_error == XMLError::XML_SUCCESS && document_root )
         {
-            ReadTreeNodesModel( document.RootElement(), *_model_registry, _tree_nodes_model );
+            ReadTreeNodesModel( document_root, *_model_registry, _tree_nodes_model );
             _editor_widget->updateTreeView();
 
-            currentTabInfo()->clearScene();
+            on_actionClear_triggered(false);
 
             bool error = false;
             QString err_message;
-            QByteArray saved_state = _current_state;
+            auto saved_state = _current_state;
             try {
+                const QSignalBlocker blocker( currentTabInfo() );
+                std::cout<< "Starting parsing"<< std::endl;
+
+
+                for (auto bt_root = document_root->FirstChildElement("BehaviorTree");
+                     bt_root != nullptr;
+                     bt_root = bt_root->NextSiblingElement("BehaviorTree"))
                 {
-                    const QSignalBlocker blocker( currentTabInfo() );
-                    std::cout<< "Starting parsing"<< std::endl;
-                    auto bt_root = document.RootElement()->FirstChildElement("BehaviorTree");
-                    if( bt_root ){
-                        _abstract_tree = BuildTreeFromXML(document.RootElement()->FirstChildElement("BehaviorTree") );
-                        onLoadAbsBehaviorTree(_abstract_tree);
+                    auto tree = BuildTreeFromXML( bt_root );
+                    QString tree_name("BehaviorTree");
+                    if( bt_root->Attribute("ID") )
+                    {
+                        tree_name = bt_root->Attribute("ID");
                     }
-                    std::cout<<"XML Parsed Successfully!"<< std::endl;
-                    currentTabInfo()->nodeReorder();
+
+                    onLoadAbsBehaviorTree(tree, tree_name);
                 }
+                std::cout<<"XML Parsed Successfully!"<< std::endl;
+
+                if( document_root->Attribute("main_tree_to_execute"))
+                {
+                    QString main_bt_name = document_root->Attribute("main_tree_to_execute");
+                    for (int i=0; i< ui->tabWidget->count(); i++)
+                    {
+                        if( ui->tabWidget->tabText( i ) == main_bt_name)
+                        {
+                            ui->tabWidget->tabBar()->moveTab(i, 0);
+                            ui->tabWidget->setCurrentIndex(0);
+                            break;
+                        }
+                    }
+                }
+
+                currentTabInfo()->nodeReorder();
             }
             catch (std::runtime_error& err) {
                 error = true;
@@ -206,7 +244,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
             if( error )
             {
-                loadSceneFromYAML( saved_state );
+                loadSavedStateFromJson( saved_state );
                 qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
                 QMessageBox::warning(this, tr("Exception!"),
                                      tr("It was not possible to parse the file. Error:\n\n%1"). arg( err_message ),
@@ -266,30 +304,16 @@ void MainWindow::on_actionLoad_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-    const QtNodes::FlowScene* scene = currentTabInfo()->scene();
-
-    std::vector<QtNodes::Node*> roots = findRoots( *scene );
-    bool valid_root = (roots.size() == 1) && ( dynamic_cast<RootNodeModel*>(roots.front()->nodeDataModel() ));
-
-    QtNodes::Node* current_node = nullptr;
-
-    if( valid_root )
+    for (auto& it: _tab_info)
     {
-        auto root_children = getChildren(*scene, *roots.front() );
-        if( root_children.size() == 1){
-            current_node = root_children.front();
+        auto& container = it.second;
+        if( !container->containsValidTree() )
+        {
+            QMessageBox::warning(this, tr("Oops!"),
+                                 tr("Malformed behavior tree. File can not be saved"),
+                                 QMessageBox::Cancel);
+            return;
         }
-        else{
-            valid_root = false;
-        }
-    }
-
-    if( !valid_root || !current_node)
-    {
-        QMessageBox::warning(this, tr("Oops!"),
-                             tr("Malformed behavior tree. There must be only 1 root node"),
-                             QMessageBox::Ok);
-        return;
     }
 
     //----------------------------
@@ -297,12 +321,20 @@ void MainWindow::on_actionSave_triggered()
     XMLDocument doc;
     XMLNode* root = doc.InsertEndChild( doc.NewElement( "root" ) );
 
-    root->InsertEndChild( doc.NewComment("-----------------------------------") );
-    XMLElement* root_tree = doc.NewElement("BehaviorTree");
-    root->InsertEndChild(root_tree);
+    for (auto& it: _tab_info)
+    {
+        auto& container = it.second;
+        auto  scene = container->scene();
 
-    RecursivelyCreateXml(*scene, doc, root_tree, current_node );
+        QtNodes::Node* root_node = container->loadedTree().rootNode()->corresponding_node;
 
+        root->InsertEndChild( doc.NewComment("-----------------------------------") );
+        XMLElement* root_element = doc.NewElement("BehaviorTree");
+        root_element->SetAttribute("ID", it.first.toStdString().c_str());
+        root->InsertEndChild(root_element);
+
+        RecursivelyCreateXml(*scene, doc, root_element, root_node );
+    }
     root->InsertEndChild( doc.NewComment("-----------------------------------") );
 
     XMLElement* root_models = doc.NewElement("TreeNodesModel");
@@ -400,7 +432,11 @@ GraphicContainer* MainWindow::currentTabInfo()
 {
     int index = ui->tabWidget->currentIndex();
     QString tab_name = ui->tabWidget->tabText(index);
+    return getTabByName(tab_name);
+}
 
+GraphicContainer *MainWindow::getTabByName(const QString &tab_name)
+{
     auto it = _tab_info.find( tab_name );
     return (it != _tab_info.end()) ? (it->second) : nullptr;
 }
@@ -452,14 +488,21 @@ void MainWindow::on_splitter_splitterMoved(int , int )
 
 void MainWindow::onPushUndo()
 {
-    const QByteArray state = currentTabInfo()->scene()->saveToMemory();
+    SavedState saved;
+    int index = ui->tabWidget->currentIndex();
+    saved.current_tab_name =   ui->tabWidget->tabText(index);
 
-    if( _undo_stack.empty() || ( state != _current_state &&  _undo_stack.back() != _current_state) )
+    for (auto& it: _tab_info)
     {
-        _undo_stack.push_back( _current_state );
+        saved.json_states[it.first] = it.second->scene()->saveToMemory();
+    }
+
+    if( _undo_stack.empty() || ( saved != _current_state &&  _undo_stack.back() != _current_state) )
+    {
+        _undo_stack.push_back( std::move(_current_state) );
         _redo_stack.clear();
     }
-    _current_state = state;
+    _current_state = saved;
 
     qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
@@ -470,11 +513,11 @@ void MainWindow::onUndoInvoked()
 
     if( _undo_stack.size() > 0)
     {
-        _redo_stack.push_back( _current_state );
+        _redo_stack.push_back( std::move(_current_state) );
         _current_state = _undo_stack.back();
         _undo_stack.pop_back();
 
-        loadSceneFromYAML(_current_state);
+        loadSavedStateFromJson(_current_state);
 
         qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
@@ -491,7 +534,7 @@ void MainWindow::onRedoInvoked()
         _current_state = std::move( _redo_stack.back() );
         _redo_stack.pop_back();
 
-        loadSceneFromYAML(_current_state);
+        loadSavedStateFromJson(_current_state);
 
         qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
@@ -514,17 +557,115 @@ void MainWindow::onConnectionUpdate(bool connected)
     }
 }
 
-void MainWindow::loadSceneFromYAML(QByteArray state)
+void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
+                                        QtNodes::Node& node)
 {
+    bool is_expanded_subtree  = dynamic_cast< SubtreeExpandedNodeModel*>( node.nodeDataModel() );
+    bool is_collapsed_subtree = dynamic_cast< SubtreeNodeModel*>( node.nodeDataModel() );
+
+    if( !is_expanded_subtree && !is_collapsed_subtree )
     {
-        const QSignalBlocker blocker( currentTabInfo() );
-        auto scene = currentTabInfo()->scene();
-        scene->clearScene();
-        scene->loadFromMemory( state );
-        refreshNodesLayout( scene->layout() );
+        throw std::logic_error("passing to onRequestSubTreeExpand something that is not a SubTree");
+    }
+
+    if( is_expanded_subtree )
+    {
+        subTreeExpand( container, node, SUBTREE_COLLAPSE );
+    }
+    else if( is_collapsed_subtree )
+    {
+        subTreeExpand( container, node, SUBTREE_EXPAND );
+    }
+}
+
+void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
+{
+    for(auto& it: saved_state.json_states)
+    {
+        auto container = getTabByName( it.first );
+        container->loadFromJson( it.second );
+        refreshNodesLayout( container->scene()->layout() );
+    }
+    for (int i=0; i< ui->tabWidget->count(); i++)
+    {
+        if( ui->tabWidget->tabText( i ) == saved_state.current_tab_name)
+        {
+            ui->tabWidget->setCurrentIndex(i);
+            break;
+        }
     }
     onSceneChanged();
 }
+
+void MainWindow::subTreeExpand(GraphicContainer &container,
+                               QtNodes::Node &node,
+                               MainWindow::SubtreeExpandOption option)
+{
+    const QSignalBlocker blocker( this );
+    const QString& subtree_name = dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() )->registrationName();
+
+    if( option == SUBTREE_EXPAND )
+    {
+        auto it = _tab_info.find( subtree_name );
+        if( it == _tab_info.end())
+        {
+            qDebug() << "ERROR: not found " << subtree_name;
+            return;
+        }
+        const auto& subtree  = it->second->loadedTree();
+        auto new_node_ptr = container.substituteNode( &node, subtree_name + EXPANDED_SUFFIX );
+        if( new_node_ptr )
+        {
+            container.appendTreeToNode( *new_node_ptr, subtree );
+            container.nodeReorder();
+            container.lockSubtreeEditing( *new_node_ptr, true );
+        }
+    }
+    else if( option == SUBTREE_COLLAPSE )
+    {
+        const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
+        QtNodes::Node* child_node = nullptr;
+        if(conn_out.size() == 1)
+        {
+            child_node = conn_out.begin()->second->getNode( PortType::In );
+        }
+        else{
+            return;
+        }
+
+        auto new_node_ptr = container.substituteNode( &node, subtree_name.left( EXPANDED_SUFFIX.length() ) );
+        if( new_node_ptr && child_node)
+        {
+            container.deleteSubTreeRecursively( *child_node );
+            container.nodeReorder();
+        }
+    }
+    else if( option == SUBTREE_REFRESH && dynamic_cast<SubtreeExpandedNodeModel*>(node.nodeDataModel()) )
+    {
+        const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
+        if(conn_out.size() != 1)
+        {
+           throw std::logic_error("subTreeExpand with SUBTREE_REFRESH, but not an expanded SubTree");
+        }
+
+        QtNodes::Node* child_node = conn_out.begin()->second->getNode( PortType::In );
+
+        auto original_subtree_name =  subtree_name.left( EXPANDED_SUFFIX.length() );
+        auto it = _tab_info.find(  original_subtree_name );
+        if( it == _tab_info.end())
+        {
+            qDebug() << "ERROR: not found " <<  original_subtree_name;
+            return;
+        }
+        const auto& subtree  = it->second->loadedTree();
+
+        container.deleteSubTreeRecursively( *child_node );
+        container.appendTreeToNode( node, subtree );
+        container.nodeReorder();
+        container.lockSubtreeEditing( node, true );
+    }
+}
+
 void MainWindow::on_toolButtonReorder_pressed()
 {
     onAutoArrange();
@@ -535,17 +676,18 @@ void MainWindow::on_toolButtonCenterView_pressed()
     currentTabInfo()->zoomHomeView();
 }
 
-void MainWindow::onLoadAbsBehaviorTree(AbsBehaviorTree &tree)
+void MainWindow::onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name)
 {
     {
-        const QSignalBlocker blocker( currentTabInfo() );
-        BuildSceneFromTree( tree, currentTabInfo()->scene() );
-        currentTabInfo()->nodeReorder();
-
-        if( &_abstract_tree != &tree )
+        auto container = getTabByName(bt_name);
+        if( !container )
         {
-            _abstract_tree = tree;
+            container = createTab(bt_name);
         }
+        const QSignalBlocker blocker( container );
+
+        container->loadSceneFromTree( tree );
+        container->nodeReorder();
     }
     _undo_stack.clear();
     _redo_stack.clear();
@@ -553,9 +695,22 @@ void MainWindow::onLoadAbsBehaviorTree(AbsBehaviorTree &tree)
     onPushUndo();
 }
 
-void MainWindow::on_actionClear_triggered()
+
+
+void MainWindow::on_actionClear_triggered(bool create_new)
 {
-    currentTabInfo()->clearScene();
+    for (auto& it: _tab_info)
+    {
+        it.second->clearScene();
+    }
+    _tab_info.clear();
+
+    ui->tabWidget->clear();
+    if( create_new )
+    {
+        createTab("BehaviorTree");
+    }
+
     _editor_widget->clear();
     _monitor_widget->clear();
     _replay_widget->clear();
@@ -638,6 +793,44 @@ void MainWindow::refreshNodesLayout(QtNodes::PortLayout new_layout)
     }
 }
 
+void MainWindow::refreshExpandedSubtrees()
+{
+    auto container = currentTabInfo();
+    if( !container){
+        return;
+    }
+    auto scene = container->scene();
+    auto root_node = findRoot( *scene );
+    if( !root_node )
+    {
+        return;
+    }
+
+    std::vector<QtNodes::Node*> subtree_nodes;
+    std::function<void(QtNodes::Node*)> selectRecursively;
+
+    selectRecursively = [&](QtNodes::Node* node)
+    {
+        if(dynamic_cast<SubtreeExpandedNodeModel*>(node->nodeDataModel()))
+        {
+            subtree_nodes.push_back( node );
+        }
+        else{
+            auto children = getChildren( scene, *node, false );
+            for(auto child_node: children)
+            {
+                selectRecursively(child_node);
+            }
+        }
+    };
+    selectRecursively( root_node );
+
+    for (auto subtree_node: subtree_nodes)
+    {
+        subTreeExpand( *container, *subtree_node, SUBTREE_REFRESH );
+    }
+}
+
 void MainWindow::on_toolButtonLayout_clicked()
 {
     if( _current_layout == QtNodes::PortLayout::Horizontal)
@@ -691,9 +884,66 @@ void MainWindow::on_actionReplay_mode_triggered()
     }
     if( res == QMessageBox::Ok)
     {
-        currentTabInfo()->clearScene();
+        on_actionClear_triggered();
         _replay_widget->clear();
         _current_mode = GraphicMode::REPLAY;
         updateCurrentMode();
     }
 }
+
+void MainWindow::on_tabWidget_currentChanged(int index)
+{
+    QString tab_name = ui->tabWidget->tabText(index);
+    auto tab = getTabByName(tab_name);
+    if( tab )
+    {
+        const QSignalBlocker blocker( tab );
+        tab->nodeReorder();
+        _current_state.current_tab_name = ui->tabWidget->tabText( index );
+        refreshExpandedSubtrees();
+    }  
+}
+
+bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) const
+{
+    if( current_tab_name != other.current_tab_name ||
+        json_states.size() != other.json_states.size())
+    {
+        return false;
+    }
+    for(auto& it: json_states  )
+    {
+        if( it.second != other.json_states.at( it.first ))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void MainWindow::onChangeNodesStyle(const QString& bt_name,
+                                    const std::unordered_map<int, NodeStatus>& node_status)
+{
+    auto tree = _tab_info[bt_name]->loadedTree();
+
+    for (size_t index = 0; index < tree.nodesCount(); index++)
+    {
+        auto abs_node = tree.nodeAtIndex(index);
+        abs_node->status = NodeStatus::IDLE;
+    }
+
+    for (auto& it: node_status)
+    {
+        auto* abs_node = tree.nodeAtIndex(it.first);
+        abs_node->status = it.second;
+    }
+
+    for (size_t index = 0; index < tree.nodesCount(); index++)
+    {
+        auto abs_node = tree.nodeAtIndex(index);
+        auto& node = abs_node->corresponding_node;
+        node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node->status ) );
+        node->nodeGraphicsObject().update();
+    }
+}
+

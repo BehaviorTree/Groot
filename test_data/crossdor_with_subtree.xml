@@ -1,0 +1,44 @@
+<root>
+    <!--------------------------------------->
+    <BehaviorTree ID="DoorClosed">
+        <Sequence name="door_closed_sequence">
+            <Decorator ID="Negation">
+                <Action ID="IsDoorOpen"/>
+            </Decorator>
+            <Decorator ID="RetryUntilSuccesful" num_attempts="4">
+                <Action ID="OpenDoor"/>
+            </Decorator>
+            <Action ID="PassThroughDoor"/>
+            <Action ID="CloseDoor"/>
+        </Sequence>
+    </BehaviorTree>
+    <!--------------------------------------->
+    <BehaviorTree ID="MainTree">
+        <Fallback name="root_Fallback">
+            <Sequence name="door_open_sequence">
+                <Action ID="IsDoorOpen"/>
+                <Action ID="PassThroughDoor"/>
+            </Sequence>
+            <SubTree ID="DoorClosed"/>
+            <Action ID="PassThroughWindow"/>
+        </Fallback>
+    </BehaviorTree>
+    <!--------------------------------------->
+    <TreeNodesModel>
+        <Action ID="CloseDoor"/>
+        <SubTree ID="DoorClosed"/>
+        <Action ID="IsDoorOpen"/>
+        <Decorator ID="Negation"/>
+        <Action ID="OpenDoor"/>
+        <Action ID="PassThroughDoor"/>
+        <Action ID="PassThroughWindow"/>
+        <Decorator ID="Repeat">
+            <Parameter label="num_cycles" type="Int"/>
+        </Decorator>
+        <Decorator ID="RetryUntilSuccesful">
+            <Parameter label="num_attempts" type="Int"/>
+        </Decorator>
+    </TreeNodesModel>
+    <!--------------------------------------->
+</root>
+

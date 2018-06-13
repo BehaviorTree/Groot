@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
 
 #include <QtWidgets/QWidget>
+#include <QtSvg/QSvgRenderer>
 
 #include "PortType.hpp"
 #include "NodeData.hpp"
@@ -11,6 +11,7 @@
 #include "NodeStyle.hpp"
 #include "NodePainterDelegate.hpp"
 #include "Export.hpp"
+#include "memory.hpp"
 
 namespace QtNodes
 {
@@ -40,6 +41,9 @@ public:
   /// Caption is used in GUI
   virtual QString
   caption() const = 0;
+
+  virtual QSvgRenderer*
+  icon() const { return nullptr; }
 
   /// It is possible to hide caption in GUI
   virtual bool
@@ -135,6 +139,8 @@ signals:
 
   void
   computingFinished();
+
+  void embeddedWidgetSizeUpdated();
 
 private:
 

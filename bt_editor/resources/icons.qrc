@@ -20,6 +20,24 @@
         <file>BT-vertical.png</file>
         <file>BT-horizontal.png</file>
         <file>close_x.png</file>
+        <file>svg/arrow_right.svg</file>
+        <file>svg/edit_list.svg</file>
+        <file>svg/exclaimation_mark.svg</file>
+        <file>svg/gears.svg</file>
+        <file>svg/goto_map.svg</file>
+        <file>svg/low_battery.svg</file>
+        <file>svg/manipulator.svg</file>
+        <file>svg/maze_path.svg</file>
+        <file>svg/mobile_manipulator.svg</file>
+        <file>svg/nodes_tree.svg</file>
+        <file>svg/question_mark.svg</file>
+        <file>svg/repeat.svg</file>
+        <file>svg/retry.svg</file>
+        <file>svg/robot.svg</file>
+        <file>svg/robot_talk.svg</file>
+        <file>svg/target_radar.svg</file>
+        <file>svg/tree.svg</file>
+        <file>svg/subtree.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>
