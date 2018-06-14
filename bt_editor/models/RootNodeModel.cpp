@@ -8,7 +8,6 @@ RootNodeModel::RootNodeModel():
                             ParameterWidgetCreators() )
 {
     _line_edit_name->setHidden(true);
-    setUID( std::numeric_limits<uint16_t>::max() );
 }
 
 unsigned int RootNodeModel::nPorts(QtNodes::PortType portType) const

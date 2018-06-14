@@ -119,9 +119,9 @@ private:
     int16_t _root_node_index;
 };
 
-static int16_t GetUID()
+static int GetUID()
 {
-    static int16_t uid = 10000;
+    static int uid = 1000;
     return uid++;
 }
 

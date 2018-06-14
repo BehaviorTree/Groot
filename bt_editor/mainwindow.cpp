@@ -358,6 +358,10 @@ void MainWindow::on_actionSave_triggered()
         const auto& ID    = tree_it.first;
         const auto& model = tree_it.second;
 
+        if( model.node_type == NodeType::ROOT )
+        {
+            continue;
+        }
         XMLElement* node = doc.NewElement( toStr(model.node_type) );
 
         if( node )

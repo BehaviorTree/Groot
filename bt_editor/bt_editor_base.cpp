@@ -153,7 +153,7 @@ const char *toStr(NodeType type)
     if( type == NodeType::CONDITION) return "Condition";
     if( type == NodeType::SUBTREE)   return "SubTree";
     if( type == NodeType::CONTROL)   return "Control";
-    if( type == NodeType::CONTROL)   return "Root";
+    if( type == NodeType::ROOT)      return "Root";
     return nullptr;
 }
 

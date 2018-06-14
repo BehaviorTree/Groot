@@ -66,9 +66,7 @@ public:
 
   virtual const char* className() const = 0;
 
-  void setUID(int16_t uid) { _uid = uid; }
-
-  int16_t UID() const { return _uid; }
+  int UID() const { return _uid; }
 
   virtual NodeType nodeType() const = 0;
 
