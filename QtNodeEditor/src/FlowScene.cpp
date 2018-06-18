@@ -529,7 +529,7 @@ saveToMemory() const
   }
 
   sceneJson["layout"] = (layout() == PortLayout::Horizontal) ?
-        "Horizontal" : "Vertical";
+        QStringLiteral("Horizontal") : QStringLiteral("Vertical");
 
   sceneJson["nodes"] = nodesJsonArray;
 
