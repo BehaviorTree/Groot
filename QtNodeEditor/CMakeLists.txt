@@ -12,7 +12,6 @@ find_package(Qt5 COMPONENTS
              Core
              Widgets
              Gui
-             OpenGL
              Svg)
 
 qt5_add_resources(RESOURCES ./resources/resources.qrc)
@@ -64,7 +63,6 @@ target_link_libraries(QtNodeEditor
     Qt5::Core
     Qt5::Widgets
     Qt5::Gui
-    Qt5::OpenGL
     Qt5::Svg
 )
 
