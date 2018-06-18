@@ -562,14 +562,14 @@ void MainWindow::onConnectionUpdate(bool connected)
 {
     if(connected)
     {
-        ui->toolButtonConnect->setStyleSheet("background-color: rgb(190, 101, 0); color:white");
+        ui->toolButtonConnect->setStyleSheet("background-color: rgb(50, 150, 0); color:white");
         ui->toolButtonConnect->setText("Disconnect");
     }
     else{
         ui->toolButtonConnect->setStyleSheet(
                     "QToolButton {color:white; }"
                     "QToolButton:hover{ background-color: rgb(110, 110, 110); }"
-                    "QToolButton:pressed{ background-color: rgb(190, 101, 0) }"
+                    "QToolButton:pressed{ background-color: rgb(50, 150, 0) }"
                     "QToolButton:disabled{color:gray; background-color: rgb(50, 50, 50) }");
         ui->toolButtonConnect->setText("Connect");
     }

@@ -124,7 +124,7 @@ QToolButton:hover{
    background-color: rgb(110, 110, 110);
 }
 QToolButton:pressed{
-  background-color: rgb(190, 101, 0)
+  background-color: rgb(50, 150, 0)
 }
 QToolButton:disabled{
   color:gray;
@@ -191,7 +191,7 @@ QToolButton:hover{
 }
 
 QToolButton:pressed{
-  background-color: rgb(190, 101, 0)
+  background-color: rgb(50, 150, 0)
 }
 
 QToolButton:disabled{
@@ -259,7 +259,7 @@ QToolButton:hover{
 }
 
 QToolButton:pressed{
-  background-color: rgb(190, 101, 0)
+  background-color: rgb(50, 150, 0)
 }
 
 QToolButton:disabled{
@@ -327,7 +327,7 @@ QToolButton:hover{
 }
 
 QToolButton:pressed{
-  background-color: rgb(190, 101, 0)
+  background-color: rgb(50, 150, 0)
 }
 
 QToolButton:disabled{
@@ -408,7 +408,7 @@ QToolButton:hover{
 }
 
 QToolButton:pressed{
-  background-color: rgb(190, 101, 0)
+  background-color: rgb(50, 150, 0)
 }
 
 QToolButton:disabled{
@@ -476,7 +476,7 @@ QToolButton:hover{
 }
 
 QToolButton:pressed{
-  background-color: rgb(190, 101, 0)
+  background-color: rgb(50, 150, 0)
 }
 
 QToolButton:disabled{
@@ -541,7 +541,7 @@ QToolButton:hover{
 }
 
 QToolButton:pressed{
-  background-color: rgb(190, 101, 0)
+  background-color: rgb(50, 150, 0)
 }
 
 QToolButton:disabled{

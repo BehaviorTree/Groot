@@ -23,13 +23,13 @@ int
 main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName("BehaviorTreeEditor");
+    app.setApplicationName("Groot");
     app.setWindowIcon(QPixmap(":/icons/BT.png"));
 
     qRegisterMetaType<AbsBehaviorTree>();
 
     QCommandLineParser parser;
-    parser.setApplicationDescription("BehaviorTreeEditor: just a fancy XML editor");
+    parser.setApplicationDescription("Groot. The fancy BehaviorTree Editor");
     parser.addHelpOption();
 
     QCommandLineOption test_option(QStringList() << "t" << "test",
@@ -40,7 +40,7 @@ main(int argc, char *argv[])
     if( parser.isSet(test_option) )
     {
         MainWindow win( GraphicMode::EDITOR );
-        win.setWindowTitle("BehaviorTree Editor");
+        win.setWindowTitle("Groot");
         win.show();
         win.loadFromXML( gTestXML );
         return app.exec();
@@ -52,6 +52,7 @@ main(int argc, char *argv[])
         if( dialog.exec() == QDialog::Accepted)
         {
             MainWindow win( dialog.getGraphicMode() );
+            win.setWindowTitle("Groot");
             win.show();
             return app.exec();
         }

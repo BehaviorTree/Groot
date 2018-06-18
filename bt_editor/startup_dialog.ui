@@ -177,7 +177,7 @@
        </property>
        <property name="styleSheet">
         <string notr="true">color:white;
-border: 2px solid orange; 
+border: 2px solid rgb(115, 210, 22); 
 border-radius: 10px;
 </string>
        </property>
@@ -230,7 +230,7 @@ border-radius: 10px;
        </property>
        <property name="styleSheet">
         <string notr="true">color:white;
-border: 2px solid orange; 
+border: 2px solid rgb(115, 210, 22); 
 border-radius: 10px;
 
 
@@ -285,7 +285,7 @@ border-radius: 10px;
        </property>
        <property name="styleSheet">
         <string notr="true">color:white;
-border: 2px solid orange; 
+border: 2px solid rgb(115, 210, 22); 
 border-radius: 10px;
 
 </string>
@@ -337,7 +337,7 @@ border-radius: 10px;
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; color:#eeeeec;&quot;&gt;Launch the application&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
-        <string notr="true">color: orange</string>
+        <string notr="true">color: rgb(115, 210, 22)</string>
        </property>
        <property name="text">
         <string>START</string>

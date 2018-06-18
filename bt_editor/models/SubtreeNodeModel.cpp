@@ -14,7 +14,7 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
     _expand_button = new QPushButton("Expand", _main_widget );
     vlayout->addWidget(_expand_button);
 
-    _expand_button->setStyleSheet("color: black; background-color: white; border: 1px orange;");
+    _expand_button->setStyleSheet("color: black; background-color: white; border: 1px rgb(115, 210, 22);");
     _expand_button->setFlat(false);
     _expand_button->setFocusPolicy(Qt::NoFocus);
 
@@ -39,7 +39,7 @@ SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
     _collapse_button = new QPushButton("Collapse", _main_widget );
     vlayout->addWidget(_collapse_button);
 
-    _collapse_button->setStyleSheet("color: black; background-color: white; border: 1px orange;");
+    _collapse_button->setStyleSheet("color: black; background-color: white; border: 1px rgb(115, 210, 22);");
     _collapse_button->setFlat(false);
     _collapse_button->setFocusPolicy(Qt::NoFocus);
 
