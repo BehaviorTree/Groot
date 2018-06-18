@@ -1,0 +1,28 @@
+sudo: required
+dist: trusty
+language:
+  - minimal
+  - cpp
+
+os:
+  - linux
+  
+compiler:
+- gcc
+
+before_install:
+ - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
+ - sudo apt-get update -qq
+ - sudo apt-get install qtbase5-dev qtbase5-dev libqt5svg5-dev libqt5opengl5-dev
+ - sudo apt-get install qt5-default qttools5-dev-tools
+
+script:
+  - cmake .
+  - make -j4
+
+notifications:
+  email:
+    recipients:
+      - davide.faconti@gmail.com
+    on_success: change
+on_failure: always
