@@ -442,29 +442,23 @@ QtNodes::NodeStyle getStyleFromStatus(NodeStatus status)
         return style;
     }
 
+    style.PenWidth *= 4.0;
+
     if( status == NodeStatus::SUCCESS )
     {
         style.NormalBoundaryColor = QColor(102, 255, 51);
-        style.GradientColor0
-                = style.GradientColor1
-                = style.GradientColor2
-                = style.GradientColor3 = QColor(51, 153, 51);
+        style.ShadowColor = QColor(51, 153, 51);
+
     }
     else if( status == NodeStatus::RUNNING )
     {
         style.NormalBoundaryColor = QColor(255, 204, 0);
-        style.GradientColor0
-                = style.GradientColor1
-                = style.GradientColor2
-                = style.GradientColor3 = QColor(204, 122, 0);
+        style.ShadowColor =  QColor(204, 122, 0);
     }
     else if( status == NodeStatus::FAILURE )
     {
         style.NormalBoundaryColor = QColor(255, 51, 0);
-        style.GradientColor0
-                = style.GradientColor1
-                = style.GradientColor2
-                = style.GradientColor3 = QColor(204, 51, 0);
+        style.ShadowColor = QColor(204, 51, 0);
     }
 
     return style;

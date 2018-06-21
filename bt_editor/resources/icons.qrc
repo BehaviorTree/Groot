@@ -38,6 +38,7 @@
         <file>svg/target_radar.svg</file>
         <file>svg/tree.svg</file>
         <file>svg/subtree.svg</file>
+        <file>svg/not_equal.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

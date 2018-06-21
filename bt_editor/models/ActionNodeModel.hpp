@@ -16,9 +16,14 @@ public:
 
     static const char* Name() { return "Action"; }
 
-    QString caption() const override { return "Action"; }
+    QString caption() const override { return "#ffff66Action"; }
 
     virtual NodeType nodeType() const final { return NodeType::ACTION; }
+
+    virtual QSvgRenderer* icon() const override {
+        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/exclaimation_mark.svg"));
+        return renderer;
+    }
 
 private:
 
@@ -38,7 +43,7 @@ public:
 
     static const char* Name() { return "Condition"; }
 
-    QString caption() const override { return "Condition"; }
+    QString caption() const override { return "#00cc99Condition"; }
 
     virtual NodeType nodeType() const final { return NodeType::CONDITION; }
 

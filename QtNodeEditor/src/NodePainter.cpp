@@ -246,7 +246,13 @@ drawModelName(QPainter * painter,
   if (!model->captionVisible())
     return;
 
-  QString const &name = model->caption();
+  QString name = model->caption();
+  QColor caption_color = nodeStyle.FontColor;
+  if( name.size() >= 8 && name.at(0) == '#')
+  {
+     caption_color = QColor( name.left(7));
+     name = name.right( name.size() -7);
+  }
 
   QFont f = painter->font();
 
@@ -269,7 +275,7 @@ drawModelName(QPainter * painter,
   }
 
   painter->setFont(f);
-  painter->setPen(nodeStyle.FontColor);
+  painter->setPen(caption_color);
   painter->drawText(position, name);
 
   f.setPointSize(12);

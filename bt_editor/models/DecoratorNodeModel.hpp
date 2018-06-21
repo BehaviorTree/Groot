@@ -52,7 +52,7 @@ public:
     QString caption() const override { return NegationNodeModel::Name(); }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/exclaimation_mark.svg"));
+        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/not_equal.svg"));
         return renderer;
     }
 };

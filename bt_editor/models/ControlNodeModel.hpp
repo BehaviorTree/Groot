@@ -66,6 +66,8 @@ public:
     SequenceModel();
     static const char* Name() { return ("Sequence"); }
 
+    QString caption() const override { return ("#ff6699Sequence"); }
+
     virtual QSvgRenderer* icon() const override {
         static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/arrow_right.svg"));
         return renderer;
@@ -79,6 +81,8 @@ public:
     FallbackModel();
     static const char* Name() { return ("Fallback"); }
 
+    QString caption() const override { return ("#33adffFallback"); }
+
     virtual QSvgRenderer* icon() const override {
         static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/question_mark.svg"));
         return renderer;
@@ -91,6 +95,8 @@ class SequenceStarModel: public ControlNodeModelBase<SequenceStarModel>
 public:
     SequenceStarModel();
     static const char* Name() { return ("SequenceStar"); }
+
+    QString caption() const override { return ("#ff1ab3SequenceStar"); }
 
     virtual QSvgRenderer* icon() const override {
         static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/arrow_right.svg"));
