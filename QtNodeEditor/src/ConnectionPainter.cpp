@@ -109,8 +109,7 @@ drawSketchLine(QPainter * painter,
 
   if (state.requiresPort())
   {
-    auto const & connectionStyle =
-      QtNodes::StyleCollection::connectionStyle();
+    auto const & connectionStyle = connection.style();
 
     QPen p;
     p.setWidth(connectionStyle.constructionLineWidth());

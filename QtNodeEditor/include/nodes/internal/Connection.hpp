@@ -10,6 +10,7 @@
 #include "Serializable.hpp"
 #include "ConnectionState.hpp"
 #include "ConnectionGeometry.hpp"
+#include "ConnectionStyle.hpp"
 #include "TypeConverter.hpp"
 #include "QUuidStdHash.hpp"
 #include "Export.hpp"
@@ -118,6 +119,16 @@ public:
   void
   setTypeConverter(TypeConverter converter);
 
+  ConnectionStyle style() const
+  {
+      return _style;
+  }
+
+  void setStyle(ConnectionStyle style)
+  {
+      _style = style;
+  }
+
 public: // data propagation
 
   void
@@ -129,6 +140,7 @@ public: // data propagation
 private:
 
   QUuid _uid;
+  ConnectionStyle _style;
 
 private:
 

@@ -80,6 +80,12 @@ void SidepanelMonitor::on_timer()
                 {
                     node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node->status ) );
                     node->nodeGraphicsObject().update();
+
+                    auto conn_inn = node->nodeState().getEntries( QtNodes::PortType::In);
+                    if( conn_inn.size() == 1 && conn_inn.front().size() == 1)
+                    {
+                        auto conn = conn_inn.front().begin()->second;
+                    }
                 }
             }
         }

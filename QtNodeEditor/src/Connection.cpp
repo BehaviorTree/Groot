@@ -17,6 +17,7 @@
 #include "ConnectionState.hpp"
 #include "ConnectionGeometry.hpp"
 #include "ConnectionGraphicsObject.hpp"
+#include "StyleCollection.hpp"
 
 using QtNodes::Connection;
 using QtNodes::PortType;
@@ -34,6 +35,7 @@ Connection(PortType portType,
            Node& node,
            PortIndex portIndex)
   : _uid(QUuid::createUuid())
+  , _style(QtNodes::StyleCollection::connectionStyle())
   , _outPortIndex(INVALID)
   , _inPortIndex(INVALID)
   , _connectionState()
