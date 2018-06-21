@@ -706,6 +706,7 @@ void MainWindow::onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QStrin
 
         container->loadSceneFromTree( tree );
         container->nodeReorder();
+        container->lockEditing( _current_mode != GraphicMode::EDITOR );
     }
     _undo_stack.clear();
     _redo_stack.clear();
