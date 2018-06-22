@@ -93,7 +93,7 @@ void GraphicContainer::lockEditing(bool locked)
     for (auto& conn_it: _scene->connections() )
     {
         QtNodes::Connection* conn = conn_it.second.get();
-        conn->getConnectionGraphicsObject().lock( locked );
+        conn->connectionGraphicsObject().lock( locked );
     }
 }
 
@@ -136,7 +136,7 @@ void GraphicContainer::lockSubtreeEditing(Node &node, bool locked)
             for (auto& conn_it: conn_by_port )
             {
                 QtNodes::Connection* conn = conn_it.second;
-                conn->getConnectionGraphicsObject().lock( locked );
+                conn->connectionGraphicsObject().lock( locked );
             }
         }
     }

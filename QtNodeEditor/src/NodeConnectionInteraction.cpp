@@ -159,7 +159,7 @@ disconnect(PortType portToDisconnect) const
 
   _connection->setRequiredPort(portToDisconnect);
 
-  _connection->getConnectionGraphicsObject().grabMouse();
+  _connection->connectionGraphicsObject().grabMouse();
 
   return true;
 }
@@ -182,7 +182,7 @@ NodeConnectionInteraction::
 connectionEndScenePosition(PortType portType) const
 {
   auto &go =
-    _connection->getConnectionGraphicsObject();
+    _connection->connectionGraphicsObject();
 
   ConnectionGeometry& geometry = _connection->connectionGeometry();
 

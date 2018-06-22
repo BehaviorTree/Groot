@@ -43,8 +43,6 @@ public:
 
   bool useDataDefinedColors() const;
 
-private:
-
   QColor ConstructionColor;
   QColor NormalColor;
   QColor SelectedColor;

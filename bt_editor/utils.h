@@ -28,7 +28,8 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree &abstract_tree );
 
 QString getCategory(const QtNodes::NodeDataModel* model);
 
-QtNodes::NodeStyle getStyleFromStatus(NodeStatus status);
+std::pair<QtNodes::NodeStyle, QtNodes::ConnectionStyle>
+ getStyleFromStatus(NodeStatus status);
 
 inline NodeType convert(const BT_Serialization::Type& type)
 {

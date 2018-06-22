@@ -120,8 +120,8 @@ move()
       _connection.connectionGeometry().setEndPoint(portType,
                                                    connectionPos);
 
-      _connection.getConnectionGraphicsObject().setGeometryChanged();
-      _connection.getConnectionGraphicsObject().update();
+      _connection.connectionGraphicsObject().setGeometryChanged();
+      _connection.connectionGraphicsObject().update();
     }
   }
 

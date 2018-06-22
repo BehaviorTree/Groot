@@ -139,7 +139,7 @@ drawHoveredOrSelected(QPainter * painter,
   bool const hovered = geom.hovered();
 
   auto const& graphicsObject =
-    connection.getConnectionGraphicsObject();
+    connection.connectionGraphicsObject();
 
   bool const selected = graphicsObject.isSelected();
 
@@ -148,8 +148,7 @@ drawHoveredOrSelected(QPainter * painter,
   {
     QPen p;
 
-    auto const &connectionStyle =
-      QtNodes::StyleCollection::connectionStyle();
+    auto const & connectionStyle = connection.style();
     double const lineWidth     = connectionStyle.lineWidth();
 
     p.setWidth(2 * lineWidth);
@@ -182,8 +181,7 @@ drawNormalLine(QPainter * painter,
 
   // colors
 
-  auto const &connectionStyle =
-    QtNodes::StyleCollection::connectionStyle();
+  auto const & connectionStyle = connection.style();
 
   QColor normalColorOut  = connectionStyle.normalColor();
   QColor normalColorIn   = connectionStyle.normalColor();
@@ -216,7 +214,7 @@ drawNormalLine(QPainter * painter,
 
   p.setWidth(lineWidth);
 
-  auto const& graphicsObject = connection.getConnectionGraphicsObject();
+  auto const& graphicsObject = connection.connectionGraphicsObject();
   bool const selected = graphicsObject.isSelected();
 
 
@@ -299,8 +297,7 @@ paint(QPainter* painter,
   QPointF const & source = geom.source();
   QPointF const & sink   = geom.sink();
 
-  auto const & connectionStyle =
-    QtNodes::StyleCollection::connectionStyle();
+  auto const & connectionStyle = connection.style();
 
   double const pointDiameter = connectionStyle.pointDiameter();
 

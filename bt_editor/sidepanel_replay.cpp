@@ -136,10 +136,10 @@ void SidepanelReplay::updateTableModel(const AbsBehaviorTree& locaded_tree)
     ui->label->setText( QString("of %1").arg( _timepoint.size() ) );
 
     ui->spinBox->setValue(0);
-    ui->spinBox->setMaximum( _timepoint.size()-1 );
+    ui->spinBox->setMaximum( std::max(0 , (int)_timepoint.size()-1) );
     ui->spinBox->setEnabled( !_timepoint.empty() );
     ui->timeSlider->setValue( 0 );
-    ui->timeSlider->setMaximum( _timepoint.size()-1 );
+    ui->timeSlider->setMaximum( std::max(0 , (int)_timepoint.size()-1) );
     ui->timeSlider->setEnabled( !_timepoint.empty() );
     ui->pushButtonPlay->setEnabled( !_timepoint.empty() );
 }

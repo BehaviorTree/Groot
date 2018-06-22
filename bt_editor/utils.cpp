@@ -433,35 +433,39 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
     return tree;
 }
 
-QtNodes::NodeStyle getStyleFromStatus(NodeStatus status)
+std::pair<QtNodes::NodeStyle, QtNodes::ConnectionStyle>
+getStyleFromStatus(NodeStatus status)
 {
-    QtNodes::NodeStyle style;
+    QtNodes::NodeStyle  node_style;
+    QtNodes::ConnectionStyle conn_style;
 
     if( status == NodeStatus::IDLE )
     {
-        return style;
+        return {node_style, conn_style};
     }
 
-    style.PenWidth *= 4.0;
+    node_style.PenWidth *= 4.0;
 
     if( status == NodeStatus::SUCCESS )
     {
-        style.NormalBoundaryColor = QColor(102, 255, 51);
-        style.ShadowColor = QColor(51, 153, 51);
-
+        node_style.NormalBoundaryColor = QColor(102, 255, 51);
+        node_style.ShadowColor = QColor(51, 153, 51);
+        conn_style.NormalColor = node_style.NormalBoundaryColor;
     }
     else if( status == NodeStatus::RUNNING )
     {
-        style.NormalBoundaryColor = QColor(255, 204, 0);
-        style.ShadowColor =  QColor(204, 122, 0);
+        node_style.NormalBoundaryColor = QColor(255, 204, 0);
+        node_style.ShadowColor =  QColor(204, 122, 0);
+        conn_style.NormalColor = node_style.NormalBoundaryColor;
     }
     else if( status == NodeStatus::FAILURE )
     {
-        style.NormalBoundaryColor = QColor(255, 51, 0);
-        style.ShadowColor = QColor(204, 51, 0);
+        node_style.NormalBoundaryColor = QColor(255, 51, 0);
+        node_style.ShadowColor = QColor(204, 51, 0);
+        conn_style.NormalColor = node_style.NormalBoundaryColor;
     }
 
-    return style;
+    return {node_style, conn_style};
 }
 
 ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)

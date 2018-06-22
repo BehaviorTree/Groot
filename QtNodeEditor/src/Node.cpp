@@ -226,7 +226,7 @@ onNodeSizeUpdated()
             for(auto& pair: conn_set)
             {
                 Connection* conn = pair.second;
-                conn->getConnectionGraphicsObject().move();
+                conn->connectionGraphicsObject().move();
             }
         }
     }

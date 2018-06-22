@@ -48,7 +48,10 @@ NodeState::
 connections(PortType portType, PortIndex portIndex) const
 {
   auto const &connections = getEntries(portType);
-
+  if( portIndex < 0 || portIndex >= connections.size() )
+  {
+    return NodeState::ConnectionPtrSet();
+  }
   return connections[portIndex];
 }
 

@@ -258,7 +258,7 @@ removeFromNodes() const
 
 ConnectionGraphicsObject&
 Connection::
-getConnectionGraphicsObject() const
+connectionGraphicsObject() const
 {
   return *_connectionGraphicsObject;
 }

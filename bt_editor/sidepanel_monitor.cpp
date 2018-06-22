@@ -72,22 +72,26 @@ void SidepanelMonitor::on_timer()
                 //qDebug() << _loaded_tree.nodeAtUID( uid ).instance_name << " : " << toStr(status);
             }
             // update the graphic part
-            for (size_t index = 0; index < _loaded_tree.nodesCount(); index++)
-            {
-                auto abs_node = _loaded_tree.nodeAtIndex( index );
-                auto& node = abs_node->corresponding_node;
-                if( node )
-                {
-                    node->nodeDataModel()->setNodeStyle( getStyleFromStatus( abs_node->status ) );
-                    node->nodeGraphicsObject().update();
 
-                    auto conn_inn = node->nodeState().getEntries( QtNodes::PortType::In);
-                    if( conn_inn.size() == 1 && conn_inn.front().size() == 1)
-                    {
-                        auto conn = conn_inn.front().begin()->second;
-                    }
-                }
-            }
+            // this code is probably broken
+
+//            for (size_t index = 0; index < _loaded_tree.nodesCount(); index++)
+//            {
+//                auto abs_node = _loaded_tree.nodeAtIndex( index );
+//                auto& node = abs_node->corresponding_node;
+//                if( node )
+//                {
+//                    auto style = getStyleFromStatus( abs_node->status );
+//                    node->nodeDataModel()->setNodeStyle( style.first );
+//                    node->nodeGraphicsObject().update();
+
+//                    auto conn_inn = node->nodeState().connections(QtNodes::PortType::In, 0);
+//                    if( conn_inn.size() == 1 )
+//                    {
+//                        conn_inn.begin()->second->setStyle( style.second );
+//                    }
+//                }
+//            }
         }
     }
     catch( zmq::error_t& err)

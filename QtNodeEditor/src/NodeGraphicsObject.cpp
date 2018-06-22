@@ -147,7 +147,7 @@ moveConnections() const
     for (auto const & connections : connectionEntries)
     {
       for (auto & con : connections)
-        con.second->getConnectionGraphicsObject().move();
+        con.second->connectionGraphicsObject().move();
     }
   };
 }
@@ -244,7 +244,7 @@ mousePressEvent(QGraphicsSceneMouseEvent * event)
                                           portIndex,
                                           *connection);
 
-          connection->getConnectionGraphicsObject().grabMouse();
+          connection->connectionGraphicsObject().grabMouse();
         }
       }
     }
