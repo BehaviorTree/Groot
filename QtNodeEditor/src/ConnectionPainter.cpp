@@ -151,7 +151,7 @@ drawHoveredOrSelected(QPainter * painter,
     auto const & connectionStyle = connection.style();
     double const lineWidth     = connectionStyle.lineWidth();
 
-    p.setWidth(2 * lineWidth);
+    p.setWidth(1.6 * lineWidth);
     p.setColor(selected ?
                connectionStyle.selectedHaloColor() :
                connectionStyle.hoveredColor());

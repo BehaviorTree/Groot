@@ -439,29 +439,32 @@ getStyleFromStatus(NodeStatus status)
     QtNodes::NodeStyle  node_style;
     QtNodes::ConnectionStyle conn_style;
 
+    conn_style.HoveredColor = Qt::transparent;
+
     if( status == NodeStatus::IDLE )
     {
         return {node_style, conn_style};
     }
 
-    node_style.PenWidth *= 4.0;
+    node_style.PenWidth *= 3.0;
+    node_style.HoveredPenWidth = node_style.PenWidth;
 
     if( status == NodeStatus::SUCCESS )
     {
-        node_style.NormalBoundaryColor = QColor(102, 255, 51);
-        node_style.ShadowColor = QColor(51, 153, 51);
+        node_style.NormalBoundaryColor =
+        node_style.ShadowColor = QColor(51, 200, 51);
         conn_style.NormalColor = node_style.NormalBoundaryColor;
     }
     else if( status == NodeStatus::RUNNING )
     {
-        node_style.NormalBoundaryColor = QColor(255, 204, 0);
-        node_style.ShadowColor =  QColor(204, 122, 0);
+        node_style.NormalBoundaryColor =
+        node_style.ShadowColor =  QColor(220, 140, 20);
         conn_style.NormalColor = node_style.NormalBoundaryColor;
     }
     else if( status == NodeStatus::FAILURE )
     {
-        node_style.NormalBoundaryColor = QColor(255, 51, 0);
-        node_style.ShadowColor = QColor(204, 51, 0);
+        node_style.NormalBoundaryColor =
+        node_style.ShadowColor = QColor(250, 50, 50);
         conn_style.NormalColor = node_style.NormalBoundaryColor;
     }
 

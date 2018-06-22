@@ -8,8 +8,8 @@ ControlNodeModel::ControlNodeModel(const QString &ID, const ParameterWidgetCreat
     _line_edit_name->setEnabled(true);
     _line_edit_name->setReadOnly(false);
 
-    _line_edit_name->setStyleSheet("color: black; "
-                                   "background-color: rgb(200,200,200);"
+    _line_edit_name->setStyleSheet("color: rgb(30,30,30); "
+                                   "background-color: rgb(180,180,180);"
                                    "border: 0px;");
 }
 

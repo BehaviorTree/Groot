@@ -57,8 +57,8 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
 
     _main_widget->setStyleSheet("background-color: transparent; color: white; ");
     _line_edit_name->setStyleSheet("color: white; "
-                                   "background-color: "
-                                   "rgba(0,0,0,0); border: 0px;");
+                                   "background-color: transparent;"
+                                   "border: 0px;");
 
     //--------------------------------------
 
@@ -80,8 +80,8 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
 
             _params_map.insert( std::make_pair( label, field_widget) );
 
-            field_widget->setStyleSheet("color: white; "
-                                        "background-color: gray; "
+            field_widget->setStyleSheet("color: rgb(30,30,30); "
+                                        "background-color: rgb(180,180,180); "
                                         "border: 0px; "
                                         "padding: 0px 0px 0px 0px;");
 
