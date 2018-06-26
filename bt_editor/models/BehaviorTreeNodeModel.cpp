@@ -34,7 +34,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _main_layout->setSpacing(6);
 
     _top_layout->setMargin(0);
-    _top_layout->setSpacing(0);
+    _top_layout->setSpacing(2);
 
     //----------------------------
 
@@ -61,16 +61,16 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
                                    "border: 0px;");
 
     //--------------------------------------
+    _form_layout = new QFormLayout( _params_widget );
 
     if( !creators.empty() )
     {
         _main_layout->addWidget(_params_widget);
         _params_widget->setStyleSheet("color: white;");
 
-        _form_layout = new QFormLayout( _params_widget );
         _form_layout->setHorizontalSpacing(4);
-        _form_layout->setVerticalSpacing(0);
-        _form_layout->setContentsMargins(0, 6, 0, 0);
+        _form_layout->setVerticalSpacing(2);
+        _form_layout->setContentsMargins(0, 0, 0, 0);
 
         for(const auto& param_creator: creators )
         {
@@ -94,16 +94,17 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
 
             if(auto lineedit = dynamic_cast<QLineEdit*>( field_widget ) )
             {
-                connect( lineedit, &QLineEdit::editingFinished, paramUpdated );
+                connect( lineedit, &QLineEdit::editingFinished, this, paramUpdated );
+                connect( lineedit, &QLineEdit::editingFinished,
+                         this, &BehaviorTreeDataModel::updateNodeSize);
             }
             else if( auto combo = dynamic_cast<QComboBox*>( field_widget ) )
             {
-                connect( combo, &QComboBox::currentTextChanged, paramUpdated);
+                connect( combo, &QComboBox::currentTextChanged, this, paramUpdated);
             }
 
         }
         _params_widget->adjustSize();
-       // _params_widget->setLayout( _form_layout );
         _form_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
     }
 
@@ -230,11 +231,21 @@ void BehaviorTreeDataModel::setParameterValue(const QString &label, const QStrin
         if( auto lineedit = dynamic_cast<QLineEdit*>(it->second) )
         {
             lineedit->setText(value);
+            updateNodeSize();
         }
-        else if( auto combo = dynamic_cast<QLineEdit*>(it->second) )
+        else if( auto combo = dynamic_cast<QComboBox*>(it->second) )
         {
-            combo->setText(value);
+            int index = combo->findText(value);
+            if( index == -1 ){
+                qDebug() << "error, combo value "<< value << " not found";
+            }
+            else{
+                combo->setCurrentIndex(index);
+            }
         }
+    }
+    else{
+        qDebug() << "error, label "<< label << " not found in the model";
     }
 }
 
@@ -242,7 +253,22 @@ void BehaviorTreeDataModel::updateNodeSize()
 {
     QFontMetrics fm = _line_edit_name->fontMetrics();
     const QString& txt = _line_edit_name->text();
-    double new_width = std::max( 100, fm.boundingRect(txt).width() + 20);
+    double new_width = std::max( 140, fm.boundingRect(txt).width() + 20);
+
+    for(int row = 0; row< _form_layout->rowCount(); row++)
+    {
+       // auto label_widget = _form_layout->itemAt(row, QFormLayout::LabelRole)->widget();
+        auto field_widget = _form_layout->itemAt(row, QFormLayout::FieldRole)->widget();
+        if(auto field_line_edit = dynamic_cast<QLineEdit*>(field_widget))
+        {
+            QFontMetrics fontMetrics = field_line_edit->fontMetrics();
+            QString text = field_line_edit->text();
+            int text_width = fontMetrics.boundingRect(text).width();
+            field_line_edit->setFixedWidth( std::max( 140, text_width + 20) );
+            field_line_edit->update();
+            _form_layout->update();
+        }
+    }
 
     QFont f;
     f.setPointSize(13);
@@ -251,7 +277,7 @@ void BehaviorTreeDataModel::updateNodeSize()
     double caption_width = boldFontMetrics.boundingRect( caption() ).width();
     if ( icon() )
     {
-      caption_width += 40;
+      caption_width += 35;
     }
     new_width = std::max( new_width, caption_width);
 

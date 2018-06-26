@@ -482,7 +482,7 @@ ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
         {
             QLineEdit* line = new QLineEdit();
             line->setAlignment( Qt::AlignHCenter);
-            line->setMaximumWidth(150);
+            line->setMaximumWidth(140);
             line->setText( param.default_value );
             return line;
         };
@@ -494,7 +494,7 @@ ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
             QLineEdit* line = new QLineEdit();
             line->setValidator( new QIntValidator( line ));
             line->setAlignment( Qt::AlignHCenter);
-            line->setMaximumWidth(80);
+            line->setMaximumWidth(140);
             line->setText( param.default_value );
             return line;
         };
@@ -506,7 +506,7 @@ ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
             QLineEdit* line = new QLineEdit();
             line->setValidator( new QDoubleValidator( line ));
             line->setAlignment( Qt::AlignHCenter);
-            line->setMaximumWidth(120);
+            line->setMaximumWidth(140);
             line->setText( param.default_value );
             return line;
         };
@@ -517,8 +517,15 @@ ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
         creator.instance_factory = [option_list]()
         {
             QComboBox* combo = new QComboBox();
+            combo->setEditable(true);
+            combo->lineEdit()->setReadOnly(true);
+            combo->lineEdit()->setAlignment(Qt::AlignCenter);
             combo->addItems(option_list);
-            combo->setMaximumWidth(150);
+            combo->setMaximumWidth(140);
+            for (int i = 0 ; i < combo->count() ; ++i)
+            {
+                combo->setItemData(i, Qt::AlignCenter, Qt::TextAlignmentRole);
+            }
             return combo;
         };
     }

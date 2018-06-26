@@ -57,41 +57,29 @@ void SidepanelMonitor::on_timer()
                 node->status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+2] ));
             }
 
+            std::unordered_map<int, NodeStatus> node_status;
+
+            qDebug() << "--------";
+
             for(size_t t=0; t < num_transitions; t++)
             {
-                size_t index = 8 + header_size + 12*t;
+                size_t offset = 8 + header_size + 12*t;
 
                 //const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[index] );
                 //const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[index+4] );
                 //double timestamp = t_sec + t_usec* 0.000001;
-                uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[index+8]);
+                uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
                 //NodeStatus prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
-                NodeStatus status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+11] ));
+                NodeStatus status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+11] ));
 
-                _loaded_tree.nodeAtUID( uid )->status = status;
-                //qDebug() << _loaded_tree.nodeAtUID( uid ).instance_name << " : " << toStr(status);
+                int index = _loaded_tree.UidToIndex(uid);
+                _loaded_tree.nodeAtIndex(index)->status = status;
+                node_status[index] = status;
+                qDebug() << _loaded_tree.nodeAtIndex(index)->instance_name << " : " << toStr(status);
             }
             // update the graphic part
 
-            // this code is probably broken
-
-//            for (size_t index = 0; index < _loaded_tree.nodesCount(); index++)
-//            {
-//                auto abs_node = _loaded_tree.nodeAtIndex( index );
-//                auto& node = abs_node->corresponding_node;
-//                if( node )
-//                {
-//                    auto style = getStyleFromStatus( abs_node->status );
-//                    node->nodeDataModel()->setNodeStyle( style.first );
-//                    node->nodeGraphicsObject().update();
-
-//                    auto conn_inn = node->nodeState().connections(QtNodes::PortType::In, 0);
-//                    if( conn_inn.size() == 1 )
-//                    {
-//                        conn_inn.begin()->second->setStyle( style.second );
-//                    }
-//                }
-//            }
+            emit changeNodeStyle( "BehaviorTree", node_status );
         }
     }
     catch( zmq::error_t& err)
@@ -125,7 +113,7 @@ bool SidepanelMonitor::getTreeFromServer()
 
         _loaded_tree = BuildTreeFromFlatbuffers( fb_behavior_tree );
 
-        loadBehaviorTree( _loaded_tree );
+        loadBehaviorTree( _loaded_tree, "BehaviorTree" );
     }
     catch( zmq::error_t& err)
     {

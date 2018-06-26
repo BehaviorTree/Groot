@@ -29,9 +29,12 @@ private slots:
     void on_timer();
 
 signals:
-    void loadBehaviorTree( AbsBehaviorTree& tree );
+    void loadBehaviorTree( AbsBehaviorTree& tree, const QString &bt_name );
 
     void connectionUpdate(bool connected);
+
+    void changeNodeStyle(const QString& bt_name,
+                         const std::unordered_map<int, NodeStatus>& node_status);
 
 private:
     Ui::SidepanelMonitor *ui;

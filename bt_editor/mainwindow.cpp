@@ -117,9 +117,12 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
              this, &MainWindow::onChangeNodesStyle);
 
 #ifdef ZMQ_FOUND
-    // TODO / FIXME
-    //    connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
-    //             this, &MainWindow::onLoadAbsBehaviorTree );
+
+    connect( _monitor_widget, &SidepanelMonitor::changeNodeStyle,
+             this, &MainWindow::onChangeNodesStyle);
+
+    connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
+             this, &MainWindow::onLoadAbsBehaviorTree );
 #endif
     onSceneChanged();
 
@@ -956,21 +959,11 @@ void MainWindow::onChangeNodesStyle(const QString& bt_name,
 {
     auto tree = _tab_info[bt_name]->loadedTree();
 
-    for (size_t index = 0; index < tree.nodesCount(); index++)
-    {
-        auto abs_node = tree.nodeAtIndex(index);
-        abs_node->status = NodeStatus::IDLE;
-    }
-
     for (auto& it: node_status)
     {
-        auto* abs_node = tree.nodeAtIndex(it.first);
-        abs_node->status = it.second;
-    }
-
-    for (size_t index = 0; index < tree.nodesCount(); index++)
-    {
+        const int index = it.first;
         auto abs_node = tree.nodeAtIndex(index);
+        abs_node->status = it.second;
         qDebug() << abs_node->instance_name << " -> " << tr(toStr(abs_node->status));
         auto& node = abs_node->corresponding_node;
         auto style = getStyleFromStatus( abs_node->status );
