@@ -280,8 +280,6 @@ void MainWindow::loadFromXML(const QString& xml_text)
         messageBox.show();
         return;
     }
-
-    lockEditing( _current_mode != GraphicMode::EDITOR );
 }
 
 
@@ -446,6 +444,8 @@ void MainWindow::onSceneChanged()
     }
     ui->labelSemaphore->setPixmap(pix);
     ui->labelSemaphore->setScaledContents(true);
+
+    lockEditing( _current_mode != GraphicMode::EDITOR );
 }
 
 
@@ -710,7 +710,6 @@ void MainWindow::onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QStrin
 
         container->loadSceneFromTree( tree );
         container->nodeReorder();
-        container->lockEditing( _current_mode != GraphicMode::EDITOR );
     }
     _undo_stack.clear();
     _redo_stack.clear();

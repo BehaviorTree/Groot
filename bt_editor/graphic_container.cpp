@@ -70,10 +70,16 @@ GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_regi
 
 void GraphicContainer::lockEditing(bool locked)
 {
+    std::vector<QtNodes::Node*> subtrees_expanded;
     for (auto& nodes_it: _scene->nodes() )
     {
         QtNodes::Node* node = nodes_it.second.get();
         node->nodeGraphicsObject().lock( locked );
+
+        if( dynamic_cast<SubtreeExpandedNodeModel*>( node->nodeDataModel() ) )
+        {
+            subtrees_expanded.push_back(node);
+        }
 
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() );
         if( bt_model )
@@ -88,6 +94,11 @@ void GraphicContainer::lockEditing(bool locked)
             node->nodeDataModel()->setNodeStyle( style );
             node->nodeGraphicsObject().update();
         }
+    }
+
+    for (auto& subtree: subtrees_expanded )
+    {
+        lockSubtreeEditing(*subtree, true);
     }
 
     for (auto& conn_it: _scene->connections() )
