@@ -654,7 +654,8 @@ void MainWindow::subTreeExpand(GraphicContainer &container,
             return;
         }
 
-        auto new_node_ptr = container.substituteNode( &node, subtree_name.left( EXPANDED_SUFFIX.length() ) );
+        auto new_subtree_name = subtree_name.left( subtree_name.size()-EXPANDED_SUFFIX.length() );
+        auto new_node_ptr = container.substituteNode( &node,  new_subtree_name );
         if( new_node_ptr && child_node)
         {
             container.deleteSubTreeRecursively( *child_node );
