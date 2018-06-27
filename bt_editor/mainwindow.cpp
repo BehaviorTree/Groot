@@ -205,7 +205,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
             ReadTreeNodesModel( document_root, *_model_registry, _tree_nodes_model );
             _editor_widget->updateTreeView();
 
-            on_actionClear_triggered(false);
+            onActionClearTriggered(false);
 
             bool error = false;
             QString err_message;
@@ -718,8 +718,13 @@ void MainWindow::onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QStrin
 }
 
 
+void MainWindow::on_actionClear_triggered()
+{
+    onActionClearTriggered(true);
+}
 
-void MainWindow::on_actionClear_triggered(bool create_new)
+
+void MainWindow::onActionClearTriggered(bool create_new)
 {
     for (auto& it: _tab_info)
     {
@@ -917,7 +922,7 @@ void MainWindow::on_actionReplay_mode_triggered()
     }
     if( res == QMessageBox::Ok)
     {
-        on_actionClear_triggered();
+        onActionClearTriggered(true);
         _replay_widget->clear();
         _current_mode = GraphicMode::REPLAY;
         updateCurrentMode();
@@ -979,4 +984,5 @@ void MainWindow::onChangeNodesStyle(const QString& bt_name,
         }
     }
 }
+
 

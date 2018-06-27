@@ -80,8 +80,6 @@ private slots:
 
     void onChangeNodesStyle(const QString& bt_name, const std::unordered_map<int, NodeStatus>& node_status);
 
-    void on_actionClear_triggered(bool create_new = true);
-
     void on_toolButtonLayout_clicked();
 
     void on_actionEditor_mode_triggered();
@@ -91,6 +89,10 @@ private slots:
     void on_actionReplay_mode_triggered();
 
     void on_tabWidget_currentChanged(int index);
+
+    void onActionClearTriggered(bool create_new);
+
+    void on_actionClear_triggered();
 
 private:
 
