@@ -10,6 +10,8 @@ namespace BT_Serialization {
 
 struct Timestamp;
 
+struct KeyValue;
+
 struct TreeNode;
 
 struct BehaviorTree;
@@ -94,33 +96,29 @@ inline const char *EnumNameType(Type e) {
   return EnumNamesType()[index];
 }
 
-FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Timestamp FLATBUFFERS_FINAL_CLASS {
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(8) Timestamp FLATBUFFERS_FINAL_CLASS {
  private:
-  uint32_t sec_;
-  uint32_t usec_;
+  uint64_t usec_since_epoch_;
 
  public:
   Timestamp() {
     memset(this, 0, sizeof(Timestamp));
   }
-  Timestamp(uint32_t _sec, uint32_t _usec)
-      : sec_(flatbuffers::EndianScalar(_sec)),
-        usec_(flatbuffers::EndianScalar(_usec)) {
+  Timestamp(uint64_t _usec_since_epoch)
+      : usec_since_epoch_(flatbuffers::EndianScalar(_usec_since_epoch)) {
   }
-  uint32_t sec() const {
-    return flatbuffers::EndianScalar(sec_);
-  }
-  uint32_t usec() const {
-    return flatbuffers::EndianScalar(usec_);
+  uint64_t usec_since_epoch() const {
+    return flatbuffers::EndianScalar(usec_since_epoch_);
   }
 };
 FLATBUFFERS_STRUCT_END(Timestamp, 8);
 
-FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) StatusChange FLATBUFFERS_FINAL_CLASS {
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(8) StatusChange FLATBUFFERS_FINAL_CLASS {
  private:
   uint16_t uid_;
   int8_t prev_status_;
   int8_t status_;
+  int32_t padding0__;
   Timestamp timestamp_;
 
  public:
@@ -131,7 +129,9 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) StatusChange FLATBUFFERS_FINAL_CLASS {
       : uid_(flatbuffers::EndianScalar(_uid)),
         prev_status_(flatbuffers::EndianScalar(static_cast<int8_t>(_prev_status))),
         status_(flatbuffers::EndianScalar(static_cast<int8_t>(_status))),
+        padding0__(0),
         timestamp_(_timestamp) {
+    (void)padding0__;
   }
   uint16_t uid() const {
     return flatbuffers::EndianScalar(uid_);
@@ -146,7 +146,69 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) StatusChange FLATBUFFERS_FINAL_CLASS {
     return timestamp_;
   }
 };
-FLATBUFFERS_STRUCT_END(StatusChange, 12);
+FLATBUFFERS_STRUCT_END(StatusChange, 16);
+
+struct KeyValue FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_KEY = 4,
+    VT_VALUE = 6
+  };
+  const flatbuffers::String *key() const {
+    return GetPointer<const flatbuffers::String *>(VT_KEY);
+  }
+  const flatbuffers::String *value() const {
+    return GetPointer<const flatbuffers::String *>(VT_VALUE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_KEY) &&
+           verifier.Verify(key()) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           verifier.Verify(value()) &&
+           verifier.EndTable();
+  }
+};
+
+struct KeyValueBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_key(flatbuffers::Offset<flatbuffers::String> key) {
+    fbb_.AddOffset(KeyValue::VT_KEY, key);
+  }
+  void add_value(flatbuffers::Offset<flatbuffers::String> value) {
+    fbb_.AddOffset(KeyValue::VT_VALUE, value);
+  }
+  explicit KeyValueBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  KeyValueBuilder &operator=(const KeyValueBuilder &);
+  flatbuffers::Offset<KeyValue> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<KeyValue>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<KeyValue> CreateKeyValue(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> key = 0,
+    flatbuffers::Offset<flatbuffers::String> value = 0) {
+  KeyValueBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_key(key);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<KeyValue> CreateKeyValueDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *key = nullptr,
+    const char *value = nullptr) {
+  return BT_Serialization::CreateKeyValue(
+      _fbb,
+      key ? _fbb.CreateString(key) : 0,
+      value ? _fbb.CreateString(value) : 0);
+}
 
 struct TreeNode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
@@ -155,7 +217,8 @@ struct TreeNode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_TYPE = 8,
     VT_STATUS = 10,
     VT_INSTANCE_NAME = 12,
-    VT_REGISTRATION_NAME = 14
+    VT_REGISTRATION_NAME = 14,
+    VT_PARAMS = 16
   };
   uint16_t uid() const {
     return GetField<uint16_t>(VT_UID, 0);
@@ -175,6 +238,9 @@ struct TreeNode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *registration_name() const {
     return GetPointer<const flatbuffers::String *>(VT_REGISTRATION_NAME);
   }
+  const flatbuffers::Vector<flatbuffers::Offset<KeyValue>> *params() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<KeyValue>> *>(VT_PARAMS);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_UID) &&
@@ -186,6 +252,9 @@ struct TreeNode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.Verify(instance_name()) &&
            VerifyOffsetRequired(verifier, VT_REGISTRATION_NAME) &&
            verifier.Verify(registration_name()) &&
+           VerifyOffset(verifier, VT_PARAMS) &&
+           verifier.Verify(params()) &&
+           verifier.VerifyVectorOfTables(params()) &&
            verifier.EndTable();
   }
 };
@@ -211,6 +280,9 @@ struct TreeNodeBuilder {
   void add_registration_name(flatbuffers::Offset<flatbuffers::String> registration_name) {
     fbb_.AddOffset(TreeNode::VT_REGISTRATION_NAME, registration_name);
   }
+  void add_params(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<KeyValue>>> params) {
+    fbb_.AddOffset(TreeNode::VT_PARAMS, params);
+  }
   explicit TreeNodeBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -232,8 +304,10 @@ inline flatbuffers::Offset<TreeNode> CreateTreeNode(
     Type type = Type::UNDEFINED,
     Status status = Status::IDLE,
     flatbuffers::Offset<flatbuffers::String> instance_name = 0,
-    flatbuffers::Offset<flatbuffers::String> registration_name = 0) {
+    flatbuffers::Offset<flatbuffers::String> registration_name = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<KeyValue>>> params = 0) {
   TreeNodeBuilder builder_(_fbb);
+  builder_.add_params(params);
   builder_.add_registration_name(registration_name);
   builder_.add_instance_name(instance_name);
   builder_.add_children_uid(children_uid);
@@ -250,7 +324,8 @@ inline flatbuffers::Offset<TreeNode> CreateTreeNodeDirect(
     Type type = Type::UNDEFINED,
     Status status = Status::IDLE,
     const char *instance_name = nullptr,
-    const char *registration_name = nullptr) {
+    const char *registration_name = nullptr,
+    const std::vector<flatbuffers::Offset<KeyValue>> *params = nullptr) {
   return BT_Serialization::CreateTreeNode(
       _fbb,
       uid,
@@ -258,7 +333,8 @@ inline flatbuffers::Offset<TreeNode> CreateTreeNodeDirect(
       type,
       status,
       instance_name ? _fbb.CreateString(instance_name) : 0,
-      registration_name ? _fbb.CreateString(registration_name) : 0);
+      registration_name ? _fbb.CreateString(registration_name) : 0,
+      params ? _fbb.CreateVector<flatbuffers::Offset<KeyValue>>(*params) : 0);
 }
 
 struct BehaviorTree FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {

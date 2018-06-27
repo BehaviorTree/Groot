@@ -29,7 +29,7 @@ private slots:
     void on_timer();
 
 signals:
-    void loadBehaviorTree( AbsBehaviorTree& tree, const QString &bt_name );
+    void loadBehaviorTree(const AbsBehaviorTree& tree, const QString &bt_name );
 
     void connectionUpdate(bool connected);
 

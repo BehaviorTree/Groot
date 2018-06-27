@@ -42,7 +42,7 @@ public:
 
   void setInData(std::shared_ptr<NodeData>, int) final {}
 
-  QString caption() const override;
+  std::pair<QString,QColor> caption() const override;
 
   const QString& registrationName() const;
 

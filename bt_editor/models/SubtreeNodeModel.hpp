@@ -22,7 +22,8 @@ public:
 
     static const char* Name() { return "SubTree";  }
 
-    QString caption() const override { return "SubTree";  }
+    std::pair<QString, QColor> caption() const override
+    { return { "SubTree", QtNodes::NodeStyle().FontColor}; }
 
     NodeType nodeType() const final { return NodeType::SUBTREE; }
 
@@ -55,7 +56,8 @@ public:
 
     static const char* Name() { return "SubTreeExpanded";  }
 
-    QString caption() const override {  return "SubTreeExpanded"; }
+    std::pair<QString, QColor> caption() const override
+    { return { "SubTreeExpanded", QtNodes::NodeStyle().FontColor}; }
 
     ConnectionPolicy portOutConnectionPolicy(PortIndex) const final;
 

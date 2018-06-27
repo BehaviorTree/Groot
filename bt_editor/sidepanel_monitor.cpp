@@ -114,6 +114,16 @@ bool SidepanelMonitor::getTreeFromServer()
         _loaded_tree = BuildTreeFromFlatbuffers( fb_behavior_tree );
 
         loadBehaviorTree( _loaded_tree, "BehaviorTree" );
+
+        std::unordered_map<int, NodeStatus> node_status;
+
+        qDebug() << "--------";
+
+        for(size_t t=0; t < _loaded_tree.nodesCount(); t++)
+        {
+            node_status[t] = _loaded_tree.nodes()[t].status;
+        }
+        emit changeNodeStyle( "BehaviorTree", node_status );
     }
     catch( zmq::error_t& err)
     {

@@ -411,6 +411,12 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
         abs_node.type   = convert( node->type() );
         abs_node.status = convert( node->status() );
 
+        for( const BT_Serialization::KeyValue* pair: *(node->params()) )
+        {
+            abs_node.parameters.push_back( { QString(pair->key()->c_str()),
+                                             QString(pair->value()->c_str()) } );
+        }
+
         tree.pushBack(node->uid(), abs_node);
     }
 

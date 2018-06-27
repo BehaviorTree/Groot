@@ -23,10 +23,10 @@ NodeGeometry::
 NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
   : _width(50)
   , _height(100)
-  , _inputPortWidth(5)
-  , _outputPortWidth(5)
-  , _entryHeight(5)
-  , _spacing(5)
+  , _inputPortWidth(4)
+  , _outputPortWidth(4)
+  , _entryHeight(4)
+  , _spacing(4)
   , _hovered(false)
   , _draggingPos(-1000, -1000)
   , _dataModel(dataModel)
@@ -35,7 +35,7 @@ NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
   , _ports_layout(PortLayout::Vertical  )
 {
   QFont f;
-  f.setPointSize(13);
+  f.setPointSize(12);
   f.setBold(true);
 
   _boldFontMetrics = QFontMetrics(f);
@@ -129,7 +129,7 @@ recalculateSize(QFont const & font) const
   QFontMetrics fontMetrics(font);
   QFont boldFont = font;
 
-  boldFont.setPointSize(13);
+  boldFont.setPointSize(12);
   boldFont.setBold(true);
 
   QFontMetrics boldFontMetrics(boldFont);
@@ -188,7 +188,7 @@ checkHitScenePoint(PortType portType,
   if (portType == PortType::None)
     return result;
 
-  double const tolerance = 2.0 * nodeStyle.ConnectionPointDiameter;
+  double const tolerance = 2 * nodeStyle.ConnectionPointDiameter;
 
   unsigned int const nItems = _dataModel->nPorts(portType);
 
@@ -250,7 +250,7 @@ captionHeight() const
   if (!_dataModel->captionVisible())
     return 0;
 
-  QString name = _dataModel->caption();
+  QString name = _dataModel->caption().first;
 
   if ( _dataModel->icon() )
     return std::max(30, _boldFontMetrics.boundingRect(name).height() );
@@ -266,10 +266,10 @@ captionWidth() const
   if (!_dataModel->captionVisible())
     return 0;
 
-  QString name = _dataModel->caption();
+  QString name = _dataModel->caption().first;
 
   if ( _dataModel->icon() )
-    return ( 50 + _boldFontMetrics.boundingRect(name).width() );
+    return ( 30 + _boldFontMetrics.boundingRect(name).width() );
   else
     return _boldFontMetrics.boundingRect(name).width();
 }

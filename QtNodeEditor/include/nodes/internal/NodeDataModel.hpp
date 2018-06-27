@@ -39,7 +39,7 @@ public:
   ~NodeDataModel() = default;
 
   /// Caption is used in GUI
-  virtual QString
+  virtual std::pair<QString,QColor>
   caption() const = 0;
 
   virtual QSvgRenderer*

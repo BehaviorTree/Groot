@@ -1,7 +1,9 @@
 #ifndef DECORATORNODEMODEL_HPP
 #define DECORATORNODEMODEL_HPP
 
+#include <QLineEdit>
 #include "BehaviorTreeNodeModel.hpp"
+
 
 class DecoratorNodeModel : public BehaviorTreeDataModel
 {
@@ -16,7 +18,8 @@ public:
 
     virtual const char* className() const final {  return "Decorator"; }
 
-    QString caption() const override { return "Decorator"; }
+    std::pair<QString, QColor> caption() const override
+    { return { "Decorator", QtNodes::NodeStyle().FontColor}; }
 
     virtual NodeType nodeType() const final { return NodeType::DECORATOR; }
 };
@@ -34,7 +37,9 @@ public:
     }
 
     static const char* Name() {  return "RetryUntilSuccesful"; }
-    QString caption() const override { return RetryNodeModel::Name(); }
+
+    std::pair<QString, QColor> caption() const override
+    { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
     virtual QSvgRenderer* icon() const override {
         static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/retry.svg"));
@@ -49,7 +54,9 @@ public:
     NegationNodeModel(const ParameterWidgetCreators &parameters = ParameterWidgetCreators());
 
     static const char* Name() {  return "Negation"; }
-    QString caption() const override { return NegationNodeModel::Name(); }
+
+    std::pair<QString, QColor> caption() const override
+    { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
     virtual QSvgRenderer* icon() const override {
         static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/not_equal.svg"));
@@ -70,7 +77,9 @@ public:
     }
 
     static const char* Name() {  return "Repeat"; }
-    QString caption() const override { return RepeatNodeModel::Name(); }
+
+    std::pair<QString, QColor> caption() const override
+    { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
     virtual QSvgRenderer* icon() const override {
         static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/repeat.svg"));

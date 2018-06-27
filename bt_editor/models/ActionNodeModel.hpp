@@ -16,7 +16,7 @@ public:
 
     static const char* Name() { return "Action"; }
 
-    QString caption() const override { return "#ffff66Action"; }
+    std::pair<QString,QColor> caption() const override { return {"Action","#ffff66"}; }
 
     virtual NodeType nodeType() const final { return NodeType::ACTION; }
 
@@ -43,7 +43,7 @@ public:
 
     static const char* Name() { return "Condition"; }
 
-    QString caption() const override { return "#00cc99Condition"; }
+    std::pair<QString,QColor> caption() const override { return {"Condition","#00cc99"}; }
 
     virtual NodeType nodeType() const final { return NodeType::CONDITION; }
 

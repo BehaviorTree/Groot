@@ -246,17 +246,12 @@ drawModelName(QPainter * painter,
   if (!model->captionVisible())
     return;
 
-  QString name = model->caption();
-  QColor caption_color = nodeStyle.FontColor;
-  if( name.size() >= 8 && name.at(0) == '#')
-  {
-     caption_color = QColor( name.left(7));
-     name = name.right( name.size() -7);
-  }
+  QString name = model->caption().first;
+  QColor caption_color = model->caption().second;
 
   QFont f = painter->font();
 
-  f.setPointSize(13);
+  f.setPointSize(12);
   f.setBold(true);
 
   QFontMetrics metrics(f);
@@ -271,7 +266,7 @@ drawModelName(QPainter * painter,
     position.setX( position.x() + 15 );
     position.setY( position.y() + 8 );
     model->icon()->render( painter,
-                           QRectF( position.x() - 35 ,0,30,30) );
+                           QRectF( position.x() - 30 ,0,24,24) );
   }
 
   painter->setFont(f);

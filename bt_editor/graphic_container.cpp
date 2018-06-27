@@ -492,37 +492,46 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
 
     if (!data_model)
     {
+        ParameterWidgetCreators parameter_creators;
+        for (auto& it: abs_node->parameters)
+        {
+            TreeNodeModel::Param model_param;
+            model_param.type  = ParamType::TEXT;
+            model_param.label = it.first;
+            parameter_creators.push_back(buildWidgetCreator( model_param ) );
+        }
+
         QString ID = abs_node->registration_name;
 
         if(  abs_node->type == NodeType::ACTION )
         {
-            DataModelRegistry::RegistryItemCreator node_creator = [ID]()
+            DataModelRegistry::RegistryItemCreator node_creator = [ID,parameter_creators]()
             {
-                return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, ParameterWidgetCreators() ) );
+                return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, parameter_creators ) );
             };
             _scene->registry().registerModel("Action", node_creator);
         }
         else if( abs_node->type == NodeType::CONDITION)
         {
-            DataModelRegistry::RegistryItemCreator node_creator = [ID]()
+            DataModelRegistry::RegistryItemCreator node_creator = [ID,parameter_creators]()
             {
-                return std::unique_ptr<ConditionNodeModel>( new ConditionNodeModel(ID, ParameterWidgetCreators() ) );
+                return std::unique_ptr<ConditionNodeModel>( new ConditionNodeModel(ID, parameter_creators ) );
             };
             _scene->registry().registerModel("Condition", node_creator);
         }
         else if( abs_node->type == NodeType::DECORATOR )
         {
-            DataModelRegistry::RegistryItemCreator node_creator = [ID]()
+            DataModelRegistry::RegistryItemCreator node_creator = [ID,&parameter_creators]()
             {
-                return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, ParameterWidgetCreators()) );
+                return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, parameter_creators) );
             };
             _scene->registry().registerModel("Decorator", node_creator);
         }
         else if( abs_node->type == NodeType::SUBTREE )
         {
-            DataModelRegistry::RegistryItemCreator node_creator = [ID]()
+            DataModelRegistry::RegistryItemCreator node_creator = [ID,&parameter_creators]()
             {
-                return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID, ParameterWidgetCreators()) );
+                return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID, parameter_creators) );
             };
             _scene->registry().registerModel("SubTree", node_creator);
         }
@@ -576,8 +585,7 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
     double x_offset = 0;
 
     _scene->clearScene();
-    auto first_qt_node = &(_scene->createNode( _scene->registry().create("Root"),
-                                          cursor ));
+    auto first_qt_node = &(_scene->createNode( _scene->registry().create("Root"), cursor ));
 
     auto root_node = abstract_tree.rootNode();
     if( root_node->type == NodeType::ROOT)

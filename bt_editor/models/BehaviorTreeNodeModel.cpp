@@ -105,11 +105,11 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
 
         }
         _params_widget->adjustSize();
-        _form_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
     }
 
     _main_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
     _top_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
+    _form_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
 
     connect( _line_edit_name, &QLineEdit::editingFinished,
              this, [this]()
@@ -130,8 +130,8 @@ std::shared_ptr<QtNodes::NodeData> BehaviorTreeDataModel::outData(QtNodes::PortI
     return nullptr;
 }
 
-QString BehaviorTreeDataModel::caption() const {
-    return _registration_name;
+std::pair<QString, QColor> BehaviorTreeDataModel::caption() const {
+    return {_registration_name, QtNodes::NodeStyle().FontColor };
 }
 
 const QString &BehaviorTreeDataModel::registrationName() const
@@ -269,12 +269,13 @@ void BehaviorTreeDataModel::updateNodeSize()
             _form_layout->update();
         }
     }
+    _params_widget->adjustSize();
 
     QFont f;
-    f.setPointSize(13);
+    f.setPointSize(12);
     f.setBold(true);
     QFontMetrics boldFontMetrics(f);
-    double caption_width = boldFontMetrics.boundingRect( caption() ).width();
+    double caption_width = boldFontMetrics.boundingRect( caption().first ).width();
     if ( icon() )
     {
       caption_width += 35;
