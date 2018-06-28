@@ -6,7 +6,6 @@ DecoratorNodeModel::DecoratorNodeModel(QString decorator_ID,
     BehaviorTreeDataModel("D:", decorator_ID, parameters )
 {
     _line_edit_name->setReadOnly(true);
-    updateNodeSize();
 }
 
 RetryNodeModel::RetryNodeModel(const ParameterWidgetCreators &parameters):
@@ -19,7 +18,6 @@ NegationNodeModel::NegationNodeModel(const ParameterWidgetCreators &parameters):
   DecoratorNodeModel( NegationNodeModel::Name(), parameters )
 {
   _line_edit_name->setHidden(true);
-  _main_layout->setSpacing(0);
 }
 
 RepeatNodeModel::RepeatNodeModel(const ParameterWidgetCreators &parameters):
