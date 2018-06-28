@@ -1,7 +1,6 @@
 #include "sidepanel_editor.h"
 #include "ui_sidepanel_editor.h"
 
-#include <QComboBox>
 #include <QHeaderView>
 #include <QPushButton>
 
@@ -85,7 +84,7 @@ void SidepanelEditor::on_treeWidget_itemSelectionChanged()
     for (auto& param: model.params)
     {
       ui->parametersTableWidget->setItem(row,0, new QTableWidgetItem( param.label ));
-      ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem( toStr(param.type) ));
+      ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem( param.default_value ));
       row++;
     }
 

@@ -44,7 +44,6 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
              param_node = param_node->NextSiblingElement("Parameter") )
         {
             TreeNodeModel::Param model_param;
-            model_param.type  = getParamTypeFromString( param_node->Attribute("type"));
             model_param.label = param_node->Attribute("label");
 
             if( param_node->Attribute("default") ){
@@ -65,7 +64,6 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
             if(attr_name != "ID" && attr_name != "name")
             {
                 TreeNodeModel::Param model_param;
-                model_param.type  = ParamType::TEXT;
                 model_param.label = attr_name;
                 model_param.default_value = attr->Value();
 

@@ -107,15 +107,6 @@ void AbsBehaviorTree::debugPrint()
   }
 }
 
-ParamType getParamTypeFromString(const QString &str)
-{
-    if( str == "Text")  return ParamType::TEXT;
-    if( str == "Int")    return ParamType::INT;
-    if( str == "Double") return ParamType::DOUBLE;
-    if( str == "Combo")  return ParamType::COMBO;
-    return ParamType::UNDEFINED;
-}
-
 NodeType getNodeTypeFromString(const QString &str)
 {
     if( str == "Action")    return NodeType::ACTION;
@@ -165,11 +156,3 @@ const char *toStr(GraphicMode type)
     return nullptr;
 }
 
-const char *toStr(ParamType type)
-{
-    if( type == ParamType::TEXT)   return "Text";
-    if( type == ParamType::INT )   return "Int";
-    if( type == ParamType::DOUBLE) return "Double";
-    if( type == ParamType::COMBO)  return "Combo";
-    return nullptr;
-}

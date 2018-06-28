@@ -507,7 +507,6 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
         for (auto& it: abs_node->parameters)
         {
             TreeNodeModel::Param model_param;
-            model_param.type  = ParamType::TEXT;
             model_param.label = it.first;
             parameter_creators.push_back(buildWidgetCreator( model_param ) );
         }

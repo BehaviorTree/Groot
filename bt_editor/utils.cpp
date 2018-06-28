@@ -482,59 +482,15 @@ ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
     ParameterWidgetCreator creator;
     creator.label = param.label;
 
-    if( param.type == ParamType::TEXT)
+    creator.instance_factory = [param]()
     {
-        creator.instance_factory = [param]()
-        {
-            QLineEdit* line = new QLineEdit();
-            line->setAlignment( Qt::AlignHCenter);
-            line->setMaximumWidth(140);
-            line->setText( param.default_value );
-            return line;
-        };
-    }
-    else if( param.type == ParamType::INT)
-    {
-        creator.instance_factory = [param]()
-        {
-            QLineEdit* line = new QLineEdit();
-            line->setValidator( new QIntValidator( line ));
-            line->setAlignment( Qt::AlignHCenter);
-            line->setMaximumWidth(140);
-            line->setText( param.default_value );
-            return line;
-        };
-    }
-    else if( param.type == ParamType::DOUBLE)
-    {
-        creator.instance_factory = [param]()
-        {
-            QLineEdit* line = new QLineEdit();
-            line->setValidator( new QDoubleValidator( line ));
-            line->setAlignment( Qt::AlignHCenter);
-            line->setMaximumWidth(140);
-            line->setText( param.default_value );
-            return line;
-        };
-    }
-    else if( param.type == ParamType::COMBO)
-    {
-        QStringList option_list = param.default_value.split(";", QString::SkipEmptyParts);
-        creator.instance_factory = [option_list]()
-        {
-            QComboBox* combo = new QComboBox();
-            combo->setEditable(true);
-            combo->lineEdit()->setReadOnly(true);
-            combo->lineEdit()->setAlignment(Qt::AlignCenter);
-            combo->addItems(option_list);
-            combo->setMaximumWidth(140);
-            for (int i = 0 ; i < combo->count() ; ++i)
-            {
-                combo->setItemData(i, Qt::AlignCenter, Qt::TextAlignmentRole);
-            }
-            return combo;
-        };
-    }
+        QLineEdit* line = new QLineEdit();
+        line->setAlignment( Qt::AlignHCenter);
+        line->setMaximumWidth(140);
+        line->setText( param.default_value );
+        return line;
+    };
+
     return creator;
 }
 

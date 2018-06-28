@@ -372,8 +372,8 @@ void MainWindow::on_actionSave_triggered()
             {
                 XMLElement* param_node = doc.NewElement( "Parameter" );
                 param_node->InsertEndChild(root_models);
-                param_node->SetAttribute("label", param.label.toStdString().c_str() );
-                param_node->SetAttribute("type",  toStr( param.type ) );
+                param_node->SetAttribute("label",   param.label.toStdString().c_str() );
+                param_node->SetAttribute("default", param.default_value.toStdString().c_str() );
                 node->InsertEndChild(param_node);
             }
         }

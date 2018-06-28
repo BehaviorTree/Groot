@@ -2,8 +2,8 @@
 
 #include <QObject>
 #include <QLabel>
+#include <QLineEdit>
 #include <QFormLayout>
-#include <QComboBox>
 
 #include <nodes/NodeDataModel>
 #include <iostream>

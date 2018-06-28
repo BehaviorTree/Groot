@@ -184,6 +184,9 @@
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
         </attribute>
+        <attribute name="verticalHeaderDefaultSectionSize">
+         <number>30</number>
+        </attribute>
         <attribute name="verticalHeaderStretchLastSection">
          <bool>false</bool>
         </attribute>
@@ -194,7 +197,7 @@
         </column>
         <column>
          <property name="text">
-          <string>Type</string>
+          <string>Default</string>
          </property>
         </column>
        </widget>

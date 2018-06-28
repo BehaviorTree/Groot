@@ -32,7 +32,7 @@ public:
 
     static const TreeNodeModel& NodeModel()
     {
-        static TreeNodeModel model = { NodeType::DECORATOR, { {tr("num_attempts"), ParamType::INT} } };
+        static TreeNodeModel model = { NodeType::DECORATOR, { {tr("num_attempts"), "1" } } };
         return model;
     }
 
@@ -72,7 +72,7 @@ public:
 
     static const TreeNodeModel& NodeModel()
     {
-        static TreeNodeModel model = { NodeType::DECORATOR, { {tr("num_cycles"), ParamType::INT} } };
+        static TreeNodeModel model = { NodeType::DECORATOR, { {tr("num_cycles"), "1"} } };
         return model;
     }
 

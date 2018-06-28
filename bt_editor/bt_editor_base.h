@@ -9,22 +9,17 @@
 #include <nodes/Node>
 
 enum class NodeType   { ACTION, DECORATOR, CONTROL, CONDITION, SUBTREE, ROOT, UNDEFINED };
-enum class ParamType  { INT, DOUBLE, TEXT, COMBO, UNDEFINED };
 enum class NodeStatus { IDLE, RUNNING, SUCCESS, FAILURE };
 enum class GraphicMode { EDITOR, MONITOR, REPLAY };
 
 
-ParamType getParamTypeFromString(const QString& str);;
+NodeType getNodeTypeFromString(const QString& str);
 
-NodeType getNodeTypeFromString(const QString& str);;
-
-GraphicMode getGraphicModeFromString(const QString& str);;
+GraphicMode getGraphicModeFromString(const QString& str);
 
 const char* toStr(NodeStatus type);
 
 const char* toStr(NodeType type);
-
-const char* toStr(ParamType type);
 
 const char* toStr(GraphicMode type);
 
@@ -43,7 +38,6 @@ struct TreeNodeModel
   struct Param
   {
      QString label;
-     ParamType type;
      QString default_value;
   };
   std::vector<Param> params;
