@@ -27,11 +27,6 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
         ID = QString(node->Attribute("ID"));
     }
 
-    if( registry.registeredModelCreators().count(ID) > 0)
-    {
-        return;
-    }
-
     const auto node_type = getNodeTypeFromString(node_name);
     node_model.node_type = node_type;
 

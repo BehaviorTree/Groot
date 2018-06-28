@@ -65,12 +65,9 @@ public:
 
     QString const name = ModelType::Name();
 
-    if (_registeredItemCreators.count(name) == 0)
-    {
-      _registeredItemCreators[name] = std::move(creator);
-      _categories.insert(category);
-      _registeredModelsCategory[name] = category;
-    }
+    _registeredItemCreators[name] = std::move(creator);
+    _categories.insert(category);
+    _registeredModelsCategory[name] = category;
   }
 
   void registerTypeConverter(TypeConverterId const & id,
@@ -117,15 +114,10 @@ DataModelRegistry::
       name = prototypeInstance->name();
   }
 
-  if (_registeredItemCreators.count(name) == 0)
-  {
-    _registeredItemCreators[name] = std::move(creator);
-    _categories.insert(category);
-    _registeredModelsCategory[name] = category;
-  }
-  else{
-    qDebug() << "WARNING: tryin to register twice " << name;
-  }
+  _registeredItemCreators[name] = std::move(creator);
+  _categories.insert(category);
+  _registeredModelsCategory[name] = category;
+
 }
 
 }
