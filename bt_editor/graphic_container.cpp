@@ -291,13 +291,19 @@ void GraphicContainer::onNodeCreated(Node &node)
 
 void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &)
 {
-    QMenu* nodeMenu = new QMenu(_view);
+    QMenu* node_menu = new QMenu(_view);
+
+    node_menu->setStyleSheet(
+                "QMenu { background-color: #101020; color:white; }"
+                "QMenu::item { background: transparent; color:white; }"
+                "QMenu::item:selected { background: #404050; color:white; }"
+                "QMenu::item:disabled { background: transparent; color:grey; }" );
 
     //--------------------------------
-    createMorphSubMenu(node, nodeMenu);
+    createMorphSubMenu(node, node_menu);
     //--------------------------------
-    auto *remove = new QAction("Remove ", nodeMenu);
-    nodeMenu->addAction(remove);
+    auto *remove = new QAction("Remove ", node_menu);
+    node_menu->addAction(remove);
 
     auto scene = _scene;
 
@@ -311,9 +317,9 @@ void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &)
         undoableChange();
     });
     //--------------------------------
-    createSmartRemoveAction(node, nodeMenu);
+    createSmartRemoveAction(node, node_menu);
     //--------------------------------
-    nodeMenu->exec( QCursor::pos() );
+    node_menu->exec( QCursor::pos() );
 }
 
 QtNodes::Node* GraphicContainer::substituteNode(Node *node, const QString& new_node_name)
@@ -394,10 +400,10 @@ void GraphicContainer::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
     }
 }
 
-void GraphicContainer::createSmartRemoveAction(QtNodes::Node &node, QMenu* nodeMenu)
+void GraphicContainer::createSmartRemoveAction(QtNodes::Node &node, QMenu* node_menu)
 {
-    auto *smart_remove = new QAction("Smart Remove ", nodeMenu);
-    nodeMenu->addAction(smart_remove);
+    auto *smart_remove = new QAction("Smart Remove ", node_menu);
+    node_menu->addAction(smart_remove);
 
     NodeState::ConnectionPtrSet conn_in  = node.nodeState().connections(PortType::In,0);
     NodeState::ConnectionPtrSet conn_out;
@@ -465,12 +471,18 @@ void GraphicContainer::insertNodeInConnection(Connection &connection, QString no
 
 void GraphicContainer::onConnectionContextMenu(QtNodes::Connection &connection, const QPointF&)
 {
-    QMenu* nodeMenu = new QMenu(_view);
+    QMenu* conn_menu = new QMenu(_view);
+    conn_menu->setStyleSheet(
+                "QMenu { background-color: #101020; color:white; }"
+                "QMenu::item { background: transparent; color:white; }"
+                "QMenu::item:selected { background: #404050; color:white; }"
+                "QMenu::item:disabled { background: transparent; color:grey; }" );
+
     auto categories = {"Control", "Decorator"};
 
     for(auto category: categories)
     {
-        QMenu* submenu = nodeMenu->addMenu(QString("Insert ") + category + QString("Node") );
+        QMenu* submenu = conn_menu->addMenu(QString("Insert ") + category + QString("Node") );
         auto model_names = _model_registry->registeredModelsByCategory( category );
 
         if( model_names.empty() )
@@ -491,7 +503,7 @@ void GraphicContainer::onConnectionContextMenu(QtNodes::Connection &connection, 
         }
     }
 
-    nodeMenu->exec( QCursor::pos() );
+    conn_menu->exec( QCursor::pos() );
 }
 
 void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
