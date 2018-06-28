@@ -44,6 +44,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _label_ID->setAlignment(Qt::AlignCenter);
 
     _line_edit_name->setAlignment( Qt::AlignCenter );
+    _line_edit_name->setText( _instance_name );
 
     QFont font = _label_ID->font();
     font.setPointSize(10);
@@ -117,8 +118,6 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     {
         setInstanceName( _line_edit_name->text() );
     });
-
-    setInstanceName( _instance_name );
 }
 
 QtNodes::NodeDataType BehaviorTreeDataModel::dataType(QtNodes::PortType, QtNodes::PortIndex) const
@@ -253,15 +252,17 @@ void BehaviorTreeDataModel::setParameterValue(const QString &label, const QStrin
 void BehaviorTreeDataModel::updateNodeSize()
 {
     const int MARGIN = 10;
+    const int DEFAULT_LINE_WIDTH = 100;
+    const int DEFAULT_FIELD_WIDTH = 60;
 
     QFontMetrics fm = _line_edit_name->fontMetrics();
     const QString& txt = _line_edit_name->text();
-    int line_edit_width = std::max( 140, fm.boundingRect(txt).width() + MARGIN);
+    int line_edit_width = std::max( DEFAULT_LINE_WIDTH, fm.boundingRect(txt).width() + MARGIN);
     line_edit_width = std::max( line_edit_width, captionSize().width());
 
     //----------------------------
-    int field_colum_width = 60;
-    int label_colum_width = 10;
+    int field_colum_width = DEFAULT_FIELD_WIDTH;
+    int label_colum_width = 0;
 
     for(int row = 0; row< _form_layout->rowCount(); row++)
     {
@@ -272,7 +273,7 @@ void BehaviorTreeDataModel::updateNodeSize()
             QFontMetrics fontMetrics = field_line_edit->fontMetrics();
             QString text = field_line_edit->text();
             int text_width = fontMetrics.boundingRect(text).width();
-            field_colum_width = std::max( field_colum_width, text_width + 20);
+            field_colum_width = std::max( field_colum_width, text_width + MARGIN);
         }
         label_colum_width = std::max(label_colum_width, label_widget->width());
     }

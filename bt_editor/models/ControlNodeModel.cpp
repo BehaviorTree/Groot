@@ -24,7 +24,7 @@ FallbackModel::FallbackModel(): ControlNodeModelBase()  {
 }
 
 SequenceStarModel::SequenceStarModel(): ControlNodeModelBase() {
-
+    updateNodeSize();
 }
 
 IfThenElseModel::IfThenElseModel(): ControlNodeModelBase() {

@@ -29,8 +29,8 @@ QSize NodeDataModel::captionSize() const
 
     if( icon() )
     {
-        rect.setWidth( rect.width() + 30 );
-        rect.setHeight( std::max( rect.height(), 24));
+        size.setWidth( rect.width() + 30 );
+        size.setHeight( std::max( rect.height(), 24));
     }
     return size;
 }

@@ -258,8 +258,8 @@ drawModelName(QPainter * painter,
 
   if( model->icon() )
   {
-      position.setX( position.x() + 15 );
-      position.setY( position.y() + 8 );
+      position.setX( position.x() + 30 );
+      position.setY( position.y() + 5 );
       model->icon()->render( painter,
                              QRectF( position.x() - 30 ,0,24,24) );
   }
