@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QFont>
+#include <QApplication>
 
 BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
                                              const QString& registration_name,
@@ -251,38 +252,48 @@ void BehaviorTreeDataModel::setParameterValue(const QString &label, const QStrin
 
 void BehaviorTreeDataModel::updateNodeSize()
 {
+    const int MARGIN = 10;
+
     QFontMetrics fm = _line_edit_name->fontMetrics();
     const QString& txt = _line_edit_name->text();
-    double new_width = std::max( 140, fm.boundingRect(txt).width() + 20);
+    int line_edit_width = std::max( 140, fm.boundingRect(txt).width() + MARGIN);
+    line_edit_width = std::max( line_edit_width, captionSize().width());
+
+    //----------------------------
+    int field_colum_width = 60;
+    int label_colum_width = 10;
 
     for(int row = 0; row< _form_layout->rowCount(); row++)
     {
-       // auto label_widget = _form_layout->itemAt(row, QFormLayout::LabelRole)->widget();
+        auto label_widget = _form_layout->itemAt(row, QFormLayout::LabelRole)->widget();
         auto field_widget = _form_layout->itemAt(row, QFormLayout::FieldRole)->widget();
         if(auto field_line_edit = dynamic_cast<QLineEdit*>(field_widget))
         {
             QFontMetrics fontMetrics = field_line_edit->fontMetrics();
             QString text = field_line_edit->text();
             int text_width = fontMetrics.boundingRect(text).width();
-            field_line_edit->setFixedWidth( std::max( 140, text_width + 20) );
-            field_line_edit->update();
-            _form_layout->update();
+            field_colum_width = std::max( field_colum_width, text_width + 20);
+        }
+        label_colum_width = std::max(label_colum_width, label_widget->width());
+    }
+
+    field_colum_width = std::max( field_colum_width,
+                                  line_edit_width - label_colum_width - _form_layout->spacing());
+
+    for(int row = 0; row< _form_layout->rowCount(); row++)
+    {
+        auto field_widget = _form_layout->itemAt(row, QFormLayout::FieldRole)->widget();
+        if(auto field_line_edit = dynamic_cast<QLineEdit*>(field_widget))
+        {
+            field_line_edit->setFixedWidth( field_colum_width );
         }
     }
+    _params_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     _params_widget->adjustSize();
 
-    QFont f;
-    f.setPointSize(12);
-    f.setBold(true);
-    QFontMetrics boldFontMetrics(f);
-    double caption_width = boldFontMetrics.boundingRect( caption().first ).width();
-    if ( icon() )
-    {
-      caption_width += 35;
-    }
-    new_width = std::max( new_width, caption_width);
+    //----------------------------
+    _line_edit_name->setFixedWidth( std::max( line_edit_width, _params_widget->width() ));
 
-    _line_edit_name->setFixedWidth(new_width);
     emit embeddedWidgetSizeUpdated();
 }
 

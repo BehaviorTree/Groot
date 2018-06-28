@@ -246,34 +246,29 @@ drawModelName(QPainter * painter,
   if (!model->captionVisible())
     return;
 
-  QString name = model->caption().first;
+  QSize caption_size = model->captionSize();
   QColor caption_color = model->caption().second;
 
   QFont f = painter->font();
-
   f.setPointSize(12);
   f.setBold(true);
 
-  QFontMetrics metrics(f);
-
-  auto rect = metrics.boundingRect(name);
-
-  QPointF position((geom.width() - rect.width()) / 2.0,
+  QPointF position((geom.width() - caption_size.width()) / 2.0,
                    geom.spacing() + geom.entryHeight() / 2.0);
 
   if( model->icon() )
   {
-    position.setX( position.x() + 15 );
-    position.setY( position.y() + 8 );
-    model->icon()->render( painter,
-                           QRectF( position.x() - 30 ,0,24,24) );
+      position.setX( position.x() + 15 );
+      position.setY( position.y() + 8 );
+      model->icon()->render( painter,
+                             QRectF( position.x() - 30 ,0,24,24) );
   }
 
+  QString name = model->caption().first;
   painter->setFont(f);
   painter->setPen(caption_color);
   painter->drawText(position, name);
 
-  f.setPointSize(12);
   f.setBold(false);
   painter->setFont(f);
 

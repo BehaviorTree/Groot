@@ -49,6 +49,8 @@ public:
   virtual bool
   captionVisible() const { return true; }
 
+  QSize captionSize() const;
+
   /// Port caption is used in GUI to label individual ports
   virtual QString
   portCaption(PortType, PortIndex) const { return QString(); }
