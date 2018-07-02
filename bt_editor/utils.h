@@ -57,6 +57,13 @@ inline NodeStatus convert(const BT_Serialization::Status& status)
     return NodeStatus::IDLE;
 }
 
+const std::set<std::string>& BuiltInRegisteredModels();
+
 ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param);
+
+bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
+                   const QString& ID,
+                   const ParameterWidgetCreators& parameters,
+                   NodeType node_type);
 
 #endif // NODE_UTILS_H

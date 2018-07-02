@@ -494,3 +494,72 @@ ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
     return creator;
 }
 
+
+const std::set<std::string> &BuiltInRegisteredModels()
+{
+    const static std::set<std::string> models_ID = {
+        SequenceModel::Name(),
+        SequenceStarModel::Name(),
+        FallbackModel::Name(),
+        NegationNodeModel::Name(),
+        RetryNodeModel::Name(),
+        RepeatNodeModel::Name()
+    };
+    return  models_ID;
+}
+
+bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
+                   const QString& ID,
+                   const ParameterWidgetCreators& parameters,
+                   NodeType node_type)
+{
+    if( BuiltInRegisteredModels().count(ID.toStdString()) )
+    {
+        return false;
+    }
+    if( node_type == NodeType::ACTION )
+    {
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+        {
+            return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, parameters) );
+        };
+        registry.registerModel("Action", node_creator, ID);
+    }
+    else if( node_type == NodeType::CONDITION )
+    {
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+        {
+            return std::unique_ptr<ConditionNodeModel>( new ConditionNodeModel(ID, parameters) );
+        };
+        registry.registerModel("Condition", node_creator, ID);
+    }
+    else if( node_type == NodeType::DECORATOR )
+    {
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+        {
+            return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, parameters) );
+        };
+        registry.registerModel("Decorator", node_creator, ID);
+    }
+    else if( node_type == NodeType::SUBTREE )
+    {
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+        {
+            return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID,parameters) );
+        };
+        registry.registerModel("SubTree", node_creator, ID);
+
+        auto otherID = ID + EXPANDED_SUFFIX;
+        node_creator = [ID, otherID, parameters]()
+        {
+          auto node = std::unique_ptr<SubtreeExpandedNodeModel>(
+                new SubtreeExpandedNodeModel(otherID, parameters) );
+
+          node->setInstanceName(ID);
+          return node;
+        };
+        registry.registerModel("SubTreeExpanded", node_creator, otherID);
+    }
+    return true;
+}
+

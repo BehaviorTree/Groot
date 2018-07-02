@@ -11,6 +11,8 @@
 using namespace tinyxml2;
 using namespace QtNodes;
 
+
+
 static
 void buildTreeNodeModel(const tinyxml2::XMLElement* node,
                         QtNodes::DataModelRegistry& registry,
@@ -26,6 +28,8 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
     {
         ID = QString(node->Attribute("ID"));
     }
+
+
 
     const auto node_type = getNodeTypeFromString(node_name);
     node_model.node_type = node_type;
@@ -69,49 +73,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
         }
     }
 
-    if( node_type == NodeType::ACTION )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
-        {
-            return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, parameters) );
-        };
-        registry.registerModel("Action", node_creator, ID);
-    }
-    else if( node_type == NodeType::CONDITION )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
-        {
-            return std::unique_ptr<ConditionNodeModel>( new ConditionNodeModel(ID, parameters) );
-        };
-        registry.registerModel("Condition", node_creator, ID);
-    }
-    else if( node_type == NodeType::DECORATOR )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
-        {
-            return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, parameters) );
-        };
-        registry.registerModel("Decorator", node_creator, ID);
-    }
-    else if( node_type == NodeType::SUBTREE )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
-        {
-            return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID,parameters) );
-        };
-        registry.registerModel("SubTree", node_creator, ID);
-
-        auto otherID = ID + EXPANDED_SUFFIX;
-        node_creator = [ID, otherID, parameters]()
-        {
-          auto node = std::unique_ptr<SubtreeExpandedNodeModel>(
-                new SubtreeExpandedNodeModel(otherID, parameters) );
-
-          node->setInstanceName(ID);
-          return node;
-        };
-        registry.registerModel("SubTreeExpanded", node_creator, otherID);
-    }
+    addToModelRegistry(registry,ID,parameters,node_type);
 
     if( node_type != NodeType::UNDEFINED)
     {
