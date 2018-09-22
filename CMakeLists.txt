@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.2)
 
 project(behavior_tree_editor)
+set(CMAKE_CXX_STANDARD 11)
+include_directories(QtNodeEditor/include/nodes/internal)
 
 find_package(Qt5 COMPONENTS  Core Widgets Gui OpenGL Xml Svg)
 
@@ -34,11 +36,32 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_definitions(${Qt5Widgets_DEFINITIONS} -DNODE_EDITOR_STATIC -std=c++11 )
+add_definitions(${Qt5Widgets_DEFINITIONS} -DNODE_EDITOR_STATIC)
 set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} -Werror=return-type")
 
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
-set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+if (UNIX)
+  option(do_enable_valgrind "Enable running of valgrind." OFF)
+  if (do_enable_valgrind)
+    set(valgrind_log_file ${CMAKE_CURRENT_BINARY_DIR}/valgrind.out)
+    add_custom_target(run_valgrind
+      COMMAND valgrind
+        --leak-check=full
+        -v
+        --log-file=${valgrind_log_file}
+        --track-origins=yes
+        --show-leak-kinds=all
+        $<TARGET_FILE:behavior_tree_editor>
+      COMMENT "Valgrind log file: ${valgrind_log_file}"
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      VERBATIM)
+  else()
+    # Enable GCC address memory sanitizer. This setting seems to be incompatible
+    # with Valgrind.
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+    set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+  endif()
+endif()
+
 
 INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./3rdparty )
 
