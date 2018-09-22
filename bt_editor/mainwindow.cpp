@@ -40,7 +40,8 @@ using QtNodes::NodeState;
 MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    _current_mode(initial_mode)
+    _current_mode(initial_mode),
+    _current_layout(QtNodes::PortLayout::Vertical)
 {
     ui->setupUi(this);
 
