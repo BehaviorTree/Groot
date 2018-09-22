@@ -12,9 +12,9 @@ using QtNodes::PortIndex;
 using QtNodes::Connection;
 
 NodeState::
-NodeState(std::unique_ptr<NodeDataModel> const &model)
-  : _inConnections(model->nPorts(PortType::In))
-  , _outConnections(model->nPorts(PortType::Out))
+NodeState(NodeDataModel const& model)
+  : _inConnections(model.nPorts(PortType::In))
+  , _outConnections(model.nPorts(PortType::Out))
   , _reaction(NOT_REACTING)
   , _reactingPortType(PortType::None)
   , _resizing(false)

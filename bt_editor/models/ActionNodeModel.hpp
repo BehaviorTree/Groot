@@ -2,7 +2,6 @@
 
 #include "BehaviorTreeNodeModel.hpp"
 
-
 class ActionNodeModel : public BehaviorTreeDataModel
 {
 public:
@@ -21,8 +20,8 @@ public:
     virtual NodeType nodeType() const final { return NodeType::ACTION; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/exclaimation_mark.svg"));
-        return renderer;
+        static QSvgRenderer r(tr(":/icons/svg/exclaimation_mark.svg"));
+        return &r;
     }
 
 private:

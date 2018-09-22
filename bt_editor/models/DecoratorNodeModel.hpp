@@ -42,8 +42,8 @@ public:
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/retry.svg"));
-        return renderer;
+        static QSvgRenderer renderer(tr(":/icons/svg/retry.svg"));
+        return &renderer;
     }
 };
 
@@ -59,8 +59,8 @@ public:
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/not_equal.svg"));
-        return renderer;
+        static QSvgRenderer renderer(tr(":/icons/svg/not_equal.svg"));
+        return &renderer;
     }
 };
 
@@ -82,8 +82,8 @@ public:
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/repeat.svg"));
-        return renderer;
+        static QSvgRenderer renderer(tr(":/icons/svg/repeat.svg"));
+        return &renderer;
     }
 };
 

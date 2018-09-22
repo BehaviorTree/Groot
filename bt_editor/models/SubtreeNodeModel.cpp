@@ -4,14 +4,13 @@
 
 SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
                                    const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel ("SubTree", subtree_ID, creators ),
-    _renderer(nullptr)
+    BehaviorTreeDataModel ("SubTree", subtree_ID, creators )
 {
     _line_edit_name->setReadOnly(true);
 
     auto vlayout = dynamic_cast<QVBoxLayout*>(_main_widget->layout());
 
-    _expand_button = new QPushButton("Expand", _main_widget );
+    QPushButton* _expand_button = new QPushButton("Expand", _main_widget );
     vlayout->addWidget(_expand_button);
 
     _expand_button->setStyleSheet("color: black; background-color: white; border: 1px rgb(115, 210, 22);");
@@ -23,20 +22,19 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
 
     updateNodeSize();
 
-    _renderer = new QSvgRenderer( QString(":/icons/svg/subtree.svg"), this );
+    _renderer.reset(new QSvgRenderer(QString(":/icons/svg/subtree.svg"), this));
 }
 
 SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
         const QString &subtree_ID,
         const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel ("SubTree", subtree_ID, creators ),
-    _renderer(nullptr)
+    BehaviorTreeDataModel ("SubTree", subtree_ID, creators )
 {
     _line_edit_name->setReadOnly(true);
 
     auto vlayout = dynamic_cast<QVBoxLayout*>(_main_widget->layout());
 
-    _collapse_button = new QPushButton("Collapse", _main_widget );
+    QPushButton* _collapse_button = new QPushButton("Collapse", _main_widget );
     vlayout->addWidget(_collapse_button);
 
     _collapse_button->setStyleSheet("color: black; background-color: white; border: 1px rgb(115, 210, 22);");
@@ -47,8 +45,7 @@ SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
              this, &SubtreeExpandedNodeModel::collapseButtonPushed );
 
     updateNodeSize();
-
-    _renderer = new QSvgRenderer( QString(":/icons/svg/subtree.svg") );
+    _renderer.reset(new QSvgRenderer(QString(":/icons/svg/subtree.svg")));
 }
 
 NodeDataModel::ConnectionPolicy SubtreeExpandedNodeModel::portOutConnectionPolicy(QtNodes::PortIndex) const

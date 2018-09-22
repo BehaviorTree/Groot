@@ -3,6 +3,7 @@
 
 #include "BehaviorTreeNodeModel.hpp"
 #include <QPushButton>
+#include <memory.hpp>
 
 class SubtreeNodeModel : public BehaviorTreeDataModel
 {
@@ -12,13 +13,11 @@ public:
     SubtreeNodeModel(const QString& subtree_ID,
                      const ParameterWidgetCreators &creators);
 
-    ~SubtreeNodeModel() override = default;
-
     unsigned int  nPorts(PortType portType) const override {
         return portType == PortType::In ? 1:0;
     }
 
-    virtual const char* className() const final { return Name(); }
+    const char* className() const final { return Name(); }
 
     static const char* Name() { return "SubTree";  }
 
@@ -27,15 +26,13 @@ public:
 
     NodeType nodeType() const final { return NodeType::SUBTREE; }
 
-    virtual QSvgRenderer* icon() const override { return _renderer; }
+    QSvgRenderer* icon() const override { return _renderer.get(); }
 
 signals:
     void expandButtonPushed();
 
 private:
-    QPushButton* _expand_button;
-    QSvgRenderer* _renderer;
-
+    detail::unique_qptr<QSvgRenderer> _renderer;
 };
 
 static const QString EXPANDED_SUFFIX("[expanded]");
@@ -47,8 +44,6 @@ public:
 
     SubtreeExpandedNodeModel(const QString& subtree_ID,
                              const ParameterWidgetCreators &creators);
-
-    ~SubtreeExpandedNodeModel() override = default;
 
     unsigned int  nPorts(PortType) const override { return 1; }
 
@@ -63,18 +58,13 @@ public:
 
     NodeType nodeType() const final { return NodeType::SUBTREE; }
 
-    virtual QSvgRenderer* icon() const override { return _renderer; }
+    QSvgRenderer* icon() const override { return _renderer.get(); }
 
 signals:
     void collapseButtonPushed();
 
 private:
-
-    QPushButton* _collapse_button;
-    QSvgRenderer* _renderer;
-
+    detail::unique_qptr<QSvgRenderer> _renderer;
 };
-
-
 
 #endif // SUBTREE_NODEMODEL_HPP

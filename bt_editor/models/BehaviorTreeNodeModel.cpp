@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QFont>
 #include <QApplication>
+#include <memory.hpp>
 
 BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
                                              const QString& registration_name,
@@ -63,6 +64,8 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
                                    "border: 0px;");
 
     //--------------------------------------
+    //TODO: Avoid leak.
+    //_form_layout.reset(new QFormLayout( _params_widget ));
     _form_layout = new QFormLayout( _params_widget );
 
     if( !creators.empty() )

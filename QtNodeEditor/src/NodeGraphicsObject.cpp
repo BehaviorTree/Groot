@@ -63,13 +63,6 @@ NodeGraphicsObject(FlowScene &scene,
 }
 
 
-NodeGraphicsObject::
-~NodeGraphicsObject()
-{
-  _scene.removeItem(this);
-}
-
-
 Node&
 NodeGraphicsObject::
 node()

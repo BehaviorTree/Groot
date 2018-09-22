@@ -15,7 +15,7 @@
 #include "NodeGraphicsObject.hpp"
 #include "ConnectionGraphicsObject.hpp"
 #include "Serializable.hpp"
-#include "memory.hpp"
+#include <memory.hpp>
 
 namespace QtNodes
 {
@@ -32,9 +32,8 @@ class NODE_EDITOR_PUBLIC Node
   Q_OBJECT
 
 public:
-
-  /// NodeDataModel should be an rvalue and is moved into the Node
-  Node(std::unique_ptr<NodeDataModel> && dataModel);
+  /// NodeDataModel ownership is transferred to the Node.
+  Node(detail::unique_qptr<NodeDataModel>&);
 
   virtual
   ~Node();
@@ -68,7 +67,7 @@ public:
   nodeGraphicsObject();
 
   void
-  setGraphicsObject(std::unique_ptr<NodeGraphicsObject>&& graphics);
+  setGraphicsObject(detail::unique_qptr<NodeGraphicsObject>&);
 
   NodeGeometry&
   nodeGeometry();
@@ -104,19 +103,14 @@ public slots: // data propagation
 private:
 
   // addressing
-
   QUuid _uid;
 
   // data
-
-  std::unique_ptr<NodeDataModel> _nodeDataModel;
-
+  detail::unique_qptr<NodeDataModel> _nodeDataModel;
   NodeState _nodeState;
 
   // painting
-
   NodeGeometry _nodeGeometry;
-
-  std::unique_ptr<NodeGraphicsObject> _nodeGraphicsObject;
+  detail::unique_qptr<NodeGraphicsObject> _nodeGraphicsObject;
 };
 }

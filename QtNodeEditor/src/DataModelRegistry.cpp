@@ -9,7 +9,7 @@ using QtNodes::NodeDataModel;
 using QtNodes::NodeDataType;
 using QtNodes::TypeConverter;
 
-std::unique_ptr<NodeDataModel>
+detail::unique_qptr<NodeDataModel>
 DataModelRegistry::
 create(QString const &modelName)
 {

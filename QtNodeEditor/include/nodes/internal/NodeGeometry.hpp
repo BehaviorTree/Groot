@@ -19,8 +19,7 @@ class Node;
 class NODE_EDITOR_PUBLIC NodeGeometry
 {
 public:
-
-  NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel);
+  NodeGeometry(NodeDataModel*);
 
 public:
   unsigned int
@@ -150,7 +149,7 @@ private:
 
   QPointF _draggingPos;
 
-  std::unique_ptr<NodeDataModel> const &_dataModel;
+  NodeDataModel* _dataModel;
 
   mutable QFontMetrics _fontMetrics;
   mutable QFontMetrics _boldFontMetrics;

@@ -53,7 +53,7 @@ void EditorFlowScene::dropEvent(QGraphicsSceneDragDropEvent *event)
           if (type)
           {
             QPointF pos = event->scenePos();
-            this->createNode(std::move(type), pos);
+            this->createNode(type, pos);
           }
         }
     }

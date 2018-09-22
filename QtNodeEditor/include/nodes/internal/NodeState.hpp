@@ -29,8 +29,7 @@ public:
   };
 
 public:
-
-  NodeState(std::unique_ptr<NodeDataModel> const &model);
+  NodeState(NodeDataModel const& model);
 
 public:
 

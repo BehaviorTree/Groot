@@ -23,13 +23,11 @@ using QtNodes::NodeGraphicsObject;
 using QtNodes::PortIndex;
 using QtNodes::PortType;
 
-Node::
-Node(std::unique_ptr<NodeDataModel> && dataModel)
+Node::Node(detail::unique_qptr<NodeDataModel>& dataModel)
   : _uid(QUuid::createUuid())
   , _nodeDataModel(std::move(dataModel))
-  , _nodeState(_nodeDataModel)
-  , _nodeGeometry(_nodeDataModel)
-  , _nodeGraphicsObject(nullptr)
+  , _nodeState(*_nodeDataModel)
+  , _nodeGeometry(_nodeDataModel.get())
 {
   _nodeGeometry.recalculateSize();
 
@@ -134,10 +132,9 @@ nodeGraphicsObject()
 
 void
 Node::
-setGraphicsObject(std::unique_ptr<NodeGraphicsObject>&& graphics)
+setGraphicsObject(detail::unique_qptr<NodeGraphicsObject>& graphics)
 {
   _nodeGraphicsObject = std::move(graphics);
-
   _nodeGeometry.recalculateSize();
 }
 

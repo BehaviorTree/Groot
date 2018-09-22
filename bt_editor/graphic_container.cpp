@@ -333,7 +333,7 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *node, const QString& new_n
         return nullptr;
     }
 
-    auto& new_node = _scene->createNode( std::move(new_datamodel), pos );
+    auto& new_node = _scene->createNode(new_datamodel, pos);
 
     if( node->nodeDataModel()->nPorts( PortType::In ) == 1 &&
         new_node.nodeDataModel()->nPorts( PortType::In ) == 1 )
@@ -459,7 +459,7 @@ void GraphicContainer::insertNodeInConnection(Connection &connection, QString no
         QPointF pos = child_node->nodeGraphicsObject().pos();
         pos.setX( pos.x() - 50 );
 
-        QtNodes::Node& inserted_node = _scene->createNode( std::move(node_model), pos );
+        QtNodes::Node& inserted_node = _scene->createNode(node_model, pos);
 
         _scene->deleteConnection(connection);
         _scene->createConnection(*child_node, 0, inserted_node, 0);
@@ -511,7 +511,7 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
                                          AbstractTreeNode* abs_node,
                                          Node* parent_node, int nest_level)
 {
-    std::unique_ptr<NodeDataModel> data_model = _scene->registry().create( abs_node->registration_name );
+    auto data_model = _scene->registry().create( abs_node->registration_name );
 
     if (!data_model)
     {
@@ -554,7 +554,7 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
     cursor.setY( cursor.y() + 65);
     cursor.setX( nest_level * 400 + x_offset );
 
-    Node& new_node = _scene->createNode( std::move(data_model), cursor);
+    Node& new_node = _scene->createNode(data_model, cursor);
     abs_node->pos = cursor;
     abs_node->size = _scene->getNodeSize( new_node );
 
@@ -580,7 +580,8 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
     double x_offset = 0;
 
     _scene->clearScene();
-    auto first_qt_node = &(_scene->createNode( _scene->registry().create("Root"), cursor ));
+    auto data_model = _scene->registry().create("Root");
+    auto first_qt_node = &(_scene->createNode(data_model, cursor));
 
     auto root_node = abstract_tree.rootNode();
     if( root_node->type == NodeType::ROOT)

@@ -12,6 +12,7 @@
 #include <QXmlStreamWriter>
 #include <QSvgRenderer>
 #include "BehaviorTreeNodeModel.hpp"
+#include <memory.hpp>
 
 using QtNodes::PortType;
 using QtNodes::PortIndex;
@@ -69,8 +70,8 @@ public:
     std::pair<QString,QColor> caption() const override { return {"Sequence","#ff6699"}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/arrow_right.svg"));
-        return renderer;
+        static QSvgRenderer r(tr(":/icons/svg/arrow_right.svg"));
+        return &r;
     }
 };
 
@@ -84,8 +85,8 @@ public:
     std::pair<QString,QColor> caption() const override { return {"Fallback","#33adff"}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/question_mark.svg"));
-        return renderer;
+        static QSvgRenderer r(tr(":/icons/svg/question_mark.svg"));
+        return &r;
     }
 };
 
@@ -99,8 +100,8 @@ public:
     std::pair<QString,QColor> caption() const override { return {"SequenceStar","#ff1ab3"}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/arrow_right.svg"));
-        return renderer;
+        static QSvgRenderer r(tr(":/icons/svg/arrow_right.svg"));
+        return &r;
     }
 };
 

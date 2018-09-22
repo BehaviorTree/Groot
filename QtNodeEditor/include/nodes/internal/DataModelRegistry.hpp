@@ -34,7 +34,7 @@ class NODE_EDITOR_PUBLIC DataModelRegistry
 
 public:
 
-  using RegistryItemPtr     = std::unique_ptr<NodeDataModel>;
+  using RegistryItemPtr     = detail::unique_qptr<NodeDataModel>;
   using RegistryItemCreator = std::function<RegistryItemPtr()>;
   using RegisteredModelCreatorsMap = std::unordered_map<QString, RegistryItemCreator>;
   using RegisteredModelsCategoryMap = std::unordered_map<QString, QString>;
@@ -61,7 +61,7 @@ public:
   template<typename ModelType>
   void registerModel(QString const &category)
   {
-    RegistryItemCreator creator = [](){ return detail::make_unique<ModelType>(); };
+    RegistryItemCreator creator = [](){ return detail::unique_qptr<ModelType>(new ModelType()); };
 
     QString const name = ModelType::Name();
 
@@ -76,7 +76,7 @@ public:
     _registeredTypeConverters[id] = std::move(typeConverter);
   }
 
-  std::unique_ptr<NodeDataModel>create(QString const &modelName);
+  detail::unique_qptr<NodeDataModel> create(QString const &modelName);
 
   RegisteredModelCreatorsMap const &registeredModelCreators() const;
 

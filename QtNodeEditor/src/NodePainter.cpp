@@ -239,8 +239,6 @@ drawModelName(QPainter * painter,
               NodeState const & state,
               NodeDataModel const * model)
 {
-  NodeStyle const& nodeStyle = model->nodeStyle();
-
   Q_UNUSED(state);
 
   if (!model->captionVisible())

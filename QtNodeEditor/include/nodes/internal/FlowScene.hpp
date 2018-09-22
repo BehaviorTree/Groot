@@ -56,7 +56,7 @@ public:
 
   void deleteConnection(Connection& connection);
 
-  Node& createNode(std::unique_ptr<NodeDataModel> && dataModel, QPointF pos );
+  Node& createNode(detail::unique_qptr<NodeDataModel>&, QPointF pos);
 
   Node& restoreNode(QJsonObject const& nodeJson);
 
@@ -77,9 +77,11 @@ public:
   void setNodePosition(Node& node, const QPointF& pos) const;
 
   QSizeF getNodeSize(const Node& node) const;
-public:
 
-  std::unordered_map<QUuid, std::unique_ptr<Node> > const &nodes() const;
+public:
+  using UniqueNode = detail::unique_qptr<Node>;
+  using Nodes = std::unordered_map<QUuid, UniqueNode>;
+  Nodes const& nodes() const;
 
   std::unordered_map<QUuid, std::shared_ptr<Connection> > const &connections() const;
 
@@ -130,10 +132,9 @@ signals:
 private:
 
   using SharedConnection = std::shared_ptr<Connection>;
-  using UniqueNode       = std::unique_ptr<Node>;
 
   std::unordered_map<QUuid, SharedConnection> _connections;
-  std::unordered_map<QUuid, UniqueNode>       _nodes;
+  Nodes _nodes;
   std::shared_ptr<DataModelRegistry>          _registry;
 
   QtNodes::PortLayout _layout;

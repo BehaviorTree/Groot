@@ -521,7 +521,7 @@ bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
     {
         DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
         {
-            return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, parameters) );
+            return detail::unique_qptr<ActionNodeModel>( new ActionNodeModel(ID, parameters) );
         };
         registry.registerModel("Action", node_creator, ID);
     }
@@ -529,7 +529,7 @@ bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
     {
         DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
         {
-            return std::unique_ptr<ConditionNodeModel>( new ConditionNodeModel(ID, parameters) );
+            return detail::unique_qptr<ConditionNodeModel>( new ConditionNodeModel(ID, parameters) );
         };
         registry.registerModel("Condition", node_creator, ID);
     }
@@ -537,7 +537,7 @@ bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
     {
         DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
         {
-            return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, parameters) );
+            return detail::unique_qptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, parameters) );
         };
         registry.registerModel("Decorator", node_creator, ID);
     }
@@ -545,14 +545,14 @@ bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
     {
         DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
         {
-            return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID,parameters) );
+            return detail::unique_qptr<SubtreeNodeModel>( new SubtreeNodeModel(ID,parameters) );
         };
         registry.registerModel("SubTree", node_creator, ID);
 
         auto otherID = ID + EXPANDED_SUFFIX;
         node_creator = [ID, otherID, parameters]()
         {
-          auto node = std::unique_ptr<SubtreeExpandedNodeModel>(
+          auto node = detail::unique_qptr<SubtreeExpandedNodeModel>(
                 new SubtreeExpandedNodeModel(otherID, parameters) );
 
           node->setInstanceName(ID);

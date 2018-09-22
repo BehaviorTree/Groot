@@ -29,8 +29,6 @@ public:
                         const QString &instance_name,
                         const ParameterWidgetCreators &parameters );
 
-  ~BehaviorTreeDataModel() override = default;
-
   bool captionVisible() const final
   { return true; }
 
@@ -86,6 +84,7 @@ protected:
   std::map<QString, QWidget*> _params_map;
   int16_t _uid;
 
+  //detail::unique_qptr<QFormLayout> _form_layout;
   QFormLayout* _form_layout;
   QHBoxLayout* _top_layout;
   QVBoxLayout* _main_layout;

@@ -35,8 +35,7 @@ public:
 
   NodeDataModel();
 
-  virtual
-  ~NodeDataModel() = default;
+  virtual ~NodeDataModel() = default;
 
   /// Caption is used in GUI
   virtual std::pair<QString,QColor>

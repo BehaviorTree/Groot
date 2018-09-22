@@ -189,22 +189,17 @@ deleteConnection(Connection& connection)
 
 Node&
 FlowScene::
-createNode(std::unique_ptr<NodeDataModel> && dataModel, QPointF pos)
+createNode(detail::unique_qptr<NodeDataModel>& dataModel, QPointF pos)
 {
-  auto node = detail::make_unique<Node>(std::move(dataModel));
-  auto ngo  = detail::make_unique<NodeGraphicsObject>(*this, *node);
-
+  detail::unique_qptr<Node> node { new Node(dataModel) };
+  detail::unique_qptr<NodeGraphicsObject> ngo { new NodeGraphicsObject(*this, *node) };
   ngo->setPos(pos);
-
-  node->setGraphicsObject(std::move(ngo));
-
-  auto nodePtr = node.get();
-  nodePtr->nodeGeometry().setPortLayout( layout() );
-  auto id = node->id();
-  _nodes[id] = std::move(node);
-
-  nodeCreated(*nodePtr);
-  return *nodePtr;
+  node->setGraphicsObject(ngo);
+  node->nodeGeometry().setPortLayout( layout() );
+  auto& n = _nodes[node->id()];
+  n = std::move(node);
+  nodeCreated(*n);
+  return *n;
 }
 
 
@@ -213,28 +208,21 @@ FlowScene::
 restoreNode(QJsonObject const& nodeJson)
 {
   QString modelName = nodeJson["model"].toObject()["name"].toString();
-
   auto dataModel = registry().create(modelName);
-
   if (!dataModel)
   {
     throw std::logic_error(std::string("No registered model with name ") +
                            modelName.toLocal8Bit().data());
   }
-
-  auto node = detail::make_unique<Node>(std::move(dataModel));
-  auto ngo  = detail::make_unique<NodeGraphicsObject>(*this, *node);
-  node->setGraphicsObject(std::move(ngo));
-
+  detail::unique_qptr<Node> node { new Node(dataModel) };
+  detail::unique_qptr<NodeGraphicsObject> ngo { new NodeGraphicsObject(*this, *node) };
+  node->setGraphicsObject(ngo);
   node->restore(nodeJson);
-
-  auto nodePtr = node.get();
-  nodePtr->nodeGeometry().setPortLayout( layout() );
-  auto id = node->id();
-  _nodes[ id ] = std::move(node);
-
-  nodeCreated(*nodePtr);
-  return *nodePtr;
+  node->nodeGeometry().setPortLayout( layout() );
+  auto& n = _nodes[node->id()];
+  n = std::move(node);
+  nodeCreated(*n);
+  return *n;
 }
 
 
@@ -398,18 +386,14 @@ getNodeSize(const Node& node) const
   return QSizeF(node.nodeGeometry().width(), node.nodeGeometry().height());
 }
 
-
-std::unordered_map<QUuid, std::unique_ptr<Node> > const &
-FlowScene::
-nodes() const
+FlowScene::Nodes const& FlowScene::nodes() const
 {
   return _nodes;
 }
 
 
-std::unordered_map<QUuid, std::shared_ptr<Connection> > const &
-FlowScene::
-connections() const
+std::unordered_map<QUuid, std::shared_ptr<Connection> > const&
+FlowScene::connections() const
 {
   return _connections;
 }

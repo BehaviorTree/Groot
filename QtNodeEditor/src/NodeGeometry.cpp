@@ -20,7 +20,7 @@ using QtNodes::PortLayout;
 using QtNodes::Node;
 
 NodeGeometry::
-NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
+NodeGeometry(NodeDataModel* dataModel)
   : _width(50)
   , _height(100)
   , _inputPortWidth(4)
@@ -32,7 +32,7 @@ NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
   , _dataModel(dataModel)
   , _fontMetrics(QFont())
   , _boldFontMetrics(QFont())
-  , _ports_layout(PortLayout::Vertical  )
+  , _ports_layout(PortLayout::Vertical)
 {
   QFont f;
   f.setPointSize(12);
