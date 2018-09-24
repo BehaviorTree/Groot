@@ -4,17 +4,20 @@
 
 SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
                                    const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel ("SubTree", subtree_ID, creators ),
+    BehaviorTreeDataModel (subtree_ID, subtree_ID, creators ),
     _renderer(nullptr)
 {
     _line_edit_name->setReadOnly(true);
-
-    auto vlayout = dynamic_cast<QVBoxLayout*>(_main_widget->layout());
+    _line_edit_name->setHidden(true);
 
     _expand_button = new QPushButton("Expand", _main_widget );
-    vlayout->addWidget(_expand_button);
+    _expand_button->setMaximumWidth(100);
+    _main_layout->addWidget(_expand_button);
+    _main_layout->setAlignment(_expand_button, Qt::AlignHCenter);
 
-    _expand_button->setStyleSheet("color: black; background-color: white; border: 1px rgb(115, 210, 22);");
+    _expand_button->setStyleSheet("color: black; background-color: white; "
+                                  "border: 0px rgb(115, 210, 22);"
+                                  "padding: 4px; border-radius: 3px; ");
     _expand_button->setFlat(false);
     _expand_button->setFocusPolicy(Qt::NoFocus);
 
@@ -29,17 +32,19 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
 SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
         const QString &subtree_ID,
         const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel ("SubTree", subtree_ID, creators ),
+    BehaviorTreeDataModel (subtree_ID, subtree_ID, creators ),
     _renderer(nullptr)
 {
     _line_edit_name->setReadOnly(true);
-
-    auto vlayout = dynamic_cast<QVBoxLayout*>(_main_widget->layout());
+    _line_edit_name->setHidden(true);
 
     _collapse_button = new QPushButton("Collapse", _main_widget );
-    vlayout->addWidget(_collapse_button);
+    _main_layout->addWidget(_collapse_button);
+    _main_layout->setAlignment(_collapse_button, Qt::AlignHCenter);
 
-    _collapse_button->setStyleSheet("color: black; background-color: white; border: 1px rgb(115, 210, 22);");
+    _collapse_button->setStyleSheet("color: black; background-color: white; "
+                                    "border: 0px rgb(115, 210, 22);"
+                                    " margin: 2px; padding: 4px; border-radius: 3px; ");
     _collapse_button->setFlat(false);
     _collapse_button->setFocusPolicy(Qt::NoFocus);
 

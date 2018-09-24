@@ -23,7 +23,7 @@ public:
     static const char* Name() { return "SubTree";  }
 
     std::pair<QString, QColor> caption() const override
-    { return { "SubTree", QtNodes::NodeStyle().FontColor}; }
+    { return { name(), QtNodes::NodeStyle().FontColor}; }
 
     NodeType nodeType() const final { return NodeType::SUBTREE; }
 
