@@ -48,5 +48,31 @@ public:
     virtual NodeType nodeType() const final { return NodeType::CONDITION; }
 
 private:
-
 };
+
+
+class ActionSuccess : public ActionNodeModel
+{
+public:
+    ActionSuccess(): ActionNodeModel( "",ParameterWidgetCreators()){}
+
+    static const char* Name() {  return "AlwaysSuccess"; }
+
+    std::pair<QString, QColor> caption() const override  { return { "SUCCESS", Qt::green}; }
+
+    virtual QSvgRenderer* icon() const override {   return nullptr; }
+};
+
+class ActionFailure : public ActionNodeModel
+{
+public:
+    ActionFailure(): ActionNodeModel( "",ParameterWidgetCreators()){}
+
+    static const char* Name() {  return "AlwaysFailure"; }
+
+    std::pair<QString, QColor> caption() const override { return { "FAILURE", Qt::red}; }
+
+    virtual QSvgRenderer* icon() const override { return nullptr; }
+};
+
+

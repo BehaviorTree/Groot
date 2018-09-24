@@ -59,6 +59,9 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _model_registry->registerModel<NegationNodeModel>("Decorator");
     _model_registry->registerModel<RepeatNodeModel>("Decorator");
 
+    _model_registry->registerModel<ActionSuccess>("AlwaysSuccess");
+    _model_registry->registerModel<ActionFailure>("AlwaysFailure");
+
     _tree_nodes_model["Root"]         = { NodeType::ROOT, {} };
     _tree_nodes_model["Sequence"]     = { NodeType::CONTROL, {} };
     _tree_nodes_model["SequenceStar"] = { NodeType::CONTROL, {} };
@@ -66,6 +69,8 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _tree_nodes_model["Negation"]            = { NodeType::DECORATOR, {} };
     _tree_nodes_model["RetryUntilSuccesful"] = RetryNodeModel::NodeModel();
     _tree_nodes_model["Repeat"]              = RepeatNodeModel::NodeModel();
+    _tree_nodes_model["AlwaysSuccess"]  = { NodeType::ACTION, {} };
+    _tree_nodes_model["AlwaysFailure"]  = { NodeType::ACTION, {} };
 
     _editor_widget = new SidepanelEditor(_tree_nodes_model, this);
     _replay_widget = new SidepanelReplay(this);
