@@ -6,7 +6,6 @@ ActionNodeModel::ActionNodeModel(const QString &action_ID,
   BehaviorTreeDataModel("A:", action_ID, creators )
 {
     _line_edit_name->setReadOnly(true);
-    updateNodeSize();
 }
 
 
@@ -20,7 +19,6 @@ ConditionNodeModel::ConditionNodeModel(const QString &action_ID,
   BehaviorTreeDataModel("A:", action_ID, creators )
 {
     _line_edit_name->setReadOnly(true);
-    updateNodeSize();
 }
 
 

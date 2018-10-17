@@ -544,12 +544,11 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
 
     BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( data_model.get() );
 
-    bt_node->setInstanceName( abs_node->instance_name );
-
     for (auto& it: abs_node->parameters)
     {
         bt_node->setParameterValue( it.first, it.second );
     }
+    bt_node->setInstanceName( abs_node->instance_name );
 
     cursor.setY( cursor.y() + 65);
     cursor.setX( nest_level * 400 + x_offset );

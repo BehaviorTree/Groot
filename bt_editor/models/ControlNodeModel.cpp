@@ -16,18 +16,17 @@ ControlNodeModel::ControlNodeModel(const QString &ID, const ParameterWidgetCreat
 
 SequenceModel::SequenceModel(): ControlNodeModelBase()
 {
-
 }
 
-FallbackModel::FallbackModel(): ControlNodeModelBase()  {
-
+FallbackModel::FallbackModel(): ControlNodeModelBase()
+{
 }
 
-SequenceStarModel::SequenceStarModel(): ControlNodeModelBase() {
-    updateNodeSize();
+SequenceStarModel::SequenceStarModel(): ControlNodeModelBase()
+{
 }
 
-IfThenElseModel::IfThenElseModel(): ControlNodeModelBase() {
-
+IfThenElseModel::IfThenElseModel(): ControlNodeModelBase()
+{
 }
 

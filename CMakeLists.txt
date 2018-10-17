@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(behavior_tree_editor)
+project(Groot)
 
 find_package(Qt5 COMPONENTS  Core Widgets Gui OpenGL Xml Svg)
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 #############################################################
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
@@ -15,7 +13,7 @@ if( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
 endif()
 
 if(catkin_FOUND)
-  find_package(catkin REQUIRED COMPONENTS behavior_tree_cpp rosbag rosbag_storage roscpp)
+  find_package(catkin REQUIRED COMPONENTS behavior_tree_core rosbag rosbag_storage roscpp)
 
   message(STATUS "------------------------------------------------")
   message(STATUS "BehaviourTreeEditor is being built using CATKIN.")
@@ -24,7 +22,7 @@ if(catkin_FOUND)
   catkin_package(
     INCLUDE_DIRS 
     LIBRARIES qt_node_editor
-    CATKIN_DEPENDS behavior_tree_cpp
+    CATKIN_DEPENDS behavior_tree_core
     DEPENDS 
     )
 endif(catkin_FOUND)

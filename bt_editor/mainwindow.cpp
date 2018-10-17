@@ -956,7 +956,9 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
     }
     for(auto& it: json_states  )
     {
-        if( it.second != other.json_states.at( it.first ))
+        auto other_it = other.json_states.find(it.first);
+        if( other_it == other.json_states.end() ||
+            it.second != other_it->second)
         {
             return false;
         }

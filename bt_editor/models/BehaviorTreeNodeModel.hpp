@@ -31,9 +31,6 @@ public:
 
   ~BehaviorTreeDataModel() override = default;
 
-  bool captionVisible() const final
-  { return true; }
-
 public:
 
   NodeDataType dataType(PortType , PortIndex ) const final;
@@ -42,13 +39,13 @@ public:
 
   void setInData(std::shared_ptr<NodeData>, int) final {}
 
-  std::pair<QString,QColor> caption() const override;
-
   const QString& registrationName() const;
 
   QString name() const final { return registrationName(); }
 
   const QString& instanceName() const;
+
+  virtual std::pair<QString,QColor> caption() const = 0;
 
   std::vector<std::pair<QString, QString> > getCurrentParameters() const;
 
@@ -79,7 +76,6 @@ public slots:
 protected:
   QFrame*  _main_widget;
   QFrame*  _params_widget;
-  QLabel*  _label_ID;
 
   QLineEdit* _line_edit_name;
 
@@ -87,7 +83,6 @@ protected:
   int16_t _uid;
 
   QFormLayout* _form_layout;
-  QHBoxLayout* _top_layout;
   QVBoxLayout* _main_layout;
 
 private:
