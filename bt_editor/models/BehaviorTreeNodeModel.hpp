@@ -45,7 +45,7 @@ public:
 
   const QString& instanceName() const;
 
-  virtual std::pair<QString,QColor> caption() const = 0;
+  virtual std::pair<QString,QColor> caption() const;
 
   std::vector<std::pair<QString, QString> > getCurrentParameters() const;
 

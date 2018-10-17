@@ -45,8 +45,6 @@ paint(QPainter* painter,
 
   drawFilledConnectionPoints(painter, geom, state, model);
 
-  drawModelName(painter, geom, state, model);
-
   drawEntryLabels(painter, geom, state, model);
 
   drawResizeRect(painter, geom, model);

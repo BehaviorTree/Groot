@@ -123,9 +123,6 @@ public:
 
 private:
 
-  QSize
-  captionSize() const;
-
   unsigned int
   portWidth(PortType portType) const;
 

@@ -116,7 +116,7 @@ void BehaviorTreeDataModel::updateNodeSize()
         qDebug() << "---";
     }
 
-    int line_edit_width =  captionSize().width();
+    int line_edit_width =  0;
     if( _line_edit_name->isHidden() == false)
     {
         QFontMetrics fm = _line_edit_name->fontMetrics();

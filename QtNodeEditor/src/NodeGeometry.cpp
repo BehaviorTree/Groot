@@ -85,8 +85,6 @@ void
 NodeGeometry::
 recalculateSize() const
 {
-   QSize caption_size = captionSize();
-
   _entryHeight = _fontMetrics.height();
 
   {
@@ -100,8 +98,6 @@ recalculateSize() const
     _height = std::max(_height, w->height());
   }
 
-  _height += caption_size.height();
-
   _inputPortWidth  = portWidth(PortType::In);
   _outputPortWidth = portWidth(PortType::Out);
 
@@ -113,8 +109,6 @@ recalculateSize() const
   {
     _width += w->width();
   }
-
-   _width = std::max(_width, caption_size.width());
 
   if (_dataModel->validationState() != NodeValidationState::Valid)
   {
@@ -154,12 +148,10 @@ portScenePosition(PortIndex index,
 {
   auto const connectionDiameter = StyleCollection::nodeStyle().ConnectionPointDiameter;
 
-  int caption_height = captionSize().height();
-
   if( _ports_layout == PortLayout::Horizontal)
   {
     unsigned int step = _entryHeight + _spacing;
-    double totalHeight = caption_height + step * index;
+    double totalHeight = step * index;
     totalHeight += step / 2.0;
 
     double x = (portType == PortType::Out) ? _width + connectionDiameter :
@@ -233,15 +225,14 @@ widgetPosition() const
 {
   if (auto w = _dataModel->embeddedWidget())
   {
-    int caption_height = captionSize().height();
     if (_dataModel->validationState() != NodeValidationState::Valid)
     {
       return QPointF(_spacing + portWidth(PortType::In),
-                     (caption_height + _height - validationHeight() - _spacing - w->height()) / 2.0);
+                     ( _height - validationHeight() - _spacing - w->height()) / 2.0);
     }
 
     return QPointF(_spacing + portWidth(PortType::In),
-                   (caption_height + _height - w->height()) / 2.0);
+                   ( _height - w->height()) / 2.0);
   }
 
   return QPointF();
