@@ -234,49 +234,6 @@ drawFilledConnectionPoints(QPainter * painter,
 
 void
 NodePainter::
-drawModelName(QPainter * painter,
-              NodeGeometry const & geom,
-              NodeState const & state,
-              NodeDataModel const * model)
-{
-  NodeStyle const& nodeStyle = model->nodeStyle();
-
-  Q_UNUSED(state);
-
-  if (!model->captionVisible())
-    return;
-
-  QSize caption_size = model->captionSize();
-  QColor caption_color = model->caption().second;
-
-  QFont f = painter->font();
-  f.setPointSize(12);
-  f.setBold(true);
-
-  QPointF position((geom.width() - caption_size.width()) / 2.0,
-                   geom.spacing() + geom.entryHeight() / 2.0);
-
-  if( model->icon() )
-  {
-      position.setX( position.x() + 30 );
-      position.setY( position.y() + 5 );
-      model->icon()->render( painter,
-                             QRectF( position.x() - 30 ,0,24,24) );
-  }
-
-  QString name = model->caption().first;
-  painter->setFont(f);
-  painter->setPen(caption_color);
-  painter->drawText(position, name);
-
-  f.setBold(false);
-  painter->setFont(f);
-
-}
-
-
-void
-NodePainter::
 drawEntryLabels(QPainter * painter,
                 NodeGeometry const & geom,
                 NodeState const & state,
@@ -302,16 +259,7 @@ drawEntryLabels(QPainter * painter,
       else
         painter->setPen(nodeStyle.FontColor);
 
-      QString s;
-
-      if (model->portCaptionVisible(portType, i))
-      {
-        s = model->portCaption(portType, i);
-      }
-      else
-      {
-        s = model->dataType(portType, i).name;
-      }
+      QString s = model->dataType(portType, i).name;
 
       auto rect = metrics.boundingRect(s);
 

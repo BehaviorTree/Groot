@@ -12,30 +12,6 @@ NodeDataModel()
     // Derived classes can initialize specific style here
 }
 
-QSize NodeDataModel::captionSize() const
-{
-    if (!captionVisible())
-    {
-        return QSize(0,0);
-    }
-
-    QString name = caption().first;
-    QFont f;
-    f.setPointSize(12);
-    f.setBold(true);
-    QFontMetrics metrics(f);
-    auto rect = metrics.boundingRect(name);
-    QSize size(rect.width(), rect.height());
-
-    if( icon() )
-    {
-        size.setWidth( rect.width() + 30 );
-        size.setHeight( std::max( rect.height(), 24));
-    }
-    return size;
-}
-
-
 QJsonObject
 NodeDataModel::
 save() const

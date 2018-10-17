@@ -22,11 +22,11 @@ using QtNodes::Node;
 NodeGeometry::
 NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
   : _width(50)
-  , _height(100)
+  , _height(50)
   , _inputPortWidth(4)
   , _outputPortWidth(4)
-  , _entryHeight(4)
-  , _spacing(4)
+  , _entryHeight(1)
+  , _spacing(1)
   , _hovered(false)
   , _draggingPos(-1000, -1000)
   , _dataModel(dataModel)
@@ -85,6 +85,8 @@ void
 NodeGeometry::
 recalculateSize() const
 {
+   QSize caption_size = captionSize();
+
   _entryHeight = _fontMetrics.height();
 
   {
@@ -95,10 +97,10 @@ recalculateSize() const
 
   if (auto w = _dataModel->embeddedWidget())
   {
-    _height = std::max(_height, static_cast<unsigned>(w->height()));
+    _height = std::max(_height, w->height());
   }
 
-  _height += captionHeight();
+  _height += caption_size.height();
 
   _inputPortWidth  = portWidth(PortType::In);
   _outputPortWidth = portWidth(PortType::Out);
@@ -112,11 +114,11 @@ recalculateSize() const
     _width += w->width();
   }
 
-   _width = std::max(_width, captionWidth());
+   _width = std::max(_width, caption_size.width());
 
   if (_dataModel->validationState() != NodeValidationState::Valid)
   {
-    _width   = std::max(_width, validationWidth());
+    _width   = std::max(_width, (int)validationWidth());
     _height += validationHeight() + _spacing;
   }
 }
@@ -152,10 +154,12 @@ portScenePosition(PortIndex index,
 {
   auto const connectionDiameter = StyleCollection::nodeStyle().ConnectionPointDiameter;
 
+  int caption_height = captionSize().height();
+
   if( _ports_layout == PortLayout::Horizontal)
   {
     unsigned int step = _entryHeight + _spacing;
-    double totalHeight = captionHeight() + step * index;
+    double totalHeight = caption_height + step * index;
     totalHeight += step / 2.0;
 
     double x = (portType == PortType::Out) ? _width + connectionDiameter :
@@ -229,51 +233,19 @@ widgetPosition() const
 {
   if (auto w = _dataModel->embeddedWidget())
   {
+    int caption_height = captionSize().height();
     if (_dataModel->validationState() != NodeValidationState::Valid)
     {
       return QPointF(_spacing + portWidth(PortType::In),
-                     (captionHeight() + _height - validationHeight() - _spacing - w->height()) / 2.0);
+                     (caption_height + _height - validationHeight() - _spacing - w->height()) / 2.0);
     }
 
     return QPointF(_spacing + portWidth(PortType::In),
-                   (captionHeight() + _height - w->height()) / 2.0);
+                   (caption_height + _height - w->height()) / 2.0);
   }
 
   return QPointF();
 }
-
-
-unsigned int
-NodeGeometry::
-captionHeight() const
-{
-  if (!_dataModel->captionVisible())
-    return 0;
-
-  QString name = _dataModel->caption().first;
-
-  if ( _dataModel->icon() )
-    return std::max(30, _boldFontMetrics.boundingRect(name).height() );
-  else
-    return _boldFontMetrics.boundingRect(name).height();
-}
-
-
-unsigned int
-NodeGeometry::
-captionWidth() const
-{
-  if (!_dataModel->captionVisible())
-    return 0;
-
-  QString name = _dataModel->caption().first;
-
-  if ( _dataModel->icon() )
-    return ( 30 + _boldFontMetrics.boundingRect(name).width() );
-  else
-    return _boldFontMetrics.boundingRect(name).width();
-}
-
 
 unsigned int
 NodeGeometry::
@@ -314,7 +286,7 @@ calculateNodePositionBetweenNodePorts(PortIndex targetPortIndex, PortType target
 
 void NodeGeometry::setPortLayout(QtNodes::PortLayout layout)
 {
-  _ports_layout = layout;
+    _ports_layout = layout;
 }
 
 
@@ -326,19 +298,8 @@ portWidth(PortType portType) const
 
   for (auto i = 0ul; i < _dataModel->nPorts(portType); ++i)
   {
-    QString name;
-
-    if (_dataModel->portCaptionVisible(portType, i))
-    {
-      name = _dataModel->portCaption(portType, i);
-    }
-    else
-    {
-      name = _dataModel->dataType(portType, i).name;
-    }
-
-    width = std::max(unsigned(_fontMetrics.width(name)),
-                     width);
+    QString name = _dataModel->dataType(portType, i).name;
+    width = std::max(unsigned(_fontMetrics.width(name)), width);
   }
 
   return width;

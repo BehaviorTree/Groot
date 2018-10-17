@@ -38,26 +38,8 @@ public:
   virtual
   ~NodeDataModel() = default;
 
-  /// Caption is used in GUI
-  virtual std::pair<QString,QColor>
-  caption() const = 0;
-
   virtual QSvgRenderer*
   icon() const { return nullptr; }
-
-  /// It is possible to hide caption in GUI
-  virtual bool
-  captionVisible() const { return true; }
-
-  QSize captionSize() const;
-
-  /// Port caption is used in GUI to label individual ports
-  virtual QString
-  portCaption(PortType, PortIndex) const { return QString(); }
-
-  /// It is possible to hide port caption in GUI
-  virtual bool
-  portCaptionVisible(PortType, PortIndex) const { return false; }
 
   /// Name makes this model unique
   virtual QString

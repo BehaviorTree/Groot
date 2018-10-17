@@ -214,11 +214,21 @@ void
 Node::
 onNodeSizeUpdated()
 {
+    int prev_width = nodeGeometry().width();
     if( nodeDataModel()->embeddedWidget() )
     {
         nodeDataModel()->embeddedWidget()->adjustSize();
     }
     nodeGeometry().recalculateSize();
+    int new_width = nodeGeometry().width();
+
+    if( new_width != prev_width )
+    {
+        auto node_pos = nodeGraphicsObject().pos();
+        node_pos.setX( node_pos.x() - (new_width - prev_width)*0.5);
+        nodeGraphicsObject().setPos(node_pos);
+    }
+
     for(PortType type: {PortType::In, PortType::Out})
     {
         for(auto& conn_set : nodeState().getEntries(type))

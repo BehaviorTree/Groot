@@ -37,6 +37,7 @@ public:
 
   unsigned int
   entryHeight() const { return _entryHeight; }
+
   void
   setEntryHeight(unsigned int h) { _entryHeight = h; }
 
@@ -122,11 +123,8 @@ public:
 
 private:
 
-  unsigned int
-  captionHeight() const;
-
-  unsigned int
-  captionWidth() const;
+  QSize
+  captionSize() const;
 
   unsigned int
   portWidth(PortType portType) const;
@@ -138,8 +136,8 @@ private:
   // corresponding to fontMetrics
   // but this doesn't change constness of Node
 
-  mutable unsigned int _width;
-  mutable unsigned int _height;
+  mutable int _width;
+  mutable int _height;
   unsigned int _entryWidth;
   mutable unsigned int _inputPortWidth;
   mutable unsigned int _outputPortWidth;
