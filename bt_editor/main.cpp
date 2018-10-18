@@ -47,7 +47,7 @@ main(int argc, char *argv[])
     }
     else{
         StartupDialog dialog;
-        dialog.setWindowFlags( Qt::SplashScreen );
+        dialog.setWindowFlags( Qt::FramelessWindowHint );
 
         if( dialog.exec() == QDialog::Accepted)
         {
