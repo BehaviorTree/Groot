@@ -42,7 +42,7 @@ public:
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/retry.svg"));
+        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/retry.svg");
         return renderer;
     }
 };
@@ -59,7 +59,7 @@ public:
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/not_equal.svg"));
+        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/not_equal.svg");
         return renderer;
     }
 };
@@ -82,7 +82,7 @@ public:
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/repeat.svg"));
+        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/repeat.svg");
         return renderer;
     }
 };

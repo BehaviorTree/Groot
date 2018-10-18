@@ -14,8 +14,7 @@ const int DEFAULT_LINE_WIDTH  = 100;
 const int DEFAULT_FIELD_WIDTH = 50;
 const int DEFAULT_LABEL_WIDTH = 50;
 
-BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
-                                             const QString& registration_name,
+BehaviorTreeDataModel::BehaviorTreeDataModel(const QString& registration_name,
                                              const ParameterWidgetCreators &creators):
     _params_widget(nullptr),
     _uid( GetUID() ),
@@ -29,6 +28,27 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
     _main_layout = new QVBoxLayout(_main_widget);
     _main_widget->setLayout( _main_layout );
 
+    auto capt_layout = new QHBoxLayout();
+
+    _caption_label = new QLabel();
+    _caption_logo_left  = new QFrame();
+    _caption_logo_right = new QFrame();
+    _caption_logo_left->setFixedSize( QSize(0,20) );
+    _caption_logo_right->setFixedSize( QSize(0,20) );
+    _caption_label->setFixedHeight(20);
+
+    _caption_logo_left->installEventFilter(this);
+
+    QFont capt_font = _caption_label->font();
+    capt_font.setPointSize(12);
+    capt_font.setBold(true);
+    _caption_label->setFont(capt_font);
+
+    capt_layout->addWidget(_caption_logo_left, 0, Qt::AlignRight);
+    capt_layout->addWidget(_caption_label, 0, Qt::AlignHCenter );
+    capt_layout->addWidget(_caption_logo_right, 0, Qt::AlignLeft);
+
+    _main_layout->addLayout( capt_layout );
     _main_layout->addWidget( _line_edit_name );
 
     _main_layout->setMargin(0);
@@ -42,7 +62,6 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
 
     _main_widget->setAttribute(Qt::WA_NoSystemBackground);
 
-    _main_widget->setStyleSheet("background-color: transparent; color: white; ");
     _line_edit_name->setStyleSheet("color: white; "
                                    "background-color: transparent;"
                                    "border: 0px;");
@@ -60,20 +79,17 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
         _form_layout->setVerticalSpacing(2);
         _form_layout->setContentsMargins(0, 0, 0, 0);
 
-
         for(const auto& param_creator: creators )
         {
             const QString label = param_creator.label;
             QLabel* form_label  =  new QLabel( label, _params_widget );
             QWidget* form_field = param_creator.instance_factory();
 
-            form_field->setFixedWidth(DEFAULT_FIELD_WIDTH);
-
-            form_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+            form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
 
             _params_map.insert( std::make_pair( label, form_field) );
 
-            form_field->setStyleSheet("color: rgb(30,30,30); "
+            form_field->setStyleSheet(" color: rgb(30,30,30); "
                                         "background-color: rgb(180,180,180); "
                                         "border: 0px; "
                                         "padding: 0px 0px 0px 0px;");
@@ -100,6 +116,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
         _params_widget->adjustSize();
     }
 
+    capt_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
     _main_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
     _form_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
 
@@ -109,14 +126,32 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString &label_name,
         setInstanceName( _line_edit_name->text() );
     });
 }
+
+void BehaviorTreeDataModel::init()
+{
+    _caption_logo_left->setFixedWidth( icon() ? 20: 0);
+    _caption_logo_right->setFixedWidth( icon() ? 1: 0);
+
+    auto label_text = caption().first;
+    auto color = caption().second;
+    _caption_label->setText( label_text );
+    QPalette capt_palette = _caption_label->palette();
+    capt_palette.setColor(_caption_label->backgroundRole(), Qt::transparent);
+    capt_palette.setColor(_caption_label->foregroundRole(), color);
+    _caption_label->setPalette(capt_palette);
+
+    _caption_logo_left->adjustSize();
+    _caption_logo_right->adjustSize();
+    _caption_label->adjustSize();
+
+    updateNodeSize();
+}
 void BehaviorTreeDataModel::updateNodeSize()
 {
-    if( registrationName() == "Sequence")
-    {
-        qDebug() << "---";
-    }
+    int caption_width = _caption_label->width();
+    caption_width += _caption_logo_left->width() + _caption_logo_right->width();
+    int line_edit_width =  caption_width;
 
-    int line_edit_width =  0;
     if( _line_edit_name->isHidden() == false)
     {
         QFontMetrics fm = _line_edit_name->fontMetrics();
@@ -154,20 +189,17 @@ void BehaviorTreeDataModel::updateNodeSize()
             field_line_edit->setFixedWidth( field_colum_width );
         }
     }
-    _params_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
-    _params_widget->adjustSize();
-
-    //----------------------------
     line_edit_width = std::max( line_edit_width, label_colum_width + field_colum_width );
     _line_edit_name->setFixedWidth( line_edit_width);
 
-    if( registrationName() == "Sequence")
-    {
-        qDebug() << "line_edit_width " << line_edit_width;
-        qDebug() << "label_colum_width " << label_colum_width;
-        qDebug() << "field_colum_width " << field_colum_width;
-        qDebug() << "---";
-    }
+    _params_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    _params_widget->adjustSize();
+
+    _main_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    _main_widget->adjustSize();
+
+    //----------------------------
+
     emit embeddedWidgetSizeUpdated();
 }
 
@@ -299,13 +331,41 @@ void BehaviorTreeDataModel::setParameterValue(const QString &label, const QStrin
     }
 }
 
+bool BehaviorTreeDataModel::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::Paint && obj == _caption_logo_left && icon())
+    {
+        QPainter paint(_caption_logo_left);
+        icon()->render(&paint);
+    }
+    return NodeDataModel::eventFilter(obj, event);
+}
+
+
 void BehaviorTreeDataModel::setInstanceName(const QString &name)
 {
     _instance_name = name;
     _line_edit_name->setText( name );
-    updateNodeSize();
 
+    updateNodeSize();
     emit instanceNameChanged();
+}
+
+QSvgRenderer *BehaviorTreeDataModel::createSvgRenderer(const char *resource_file) const
+{
+    QFile file(resource_file);
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        qDebug()<<"file not opened: "<< resource_file;
+        file.close();
+    }
+    else {
+        QByteArray ba = file.readAll();
+        QByteArray new_color_fill = QString("fill:%1;").arg(caption().second.name()).toUtf8();
+        ba.replace("fill:#ffffff;", new_color_fill);
+        return new QSvgRenderer(ba);
+    }
+    return nullptr;
 }
 
 

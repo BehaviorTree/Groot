@@ -66,10 +66,10 @@ public:
     SequenceModel();
     static const char* Name() { return ("Sequence"); }
 
-    std::pair<QString,QColor> caption() const override { return {"Sequence","#ff6699"}; }
+    std::pair<QString,QColor> caption() const override { return {"Sequence","#ff99bb"}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/arrow_right.svg"));
+        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/arrow_right.svg");
         return renderer;
     }
 };
@@ -81,10 +81,10 @@ public:
     FallbackModel();
     static const char* Name() { return ("Fallback"); }
 
-    std::pair<QString,QColor> caption() const override { return {"Fallback","#33adff"}; }
+    std::pair<QString,QColor> caption() const override { return {"Fallback","#77ccff"}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/question_mark.svg"));
+        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/question_mark.svg");
         return renderer;
     }
 };
@@ -99,7 +99,7 @@ public:
     std::pair<QString,QColor> caption() const override { return {"SequenceStar","#ff1ab3"}; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/arrow_right.svg"));
+        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/arrow_right.svg");
         return renderer;
     }
 };

@@ -277,6 +277,9 @@ void GraphicContainer::onNodeCreated(Node &node)
           });
         }
 
+        bt_node->init();
+
+
         if( auto sub_node = dynamic_cast<SubtreeExpandedNodeModel*>( bt_node ) )
         {
           connect( sub_node, &SubtreeExpandedNodeModel::collapseButtonPushed,
@@ -512,6 +515,11 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
                                          Node* parent_node, int nest_level)
 {
     std::unique_ptr<NodeDataModel> data_model = _scene->registry().create( abs_node->registration_name );
+    BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( data_model.get() );
+
+    if( bt_node ){
+        bt_node->init();
+    }
 
     if (!data_model)
     {
@@ -541,8 +549,6 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
                 abs_node->instance_name.toStdString().c_str() );
         throw std::runtime_error( buffer );
     }
-
-    BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( data_model.get() );
 
     for (auto& it: abs_node->parameters)
     {

@@ -3,7 +3,7 @@
 #include <QtDebug>
 
 ControlNodeModel::ControlNodeModel(const QString &ID, const ParameterWidgetCreators &parameters ):
-    BehaviorTreeDataModel("Control", ID , parameters)
+    BehaviorTreeDataModel(ID , parameters)
 {
     _line_edit_name->setEnabled(true);
     _line_edit_name->setReadOnly(false);

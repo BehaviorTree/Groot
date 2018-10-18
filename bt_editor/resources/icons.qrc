@@ -39,6 +39,8 @@
         <file>svg/tree.svg</file>
         <file>svg/subtree.svg</file>
         <file>svg/not_equal.svg</file>
+        <file>svg/letter_C.svg</file>
+        <file>svg/letter_A.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

@@ -16,12 +16,12 @@ public:
 
     static const char* Name() { return "Action"; }
 
-    std::pair<QString,QColor> caption() const override { return {"Action","#ffff66"}; }
+    std::pair<QString,QColor> caption() const override { return {instanceName(),"#ddff55"}; }
 
     virtual NodeType nodeType() const final { return NodeType::ACTION; }
 
     virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = new QSvgRenderer(tr(":/icons/svg/exclaimation_mark.svg"));
+        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/letter_A.svg");
         return renderer;
     }
 
@@ -43,9 +43,14 @@ public:
 
     static const char* Name() { return "Condition"; }
 
-    std::pair<QString,QColor> caption() const override { return {"Condition","#00cc99"}; }
+    std::pair<QString,QColor> caption() const override { return {instanceName(),"#44bb44"}; }
 
     virtual NodeType nodeType() const final { return NodeType::CONDITION; }
+
+    virtual QSvgRenderer* icon() const override {
+        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/letter_C.svg");
+        return renderer;
+    }
 
 private:
 };
@@ -54,19 +59,19 @@ private:
 class ActionSuccess : public ActionNodeModel
 {
 public:
-    ActionSuccess(): ActionNodeModel( "",ParameterWidgetCreators()){}
+    ActionSuccess(): ActionNodeModel( "AlwaysSuccess",ParameterWidgetCreators()){}
 
     static const char* Name() {  return "AlwaysSuccess"; }
 
     std::pair<QString, QColor> caption() const override  { return { "SUCCESS", Qt::green}; }
 
-    virtual QSvgRenderer* icon() const override {   return nullptr; }
+    virtual QSvgRenderer* icon() const override { return nullptr; }
 };
 
 class ActionFailure : public ActionNodeModel
 {
 public:
-    ActionFailure(): ActionNodeModel( "",ParameterWidgetCreators()){}
+    ActionFailure(): ActionNodeModel( "AlwaysFailure",ParameterWidgetCreators()){}
 
     static const char* Name() {  return "AlwaysFailure"; }
 

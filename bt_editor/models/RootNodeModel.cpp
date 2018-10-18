@@ -4,7 +4,6 @@
 
 RootNodeModel::RootNodeModel():
     BehaviorTreeDataModel ( RootNodeModel::Name(),
-                            RootNodeModel::Name(),
                             ParameterWidgetCreators() )
 {
     _line_edit_name->setHidden(true);

@@ -4,7 +4,7 @@
 
 SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
                                    const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel (subtree_ID, subtree_ID, creators ),
+    BehaviorTreeDataModel (subtree_ID, creators ),
     _renderer(nullptr)
 {
     _line_edit_name->setReadOnly(true);
@@ -32,7 +32,7 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
 SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
         const QString &subtree_ID,
         const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel (subtree_ID, subtree_ID, creators ),
+    BehaviorTreeDataModel (subtree_ID, creators ),
     _renderer(nullptr)
 {
     _line_edit_name->setReadOnly(true);

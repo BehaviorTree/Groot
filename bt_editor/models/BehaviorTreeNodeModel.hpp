@@ -2,9 +2,10 @@
 
 #include <QObject>
 #include <QLabel>
+#include <QFile>
 #include <QLineEdit>
 #include <QFormLayout>
-
+#include <QEvent>
 #include <nodes/NodeDataModel>
 #include <iostream>
 #include <memory>
@@ -25,13 +26,14 @@ class BehaviorTreeDataModel : public NodeDataModel
     Q_OBJECT
 
 public:
-  BehaviorTreeDataModel(const QString &label_name,
-                        const QString &instance_name,
+  BehaviorTreeDataModel(const QString &instance_name,
                         const ParameterWidgetCreators &parameters );
 
   ~BehaviorTreeDataModel() override = default;
 
 public:
+
+  void init();
 
   NodeDataType dataType(PortType , PortIndex ) const final;
 
@@ -67,11 +69,15 @@ public:
 
   virtual NodeType nodeType() const = 0;
 
+  bool eventFilter(QObject *obj, QEvent *event);
+
 public slots:
 
   void updateNodeSize();
 
   void setInstanceName(const QString& name);
+
+  QSvgRenderer* createSvgRenderer(const char* resource_file) const;
 
 protected:
   QFrame*  _main_widget;
@@ -84,6 +90,9 @@ protected:
 
   QFormLayout* _form_layout;
   QVBoxLayout* _main_layout;
+  QLabel* _caption_label;
+  QFrame* _caption_logo_left;
+  QFrame* _caption_logo_right;
 
 private:
   const QString _registration_name;
