@@ -2,7 +2,7 @@
     <!--------------------------------------->
     <BehaviorTree ID="DoorClosed">
         <Sequence name="door_closed_sequence">
-            <Decorator ID="Negation">
+            <Decorator ID="Inverter">
                 <Condition ID="IsDoorOpen"/>
             </Decorator>
             <Decorator ID="RetryUntilSuccesful" num_attempts="4">
@@ -28,7 +28,7 @@
         <Action ID="CloseDoor"/>
         <SubTree ID="DoorClosed"/>
         <Condition ID="IsDoorOpen"/>
-        <Decorator ID="Negation"/>
+        <Decorator ID="Inverter"/>
         <Action ID="OpenDoor"/>
         <Action ID="PassThroughDoor"/>
         <Action ID="PassThroughWindow"/>

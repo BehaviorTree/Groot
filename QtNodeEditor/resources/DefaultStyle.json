@@ -7,10 +7,10 @@
   "NodeStyle": {
     "NormalBoundaryColor": [255, 255, 255],
     "SelectedBoundaryColor": [255, 165, 0],
-    "GradientColor0": [100, 100, 100],
+    "GradientColor0": [80, 80, 80],
     "GradientColor1": [80, 80, 80],
-    "GradientColor2": [64, 64, 64],
-    "GradientColor3": [58, 58, 58],
+    "GradientColor2": [80, 80, 80],
+    "GradientColor3": [80, 80, 80],
     "ShadowColor": [20, 20, 20],
     "FontColor" : "white",
     "FontColorFaded" : "gray",
