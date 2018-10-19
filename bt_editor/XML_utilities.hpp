@@ -45,7 +45,7 @@ const QString gTestXML = R"(
 
     <BehaviorTree ID="DoorClosed">
         <Sequence name="door_closed_sequence">
-            <Decorator ID="Negation">
+            <Decorator ID="Inverter">
                 <Condition ID="IsDoorOpen" />
             </Decorator>
             <Decorator ID="RetryUntilSuccesful" num_attempts="4">

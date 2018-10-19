@@ -501,7 +501,7 @@ const std::set<std::string> &BuiltInRegisteredModels()
         SequenceModel::Name(),
         SequenceStarModel::Name(),
         FallbackModel::Name(),
-        NegationNodeModel::Name(),
+        InverterNodeModel::Name(),
         RetryNodeModel::Name(),
         RepeatNodeModel::Name()
     };

@@ -14,8 +14,8 @@ RetryNodeModel::RetryNodeModel(const ParameterWidgetCreators &parameters):
   _line_edit_name->setHidden(true);
 }
 
-NegationNodeModel::NegationNodeModel(const ParameterWidgetCreators &parameters):
-  DecoratorNodeModel( NegationNodeModel::Name(), parameters )
+InverterNodeModel::InverterNodeModel(const ParameterWidgetCreators &parameters):
+  DecoratorNodeModel( InverterNodeModel::Name(), parameters )
 {
   _line_edit_name->setHidden(true);
 }

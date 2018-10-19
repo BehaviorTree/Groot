@@ -41,6 +41,7 @@
         <file>svg/not_equal.svg</file>
         <file>svg/letter_C.svg</file>
         <file>svg/letter_A.svg</file>
+        <file>svg/logo_splashscreen.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

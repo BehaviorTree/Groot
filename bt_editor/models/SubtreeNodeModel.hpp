@@ -27,14 +27,15 @@ public:
 
     NodeType nodeType() const final { return NodeType::SUBTREE; }
 
-    virtual QSvgRenderer* icon() const override { return _renderer; }
+    virtual QString captionIicon() const override {
+        return(":/icons/svg/subtree.svg");
+    }
 
 signals:
     void expandButtonPushed();
 
 private:
     QPushButton* _expand_button;
-    QSvgRenderer* _renderer;
 
 };
 
@@ -63,7 +64,9 @@ public:
 
     NodeType nodeType() const final { return NodeType::SUBTREE; }
 
-    virtual QSvgRenderer* icon() const override { return _renderer; }
+    virtual QString captionIicon() const override {
+        return(":/icons/svg/subtree.svg");
+    }
 
 signals:
     void collapseButtonPushed();
@@ -71,7 +74,6 @@ signals:
 private:
 
     QPushButton* _collapse_button;
-    QSvgRenderer* _renderer;
 
 };
 

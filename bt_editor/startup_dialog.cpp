@@ -4,6 +4,9 @@
 #include <QTime>
 #include <QSettings>
 #include <QShortcut>
+#include <QSvgRenderer>
+#include <QImage>
+#include <QSvgWidget>
 
 StartupDialog::StartupDialog(QWidget *parent) :
     QDialog(parent),
@@ -12,9 +15,14 @@ StartupDialog::StartupDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    setFixedSize( size() );
+
     QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
     QString mode  = settings.value("StartupDialog.Mode", "EDITOR").toString();
     _mode = getGraphicModeFromString( mode );
+
+    auto svg_widget = new QSvgWidget( tr(":/icons/svg/logo_splashscreen.svg") );
+    ui->frame->layout()->addWidget(svg_widget);
 
     updateCurrentMode();
 

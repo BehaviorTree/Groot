@@ -38,30 +38,30 @@ public:
 
     static const char* Name() {  return "RetryUntilSuccesful"; }
 
+
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
-    virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/retry.svg");
-        return renderer;
+    virtual QString captionIicon() const override {
+        return ":/icons/svg/retry.svg";
     }
 };
 
 
-class NegationNodeModel : public DecoratorNodeModel
+class InverterNodeModel : public DecoratorNodeModel
 {
 public:
-    NegationNodeModel(const ParameterWidgetCreators &parameters = ParameterWidgetCreators());
+    InverterNodeModel(const ParameterWidgetCreators &parameters = ParameterWidgetCreators());
 
-    static const char* Name() {  return "Negation"; }
+    static const char* Name() {  return "Inverter"; }
 
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
-    virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/not_equal.svg");
-        return renderer;
+    virtual QString captionIicon() const override {
+        return(":/icons/svg/not_equal.svg");
     }
+
 };
 
 class RepeatNodeModel : public DecoratorNodeModel
@@ -81,10 +81,10 @@ public:
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
-    virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/repeat.svg");
-        return renderer;
+    virtual QString captionIicon() const override {
+        return(":/icons/svg/repeat.svg");
     }
+
 };
 
 

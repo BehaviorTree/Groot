@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include <QtWidgets/QWidget>
-#include <QtSvg/QSvgRenderer>
 
 #include "PortType.hpp"
 #include "NodeData.hpp"
@@ -37,9 +35,6 @@ public:
 
   virtual
   ~NodeDataModel() = default;
-
-  virtual QSvgRenderer*
-  icon() const { return nullptr; }
 
   /// Name makes this model unique
   virtual QString

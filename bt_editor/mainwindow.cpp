@@ -56,7 +56,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _model_registry->registerModel<FallbackModel>("Control");
 
     _model_registry->registerModel<RetryNodeModel>("Decorator");
-    _model_registry->registerModel<NegationNodeModel>("Decorator");
+    _model_registry->registerModel<InverterNodeModel>("Decorator");
     _model_registry->registerModel<RepeatNodeModel>("Decorator");
 
     _model_registry->registerModel<ActionSuccess>("AlwaysSuccess");
@@ -66,7 +66,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _tree_nodes_model["Sequence"]     = { NodeType::CONTROL, {} };
     _tree_nodes_model["SequenceStar"] = { NodeType::CONTROL, {} };
     _tree_nodes_model["Fallback"]     = { NodeType::CONTROL, {} };
-    _tree_nodes_model["Negation"]            = { NodeType::DECORATOR, {} };
+    _tree_nodes_model["Inverter"]            = { NodeType::DECORATOR, {} };
     _tree_nodes_model["RetryUntilSuccesful"] = RetryNodeModel::NodeModel();
     _tree_nodes_model["Repeat"]              = RepeatNodeModel::NodeModel();
     _tree_nodes_model["AlwaysSuccess"]  = { NodeType::ACTION, {} };

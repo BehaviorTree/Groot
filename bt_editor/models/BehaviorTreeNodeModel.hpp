@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 #include <functional>
+#include <QSvgRenderer>
 #include "bt_editor/bt_editor_base.h"
 #include "bt_editor/utils.h"
 
@@ -69,15 +70,15 @@ public:
 
   virtual NodeType nodeType() const = 0;
 
-  bool eventFilter(QObject *obj, QEvent *event);
+  bool eventFilter(QObject *obj, QEvent *event) override;
+
+  virtual QString captionIicon() const { return QString(); }
 
 public slots:
 
   void updateNodeSize();
 
   void setInstanceName(const QString& name);
-
-  QSvgRenderer* createSvgRenderer(const char* resource_file) const;
 
 protected:
   QFrame*  _main_widget;
@@ -94,9 +95,11 @@ protected:
   QFrame* _caption_logo_left;
   QFrame* _caption_logo_right;
 
+
 private:
   const QString _registration_name;
   QString _instance_name;
+  QSvgRenderer* _icon_renderer;
 
 
 signals:

@@ -19,7 +19,8 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString& registration_name,
     _params_widget(nullptr),
     _uid( GetUID() ),
     _registration_name(registration_name),
-    _instance_name(registration_name)
+    _instance_name(registration_name),
+    _icon_renderer(nullptr)
 {
     _main_widget = new QFrame();
     _line_edit_name = new QLineEdit(_main_widget);
@@ -129,8 +130,25 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString& registration_name,
 
 void BehaviorTreeDataModel::init()
 {
-    _caption_logo_left->setFixedWidth( icon() ? 20: 0);
-    _caption_logo_right->setFixedWidth( icon() ? 1: 0);
+    const auto resource_file = captionIicon();
+    if( resource_file.isEmpty() == false )
+    {
+        _caption_logo_left->setFixedWidth( 20);
+        _caption_logo_right->setFixedWidth( 1 );
+
+        QFile file(resource_file);
+        if(!file.open(QIODevice::ReadOnly))
+        {
+            qDebug()<<"file not opened: "<< resource_file;
+            file.close();
+        }
+        else {
+            QByteArray ba = file.readAll();
+            QByteArray new_color_fill = QString("fill:%1;").arg(caption().second.name()).toUtf8();
+            ba.replace("fill:#ffffff;", new_color_fill);
+            _icon_renderer =  new QSvgRenderer(ba);
+        }
+    }
 
     auto label_text = caption().first;
     auto color = caption().second;
@@ -333,10 +351,10 @@ void BehaviorTreeDataModel::setParameterValue(const QString &label, const QStrin
 
 bool BehaviorTreeDataModel::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::Paint && obj == _caption_logo_left && icon())
+    if (event->type() == QEvent::Paint && obj == _caption_logo_left && _icon_renderer)
     {
         QPainter paint(_caption_logo_left);
-        icon()->render(&paint);
+        _icon_renderer->render(&paint);
     }
     return NodeDataModel::eventFilter(obj, event);
 }
@@ -351,22 +369,7 @@ void BehaviorTreeDataModel::setInstanceName(const QString &name)
     emit instanceNameChanged();
 }
 
-QSvgRenderer *BehaviorTreeDataModel::createSvgRenderer(const char *resource_file) const
-{
-    QFile file(resource_file);
-    if(!file.open(QIODevice::ReadOnly))
-    {
-        qDebug()<<"file not opened: "<< resource_file;
-        file.close();
-    }
-    else {
-        QByteArray ba = file.readAll();
-        QByteArray new_color_fill = QString("fill:%1;").arg(caption().second.name()).toUtf8();
-        ba.replace("fill:#ffffff;", new_color_fill);
-        return new QSvgRenderer(ba);
-    }
-    return nullptr;
-}
+
 
 
 

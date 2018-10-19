@@ -68,9 +68,8 @@ public:
 
     std::pair<QString,QColor> caption() const override { return {"Sequence","#ff99bb"}; }
 
-    virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/arrow_right.svg");
-        return renderer;
+    virtual QString captionIicon() const override {
+        return(":/icons/svg/arrow_right.svg");
     }
 };
 
@@ -83,9 +82,8 @@ public:
 
     std::pair<QString,QColor> caption() const override { return {"Fallback","#77ccff"}; }
 
-    virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/question_mark.svg");
-        return renderer;
+    virtual QString captionIicon() const override {
+        return(":/icons/svg/question_mark.svg");
     }
 };
 
@@ -98,10 +96,10 @@ public:
 
     std::pair<QString,QColor> caption() const override { return {"SequenceStar","#ff1ab3"}; }
 
-    virtual QSvgRenderer* icon() const override {
-        static QSvgRenderer* renderer = createSvgRenderer(":/icons/svg/arrow_right.svg");
-        return renderer;
+    virtual QString captionIicon() const override {
+        return(":/icons/svg/arrow_right.svg");
     }
+
 };
 
 
