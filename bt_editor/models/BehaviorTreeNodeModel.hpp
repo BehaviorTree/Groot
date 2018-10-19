@@ -30,7 +30,7 @@ public:
   BehaviorTreeDataModel(const QString &instance_name,
                         const ParameterWidgetCreators &parameters );
 
-  ~BehaviorTreeDataModel() override = default;
+  ~BehaviorTreeDataModel() override;
 
 public:
 

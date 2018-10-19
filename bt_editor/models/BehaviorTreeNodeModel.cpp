@@ -56,7 +56,6 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString& registration_name,
     _main_layout->setSpacing(2);
 
     //----------------------------
-
     _line_edit_name->setAlignment( Qt::AlignCenter );
     _line_edit_name->setText( _instance_name );
     _line_edit_name->setFixedWidth( DEFAULT_LINE_WIDTH );
@@ -71,61 +70,63 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString& registration_name,
     _form_layout = new QFormLayout( _params_widget );
     _form_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 
-    if( !creators.empty() )
+    _main_layout->addWidget(_params_widget);
+    _params_widget->setStyleSheet("color: white;");
+
+    _form_layout->setHorizontalSpacing(4);
+    _form_layout->setVerticalSpacing(2);
+    _form_layout->setContentsMargins(0, 0, 0, 0);
+
+    for(const auto& param_creator: creators )
     {
-        _main_layout->addWidget(_params_widget);
-        _params_widget->setStyleSheet("color: white;");
+        const QString label = param_creator.label;
+        QLabel* form_label  =  new QLabel( label, _params_widget );
+        QWidget* form_field = param_creator.instance_factory();
 
-        _form_layout->setHorizontalSpacing(4);
-        _form_layout->setVerticalSpacing(2);
-        _form_layout->setContentsMargins(0, 0, 0, 0);
+        form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
 
-        for(const auto& param_creator: creators )
+        _params_map.insert( std::make_pair( label, form_field) );
+
+        form_field->setStyleSheet(" color: rgb(30,30,30); "
+                                  "background-color: rgb(180,180,180); "
+                                  "border: 0px; "
+                                  "padding: 0px 0px 0px 0px;");
+
+        _form_layout->addRow( form_label, form_field );
+
+        auto paramUpdated = [this,label,form_field]()
         {
-            const QString label = param_creator.label;
-            QLabel* form_label  =  new QLabel( label, _params_widget );
-            QWidget* form_field = param_creator.instance_factory();
+            this->parameterUpdated(label,form_field);
+        };
 
-            form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
-
-            _params_map.insert( std::make_pair( label, form_field) );
-
-            form_field->setStyleSheet(" color: rgb(30,30,30); "
-                                        "background-color: rgb(180,180,180); "
-                                        "border: 0px; "
-                                        "padding: 0px 0px 0px 0px;");
-
-            _form_layout->addRow( form_label, form_field );
-
-            auto paramUpdated = [this,label,form_field]()
-            {
-                this->parameterUpdated(label,form_field);
-            };
-
-            if(auto lineedit = dynamic_cast<QLineEdit*>( form_field ) )
-            {
-                connect( lineedit, &QLineEdit::editingFinished, this, paramUpdated );
-                connect( lineedit, &QLineEdit::editingFinished,
-                         this, &BehaviorTreeDataModel::updateNodeSize);
-            }
-            else if( auto combo = dynamic_cast<QComboBox*>( form_field ) )
-            {
-                connect( combo, &QComboBox::currentTextChanged, this, paramUpdated);
-            }
-
+        if(auto lineedit = dynamic_cast<QLineEdit*>( form_field ) )
+        {
+            connect( lineedit, &QLineEdit::editingFinished, this, paramUpdated );
+            connect( lineedit, &QLineEdit::editingFinished,
+                     this, &BehaviorTreeDataModel::updateNodeSize);
         }
-        _params_widget->adjustSize();
+        else if( auto combo = dynamic_cast<QComboBox*>( form_field ) )
+        {
+            connect( combo, &QComboBox::currentTextChanged, this, paramUpdated);
+        }
+
     }
+    _params_widget->adjustSize();
 
     capt_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
     _main_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
     _form_layout->setSizeConstraint(QLayout::SizeConstraint::SetMaximumSize);
-
+    //--------------------------------------
     connect( _line_edit_name, &QLineEdit::editingFinished,
              this, [this]()
     {
         setInstanceName( _line_edit_name->text() );
     });
+}
+
+BehaviorTreeDataModel::~BehaviorTreeDataModel()
+{
+
 }
 
 void BehaviorTreeDataModel::init()
@@ -146,7 +147,7 @@ void BehaviorTreeDataModel::init()
             QByteArray ba = file.readAll();
             QByteArray new_color_fill = QString("fill:%1;").arg(caption().second.name()).toUtf8();
             ba.replace("fill:#ffffff;", new_color_fill);
-            _icon_renderer =  new QSvgRenderer(ba);
+            _icon_renderer =  new QSvgRenderer(ba, this);
         }
     }
 
