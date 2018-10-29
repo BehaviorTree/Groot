@@ -64,19 +64,8 @@ distribution.
 #   pragma warning(disable: 4251)
 #endif
 
-#ifdef _WIN32
-#   ifdef TINYXML2_EXPORT
-#       define TINYXML2_LIB __declspec(dllexport)
-#   elif defined(TINYXML2_IMPORT)
-#       define TINYXML2_LIB __declspec(dllimport)
-#   else
-#       define TINYXML2_LIB
-#   endif
-#elif __GNUC__ >= 4
-#   define TINYXML2_LIB __attribute__((visibility("default")))
-#else
-#   define TINYXML2_LIB
-#endif
+#define TINYXML2_LIB
+
 
 
 #if defined(TINYXML2_DEBUG)

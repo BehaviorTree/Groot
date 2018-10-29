@@ -50,29 +50,30 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     _model_registry = std::make_shared<QtNodes::DataModelRegistry>();
 
+    //------------------------------------------------------
     _model_registry->registerModel<RootNodeModel>("Root");
     _model_registry->registerModel<SequenceModel>("Control");
     _model_registry->registerModel<SequenceStarModel>("Control");
     _model_registry->registerModel<FallbackModel>("Control");
-
-    _model_registry->registerModel<RetryNodeModel>("Decorator");
-    _model_registry->registerModel<InverterNodeModel>("Decorator");
-    _model_registry->registerModel<RepeatNodeModel>("Decorator");
-
-    _model_registry->registerModel<ActionSuccess>("AlwaysSuccess");
-    _model_registry->registerModel<ActionFailure>("AlwaysFailure");
-
     _tree_nodes_model["Root"]         = { NodeType::ROOT, {} };
     _tree_nodes_model["Sequence"]     = { NodeType::CONTROL, {} };
     _tree_nodes_model["SequenceStar"] = { NodeType::CONTROL, {} };
     _tree_nodes_model["Fallback"]     = { NodeType::CONTROL, {} };
+
+    _model_registry->registerModel<RetryNodeModel>("Decorator");
+    _model_registry->registerModel<InverterNodeModel>("Decorator");
+    _model_registry->registerModel<RepeatNodeModel>("Decorator");
     _tree_nodes_model["Inverter"]            = { NodeType::DECORATOR, {} };
     _tree_nodes_model["RetryUntilSuccesful"] = RetryNodeModel::NodeModel();
     _tree_nodes_model["Repeat"]              = RepeatNodeModel::NodeModel();
+
+    _model_registry->registerModel<ActionSuccess>("Action");
+    _model_registry->registerModel<ActionFailure>("Action");
     _tree_nodes_model["AlwaysSuccess"]  = { NodeType::ACTION, {} };
     _tree_nodes_model["AlwaysFailure"]  = { NodeType::ACTION, {} };
+    //------------------------------------------------------
 
-    _editor_widget = new SidepanelEditor(_tree_nodes_model, this);
+    _editor_widget = new SidepanelEditor(_model_registry.get(), _tree_nodes_model, this);
     _replay_widget = new SidepanelReplay(this);
 
     ui->leftFrame->layout()->addWidget( _editor_widget );

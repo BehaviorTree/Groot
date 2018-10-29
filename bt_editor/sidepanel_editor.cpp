@@ -1,13 +1,18 @@
 #include "sidepanel_editor.h"
 #include "ui_sidepanel_editor.h"
-
+#include "custom_node_dialog.h"
 #include <QHeaderView>
 #include <QPushButton>
+#include "models/ActionNodeModel.hpp"
 
-SidepanelEditor::SidepanelEditor(TreeNodeModels &tree_nodes_model, QWidget *parent) :
+
+SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
+                                 TreeNodeModels &tree_nodes_model,
+                                 QWidget *parent) :
     QFrame(parent),
     ui(new Ui::SidepanelEditor),
-    _tree_nodes_model(tree_nodes_model)
+    _tree_nodes_model(tree_nodes_model),
+    _model_registry(registry)
 {
     ui->setupUi(this);   
     ui->paramsFrame->setHidden(true);
@@ -79,7 +84,8 @@ void SidepanelEditor::on_treeWidget_itemSelectionChanged()
 
     ui->parametersTableWidget->setRowCount(model.params.size());
 
-    connect( ui->parametersTableWidget,  &QTableWidget::cellChanged, this, &SidepanelEditor::on_parameterChanged);
+    connect( ui->parametersTableWidget,  &QTableWidget::cellChanged,
+             this, &SidepanelEditor::on_parameterChanged);
 
     for (auto& param: model.params)
     {
@@ -115,8 +121,41 @@ void SidepanelEditor::on_parametersTableWidget_itemSelectionChanged()
   ui->pushButtonDelete->setEnabled( selected_items.size() != 0 );
 }
 
-void SidepanelEditor::on_parameterChanged(int row, int col)
+void SidepanelEditor::on_parameterChanged(int, int )
 {
   ui->pushButtonAdd->setEnabled(true);
 
+}
+
+void SidepanelEditor::on_buttonAddNode_pressed()
+{
+    CustomNodeDialog dialog(_tree_nodes_model, this);
+    if( dialog.exec() == QDialog::Accepted)
+    {
+        auto res = dialog.getTreeNodeModel();
+        const auto& name = res.first;
+        const auto& model = res.second;
+        if( _tree_nodes_model.count(name) == 0)
+        {
+            _tree_nodes_model[name] = model;
+            updateTreeView();
+
+            if( model.node_type == NodeType::ACTION)
+            {
+                QtNodes::DataModelRegistry::RegistryItemCreator creator =
+                        [name](){
+                    return QtNodes::detail::make_unique<ActionNodeModel>(name, ParameterWidgetCreators());
+                };
+                _model_registry->registerModel("Action", creator, name);
+            }
+            else if( model.node_type == NodeType::CONDITION)
+            {
+                QtNodes::DataModelRegistry::RegistryItemCreator creator =
+                        [name](){
+                    return QtNodes::detail::make_unique<ConditionNodeModel>(name, ParameterWidgetCreators());
+                };
+                _model_registry->registerModel("Condition", creator, name);
+            }
+        }
+    }
 }
