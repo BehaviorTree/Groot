@@ -5,15 +5,42 @@
 #include <QPushButton>
 #include <QRegExpValidator>
 
-CustomNodeDialog::CustomNodeDialog(const TreeNodeModels &models, QWidget *parent):
+CustomNodeDialog::CustomNodeDialog(const TreeNodeModels &models,
+                                   QString to_edit,
+                                   QWidget *parent):
     QDialog(parent),
     ui(new Ui::CustomNodeDialog),
-    _models(models)
+    _models(models),
+    _editing(false)
 {
     setWindowTitle("Custom TreeNode Editor");
     ui->setupUi(this);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+
+    if( to_edit.isEmpty() == false)
+    {
+        auto it = models.find(to_edit);
+        if( it != models.end())
+        {
+            _editing =true;
+            ui->lineEdit->setText( to_edit );
+
+            for( const auto& param : it->second.params )
+            {
+                int row = ui->tableWidget->rowCount();
+                ui->tableWidget->setRowCount(row+1);
+
+                ui->tableWidget->setItem(row,0, new QTableWidgetItem( param.label ));
+                ui->tableWidget->setItem(row,1, new QTableWidgetItem( param.default_value ));
+            }
+            switch( it->second.node_type )
+            {
+            case NodeType::ACTION:    ui->comboBox->setCurrentIndex(0); break;
+            case NodeType::CONDITION: ui->comboBox->setCurrentIndex(1); break;
+            }
+        }
+    }
 
     connect( ui->tableWidget, &QTableWidget::cellChanged,
              this, &CustomNodeDialog::checkValid );
@@ -23,6 +50,7 @@ CustomNodeDialog::CustomNodeDialog(const TreeNodeModels &models, QWidget *parent
 
     QRegExp rx("\\w+");
     _validator = new QRegExpValidator(rx, this);
+
 
     checkValid();
 }
@@ -46,7 +74,7 @@ std::pair<QString,TreeNodeModel> CustomNodeDialog::getTreeNodeModel() const
         const auto value = ui->tableWidget->item(row,1)->text();
         model.params.push_back( {key,value} );
     }
-
+    model.is_editable = true;
     return { ui->lineEdit->text(), model };
 }
 
@@ -88,7 +116,7 @@ void CustomNodeDialog::checkValid()
     {
         ui->labelWarning->setText("Invalid name: use only letters, digits and underscores");
     }
-    else if( _models.count( name ) > 0 )
+    else if( _models.count( name ) > 0 && !_editing )
     {
         ui->labelWarning->setText("Another Node has the same name");
     }

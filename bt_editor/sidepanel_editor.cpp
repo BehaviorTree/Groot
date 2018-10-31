@@ -3,6 +3,7 @@
 #include "custom_node_dialog.h"
 #include <QHeaderView>
 #include <QPushButton>
+#include <QMenu>
 #include "models/ActionNodeModel.hpp"
 #include "settings_dialog.h"
 
@@ -16,7 +17,9 @@ SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
 {
     ui->setupUi(this);   
     ui->paramsFrame->setHidden(true);
-    ui->buttonsFrame->setHidden(true);
+    ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect( ui->treeWidget, &QWidget::customContextMenuRequested,
+             this, &SidepanelEditor::onContextMenu);
 }
 
 SidepanelEditor::~SidepanelEditor()
@@ -46,7 +49,7 @@ void SidepanelEditor::updateTreeView()
       _tree_view_category_items[ category ] = item;
     }
 
-    for (auto const &it : _tree_nodes_model)
+    for (const auto &it : _tree_nodes_model)
     {
       const QString& ID = it.first;
       const TreeNodeModel& model = it.second;
@@ -56,6 +59,7 @@ void SidepanelEditor::updateTreeView()
       auto item = new QTreeWidgetItem(parent, {ID});
       AdjustFont(item, 11, false);
       item->setData(0, Qt::UserRole, ID);
+      item->setTextColor(0, model.is_editable ? Qt::blue : Qt::black);
     }
 
     ui->treeWidget->expandAll();
@@ -79,15 +83,12 @@ void SidepanelEditor::on_treeWidget_itemSelectionChanged()
     ui->paramsFrame->setHidden(false);
     ui->label->setText( item_name + QString(" Parameters"));
 
-    auto & model = _tree_nodes_model[item_name];
+    const auto& model = _tree_nodes_model[item_name];
     int row = 0;
 
     ui->parametersTableWidget->setRowCount(model.params.size());
 
-    connect( ui->parametersTableWidget,  &QTableWidget::cellChanged,
-             this, &SidepanelEditor::on_parameterChanged);
-
-    for (auto& param: model.params)
+    for (const auto& param: model.params)
     {
       ui->parametersTableWidget->setItem(row,0, new QTableWidgetItem( param.label ));
       ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem( param.default_value ));
@@ -114,49 +115,46 @@ void SidepanelEditor::on_lineEditFilter_textChanged(const QString &text)
   }
 }
 
-void SidepanelEditor::on_parametersTableWidget_itemSelectionChanged()
+void SidepanelEditor::addNewModel(const QString& name, const TreeNodeModel& model)
 {
-  auto selected_items = ui->parametersTableWidget->selectedItems();
+    if( _tree_nodes_model.count(name) == 0)
+    {
+        _tree_nodes_model[name] = model;
+        updateTreeView();
 
-  ui->pushButtonDelete->setEnabled( selected_items.size() != 0 );
+        ParameterWidgetCreators widget_creators;
+
+        for( const auto& param: model.params)
+        {
+            widget_creators.push_back( buildWidgetCreator(param) );
+        }
+
+        if( model.node_type == NodeType::ACTION)
+        {
+            QtNodes::DataModelRegistry::RegistryItemCreator creator =
+                    [name, widget_creators](){
+                return QtNodes::detail::make_unique<ActionNodeModel>(name, widget_creators);
+            };
+            _model_registry->registerModel("Action", creator, name);
+        }
+        else if( model.node_type == NodeType::CONDITION)
+        {
+            QtNodes::DataModelRegistry::RegistryItemCreator creator =
+                    [name, widget_creators](){
+                return QtNodes::detail::make_unique<ConditionNodeModel>(name, widget_creators);
+            };
+            _model_registry->registerModel("Condition", creator, name);
+        }
+    }
 }
 
-void SidepanelEditor::on_parameterChanged(int, int )
+void SidepanelEditor::on_buttonAddNode_clicked()
 {
-  ui->pushButtonAdd->setEnabled(true);
-
-}
-
-void SidepanelEditor::on_buttonAddNode_pressed()
-{
-    CustomNodeDialog dialog(_tree_nodes_model, this);
+    CustomNodeDialog dialog(_tree_nodes_model, QString(), this);
     if( dialog.exec() == QDialog::Accepted)
     {
-        auto res = dialog.getTreeNodeModel();
-        const auto& name = res.first;
-        const auto& model = res.second;
-        if( _tree_nodes_model.count(name) == 0)
-        {
-            _tree_nodes_model[name] = model;
-            updateTreeView();
-
-            if( model.node_type == NodeType::ACTION)
-            {
-                QtNodes::DataModelRegistry::RegistryItemCreator creator =
-                        [name](){
-                    return QtNodes::detail::make_unique<ActionNodeModel>(name, ParameterWidgetCreators());
-                };
-                _model_registry->registerModel("Action", creator, name);
-            }
-            else if( model.node_type == NodeType::CONDITION)
-            {
-                QtNodes::DataModelRegistry::RegistryItemCreator creator =
-                        [name](){
-                    return QtNodes::detail::make_unique<ConditionNodeModel>(name, ParameterWidgetCreators());
-                };
-                _model_registry->registerModel("Condition", creator, name);
-            }
-        }
+        auto new_model = dialog.getTreeNodeModel();
+        addNewModel( new_model.first, new_model.second );
     }
 }
 
@@ -164,4 +162,55 @@ void SidepanelEditor::on_buttonSettings_clicked()
 {
     SettingsDialog dialog;
     dialog.exec();
+}
+
+void SidepanelEditor::onContextMenu(const QPoint& pos)
+{
+    auto selected_items = ui->treeWidget->selectedItems();
+    if( selected_items.count() != 1)
+    {
+        return;
+    }
+    QTreeWidgetItem* selected_item = selected_items.front();
+    QString selected_name          = selected_item->text(0);
+    const TreeNodeModel& model     = _tree_nodes_model.at(selected_name);
+
+    if( !model.is_editable )
+    {
+        return;
+    }
+
+    QMenu menu;
+    QAction* edit   = menu.addAction("Edit");
+    QAction* remove = menu.addAction("Remove");
+
+    connect( edit, &QAction::triggered, this, [this, selected_name]()
+    {
+        qDebug() << "Edit";
+        CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
+        if( dialog.exec() == QDialog::Accepted)
+        {
+            auto new_model = dialog.getTreeNodeModel();
+            _tree_nodes_model.erase( selected_name );
+            _model_registry->unregisterModel( selected_name );
+            addNewModel( new_model.first, new_model.second );
+        }
+    } );
+
+    connect( remove, &QAction::triggered, this,[this, selected_item, selected_name]()
+    {
+        qDebug() << "Remove";
+        _tree_nodes_model.erase( selected_name );
+        updateTreeView();
+    } );
+
+    QPoint globalPos = ui->treeWidget->mapToGlobal(pos);
+    menu.exec(globalPos);
+
+    QApplication::processEvents();
+}
+
+void SidepanelEditor::on_toolButtonSave_clicked()
+{
+
 }

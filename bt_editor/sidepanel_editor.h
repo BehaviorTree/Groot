@@ -30,13 +30,13 @@ private slots:
 
     void on_lineEditFilter_textChanged(const QString &arg1);
 
-    void on_parametersTableWidget_itemSelectionChanged();
-
-    void on_parameterChanged(int row, int col);
-
-    void on_buttonAddNode_pressed();
+    void on_buttonAddNode_clicked();
 
     void on_buttonSettings_clicked();
+
+    void onContextMenu(const QPoint &point);
+
+    void on_toolButtonSave_clicked();
 
 private:
     Ui::SidepanelEditor *ui;
@@ -44,6 +44,7 @@ private:
     QtNodes::DataModelRegistry* _model_registry;
     std::map<QString, QTreeWidgetItem*> _tree_view_category_items;
 
+    void addNewModel(const QString& name, const TreeNodeModel &new_model);
 };
 
 #endif // NODE_PALETTE_H

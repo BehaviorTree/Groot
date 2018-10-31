@@ -44,6 +44,7 @@
         <file>svg/logo_splashscreen.svg</file>
         <file>svg/list_add.svg</file>
         <file>svg/settings.svg</file>
+        <file>svg/save_file.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>
