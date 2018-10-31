@@ -36,6 +36,8 @@ private slots:
 
     void on_buttonAddNode_pressed();
 
+    void on_buttonSettings_clicked();
+
 private:
     Ui::SidepanelEditor *ui;
     TreeNodeModels &_tree_nodes_model;

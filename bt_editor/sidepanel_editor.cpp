@@ -4,7 +4,7 @@
 #include <QHeaderView>
 #include <QPushButton>
 #include "models/ActionNodeModel.hpp"
-
+#include "settings_dialog.h"
 
 SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
                                  TreeNodeModels &tree_nodes_model,
@@ -158,4 +158,10 @@ void SidepanelEditor::on_buttonAddNode_pressed()
             }
         }
     }
+}
+
+void SidepanelEditor::on_buttonSettings_clicked()
+{
+    SettingsDialog dialog;
+    dialog.exec();
 }
