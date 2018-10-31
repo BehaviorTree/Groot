@@ -17,7 +17,7 @@ StartupDialog::StartupDialog(QWidget *parent) :
 
     setFixedSize( size() );
 
-    QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+    QSettings settings;
     QString mode  = settings.value("StartupDialog.Mode", "EDITOR").toString();
     _mode = getGraphicModeFromString( mode );
 
@@ -35,7 +35,7 @@ StartupDialog::StartupDialog(QWidget *parent) :
                 "color:gray;"
                 "border: 2px solid gray; "
                 "border-radius: 10px;"
-                " background-color: rgb(0, 0, 0);"
+                "background-color: rgb(0, 0, 0);"
                 );
 #endif
 }
@@ -133,7 +133,7 @@ void StartupDialog::updateCurrentMode()
 
 void StartupDialog::on_toolButtonStart_clicked()
 {
-    QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+    QSettings settings;
     settings.setValue("StartupDialog.Mode", toStr(_mode) );
 
     this->accept();

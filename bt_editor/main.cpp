@@ -25,6 +25,10 @@ main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName("Groot");
     app.setWindowIcon(QPixmap(":/icons/BT.png"));
+    app.setOrganizationName("EurecatRobotics");
+    app.setOrganizationDomain("eurecat.org");
+    app.setApplicationName("BehaviorTreeEditor");
+
 
     qRegisterMetaType<AbsBehaviorTree>();
 
@@ -33,8 +37,14 @@ main(int argc, char *argv[])
     parser.addHelpOption();
 
     QCommandLineOption test_option(QStringList() << "t" << "test",
-                                   QCoreApplication::translate("main", "Load dummy"));
+                                   "Load dummy data");
     parser.addOption(test_option);
+
+    QCommandLineOption mode_option(QStringList() << "mode",
+                                   "Start in one of these modes: [editor,monitor,replay]",
+                                   "mode");
+    parser.addOption(mode_option);
+
     parser.process( app );
 
     if( parser.isSet(test_option) )
@@ -46,16 +56,43 @@ main(int argc, char *argv[])
         return app.exec();
     }
     else{
-        StartupDialog dialog;
-        dialog.setWindowFlags( Qt::FramelessWindowHint );
+        auto mode = GraphicMode::EDITOR;
 
-        if( dialog.exec() == QDialog::Accepted)
+        if( parser.isSet(mode_option) )
         {
-            MainWindow win( dialog.getGraphicMode() );
-            win.setWindowTitle("Groot");
-            win.show();
-            return app.exec();
+            QString opt_mode = parser.value(mode_option);
+            if( opt_mode == "editor")
+            {
+                mode = GraphicMode::EDITOR;
+            }
+            else if( opt_mode == "monitor")
+            {
+                mode = GraphicMode::MONITOR;
+            }
+            else if( opt_mode == "replay")
+            {
+                mode = GraphicMode::REPLAY;
+            }
+            else{
+                std::cout << "wrong mode passed to --mode. Use on of these: editor / monitor /replay"
+                          << std::endl;
+                return 0;
+            }
         }
+        else{
+            StartupDialog dialog;
+            dialog.setWindowFlags( Qt::FramelessWindowHint );
+            mode = dialog.getGraphicMode();
+            if(dialog.exec() != QDialog::Accepted)
+            {
+                return 0;
+            }
+        }
+
+        MainWindow win( mode );
+        win.setWindowTitle("Groot");
+        win.show();
+        return app.exec();
     }
     return 0;
 }

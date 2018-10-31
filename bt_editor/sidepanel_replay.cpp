@@ -146,7 +146,7 @@ void SidepanelReplay::updateTableModel(const AbsBehaviorTree& locaded_tree)
 
 void SidepanelReplay::on_LoadLog()
 {
-    QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+    QSettings settings;
     QString directory_path  = settings.value("SidepanelReplay.lastLoadDirectory",
                                              QDir::homePath() ).toString();
 

@@ -27,7 +27,6 @@
 #include "models/RootNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 
-
 #include "utils.h"
 
 using QtNodes::DataModelRegistry;
@@ -44,7 +43,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+    QSettings settings;
     restoreGeometry(settings.value("MainWindow/geometry").toByteArray());
     restoreState(settings.value("MainWindow/windowState").toByteArray());
 
@@ -144,7 +143,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+    QSettings settings;
 
     settings.setValue("MainWindow/geometry", saveGeometry());
     settings.setValue("MainWindow/windowState", saveState());
@@ -291,7 +290,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
 void MainWindow::on_actionLoad_triggered()
 {
-    QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+    QSettings settings;
     QString directory_path  = settings.value("MainWindow.lastLoadDirectory",
                                              QDir::homePath() ).toString();
 
@@ -389,7 +388,7 @@ void MainWindow::on_actionSave_triggered()
     root->InsertEndChild( doc.NewComment("-----------------------------------") );
 
     //-------------------------------------
-    QSettings settings("EurecatRobotics", "BehaviorTreeEditor");
+    QSettings settings;
     QString directory_path  = settings.value("MainWindow.lastSaveDirectory",
                                              QDir::currentPath() ).toString();
 
