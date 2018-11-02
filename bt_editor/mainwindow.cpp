@@ -808,7 +808,18 @@ void MainWindow::updateCurrentMode()
 
     ui->toolButtonLoadFile->setHidden( _current_mode == GraphicMode::MONITOR );
     ui->toolButtonConnect->setHidden( _current_mode != GraphicMode::MONITOR );
-    ui->toolButtonLoadRemote->setHidden( NOT_EDITOR );
+
+    if( _current_mode == GraphicMode::EDITOR )
+    {
+        ui->toolButtonLoadFile->setText("Load Tree");
+    }
+    else if( _current_mode == GraphicMode::REPLAY )
+    {
+        ui->toolButtonLoadFile->setText("Load Log");
+    }
+
+    ui->toolButtonLoadRemote->setHidden( true );
+
     ui->toolButtonSaveFile->setHidden( NOT_EDITOR );
     ui->toolButtonReorder->setHidden( NOT_EDITOR );
 
