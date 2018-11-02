@@ -334,8 +334,8 @@ void MainWindow::on_actionLoad_triggered()
                                              QDir::homePath() ).toString();
 
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Load BehaviorTree"), directory_path,
-                                                    tr("XML BehaviorTree Files (*.xml)"));
+                                                    tr("Load BehaviorTree from file"), directory_path,
+                                                    tr("BehaviorTree files (*.xml)"));
     if (!QFileInfo::exists(fileName)){
         return;
     }
@@ -437,9 +437,10 @@ void MainWindow::on_actionSave_triggered()
                                              QDir::currentPath() ).toString();
 
     QFileDialog saveDialog(this);
+    saveDialog.setWindowTitle("Save BehaviorTree to file");
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("xml");
-    saveDialog.setNameFilter("Behavior Tree (*.xml)");
+    saveDialog.setNameFilter("BehaviorTree files (*.xml)");
     saveDialog.setDirectory(directory_path);
     saveDialog.exec();
 

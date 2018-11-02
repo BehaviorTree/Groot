@@ -230,9 +230,10 @@ void SidepanelEditor::on_buttonUpload_clicked()
                                              QDir::currentPath() ).toString();
 
     QFileDialog saveDialog(this);
+    saveDialog.setWindowTitle("Save TreeNodeModel to file");
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("xml");
-    saveDialog.setNameFilter("Behavior Tree (*.xml)");
+    saveDialog.setNameFilter("BehaviorTree files (*.xml)");
     saveDialog.setDirectory(directory_path);
     saveDialog.exec();
 
@@ -266,8 +267,8 @@ void SidepanelEditor::on_buttonDownload_clicked()
     QString directory_path  = settings.value("SidepanelEditor.lastLoadDirectory",
                                              QDir::homePath() ).toString();
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Flow Scene"), directory_path,
-                                                    tr("XML BehaviorTree Files (*.xml)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Load TreenNodeModel from file"), directory_path,
+                                                    tr("BehaviorTree files (*.xml)"));
     if (!QFileInfo::exists(fileName)){
         return;
     }
