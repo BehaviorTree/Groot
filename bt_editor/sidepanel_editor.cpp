@@ -9,7 +9,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "models/ActionNodeModel.hpp"
-#include "model_repository_dialog.h"
+
 
 SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
                                  TreeNodeModels &tree_nodes_model,
