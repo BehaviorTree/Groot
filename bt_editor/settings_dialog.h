@@ -2,6 +2,7 @@
 #define SETTINGS_DIALOG_H
 
 #include <QDialog>
+#include "bt_editor_base.h"
 
 namespace Ui {
 class SettingsDialog;
@@ -16,7 +17,6 @@ public:
     ~SettingsDialog();
 
 private slots:
-    void on_checkBoxLoadStartup_toggled(bool checked);
 
     void on_buttonAddFile_clicked();
 
@@ -28,10 +28,16 @@ private slots:
 
     void on_listFiles_itemSelectionChanged();
 
-    void on_listFolders_itemSelectionChanged();
-
 private:
     Ui::SettingsDialog *ui;
+
+    bool parseFile(const QString& filename);
+
+    bool parseXML(const QString& filename, QString* error_message);
+
+    static std::map<QString, TreeNodeModels> _models_per_file;
 };
+
+
 
 #endif // SETTINGS_DIALOG_H

@@ -57,12 +57,19 @@ struct TreeNodeModel
 
 typedef std::map<QString, TreeNodeModel> TreeNodeModels;
 
+<<<<<<< a3b65397d615c7aa15272fb6c3ab16cf1e827be9
+=======
+
+>>>>>>> WIP
 inline TreeNodeModels& BuiltinNodeModels()
 {
     static TreeNodeModels builtin_node_models;
     return builtin_node_models;
 }
+<<<<<<< a3b65397d615c7aa15272fb6c3ab16cf1e827be9
+=======
 
+>>>>>>> WIP
 //--------------------------------
 struct AbstractTreeNode
 {

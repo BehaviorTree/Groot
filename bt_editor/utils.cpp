@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <set>
 
+#include "nodes/internal/memory.hpp"
 #include "models/ActionNodeModel.hpp"
 #include "models/DecoratorNodeModel.hpp"
 #include "models/ControlNodeModel.hpp"
@@ -510,51 +511,57 @@ const std::set<std::string> &BuiltInRegisteredModels()
 
 bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
                    const QString& ID,
-                   const ParameterWidgetCreators& parameters,
-                   NodeType node_type)
+                   const TreeNodeModel& model)
 {
+    namespace util = QtNodes::detail;
+
     if( BuiltInRegisteredModels().count(ID.toStdString()) )
     {
         return false;
     }
-    if( node_type == NodeType::ACTION )
+
+    ParameterWidgetCreators params_creators;
+    for(const auto& param: model.params )
     {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+        params_creators.push_back( buildWidgetCreator(param) );
+    }
+
+    if( model.node_type == NodeType::ACTION )
+    {
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, params_creators]()
         {
-            return std::unique_ptr<ActionNodeModel>( new ActionNodeModel(ID, parameters) );
+            return util::make_unique<ActionNodeModel>(ID, params_creators);
         };
         registry.registerModel("Action", node_creator, ID);
     }
-    else if( node_type == NodeType::CONDITION )
+    else if( model.node_type == NodeType::CONDITION )
     {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, params_creators]()
         {
-            return std::unique_ptr<ConditionNodeModel>( new ConditionNodeModel(ID, parameters) );
+            return util::make_unique<ConditionNodeModel>(ID, params_creators);
         };
         registry.registerModel("Condition", node_creator, ID);
     }
-    else if( node_type == NodeType::DECORATOR )
+    else if( model.node_type == NodeType::DECORATOR )
     {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, params_creators]()
         {
-            return std::unique_ptr<DecoratorNodeModel>( new DecoratorNodeModel(ID, parameters) );
+            return util::make_unique<DecoratorNodeModel>(ID, params_creators);
         };
         registry.registerModel("Decorator", node_creator, ID);
     }
-    else if( node_type == NodeType::SUBTREE )
+    else if( model.node_type == NodeType::SUBTREE )
     {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, parameters]()
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, params_creators]()
         {
-            return std::unique_ptr<SubtreeNodeModel>( new SubtreeNodeModel(ID,parameters) );
+            return util::make_unique<SubtreeNodeModel>(ID, params_creators);
         };
         registry.registerModel("SubTree", node_creator, ID);
 
         auto otherID = ID + EXPANDED_SUFFIX;
-        node_creator = [ID, otherID, parameters]()
+        node_creator = [ID, otherID, params_creators]()
         {
-          auto node = std::unique_ptr<SubtreeExpandedNodeModel>(
-                new SubtreeExpandedNodeModel(otherID, parameters) );
-
+          auto node = util::make_unique<SubtreeExpandedNodeModel>(ID, params_creators);
           node->setInstanceName(ID);
           return node;
         };

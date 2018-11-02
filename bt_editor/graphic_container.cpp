@@ -521,25 +521,12 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
         bt_node->init();
     }
 
-    if (!data_model)
-    {
-        ParameterWidgetCreators parameter_creators;
-        for (auto& it: abs_node->parameters)
-        {
-            TreeNodeModel::Param model_param;
-            model_param.label = it.first;
-            parameter_creators.push_back(buildWidgetCreator( model_param ) );
-        }
-
-        QString ID = abs_node->registration_name;
-
-        addToModelRegistry(_scene->registry(),
-                           ID,
-                           parameter_creators,
-                           abs_node->type);
-
-        data_model = _scene->registry().create( abs_node->registration_name );
-    }
+    // TODO?
+//    if (!data_model)
+//    {
+//        addToModelRegistry(_scene->registry(), ID, model);
+//        data_model = _scene->registry().create( abs_node->registration_name );
+//    }
 
     if(!data_model)
     {

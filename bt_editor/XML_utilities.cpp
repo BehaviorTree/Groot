@@ -12,12 +12,9 @@ using namespace tinyxml2;
 using namespace QtNodes;
 
 
-
-static
-void buildTreeNodeModel(const tinyxml2::XMLElement* node,
-                        QtNodes::DataModelRegistry& registry,
-                        TreeNodeModels& models_list,
-                        bool is_tree_node_model)
+std::pair<QString,TreeNodeModel>
+buildTreeNodeModel(const tinyxml2::XMLElement* node,
+                   bool is_tree_node_model)
 {
 
     TreeNodeModel node_model;
@@ -28,8 +25,6 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
     {
         ID = QString(node->Attribute("ID"));
     }
-
-
 
     const auto node_type = getNodeTypeFromString(node_name);
     node_model.node_type = node_type;
@@ -72,15 +67,7 @@ void buildTreeNodeModel(const tinyxml2::XMLElement* node,
             }
         }
     }
-
-    addToModelRegistry(registry,ID,parameters,node_type);
-
-    if( node_type != NodeType::UNDEFINED)
-    {
-        models_list.insert( std::make_pair(ID, node_model) );
-    }
-
-    qDebug() << "registered " << ID;
+    return std::make_pair(ID, node_model );
 }
 
 //------------------------------------------------------------------
@@ -99,14 +86,18 @@ void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
              node != nullptr;
              node = node->NextSiblingElement() )
         {
-            buildTreeNodeModel(node, registry, models_list, true);
+            auto model_pair = buildTreeNodeModel(node, true);
+            addToModelRegistry(registry, model_pair.first, model_pair.second);
+            models_list.insert( model_pair );
         }
     }
 
     std::function<void(const XMLElement*)> recursiveStep;
     recursiveStep = [&](const XMLElement* node)
     {
-        buildTreeNodeModel(node, registry, models_list, false);
+        auto model_pair = buildTreeNodeModel(node, true);
+        addToModelRegistry(registry, model_pair.first, model_pair.second);
+        models_list.insert( model_pair );
 
         for( const XMLElement* child = node->FirstChildElement();
              child != nullptr;

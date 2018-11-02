@@ -62,8 +62,6 @@ const std::set<std::string>& BuiltInRegisteredModels();
 ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param);
 
 bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
-                   const QString& ID,
-                   const ParameterWidgetCreators& parameters,
-                   NodeType node_type);
+                        const QString& ID,  const TreeNodeModel &model);
 
 #endif // NODE_UTILS_H

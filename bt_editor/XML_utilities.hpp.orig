@@ -20,14 +20,15 @@ void RecursivelyCreateXml(const QtNodes::FlowScene &scene,
                           tinyxml2::XMLElement* parent_element,
                           const QtNodes::Node* node);
 
+<<<<<<< a3b65397d615c7aa15272fb6c3ab16cf1e827be9
 bool VerifyXML(tinyxml2::XMLDocument& doc,
                const std::vector<QString> &registered_ID,
                std::vector<QString> &error_messages);
-
+=======
 std::pair<QString,TreeNodeModel>
 buildTreeNodeModel(const tinyxml2::XMLElement* node,
                    bool is_tree_node_model);
-
+>>>>>>> WIP
 
 //--------------------------------------------------------
 

@@ -247,6 +247,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
             _main_tree = document_root->Attribute("main_tree_to_execute");
         }
 
+            onActionClearTriggered(false);
 
         ReadTreeNodesModel( document_root, *_model_registry, _tree_nodes_model );
         _editor_widget->updateTreeView();
@@ -272,6 +273,21 @@ void MainWindow::loadFromXML(const QString& xml_text)
                 {
                     _main_tree = tree_name;
                 }
+                if( currentTabInfo() == nullptr)
+                {
+                    createTab("BehaviorTree");
+                }
+                else{
+                    currentTabInfo()->nodeReorder();
+                }
+            }
+            catch (std::runtime_error& err) {
+                error = true;
+                err_message = err.what();
+            }
+            catch (std::logic_error& err) {
+                error = true;
+                err_message = err.what();
             }
 
             onLoadAbsBehaviorTree(tree, tree_name);
@@ -406,6 +422,7 @@ void MainWindow::on_actionSave_triggered()
         {
             continue;
         }
+
         XMLElement* node = doc.NewElement( toStr(model.node_type) );
 
         if( node )
@@ -996,7 +1013,7 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
     {
         auto other_it = other.json_states.find(it.first);
         if( other_it == other.json_states.end() ||
-                it.second != other_it->second)
+            it.second != other_it->second)
         {
             return false;
         }
