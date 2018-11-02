@@ -46,6 +46,10 @@
         <file>svg/settings.svg</file>
         <file>svg/save_file.svg</file>
         <file>svg/files.svg</file>
+        <file>svg/download.svg</file>
+        <file>svg/upload.svg</file>
+        <file>svg/lock.svg</file>
+        <file>svg/lock_open.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

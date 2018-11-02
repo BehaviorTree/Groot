@@ -1,0 +1,11 @@
+<root>
+    <TreeNodesModel>
+        <Action ID="CloseDoor"/>
+        <SubTree ID="DoorClosed"/>
+        <Condition ID="IsDoorOpen"/>
+        <Action ID="OpenDoor"/>
+        <Action ID="PassThroughDoor"/>
+        <Action ID="PassThroughWindow"/>
+    </TreeNodesModel>
+</root>
+

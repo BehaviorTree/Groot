@@ -3,7 +3,11 @@
 #include "custom_node_dialog.h"
 #include <QHeaderView>
 #include <QPushButton>
+#include <QSettings>
+#include <QFileInfo>
 #include <QMenu>
+#include <QFileDialog>
+#include <QMessageBox>
 #include "models/ActionNodeModel.hpp"
 #include "model_repository_dialog.h"
 
@@ -20,6 +24,8 @@ SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect( ui->treeWidget, &QWidget::customContextMenuRequested,
              this, &SidepanelEditor::onContextMenu);
+
+    ui->buttonLock->setChecked(true);
 }
 
 SidepanelEditor::~SidepanelEditor()
@@ -121,30 +127,7 @@ void SidepanelEditor::addNewModel(const QString& name, const TreeNodeModel& mode
     {
         _tree_nodes_model[name] = model;
         updateTreeView();
-
-        ParameterWidgetCreators widget_creators;
-
-        for( const auto& param: model.params)
-        {
-            widget_creators.push_back( buildWidgetCreator(param) );
-        }
-
-        if( model.node_type == NodeType::ACTION)
-        {
-            QtNodes::DataModelRegistry::RegistryItemCreator creator =
-                    [name, widget_creators](){
-                return QtNodes::detail::make_unique<ActionNodeModel>(name, widget_creators);
-            };
-            _model_registry->registerModel("Action", creator, name);
-        }
-        else if( model.node_type == NodeType::CONDITION)
-        {
-            QtNodes::DataModelRegistry::RegistryItemCreator creator =
-                    [name, widget_creators](){
-                return QtNodes::detail::make_unique<ConditionNodeModel>(name, widget_creators);
-            };
-            _model_registry->registerModel("Condition", creator, name);
-        }
+        addToModelRegistry(*_model_registry,name, model );
     }
 }
 
@@ -203,8 +186,166 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
 }
 
 
-void SidepanelEditor::on_toolButtonLoad_clicked()
+void SidepanelEditor::on_buttonUpload_clicked()
 {
-    ModelsRepositoryDialog dialog(&_tree_nodes_model, this);
-    dialog.exec();
+    using namespace tinyxml2;
+    XMLDocument doc;
+
+    XMLElement* root = doc.NewElement( "root" );
+    doc.InsertEndChild( root );
+
+    XMLElement* root_models = doc.NewElement("TreeNodesModel");
+
+    for(const auto& tree_it: _tree_nodes_model)
+    {
+        const auto& ID    = tree_it.first;
+        const auto& model = tree_it.second;
+
+        if( BuiltinNodeModels().count(ID) != 0 )
+        {
+            continue;
+        }
+
+        XMLElement* node = doc.NewElement( toStr(model.node_type) );
+
+        if( node )
+        {
+            node->SetAttribute("ID", ID.toStdString().c_str());
+            for(const auto& param: model.params)
+            {
+                XMLElement* param_node = doc.NewElement( "Parameter" );
+                param_node->InsertEndChild(root_models);
+                param_node->SetAttribute("label",   param.label.toStdString().c_str() );
+                param_node->SetAttribute("default", param.default_value.toStdString().c_str() );
+                node->InsertEndChild(param_node);
+            }
+        }
+        root_models->InsertEndChild(node);
+    }
+    root->InsertEndChild(root_models);
+
+    //-------------------------------------
+    QSettings settings;
+    QString directory_path  = settings.value("SidepanelEditor.lastSaveDirectory",
+                                             QDir::currentPath() ).toString();
+
+    QFileDialog saveDialog(this);
+    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+    saveDialog.setDefaultSuffix("xml");
+    saveDialog.setNameFilter("Behavior Tree (*.xml)");
+    saveDialog.setDirectory(directory_path);
+    saveDialog.exec();
+
+    QString fileName;
+    if(saveDialog.result() == QDialog::Accepted && saveDialog.selectedFiles().size() == 1)
+    {
+        fileName = saveDialog.selectedFiles().at(0);
+    }
+
+    if (fileName.isEmpty()){
+        return;
+    }
+
+    XMLPrinter printer;
+    doc.Print( &printer );
+
+    QFile file(fileName);
+    if (file.open(QIODevice::WriteOnly)) {
+        QTextStream stream(&file);
+        stream << printer.CStr() << endl;
+    }
+
+    directory_path = QFileInfo(fileName).absolutePath();
+    settings.setValue("SidepanelEditor.lastSaveDirectory", directory_path);
+
+}
+
+void SidepanelEditor::on_buttonDownload_clicked()
+{
+    QSettings settings;
+    QString directory_path  = settings.value("SidepanelEditor.lastLoadDirectory",
+                                             QDir::homePath() ).toString();
+
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Flow Scene"), directory_path,
+                                                    tr("XML BehaviorTree Files (*.xml)"));
+    if (!QFileInfo::exists(fileName)){
+        return;
+    }
+
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly)){
+        return;
+    }
+
+    directory_path = QFileInfo(fileName).absolutePath();
+    settings.setValue("SidepanelEditor.lastLoadDirectory", directory_path);
+    settings.sync();
+
+    //--------------------------------
+    using namespace tinyxml2;
+    XMLDocument doc;
+    doc.LoadFile( fileName.toStdString().c_str() );
+
+    if (doc.Error())
+    {
+        QMessageBox::warning(this,"Error loading TreeNodeModel form file",
+                             "The XML was not correctly loaded");
+        return;
+    }
+
+    auto strEqual = [](const char* str1, const char* str2) -> bool {
+        return strcmp(str1, str2) == 0;
+    };
+
+    const tinyxml2::XMLElement* xml_root = doc.RootElement();
+    if (!xml_root || !strEqual(xml_root->Name(), "root"))
+    {
+        QMessageBox::warning(this,"Error loading TreeNodeModel form file",
+                             "The XML must have a root node called <root>");
+        return;
+    }
+
+    auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
+
+    if (!meta_root)
+    {
+        QMessageBox::warning(this,"Error loading TreeNodeModel form file",
+                             "Expecting <TreeNodesModel> under <root>");
+        return ;
+    }
+
+    for( const XMLElement* node = meta_root->FirstChildElement();
+         node != nullptr;
+         node = node->NextSiblingElement() )
+    {
+        auto model_pair =  buildTreeNodeModel(node, true);
+        const auto& name  = model_pair.first;
+        const auto& model = model_pair.second;
+
+        if( _tree_nodes_model.count(name) == 0)
+        {
+            _tree_nodes_model[name] = model;
+            addToModelRegistry(*_model_registry, name, model );
+        }
+    }
+    updateTreeView();
+}
+
+void SidepanelEditor::on_buttonLock_toggled(bool locked)
+{
+    QIcon *ico = new QIcon();
+    ico->addPixmap(QPixmap( locked ? ":/icons/svg/lock.svg" : ":/icons/svg/lock_open.svg"),
+                   QIcon::Normal,
+                   locked ? QIcon::On : QIcon::Off);
+    ui->buttonLock->setIcon(*ico);
+
+    for( auto& it: _tree_nodes_model)
+    {
+        const auto& name = it.first;
+        auto& model = it.second;
+
+        model.is_editable = (!locked && BuiltinNodeModels().count( name ) == 0);
+    }
+    updateTreeView();
 }

@@ -71,6 +71,11 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _tree_nodes_model["AlwaysSuccess"]  = { NodeType::ACTION, {} };
     _tree_nodes_model["AlwaysFailure"]  = { NodeType::ACTION, {} };
 
+    for (auto& it: _tree_nodes_model)
+    {
+        it.second.is_editable = false;
+    }
+
     BuiltinNodeModels() = _tree_nodes_model;
     //------------------------------------------------------
 
@@ -329,7 +334,7 @@ void MainWindow::on_actionLoad_triggered()
                                              QDir::homePath() ).toString();
 
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open Flow Scene"), directory_path,
+                                                    tr("Load BehaviorTree"), directory_path,
                                                     tr("XML BehaviorTree Files (*.xml)"));
     if (!QFileInfo::exists(fileName)){
         return;
@@ -434,7 +439,7 @@ void MainWindow::on_actionSave_triggered()
     QFileDialog saveDialog(this);
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("xml");
-    saveDialog.setNameFilter("State Machine (*.xml)");
+    saveDialog.setNameFilter("Behavior Tree (*.xml)");
     saveDialog.setDirectory(directory_path);
     saveDialog.exec();
 

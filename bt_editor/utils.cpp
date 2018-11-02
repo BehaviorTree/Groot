@@ -497,12 +497,12 @@ ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
 
 
 bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
-                   const QString& ID,
-                   const TreeNodeModel& model)
+                        const QString& ID,
+                        const TreeNodeModel& model)
 {
     namespace util = QtNodes::detail;
 
-    if( BuiltInRegisteredModels().count(ID.toStdString()) )
+    if( BuiltinNodeModels().count(ID) )
     {
         return false;
     }

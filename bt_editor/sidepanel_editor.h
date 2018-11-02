@@ -34,7 +34,11 @@ private slots:
 
     void onContextMenu(const QPoint &point);
 
-    void on_toolButtonLoad_clicked();
+    void on_buttonUpload_clicked();
+
+    void on_buttonDownload_clicked();
+
+    void on_buttonLock_toggled(bool checked);
 
 private:
     Ui::SidepanelEditor *ui;
