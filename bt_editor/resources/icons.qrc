@@ -45,6 +45,7 @@
         <file>svg/list_add.svg</file>
         <file>svg/settings.svg</file>
         <file>svg/save_file.svg</file>
+        <file>svg/files.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

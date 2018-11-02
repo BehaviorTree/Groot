@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Repository of TreeNode Models</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <property name="leftMargin">
@@ -30,6 +30,13 @@
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,0">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QCheckBox" name="checkBoxAutoload">
+         <property name="text">
+          <string>Load at startup</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
@@ -190,7 +197,7 @@ p, li { white-space: pre-wrap; }
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Definition inside selected file:</string>
+           <string>Manifest inside the selected file:</string>
           </property>
          </widget>
         </item>
@@ -207,6 +214,14 @@ p, li { white-space: pre-wrap; }
             <width>300</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
           </property>
           <property name="selectionMode">
            <enum>QAbstractItemView::NoSelection</enum>

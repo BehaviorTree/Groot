@@ -5,7 +5,7 @@
 #include <QPushButton>
 #include <QMenu>
 #include "models/ActionNodeModel.hpp"
-#include "settings_dialog.h"
+#include "model_repository_dialog.h"
 
 SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
                                  TreeNodeModels &tree_nodes_model,
@@ -158,12 +158,6 @@ void SidepanelEditor::on_buttonAddNode_clicked()
     }
 }
 
-void SidepanelEditor::on_buttonSettings_clicked()
-{
-    SettingsDialog dialog;
-    dialog.exec();
-}
-
 void SidepanelEditor::onContextMenu(const QPoint& pos)
 {
     auto selected_items = ui->treeWidget->selectedItems();
@@ -180,13 +174,12 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
         return;
     }
 
-    QMenu menu;
+    QMenu menu(this);
     QAction* edit   = menu.addAction("Edit");
     QAction* remove = menu.addAction("Remove");
 
     connect( edit, &QAction::triggered, this, [this, selected_name]()
     {
-        qDebug() << "Edit";
         CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
         if( dialog.exec() == QDialog::Accepted)
         {
@@ -197,9 +190,8 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
         }
     } );
 
-    connect( remove, &QAction::triggered, this,[this, selected_item, selected_name]()
+    connect( remove, &QAction::triggered, this,[this, selected_name]()
     {
-        qDebug() << "Remove";
         _tree_nodes_model.erase( selected_name );
         updateTreeView();
     } );
@@ -210,7 +202,9 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
     QApplication::processEvents();
 }
 
-void SidepanelEditor::on_toolButtonSave_clicked()
-{
 
+void SidepanelEditor::on_toolButtonLoad_clicked()
+{
+    ModelsRepositoryDialog dialog(&_tree_nodes_model, this);
+    dialog.exec();
 }

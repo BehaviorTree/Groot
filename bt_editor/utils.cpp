@@ -496,19 +496,6 @@ ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
 }
 
 
-const std::set<std::string> &BuiltInRegisteredModels()
-{
-    const static std::set<std::string> models_ID = {
-        SequenceModel::Name(),
-        SequenceStarModel::Name(),
-        FallbackModel::Name(),
-        InverterNodeModel::Name(),
-        RetryNodeModel::Name(),
-        RepeatNodeModel::Name()
-    };
-    return  models_ID;
-}
-
 bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
                    const QString& ID,
                    const TreeNodeModel& model)

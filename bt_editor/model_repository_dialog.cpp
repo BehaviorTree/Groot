@@ -1,4 +1,4 @@
-#include "settings_dialog.h"
+#include "model_repository_dialog.h"
 #include "ui_settings_dialog.h"
 #include "XML_utilities.hpp"
 
@@ -7,22 +7,26 @@
 #include <QFileInfo>
 #include <QMessageBox>
 
-std::map<QString, TreeNodeModels> SettingsDialog::_models_per_file;
 
-SettingsDialog::SettingsDialog(QWidget *parent) :
+ModelsRepositoryDialog::ModelsRepositoryDialog(TreeNodeModels* tree_node_models, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::SettingsDialog)
+    ui(new Ui::SettingsDialog),
+    _tree_node_models(tree_node_models)
 {
     ui->setupUi(this);
 
     QSettings settings;
-    restoreGeometry(settings.value("SettingsDialog.geometry").toByteArray());
 
-    QStringList files   = settings.value("SettingsDialog.files").toStringList();
+    restoreGeometry(settings.value("ModelsRepositoryDialog.geometry").toByteArray());
+    ui->checkBoxAutoload->setChecked( settings.value("ModelsRepositoryDialog.autoload", false ).toBool() );
 
+    QStringList files = settings.value("ModelsRepositoryDialog.files").toStringList();
     for (int row = 0; row < files.size(); row++ )
     {
-        ui->listFiles->addItem( files[row] );
+        if( parseFile( files[row], _models_by_file ) )
+        {
+            ui->listFiles->addItem( files[row] );
+        }
     }
 
     ui->tableNodesPerFile->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
@@ -31,18 +35,30 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     checkSelections();
 }
 
-SettingsDialog::~SettingsDialog()
+ModelsRepositoryDialog::~ModelsRepositoryDialog()
 {
     QSettings settings;
-    settings.setValue("SettingsDialog.geometry", saveGeometry());
+    settings.setValue("ModelsRepositoryDialog.geometry", saveGeometry());
     delete ui;
 }
 
+ModelsRepositoryDialog::ModelsByFile ModelsRepositoryDialog::LoadFromSettings()
+{
+    ModelsByFile models_by_file;
+    QSettings settings;
+    QStringList files = settings.value("ModelsRepositoryDialog.files").toStringList();
+    for (int row = 0; row < files.size(); row++ )
+    {
+        parseFile( files[row], models_by_file );
+    }
+    return models_by_file;
+}
 
-void SettingsDialog::on_buttonAddFile_clicked()
+
+void ModelsRepositoryDialog::on_buttonAddFile_clicked()
 {
     QSettings settings;
-    QString directory_path  = settings.value("SettingsDialog.addFile",
+    QString directory_path  = settings.value("ModelsRepositoryDialog.addFile",
                                              QDir::currentPath() ).toString();
 
     QFileDialog dialog(this);
@@ -61,46 +77,41 @@ void SettingsDialog::on_buttonAddFile_clicked()
     }
 
     directory_path = QFileInfo(file_names.front()).absolutePath();
-    settings.setValue("SettingsDialog.addFile", directory_path);
+    settings.setValue("ModelsRepositoryDialog.addFile", directory_path);
 
     for (const auto& file: file_names)
     {
-        QFileInfo file_info(file);
-
-        if( file_info.suffix() == "xml" )
+        if( parseFile(file, _models_by_file) )
         {
-            if(  parseFile(file) )
+            if( ui->listFiles->findItems(file, Qt::MatchExactly).empty() )
             {
-                if( ui->listFiles->findItems(file, Qt::MatchExactly).empty() )
-                {
-                    QListWidgetItem* item = new QListWidgetItem(file);
-                    ui->listFiles->addItem(item);
-                }
+                QListWidgetItem* item = new QListWidgetItem(file);
+                ui->listFiles->addItem(item);
             }
         }
     }
     ui->listFiles->sortItems();
 }
 
-void SettingsDialog::on_buttonRemoveFile_clicked()
+void ModelsRepositoryDialog::on_buttonRemoveFile_clicked()
 {
     QList<QListWidgetItem*> items = ui->listFiles->selectedItems();
     if( items.count() == 1 )
     {
         QListWidgetItem* item = items.front();
-        _models_per_file.erase(item->text());
+        _models_by_file.erase(item->text());
         ui->listFiles->removeItemWidget(item);
         delete item;
     }
 }
 
-void SettingsDialog::checkSelections()
+void ModelsRepositoryDialog::checkSelections()
 {
    ui->buttonRemoveFile->setEnabled(   ui->listFiles->selectedItems().count() > 0 );
 }
 
-void SettingsDialog::on_buttonBox_accepted()
-{
+void ModelsRepositoryDialog::on_buttonBox_accepted()
+{  
     QSettings settings;
 
     QStringList files;
@@ -108,10 +119,11 @@ void SettingsDialog::on_buttonBox_accepted()
     {
         files.append( ui->listFiles->item(row)->text() );
     }
-    settings.setValue("SettingsDialog.files", files);
+    settings.setValue("ModelsRepositoryDialog.files", files);
+    settings.setValue("ModelsRepositoryDialog.autoload", ui->checkBoxAutoload->isChecked() );
 }
 
-void SettingsDialog::on_listFiles_itemSelectionChanged()
+void ModelsRepositoryDialog::on_listFiles_itemSelectionChanged()
 {
     checkSelections();
 
@@ -125,16 +137,7 @@ void SettingsDialog::on_listFiles_itemSelectionChanged()
     if( selected_items.count() == 1)
     {
         auto selected_filename = selected_items.front()->text();
-
-        if( _models_per_file.count( selected_filename) == 0)
-        {
-            bool ret = parseFile(selected_filename);
-            if( !ret )
-            {
-                return;
-            }
-        }
-        auto models = _models_per_file.at(selected_filename);
+        auto models = _models_by_file.at(selected_filename);
 
         for (const auto& it: models )
         {
@@ -154,7 +157,9 @@ void SettingsDialog::on_listFiles_itemSelectionChanged()
 }
 
 
-bool SettingsDialog::parseXML(const QString &filename, QString* error_message)
+bool ModelsRepositoryDialog::parseXML(const QString &filename,
+                              ModelsByFile& models_by_file,
+                              QString* error_message)
 {
     using namespace tinyxml2;
     TreeNodeModels models;
@@ -192,20 +197,24 @@ bool SettingsDialog::parseXML(const QString &filename, QString* error_message)
     {
         models.insert( buildTreeNodeModel(node, true) );
     }
-    _models_per_file.insert( std::make_pair(filename, models) );
+    models_by_file.insert( std::make_pair(filename, models) );
 
     return true;
 }
 
-bool SettingsDialog::parseFile(const QString &filename)
+bool ModelsRepositoryDialog::parseFile(const QString &filename, ModelsByFile &models_by_file)
 {
     bool parse_success = false;
     QString error_message;
     QFileInfo file_info(filename);
 
-    if( file_info.suffix() == "xml" )
+    if( !file_info.isReadable() )
     {
-        parse_success = parseXML(filename, &error_message);
+        error_message = "File not readable";
+    }
+    else if( file_info.suffix() == "xml" )
+    {
+        parse_success = parseXML(filename, models_by_file, &error_message);
     }
     else{
         error_message = "Can't be parsed";
@@ -213,7 +222,7 @@ bool SettingsDialog::parseFile(const QString &filename)
 
     if( !parse_success )
     {
-        QMessageBox::warning(this, "Error parsing file", error_message);
+        QMessageBox::warning(nullptr, "Error parsing file", error_message);
     }
     return parse_success;
 }

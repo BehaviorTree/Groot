@@ -53,6 +53,10 @@ public:
 
 public:
 
+  bool isRegistered(QString const & ID) const
+  {
+      return _registeredItemCreators.find(ID) != _registeredItemCreators.end();
+  }
 
   void registerModel(QString const &category,
                      RegistryItemCreator creator,
