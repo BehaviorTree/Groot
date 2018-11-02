@@ -90,6 +90,9 @@
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
+       <property name="toolTip">
+        <string>Add Custom Node</string>
+       </property>
        <property name="autoFillBackground">
         <bool>false</bool>
        </property>
@@ -113,6 +116,9 @@
      </item>
      <item>
       <widget class="QToolButton" name="buttonSettings">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="minimumSize">
         <size>
          <width>30</width>
@@ -127,6 +133,9 @@
        </property>
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>Still under Development</string>
        </property>
        <property name="text">
         <string/>
@@ -148,6 +157,9 @@
      </item>
      <item>
       <widget class="QToolButton" name="toolButtonSave">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>30</horstretch>
@@ -168,6 +180,9 @@
        </property>
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>Still under Development</string>
        </property>
        <property name="text">
         <string>...</string>

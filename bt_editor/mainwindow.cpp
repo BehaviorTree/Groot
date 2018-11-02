@@ -276,12 +276,11 @@ void MainWindow::loadFromXML(const QString& xml_text)
             onLoadAbsBehaviorTree(tree, tree_name);
         }
 
-        if( document_root->Attribute("main_tree_to_execute"))
+        if( !_main_tree.isEmpty() )
         {
-            QString main_bt_name = document_root->Attribute("main_tree_to_execute");
             for (int i=0; i< ui->tabWidget->count(); i++)
             {
-                if( ui->tabWidget->tabText( i ) == main_bt_name)
+                if( ui->tabWidget->tabText( i ) == _main_tree)
                 {
                     ui->tabWidget->tabBar()->moveTab(i, 0);
                     ui->tabWidget->setCurrentIndex(0);
@@ -289,9 +288,11 @@ void MainWindow::loadFromXML(const QString& xml_text)
                 }
             }
         }
+
         if( currentTabInfo() == nullptr)
         {
             createTab("BehaviorTree");
+            _main_tree = "BehaviorTree";
         }
         else{
             currentTabInfo()->nodeReorder();
