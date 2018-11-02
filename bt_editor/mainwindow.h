@@ -150,6 +150,8 @@ private:
 
     TreeNodeModels _tree_nodes_model;
 
+    QString _main_tree;
+
     SidepanelEditor* _editor_widget;
     SidepanelReplay* _replay_widget;
 #ifdef ZMQ_FOUND

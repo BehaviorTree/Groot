@@ -1,43 +1,40 @@
-<root>
+<root main_tree_to_execute="MainTree">
     <!--------------------------------------->
     <BehaviorTree ID="DoorClosed">
-        <Sequence name="door_closed_sequence">
-            <Decorator ID="Inverter">
-                <Condition ID="IsDoorOpen"/>
-            </Decorator>
-            <Decorator ID="RetryUntilSuccesful" num_attempts="4">
-                <Action ID="OpenDoor"/>
-            </Decorator>
-            <Action ID="PassThroughDoor"/>
-            <Action ID="CloseDoor"/>
-        </Sequence>
+        <Root>
+            <Sequence name="door_closed_sequence">
+                <Decorator ID="Inverter">
+                    <Condition ID="IsDoorOpen"/>
+                </Decorator>
+                <Decorator ID="RetryUntilSuccesful" num_attempts="4">
+                    <Action ID="OpenDoor"/>
+                </Decorator>
+                <Action ID="PassThroughDoor"/>
+                <Action ID="CloseDoor"/>
+            </Sequence>
+        </Root>
     </BehaviorTree>
     <!--------------------------------------->
     <BehaviorTree ID="MainTree">
-        <Fallback name="root_Fallback">
-            <Sequence name="door_open_sequence">
-                <Condition ID="IsDoorOpen"/>
-                <Action ID="PassThroughDoor"/>
-            </Sequence>
-            <SubTree ID="DoorClosed"/>
-            <Action ID="PassThroughWindow"/>
-        </Fallback>
+        <Root>
+            <Fallback name="root_Fallback">
+                <Sequence name="door_open_sequence">
+                    <Condition ID="IsDoorOpen"/>
+                    <Action ID="PassThroughDoor"/>
+                </Sequence>
+                <SubTree ID="DoorClosed"/>
+                <Action ID="PassThroughWindow"/>
+            </Fallback>
+        </Root>
     </BehaviorTree>
     <!--------------------------------------->
     <TreeNodesModel>
         <Action ID="CloseDoor"/>
         <SubTree ID="DoorClosed"/>
         <Condition ID="IsDoorOpen"/>
-        <Decorator ID="Inverter"/>
         <Action ID="OpenDoor"/>
         <Action ID="PassThroughDoor"/>
         <Action ID="PassThroughWindow"/>
-        <Decorator ID="Repeat">
-            <Parameter label="num_cycles" type="Int"/>
-        </Decorator>
-        <Decorator ID="RetryUntilSuccesful">
-            <Parameter label="num_attempts" type="Int"/>
-        </Decorator>
     </TreeNodesModel>
     <!--------------------------------------->
 </root>

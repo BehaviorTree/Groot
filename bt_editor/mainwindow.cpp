@@ -70,6 +70,8 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _model_registry->registerModel<ActionFailure>("Action");
     _tree_nodes_model["AlwaysSuccess"]  = { NodeType::ACTION, {} };
     _tree_nodes_model["AlwaysFailure"]  = { NodeType::ACTION, {} };
+
+    BuiltinNodeModels() = _tree_nodes_model;
     //------------------------------------------------------
 
     _editor_widget = new SidepanelEditor(_model_registry.get(), _tree_nodes_model, this);
@@ -200,90 +202,122 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadFromXML(const QString& xml_text)
 {
+    using namespace tinyxml2;
+    XMLDocument document;
     try{
-        using namespace tinyxml2;
-        XMLDocument document;
-        XMLError xml_error = document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
-        auto document_root = document.RootElement();
-        if( xml_error == XMLError::XML_SUCCESS && document_root )
+        document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
+        //---------------
+        std::vector<QString> registered_ID;
+        for (const auto& it: _tree_nodes_model)
         {
-            ReadTreeNodesModel( document_root, *_model_registry, _tree_nodes_model );
-            _editor_widget->updateTreeView();
+            registered_ID.push_back( it.first );
+        }
+        std::vector<QString> error_messages;
+        bool done = VerifyXML(document, registered_ID, error_messages );
 
-            onActionClearTriggered(false);
-
-            bool error = false;
-            QString err_message;
-            auto saved_state = _current_state;
-            try {
-                const QSignalBlocker blocker( currentTabInfo() );
-                std::cout<< "Starting parsing"<< std::endl;
-
-                for (auto bt_root = document_root->FirstChildElement("BehaviorTree");
-                     bt_root != nullptr;
-                     bt_root = bt_root->NextSiblingElement("BehaviorTree"))
-                {
-                    auto tree = BuildTreeFromXML( bt_root );
-                    QString tree_name("BehaviorTree");
-                    if( bt_root->Attribute("ID") )
-                    {
-                        tree_name = bt_root->Attribute("ID");
-                    }
-
-                    onLoadAbsBehaviorTree(tree, tree_name);
-                }
-                std::cout<<"XML Parsed Successfully!"<< std::endl;
-
-                if( document_root->Attribute("main_tree_to_execute"))
-                {
-                    QString main_bt_name = document_root->Attribute("main_tree_to_execute");
-                    for (int i=0; i< ui->tabWidget->count(); i++)
-                    {
-                        if( ui->tabWidget->tabText( i ) == main_bt_name)
-                        {
-                            ui->tabWidget->tabBar()->moveTab(i, 0);
-                            ui->tabWidget->setCurrentIndex(0);
-                            break;
-                        }
-                    }
-                }
-                if( currentTabInfo() == nullptr)
-                {
-                    createTab("BehaviorTree");
-                }
-                else{
-                    currentTabInfo()->nodeReorder();
-                }
-            }
-            catch (std::runtime_error& err) {
-                error = true;
-                err_message = err.what();
-            }
-            catch (std::logic_error& err) {
-                error = true;
-                err_message = err.what();
-            }
-
-            if( error )
+        if( !done )
+        {
+            QString merged_error;
+            for (const auto& err: error_messages)
             {
-                loadSavedStateFromJson( saved_state );
-                qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
-                QMessageBox::warning(this, tr("Exception!"),
-                                     tr("It was not possible to parse the file. Error:\n\n%1"). arg( err_message ),
-                                     QMessageBox::Ok);
+                merged_error += err + "\n";
             }
-            else{
-                onSceneChanged();
-                onPushUndo();
-            }
+            throw std::runtime_error( merged_error.toStdString() );
         }
     }
     catch( std::runtime_error& err)
     {
         QMessageBox messageBox;
-        messageBox.critical(this,"Error", err.what() );
+        messageBox.critical(this,"Error parsing the XML", err.what() );
         messageBox.show();
         return;
+    }
+
+    //---------------
+    bool error = false;
+    QString err_message;
+    auto saved_state = _current_state;
+
+    try {
+        _main_tree.clear();
+        auto document_root = document.RootElement();
+
+        if( document_root->Attribute("main_tree_to_execute"))
+        {
+            _main_tree = document_root->Attribute("main_tree_to_execute");
+        }
+
+
+        ReadTreeNodesModel( document_root, *_model_registry, _tree_nodes_model );
+        _editor_widget->updateTreeView();
+
+        onActionClearTriggered(false);
+
+        QString err_message;
+        auto saved_state = _current_state;
+
+        const QSignalBlocker blocker( currentTabInfo() );
+        std::cout<< "Starting parsing"<< std::endl;
+
+        for (auto bt_root = document_root->FirstChildElement("BehaviorTree");
+             bt_root != nullptr;
+             bt_root = bt_root->NextSiblingElement("BehaviorTree"))
+        {
+            auto tree = BuildTreeFromXML( bt_root );
+            QString tree_name("BehaviorTree");
+            if( bt_root->Attribute("ID") )
+            {
+                tree_name = bt_root->Attribute("ID");
+                if( _main_tree.isEmpty() )  // valid when there is only one
+                {
+                    _main_tree = tree_name;
+                }
+            }
+
+            onLoadAbsBehaviorTree(tree, tree_name);
+        }
+
+        if( document_root->Attribute("main_tree_to_execute"))
+        {
+            QString main_bt_name = document_root->Attribute("main_tree_to_execute");
+            for (int i=0; i< ui->tabWidget->count(); i++)
+            {
+                if( ui->tabWidget->tabText( i ) == main_bt_name)
+                {
+                    ui->tabWidget->tabBar()->moveTab(i, 0);
+                    ui->tabWidget->setCurrentIndex(0);
+                    break;
+                }
+            }
+        }
+        if( currentTabInfo() == nullptr)
+        {
+            createTab("BehaviorTree");
+        }
+        else{
+            currentTabInfo()->nodeReorder();
+        }
+    }
+    catch (std::runtime_error& err) {
+        error = true;
+        err_message = err.what();
+    }
+    catch (std::logic_error& err) {
+        error = true;
+        err_message = err.what();
+    }
+
+    if( error )
+    {
+        loadSavedStateFromJson( saved_state );
+        qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+        QMessageBox::warning(this, tr("Exception!"),
+                             tr("It was not possible to parse the file. Error:\n\n%1"). arg( err_message ),
+                             QMessageBox::Ok);
+    }
+    else{
+        onSceneChanged();
+        onPushUndo();
     }
 }
 
@@ -294,9 +328,9 @@ void MainWindow::on_actionLoad_triggered()
     QString directory_path  = settings.value("MainWindow.lastLoadDirectory",
                                              QDir::homePath() ).toString();
 
-    QString fileName = QFileDialog::getOpenFileName(nullptr,
+    QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open Flow Scene"), directory_path,
-                                                    tr("XML StateMachine Files (*.xml)"));
+                                                    tr("XML BehaviorTree Files (*.xml)"));
     if (!QFileInfo::exists(fileName)){
         return;
     }
@@ -339,7 +373,11 @@ void MainWindow::on_actionSave_triggered()
     //----------------------------
     using namespace tinyxml2;
     XMLDocument doc;
-    XMLNode* root = doc.InsertEndChild( doc.NewElement( "root" ) );
+
+    XMLElement* root = doc.NewElement( "root" );
+    doc.InsertEndChild( root );
+
+    root->SetAttribute("main_tree_to_execute",_main_tree.toStdString().c_str());
 
     for (auto& it: _tab_info)
     {
@@ -364,7 +402,7 @@ void MainWindow::on_actionSave_triggered()
         const auto& ID    = tree_it.first;
         const auto& model = tree_it.second;
 
-        if( model.node_type == NodeType::ROOT )
+        if( BuiltinNodeModels().count(ID) != 0 )
         {
             continue;
         }
@@ -392,7 +430,7 @@ void MainWindow::on_actionSave_triggered()
     QString directory_path  = settings.value("MainWindow.lastSaveDirectory",
                                              QDir::currentPath() ).toString();
 
-    QFileDialog saveDialog;
+    QFileDialog saveDialog(this);
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("xml");
     saveDialog.setNameFilter("State Machine (*.xml)");
@@ -958,7 +996,7 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
     {
         auto other_it = other.json_states.find(it.first);
         if( other_it == other.json_states.end() ||
-            it.second != other_it->second)
+                it.second != other_it->second)
         {
             return false;
         }

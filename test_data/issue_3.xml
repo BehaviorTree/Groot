@@ -1,0 +1,10 @@
+<root>
+    <!--------------------------------------->
+    <BehaviorTree ID="ReceiveGuest">
+    </BehaviorTree>
+    <!--------------------------------------->
+    <TreeNodesModel>
+        <SubTree ID="ReceiveGuest"/>
+    </TreeNodesModel>
+    <!--------------------------------------->
+</root>

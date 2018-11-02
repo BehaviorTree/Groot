@@ -177,3 +177,218 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
         }
     }
 }
+
+bool VerifyXML(XMLDocument &doc,
+               const std::vector<QString>& registered_ID,
+               std::vector<QString>& error_messages)
+{
+    if (doc.Error())
+    {
+        error_messages.emplace_back("The XML was not correctly loaded");
+        return false;
+    }
+    bool is_valid = true;
+
+    //-------- Helper functions (lambdas) -----------------
+    auto strEqual = [](const char* str1, const char* str2) -> bool {
+        return strcmp(str1, str2) == 0;
+    };
+
+    auto AppendError = [&](int line_num, const char* text) {
+        char buffer[256];
+        sprintf(buffer, "Error at line %d: -> %s", line_num, text);
+        error_messages.emplace_back(buffer);
+        is_valid = false;
+    };
+
+    auto ChildrenCount = [](const tinyxml2::XMLElement* parent_node) {
+        int count = 0;
+        for (auto node = parent_node->FirstChildElement(); node != nullptr;
+             node = node->NextSiblingElement())
+        {
+            count++;
+        }
+        return count;
+    };
+
+    //-----------------------------
+
+    const tinyxml2::XMLElement* xml_root = doc.RootElement();
+
+    if (!xml_root || !strEqual(xml_root->Name(), "root"))
+    {
+        error_messages.emplace_back("The XML must have a root node called <root>");
+        return false;
+    }
+    //-------------------------------------------------
+    auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
+    auto meta_sibling = meta_root ? meta_root->NextSiblingElement("TreeNodesModel") : nullptr;
+
+    if (meta_sibling)
+    {
+        AppendError(meta_sibling->GetLineNum(), " Only a single node <TreeNodesModel> is supported");
+    }
+    if (meta_root)
+    {
+        // not having a MetaModel is not an error. But consider that the
+        // Graphical editor needs it.
+        for (auto node = xml_root->FirstChildElement(); node != nullptr;
+             node = node->NextSiblingElement())
+        {
+            const char* name = node->Name();
+            if (strEqual(name, "Action") || strEqual(name, "Decorator") ||
+                    strEqual(name, "SubTree") || strEqual(name, "Condition"))
+            {
+                const char* ID = node->Attribute("ID");
+                if (!ID)
+                {
+                    AppendError(node->GetLineNum(), "Error at line %d: -> The attribute [ID] is "
+                                                    "mandatory");
+                }
+                for (auto param_node = xml_root->FirstChildElement("Parameter");
+                     param_node != nullptr;
+                     param_node = param_node->NextSiblingElement("Parameter"))
+                {
+                    const char* label = node->Attribute("label");
+                    const char* type = node->Attribute("type");
+                    if (!label || !type)
+                    {
+                        AppendError(node->GetLineNum(),
+                                    "The node <Parameter> requires the attributes [type] and "
+                                    "[label]");
+                    }
+                }
+            }
+        }
+    }
+
+    //-------------------------------------------------
+
+    // function to be called recursively
+    std::function<void(const tinyxml2::XMLElement*)> recursiveStep;
+
+    recursiveStep = [&](const tinyxml2::XMLElement* node) {
+        const int children_count = ChildrenCount(node);
+        const char* name = node->Name();
+        if (strEqual(name, "Decorator"))
+        {
+            if (children_count != 1)
+            {
+                AppendError(node->GetLineNum(), "The node <Decorator> must have exactly 1 child");
+            }
+            if (!node->Attribute("ID"))
+            {
+                AppendError(node->GetLineNum(), "The node <Decorator> must have the attribute "
+                                                "[ID]");
+            }
+        }
+        else if (strEqual(name, "Action"))
+        {
+            if (children_count != 0)
+            {
+                AppendError(node->GetLineNum(), "The node <Action> must not have any child");
+            }
+            if (!node->Attribute("ID"))
+            {
+                AppendError(node->GetLineNum(), "The node <Action> must have the attribute [ID]");
+            }
+        }
+        else if (strEqual(name, "Condition"))
+        {
+            if (children_count != 0)
+            {
+                AppendError(node->GetLineNum(), "The node <Condition> must not have any child");
+            }
+            if (!node->Attribute("ID"))
+            {
+                AppendError(node->GetLineNum(), "The node <Condition> must have the attribute "
+                                                "[ID]");
+            }
+        }
+        else if (strEqual(name, "Sequence") || strEqual(name, "SequenceStar") ||
+                 strEqual(name, "Fallback") || strEqual(name, "FallbackStar"))
+        {
+            if (children_count == 0)
+            {
+                AppendError(node->GetLineNum(), "A Control node must have at least 1 child");
+            }
+        }
+        else if (strEqual(name, "SubTree"))
+        {
+            if (children_count > 0)
+            {
+                AppendError(node->GetLineNum(), "The <SubTree> node must have no children");
+            }
+            if (!node->Attribute("ID"))
+            {
+                AppendError(node->GetLineNum(), "The node <SubTree> must have the attribute [ID]");
+            }
+        }
+        else
+        {
+            // Last resort:  MAYBE used ID as element name?
+            bool found = false;
+            for (const auto& ID : registered_ID)
+            {
+                if (ID == name)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                AppendError(node->GetLineNum(), (std::string("Node not recognized: ") + name).c_str() );
+            }
+        }
+        //recursion
+        for (auto child = node->FirstChildElement(); child != nullptr;
+             child = child->NextSiblingElement())
+        {
+            recursiveStep(child);
+        }
+    };
+
+    std::vector<std::string> tree_names;
+    int tree_count = 0;
+
+    for (auto bt_root = xml_root->FirstChildElement("BehaviorTree"); bt_root != nullptr;
+         bt_root = bt_root->NextSiblingElement("BehaviorTree"))
+    {
+        tree_count++;
+        if (bt_root->Attribute("ID"))
+        {
+            tree_names.push_back(bt_root->Attribute("ID"));
+        }
+        if (ChildrenCount(bt_root) != 1)
+        {
+            AppendError(bt_root->GetLineNum(), "The node <BehaviorTree> must have exactly 1 child");
+        }
+        else
+        {
+            recursiveStep(bt_root->FirstChildElement());
+        }
+    }
+
+    if (xml_root->Attribute("main_tree_to_execute"))
+    {
+        std::string main_tree = xml_root->Attribute("main_tree_to_execute");
+        if (std::find(tree_names.begin(), tree_names.end(), main_tree) == tree_names.end())
+        {
+            error_messages.emplace_back("The tree esecified in [main_tree_to_execute] "
+                                        "can't be found");
+            is_valid = false;
+        }
+    }
+    else
+    {
+        if (tree_count != 1)
+        {
+            error_messages.emplace_back(
+                        "If you don't specify the attribute [main_tree_to_execute], "
+                        "Your file must contain a single BehaviorTree");
+            is_valid = false;
+        }
+    }
+    return is_valid;
+}
