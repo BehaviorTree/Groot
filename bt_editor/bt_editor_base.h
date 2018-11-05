@@ -34,7 +34,6 @@ using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
 struct TreeNodeModel
 {
     NodeType node_type;
-    bool is_editable;
     struct Param
     {
         QString label;
@@ -45,11 +44,10 @@ struct TreeNodeModel
 
     Parameters params;
 
-    TreeNodeModel():is_editable(false){}
+    TreeNodeModel(){}
 
     TreeNodeModel(NodeType type, const std::vector<Param>& parameters ):
         node_type(type),
-        is_editable(false),
         params(parameters)
     {}
 };

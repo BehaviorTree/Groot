@@ -83,11 +83,6 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _tree_nodes_model[ActionFailure::Name()]  = { NodeType::ACTION, {} };
     _tree_nodes_model[ActionSetBlackboard::Name()]  = { NodeType::ACTION, {} };
 
-    for (auto& it: _tree_nodes_model)
-    {
-        it.second.is_editable = false;
-    }
-
     BuiltinNodeModels() = _tree_nodes_model;
     //------------------------------------------------------
 

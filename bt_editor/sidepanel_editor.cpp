@@ -63,7 +63,8 @@ void SidepanelEditor::updateTreeView()
       font.setPointSize(11);
       item->setFont(0, font);
       item->setData(0, Qt::UserRole, ID);
-      item->setTextColor(0, model.is_editable ? Qt::blue : Qt::black);
+      const bool is_editable = (!ui->buttonLock->isChecked() && BuiltinNodeModels().count( ID ) == 0);
+      item->setTextColor(0, is_editable ? Qt::blue : Qt::black);
     }
 
     ui->treeWidget->expandAll();
@@ -151,7 +152,7 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
     QString selected_name          = selected_item->text(0);
     const TreeNodeModel& model     = _tree_nodes_model.at(selected_name);
 
-    if( !model.is_editable )
+    if( (!ui->buttonLock->isChecked() && BuiltinNodeModels().count( selected_name ) == 0) )
     {
         return;
     }
@@ -166,7 +167,6 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
         if( dialog.exec() == QDialog::Accepted)
         {
             auto new_model = dialog.getTreeNodeModel();
-            new_model.second.is_editable = !ui->buttonLock->isChecked();
             _tree_nodes_model.erase( selected_name );
             _model_registry->unregisterModel( selected_name );
             addNewModel( new_model.first, new_model.second );
@@ -176,8 +176,15 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
 
     connect( remove, &QAction::triggered, this,[this, selected_name]()
     {
-        _tree_nodes_model.erase( selected_name );
-        updateTreeView();
+        int ret = QMessageBox::warning(this,"Delete TreeNodeModel?",
+                                       "Are you sure?",
+                                       QMessageBox::Cancel | QMessageBox::Yes,
+                                       QMessageBox::Cancel);
+        if(ret ==  QMessageBox::Yes)
+        {
+            _tree_nodes_model.erase( selected_name );
+            updateTreeView();
+        }
     } );
 
     QPoint globalPos = ui->treeWidget->mapToGlobal(pos);
@@ -345,13 +352,5 @@ void SidepanelEditor::on_buttonLock_toggled(bool locked)
     static QIcon icon_unlocked( QPixmap(":/icons/svg/lock_open.svg") );
 
     ui->buttonLock->setIcon( locked ? icon_locked : icon_unlocked);
-
-    for( auto& it: _tree_nodes_model)
-    {
-        const auto& name = it.first;
-        auto& model = it.second;
-
-        model.is_editable = (!locked && BuiltinNodeModels().count( name ) == 0);
-    }
     updateTreeView();
 }
