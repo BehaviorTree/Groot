@@ -166,6 +166,7 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
         if( dialog.exec() == QDialog::Accepted)
         {
             auto new_model = dialog.getTreeNodeModel();
+            new_model.second.is_editable = !ui->buttonLock->isChecked();
             _tree_nodes_model.erase( selected_name );
             _model_registry->unregisterModel( selected_name );
             addNewModel( new_model.first, new_model.second );
