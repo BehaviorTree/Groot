@@ -27,7 +27,7 @@ public:
 class RetryNodeModel : public DecoratorNodeModel
 {
 public:
-    RetryNodeModel(const TreeNodeModel& model = NodeModel());
+    RetryNodeModel();
 
     static const TreeNodeModel& NodeModel()
     {
@@ -49,7 +49,7 @@ public:
 class InverterNodeModel : public DecoratorNodeModel
 {
 public:
-    InverterNodeModel(const TreeNodeModel& model = TreeNodeModel());
+    InverterNodeModel();
 
     static const char* Name() {  return "Inverter"; }
 
@@ -65,7 +65,7 @@ public:
 class RepeatNodeModel : public DecoratorNodeModel
 {
 public:
-    RepeatNodeModel(const TreeNodeModel& model = NodeModel() );
+    RepeatNodeModel();
 
     static const TreeNodeModel& NodeModel()
     {
@@ -87,7 +87,7 @@ public:
 class BlackboardConditionModel : public DecoratorNodeModel
 {
 public:
-    BlackboardConditionModel(const TreeNodeModel& model = NodeModel() );
+    BlackboardConditionModel();
 
     static const TreeNodeModel& NodeModel()
     {
@@ -103,7 +103,7 @@ public:
 class TimeoutModel : public DecoratorNodeModel
 {
 public:
-    TimeoutModel(const TreeNodeModel& model = NodeModel() );
+    TimeoutModel();
 
     static const TreeNodeModel& NodeModel()
     {

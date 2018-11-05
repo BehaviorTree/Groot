@@ -1,0 +1,41 @@
+<root main_tree_to_execute="BehaviorTree">
+    <!--------------------------------------->
+    <BehaviorTree ID="BehaviorTree">
+        <Root>
+            <Sequence>
+                <Fallback>
+                    <FallbackStar>
+                        <Decorator ID="Repeat" num_cycles="1">
+                            <Decorator ID="Repeat" num_cycles="1">
+                                <Action ID="AlwaysFailure"/>
+                            </Decorator>
+                        </Decorator>
+                    </FallbackStar>
+                </Fallback>
+                <Sequence>
+                    <SequenceStar>
+                        <Decorator ID="RetryUntilSuccesful" num_attempts="1">
+                            <Decorator ID="BB_Precondition" expected="value" key="key">
+                                <Action ID="AlwaysSuccess"/>
+                            </Decorator>
+                        </Decorator>
+                    </SequenceStar>
+                </Sequence>
+                <Decorator ID="Inverter">
+                    <Decorator ID="ForceFailure">
+                        <Decorator ID="ForceSuccess">
+                            <Action ID="SetBlackboard" key="key" value="value"/>
+                        </Decorator>
+                    </Decorator>
+                </Decorator>
+                <Action ID="Pippo"/>
+            </Sequence>
+        </Root>
+    </BehaviorTree>
+    <!--------------------------------------->
+    <TreeNodesModel>
+        <Action ID="Pippo"/>
+    </TreeNodesModel>
+    <!--------------------------------------->
+</root>
+

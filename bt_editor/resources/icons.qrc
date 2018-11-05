@@ -1,8 +1,5 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>arrow_sequence_star.png</file>
-        <file>arrow_sequence.png</file>
-        <file>question_mark.png</file>
         <file>home.png</file>
         <file>green-circle.png</file>
         <file>red-circle.png</file>

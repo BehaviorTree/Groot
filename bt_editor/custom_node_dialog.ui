@@ -6,16 +6,25 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>379</width>
-    <height>480</height>
+    <width>400</width>
+    <height>300</height>
    </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>400</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Custom Node Editor</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0">
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(233, 233, 233)</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0">
    <property name="spacing">
-    <number>4</number>
+    <number>6</number>
    </property>
    <property name="leftMargin">
     <number>9</number>
@@ -30,60 +39,69 @@
     <number>9</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Name:</string>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit"/>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="styleSheet">
+        <string notr="true">background-color: white;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="comboBox">
+       <item>
+        <property name="text">
+         <string>ActionNode</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ConditionNode</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Type:</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
    <item>
-    <widget class="QComboBox" name="comboBox">
-     <item>
-      <property name="text">
-       <string>ActionNode</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>ConditionNode</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item>
     <widget class="Line" name="line">
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="lineWidth">
+      <number>2</number>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>NodeParameters:</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QToolButton" name="toolButtonAdd">
-       <property name="text">
-        <string>Add</string>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="toolButtonRemove">
        <property name="text">
-        <string>Remove</string>
+        <string>NodeParameters:</string>
        </property>
       </widget>
      </item>
@@ -100,10 +118,27 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QToolButton" name="toolButtonAdd">
+       <property name="text">
+        <string>Add</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="toolButtonRemove">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
     <widget class="QTableWidget" name="tableWidget">
+     <property name="styleSheet">
+      <string notr="true">background-color: white;</string>
+     </property>
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
      </property>

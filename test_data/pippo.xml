@@ -1,0 +1,14 @@
+<root main_tree_to_execute="BehaviorTree">
+    <!--------------------------------------->
+    <BehaviorTree ID="BehaviorTree">
+        <Root>
+            <Decorator ID="Repeat" num_cycles="1">
+                <Action ID="AlwaysFailure"/>
+            </Decorator>
+        </Root>
+    </BehaviorTree>
+    <!--------------------------------------->
+    <TreeNodesModel/>
+    <!--------------------------------------->
+</root>
+

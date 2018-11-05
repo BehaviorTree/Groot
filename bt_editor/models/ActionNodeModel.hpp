@@ -61,7 +61,7 @@ public:
 
     static const char* Name() {  return "AlwaysSuccess"; }
 
-    std::pair<QString, QColor> caption() const override  { return { "SUCCESS", Qt::green}; }
+    std::pair<QString, QColor> caption() const override  { return { "Success", Qt::green}; }
 
 };
 
@@ -72,7 +72,7 @@ public:
 
     static const char* Name() {  return "AlwaysFailure"; }
 
-    std::pair<QString, QColor> caption() const override { return { "FAILURE", "#ff2222"}; }
+    std::pair<QString, QColor> caption() const override { return { "Failure", "#ff2222"}; }
 
 };
 
@@ -90,6 +90,11 @@ public:
     static const char* Name() {  return "SetBlackboard"; }
 
     std::pair<QString, QColor> caption() const override { return { Name(), QtNodes::NodeStyle().FontColor}; }
+
+
+    virtual QString captionIicon() const override {
+        return(":/icons/svg/edit_list.svg");
+    }
 };
 
 

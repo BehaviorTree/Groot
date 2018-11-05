@@ -461,22 +461,14 @@ void MainWindow::on_actionSave_triggered()
     QString directory_path  = settings.value("MainWindow.lastSaveDirectory",
                                              QDir::currentPath() ).toString();
 
-    QFileDialog saveDialog(this);
-    saveDialog.setWindowTitle("Save BehaviorTree to file");
-    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
-    saveDialog.setDefaultSuffix("xml");
-    saveDialog.setNameFilter("BehaviorTree files (*.xml)");
-    saveDialog.setDirectory(directory_path);
-    saveDialog.exec();
-
-    QString fileName;
-    if(saveDialog.result() == QDialog::Accepted && saveDialog.selectedFiles().size() == 1)
-    {
-        fileName = saveDialog.selectedFiles().at(0);
-    }
-
+    auto fileName = QFileDialog::getSaveFileName(this, "Save BehaviorTree to file",
+                                                 directory_path, "BehaviorTree files (*.xml)");
     if (fileName.isEmpty()){
         return;
+    }
+    if (!fileName.endsWith(".xml"))
+    {
+        fileName += ".xml";
     }
 
     XMLPrinter printer;

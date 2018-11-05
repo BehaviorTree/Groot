@@ -9,33 +9,42 @@ DecoratorNodeModel::DecoratorNodeModel(QString decorator_ID,
     _line_edit_name->setHidden(true);
 }
 
-RetryNodeModel::RetryNodeModel(const TreeNodeModel& model):
-  DecoratorNodeModel( RetryNodeModel::Name(), model )
+RetryNodeModel::RetryNodeModel():
+  DecoratorNodeModel( Name(), NodeModel() )
 {
 }
 
-InverterNodeModel::InverterNodeModel(const TreeNodeModel& model):
-  DecoratorNodeModel( InverterNodeModel::Name(), model )
+InverterNodeModel::InverterNodeModel():
+  DecoratorNodeModel( Name(), TreeNodeModel() )
 {
 }
 
-RepeatNodeModel::RepeatNodeModel(const TreeNodeModel& model):
-  DecoratorNodeModel( RepeatNodeModel::Name(), model )
+RepeatNodeModel::RepeatNodeModel():
+  DecoratorNodeModel( Name(), NodeModel() )
+{
+    _line_edit_name->setHidden(true);
+}
+
+
+BlackboardConditionModel::BlackboardConditionModel():
+    DecoratorNodeModel( Name(), NodeModel() )
+{
+}
+
+TimeoutModel::TimeoutModel():
+    DecoratorNodeModel( Name(), NodeModel() )
 {
 }
 
 
-BlackboardConditionModel::BlackboardConditionModel(const TreeNodeModel &model):
-    DecoratorNodeModel( RepeatNodeModel::Name(), model )
+ForceSuccess::ForceSuccess():
+    DecoratorNodeModel( Name(), TreeNodeModel())
 {
+    _line_edit_name->setHidden(true);
 }
 
-TimeoutModel::TimeoutModel(const TreeNodeModel &model):
-    DecoratorNodeModel( RepeatNodeModel::Name(), model )
+ForceFailure::ForceFailure():
+    DecoratorNodeModel( Name(), TreeNodeModel())
 {
+    _line_edit_name->setHidden(true);
 }
-
-
-ForceSuccess::ForceSuccess(): DecoratorNodeModel( Name(), TreeNodeModel()){}
-
-ForceFailure::ForceFailure(): DecoratorNodeModel( Name(), TreeNodeModel()){}

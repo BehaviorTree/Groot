@@ -69,6 +69,8 @@ public:
 
     QString const name = ModelType::Name();
 
+    qDebug() << name;
+
     _registeredItemCreators[name] = std::move(creator);
     _categories.insert(category);
     _registeredModelsCategory[name] = category;
