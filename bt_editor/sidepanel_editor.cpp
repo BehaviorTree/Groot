@@ -339,11 +339,10 @@ void SidepanelEditor::on_buttonDownload_clicked()
 
 void SidepanelEditor::on_buttonLock_toggled(bool locked)
 {
-    QIcon *ico = new QIcon();
-    ico->addPixmap(QPixmap( locked ? ":/icons/svg/lock.svg" : ":/icons/svg/lock_open.svg"),
-                   QIcon::Normal,
-                   locked ? QIcon::On : QIcon::Off);
-    ui->buttonLock->setIcon(*ico);
+    static QIcon icon_locked( QPixmap(":/icons/svg/lock.svg" ) );
+    static QIcon icon_unlocked( QPixmap(":/icons/svg/lock_open.svg") );
+
+    ui->buttonLock->setIcon( locked ? icon_locked : icon_unlocked);
 
     for( auto& it: _tree_nodes_model)
     {
