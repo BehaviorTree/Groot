@@ -50,6 +50,10 @@
         <file>svg/upload.svg</file>
         <file>svg/lock.svg</file>
         <file>svg/lock_open.svg</file>
+        <file>svg/fallback.svg</file>
+        <file>svg/fallback_star.svg</file>
+        <file>svg/sequence.svg</file>
+        <file>svg/sequence_star.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

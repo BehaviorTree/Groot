@@ -54,24 +54,34 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _model_registry->registerModel<SequenceModel>("Control");
     _model_registry->registerModel<SequenceStarModel>("Control");
     _model_registry->registerModel<FallbackModel>("Control");
-    _tree_nodes_model["Root"]         = { NodeType::ROOT, {} };
-    _tree_nodes_model["Sequence"]     = { NodeType::CONTROL, {} };
-    _tree_nodes_model["SequenceStar"] = { NodeType::CONTROL, {} };
-    _tree_nodes_model["Fallback"]     = { NodeType::CONTROL, {} };
+    _model_registry->registerModel<FallbackStarModel>("Control");
+    _tree_nodes_model[RootNodeModel::Name()]     = { NodeType::ROOT, {} };
+    _tree_nodes_model[SequenceModel::Name()]     = { NodeType::CONTROL, {} };
+    _tree_nodes_model[SequenceStarModel::Name()] = { NodeType::CONTROL, {} };
+    _tree_nodes_model[FallbackModel::Name()]     = { NodeType::CONTROL, {} };
+    _tree_nodes_model[FallbackStarModel::Name()] = { NodeType::CONTROL, {} };
 
-    _model_registry->registerModel<RetryNodeModel>("Decorator");
     _model_registry->registerModel<InverterNodeModel>("Decorator");
+    _model_registry->registerModel<RetryNodeModel>("Decorator");
     _model_registry->registerModel<RepeatNodeModel>("Decorator");
-    _tree_nodes_model["Inverter"]            = { NodeType::DECORATOR, {} };
-    _tree_nodes_model["RetryUntilSuccesful"] = RetryNodeModel::NodeModel();
-    _tree_nodes_model["Repeat"]              = RepeatNodeModel::NodeModel();
+    _model_registry->registerModel<TimeoutModel>("Decorator");
+    _model_registry->registerModel<BlackboardConditionModel>("Decorator");
+    _model_registry->registerModel<ForceSuccess>("Decorator");
+    _model_registry->registerModel<ForceFailure>("Decorator");
+    _tree_nodes_model[InverterNodeModel::Name()]  = { NodeType::DECORATOR, {} };
+    _tree_nodes_model[RetryNodeModel::Name()]     = RetryNodeModel::NodeModel();
+    _tree_nodes_model[RepeatNodeModel::Name()]    = RepeatNodeModel::NodeModel();
+    _tree_nodes_model[TimeoutModel::Name()]       = TimeoutModel::NodeModel();
+    _tree_nodes_model[BlackboardConditionModel::Name()]  = BlackboardConditionModel::NodeModel();
+    _tree_nodes_model[ForceSuccess::Name()]  = { NodeType::DECORATOR, {} };
+    _tree_nodes_model[ForceFailure::Name()]  = { NodeType::DECORATOR, {} };
 
     _model_registry->registerModel<ActionSuccess>("Action");
     _model_registry->registerModel<ActionFailure>("Action");
     _model_registry->registerModel<ActionSetBlackboard>("Action");
     _tree_nodes_model[ActionSuccess::Name()]  = { NodeType::ACTION, {} };
-    _tree_nodes_model["AlwaysFailure"]  = { NodeType::ACTION, {} };
-    _tree_nodes_model["SetBlackboard"]  = { NodeType::ACTION, {} };
+    _tree_nodes_model[ActionFailure::Name()]  = { NodeType::ACTION, {} };
+    _tree_nodes_model[ActionSetBlackboard::Name()]  = { NodeType::ACTION, {} };
 
     for (auto& it: _tree_nodes_model)
     {

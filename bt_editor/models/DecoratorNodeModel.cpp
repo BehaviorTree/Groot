@@ -26,3 +26,16 @@ RepeatNodeModel::RepeatNodeModel(const TreeNodeModel& model):
   _line_edit_name->setHidden(true);
 }
 
+
+BlackboardConditionModel::BlackboardConditionModel(const TreeNodeModel &model):
+    DecoratorNodeModel( RepeatNodeModel::Name(), model )
+{
+  _line_edit_name->setHidden(true);
+}
+
+TimeoutModel::TimeoutModel(const TreeNodeModel &model):
+    DecoratorNodeModel( RepeatNodeModel::Name(), model )
+{
+  _line_edit_name->setHidden(true);
+}
+

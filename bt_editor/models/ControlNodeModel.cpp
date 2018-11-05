@@ -30,3 +30,7 @@ IfThenElseModel::IfThenElseModel(): ControlNodeModelBase()
 {
 }
 
+
+FallbackStarModel::FallbackStarModel(): ControlNodeModelBase()
+{
+}
