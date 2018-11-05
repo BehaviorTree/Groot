@@ -3,8 +3,8 @@
 #include <QVBoxLayout>
 
 SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
-                                   const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel (subtree_ID, creators )
+                                   const TreeNodeModel& model):
+    BehaviorTreeDataModel (subtree_ID, model )
 {
     _line_edit_name->setReadOnly(true);
     _line_edit_name->setHidden(true);
@@ -28,8 +28,8 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
 
 SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
         const QString &subtree_ID,
-        const ParameterWidgetCreators& creators):
-    BehaviorTreeDataModel (subtree_ID, creators )
+        const TreeNodeModel& model):
+    BehaviorTreeDataModel (subtree_ID, model )
 {
     _line_edit_name->setReadOnly(true);
     _line_edit_name->setHidden(true);

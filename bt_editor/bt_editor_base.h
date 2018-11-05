@@ -33,25 +33,25 @@ using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
 
 struct TreeNodeModel
 {
-  NodeType node_type;
-  bool is_editable;
-  struct Param
-  {
-     QString label;
-     QString default_value;
-  };
+    NodeType node_type;
+    bool is_editable;
+    struct Param
+    {
+        QString label;
+        QString default_value;
+    };
 
-  typedef std::vector<Param> Parameters;
+    typedef std::vector<Param> Parameters;
 
-  Parameters params;
+    Parameters params;
 
-  TreeNodeModel():is_editable(false){}
+    TreeNodeModel():is_editable(false){}
 
-  TreeNodeModel(NodeType type, const std::vector<Param>& parameters ):
-      node_type(type),
-      is_editable(false),
-      params(parameters)
-  {}
+    TreeNodeModel(NodeType type, const std::vector<Param>& parameters ):
+        node_type(type),
+        is_editable(false),
+        params(parameters)
+    {}
 };
 
 

@@ -10,7 +10,7 @@ class SubtreeNodeModel : public BehaviorTreeDataModel
 public:
 
     SubtreeNodeModel(const QString& subtree_ID,
-                     const ParameterWidgetCreators &creators);
+                     const TreeNodeModel& model);
 
     ~SubtreeNodeModel() override = default;
 
@@ -47,7 +47,7 @@ class SubtreeExpandedNodeModel : public BehaviorTreeDataModel
 public:
 
     SubtreeExpandedNodeModel(const QString& subtree_ID,
-                             const ParameterWidgetCreators &creators);
+                             const TreeNodeModel& model);
 
     ~SubtreeExpandedNodeModel() override = default;
 

@@ -23,7 +23,7 @@ class ControlNodeModel : public BehaviorTreeDataModel
 {
 
 public:
-    ControlNodeModel(const QString& ID, const ParameterWidgetCreators &parameters);
+    ControlNodeModel(const QString& ID, const TreeNodeModel &model);
 
     virtual ~ControlNodeModel() override = default;
 
@@ -51,7 +51,7 @@ public:
 //-------------------------------------------------
 template<typename T> inline
 ControlNodeModelBase<T>::ControlNodeModelBase():
-    ControlNodeModel(T::Name(), ParameterWidgetCreators() )
+    ControlNodeModel(T::Name(), TreeNodeModel() )
 {
     _main_widget->setToolTip( T::Name() );
 }

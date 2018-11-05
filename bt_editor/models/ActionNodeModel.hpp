@@ -6,7 +6,7 @@
 class ActionNodeModel : public BehaviorTreeDataModel
 {
 public:
-    ActionNodeModel(const QString& action_ID, const ParameterWidgetCreators &creators);
+    ActionNodeModel(const QString& action_ID, const TreeNodeModel &model);
 
     virtual ~ActionNodeModel()  = default;
 
@@ -32,7 +32,7 @@ private:
 class ConditionNodeModel : public BehaviorTreeDataModel
 {
 public:
-    ConditionNodeModel(const QString& action_ID, const ParameterWidgetCreators &creators);
+    ConditionNodeModel(const QString& action_ID, const TreeNodeModel &model);
 
     virtual ~ConditionNodeModel()  = default;
 
@@ -57,7 +57,7 @@ private:
 class ActionSuccess : public ActionNodeModel
 {
 public:
-    ActionSuccess(): ActionNodeModel( Name(), ParameterWidgetCreators()){}
+    ActionSuccess(): ActionNodeModel( Name(), TreeNodeModel()){}
 
     static const char* Name() {  return "AlwaysSuccess"; }
 
@@ -68,12 +68,28 @@ public:
 class ActionFailure : public ActionNodeModel
 {
 public:
-    ActionFailure(): ActionNodeModel( Name(), ParameterWidgetCreators()){}
+    ActionFailure(): ActionNodeModel( Name(), TreeNodeModel()){}
 
     static const char* Name() {  return "AlwaysFailure"; }
 
     std::pair<QString, QColor> caption() const override { return { "FAILURE", Qt::red}; }
 
+};
+
+class ActionSetBlackboard : public ActionNodeModel
+{
+public:
+    ActionSetBlackboard(): ActionNodeModel( Name(), NodeModel()){}
+
+    static const TreeNodeModel& NodeModel()
+    {
+        static TreeNodeModel model = { NodeType::ACTION, { {"key", "key" }, {"value", "value" } } };
+        return model;
+    }
+
+    static const char* Name() {  return "SetBlackboard"; }
+
+    std::pair<QString, QColor> caption() const override { return { Name(), QtNodes::NodeStyle().FontColor}; }
 };
 
 

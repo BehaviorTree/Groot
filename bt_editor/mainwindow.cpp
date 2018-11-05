@@ -68,8 +68,10 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     _model_registry->registerModel<ActionSuccess>("Action");
     _model_registry->registerModel<ActionFailure>("Action");
-    _tree_nodes_model["AlwaysSuccess"]  = { NodeType::ACTION, {} };
+    _model_registry->registerModel<ActionSetBlackboard>("Action");
+    _tree_nodes_model[ActionSuccess::Name()]  = { NodeType::ACTION, {} };
     _tree_nodes_model["AlwaysFailure"]  = { NodeType::ACTION, {} };
+    _tree_nodes_model["SetBlackboard"]  = { NodeType::ACTION, {} };
 
     for (auto& it: _tree_nodes_model)
     {

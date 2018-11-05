@@ -2,26 +2,26 @@
 #include <QLineEdit>
 
 DecoratorNodeModel::DecoratorNodeModel(QString decorator_ID,
-                                       const ParameterWidgetCreators &parameters):
-    BehaviorTreeDataModel(decorator_ID, parameters )
+                                       const TreeNodeModel &model):
+    BehaviorTreeDataModel(decorator_ID, model )
 {
     _line_edit_name->setReadOnly(true);
 }
 
-RetryNodeModel::RetryNodeModel(const ParameterWidgetCreators &parameters):
-  DecoratorNodeModel( RetryNodeModel::Name(), parameters )
+RetryNodeModel::RetryNodeModel(const TreeNodeModel& model):
+  DecoratorNodeModel( RetryNodeModel::Name(), model )
 {
   _line_edit_name->setHidden(true);
 }
 
-InverterNodeModel::InverterNodeModel(const ParameterWidgetCreators &parameters):
-  DecoratorNodeModel( InverterNodeModel::Name(), parameters )
+InverterNodeModel::InverterNodeModel(const TreeNodeModel& model):
+  DecoratorNodeModel( InverterNodeModel::Name(), model )
 {
   _line_edit_name->setHidden(true);
 }
 
-RepeatNodeModel::RepeatNodeModel(const ParameterWidgetCreators &parameters):
-  DecoratorNodeModel( RepeatNodeModel::Name(), parameters )
+RepeatNodeModel::RepeatNodeModel(const TreeNodeModel& model):
+  DecoratorNodeModel( RepeatNodeModel::Name(), model )
 {
   _line_edit_name->setHidden(true);
 }

@@ -15,7 +15,7 @@ const int DEFAULT_FIELD_WIDTH = 50;
 const int DEFAULT_LABEL_WIDTH = 50;
 
 BehaviorTreeDataModel::BehaviorTreeDataModel(const QString& registration_name,
-                                             const ParameterWidgetCreators &creators):
+                                             const TreeNodeModel &model):
     _params_widget(nullptr),
     _uid( GetUID() ),
     _registration_name(registration_name),
@@ -77,8 +77,9 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const QString& registration_name,
     _form_layout->setVerticalSpacing(2);
     _form_layout->setContentsMargins(0, 0, 0, 0);
 
-    for(const auto& param_creator: creators )
+    for(const auto& param: model.params )
     {
+        auto param_creator = buildWidgetCreator(param);
         const QString label = param_creator.label;
         QLabel* form_label  =  new QLabel( label, _params_widget );
         QWidget* form_field = param_creator.instance_factory();

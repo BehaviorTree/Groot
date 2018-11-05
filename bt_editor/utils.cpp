@@ -507,48 +507,42 @@ bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
         return false;
     }
 
-    ParameterWidgetCreators params_creators;
-    for(const auto& param: model.params )
-    {
-        params_creators.push_back( buildWidgetCreator(param) );
-    }
-
     if( model.node_type == NodeType::ACTION )
     {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, params_creators]()
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
         {
-            return util::make_unique<ActionNodeModel>(ID, params_creators);
+            return util::make_unique<ActionNodeModel>(ID, model);
         };
         registry.registerModel("Action", node_creator, ID);
     }
     else if( model.node_type == NodeType::CONDITION )
     {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, params_creators]()
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
         {
-            return util::make_unique<ConditionNodeModel>(ID, params_creators);
+            return util::make_unique<ConditionNodeModel>(ID, model);
         };
         registry.registerModel("Condition", node_creator, ID);
     }
     else if( model.node_type == NodeType::DECORATOR )
     {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, params_creators]()
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
         {
-            return util::make_unique<DecoratorNodeModel>(ID, params_creators);
+            return util::make_unique<DecoratorNodeModel>(ID, model);
         };
         registry.registerModel("Decorator", node_creator, ID);
     }
     else if( model.node_type == NodeType::SUBTREE )
     {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, params_creators]()
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
         {
-            return util::make_unique<SubtreeNodeModel>(ID, params_creators);
+            return util::make_unique<SubtreeNodeModel>(ID, model);
         };
         registry.registerModel("SubTree", node_creator, ID);
 
         auto otherID = ID + EXPANDED_SUFFIX;
-        node_creator = [ID, otherID, params_creators]()
+        node_creator = [ID, otherID, model]()
         {
-          auto node = util::make_unique<SubtreeExpandedNodeModel>(ID, params_creators);
+          auto node = util::make_unique<SubtreeExpandedNodeModel>(ID, model);
           node->setInstanceName(ID);
           return node;
         };

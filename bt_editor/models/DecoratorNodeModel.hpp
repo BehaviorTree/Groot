@@ -8,7 +8,7 @@
 class DecoratorNodeModel : public BehaviorTreeDataModel
 {
 public:
-    DecoratorNodeModel(QString decorator_ID, const ParameterWidgetCreators &parameters);
+    DecoratorNodeModel(QString decorator_ID, const TreeNodeModel &model);
 
     virtual ~DecoratorNodeModel() = default;
 
@@ -27,8 +27,7 @@ public:
 class RetryNodeModel : public DecoratorNodeModel
 {
 public:
-    RetryNodeModel(const ParameterWidgetCreators &parameters =
-    { buildWidgetCreator( NodeModel().params.front() ) } );
+    RetryNodeModel(const TreeNodeModel& model = NodeModel());
 
     static const TreeNodeModel& NodeModel()
     {
@@ -51,7 +50,7 @@ public:
 class InverterNodeModel : public DecoratorNodeModel
 {
 public:
-    InverterNodeModel(const ParameterWidgetCreators &parameters = ParameterWidgetCreators());
+    InverterNodeModel(const TreeNodeModel& model = TreeNodeModel());
 
     static const char* Name() {  return "Inverter"; }
 
@@ -67,8 +66,7 @@ public:
 class RepeatNodeModel : public DecoratorNodeModel
 {
 public:
-    RepeatNodeModel(const ParameterWidgetCreators &parameters =
-    { buildWidgetCreator( NodeModel().params.front() ) });
+    RepeatNodeModel(const TreeNodeModel& model = NodeModel() );
 
     static const TreeNodeModel& NodeModel()
     {

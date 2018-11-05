@@ -28,7 +28,7 @@ class BehaviorTreeDataModel : public NodeDataModel
 
 public:
   BehaviorTreeDataModel(const QString &instance_name,
-                        const ParameterWidgetCreators &parameters );
+                        const TreeNodeModel &parameters );
 
   ~BehaviorTreeDataModel() override;
 

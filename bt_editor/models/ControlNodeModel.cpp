@@ -2,8 +2,8 @@
 #include "ControlNodeModel.hpp"
 #include <QtDebug>
 
-ControlNodeModel::ControlNodeModel(const QString &ID, const ParameterWidgetCreators &parameters ):
-    BehaviorTreeDataModel(ID , parameters)
+ControlNodeModel::ControlNodeModel(const QString &ID, const TreeNodeModel &model ):
+    BehaviorTreeDataModel(ID , model)
 {
     _line_edit_name->setEnabled(true);
     _line_edit_name->setReadOnly(false);
