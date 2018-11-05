@@ -130,6 +130,8 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QShortcut* redo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this);
     connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
+    connect( _editor_widget, &SidepanelEditor::treeNodeEdited,
+             this, &MainWindow::onTreeNodeEdited);
 
     connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
              this, &MainWindow::onLoadAbsBehaviorTree );
@@ -266,6 +268,11 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
         auto custom_models = ReadTreeNodesModel( document_root );
 
+        for( const auto& model: custom_models)
+        {
+            addToModelRegistry( *_model_registry, model.first, model.second );
+        }
+
         MergeTreeNodeModels(this, _tree_nodes_model, custom_models);
 
         _editor_widget->updateTreeView();
@@ -397,7 +404,15 @@ void MainWindow::on_actionSave_triggered()
     XMLElement* root = doc.NewElement( "root" );
     doc.InsertEndChild( root );
 
-    root->SetAttribute("main_tree_to_execute",_main_tree.toStdString().c_str());
+    if( _tab_info.size() == 1 )
+    {
+        _main_tree = _tab_info.begin()->first;
+    }
+
+    if( _main_tree.isEmpty() == false)
+    {
+        root->SetAttribute("main_tree_to_execute", _main_tree.toStdString().c_str());
+    }
 
     for (auto& it: _tab_info)
     {
@@ -590,7 +605,7 @@ void MainWindow::onPushUndo()
     }
     _current_state = saved;
 
-    qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+   // qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
 
 void MainWindow::onUndoInvoked()
@@ -605,7 +620,7 @@ void MainWindow::onUndoInvoked()
 
         loadSavedStateFromJson(_current_state);
 
-        qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+     //   qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
 }
 
@@ -622,7 +637,7 @@ void MainWindow::onRedoInvoked()
 
         loadSavedStateFromJson(_current_state);
 
-        qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+    //    qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
 }
 
@@ -786,6 +801,28 @@ void MainWindow::onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QStrin
 void MainWindow::on_actionClear_triggered()
 {
     onActionClearTriggered(true);
+}
+
+void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
+{
+    for (auto& it: _tab_info)
+    {
+        auto tab = it.second;
+        auto abs_tree = BuildTreeFromScene( tab->scene() );
+       // tab->clearScene();
+
+        for(auto& node: abs_tree.nodes())
+        {
+            if( node.registration_name == prev_ID )
+            {
+                node.registration_name = new_ID;
+                auto new_node = tab->substituteNode(node.corresponding_node, new_ID);
+                node.corresponding_node = new_node;
+            }
+        }
+
+        //tab->loadSceneFromTree(abs_tree);
+    }
 }
 
 

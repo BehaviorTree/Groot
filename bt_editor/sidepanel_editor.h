@@ -17,7 +17,7 @@ class SidepanelEditor : public QFrame
 public:
     explicit SidepanelEditor(QtNodes::DataModelRegistry* registry,
                              TreeNodeModels& tree_nodes_model,
-                             QWidget *parent = 0);
+                             QWidget *parent = nullptr);
     ~SidepanelEditor();
 
     void updateTreeView();
@@ -39,6 +39,10 @@ private slots:
     void on_buttonDownload_clicked();
 
     void on_buttonLock_toggled(bool checked);
+
+signals:
+
+    void treeNodeEdited(QString prev_ID, QString new_ID);
 
 private:
     Ui::SidepanelEditor *ui;

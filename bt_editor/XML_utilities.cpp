@@ -365,7 +365,7 @@ bool VerifyXML(XMLDocument &doc,
         std::string main_tree = xml_root->Attribute("main_tree_to_execute");
         if (std::find(tree_names.begin(), tree_names.end(), main_tree) == tree_names.end())
         {
-            error_messages.emplace_back("The tree esecified in [main_tree_to_execute] "
+            error_messages.emplace_back("The tree specified in [main_tree_to_execute] "
                                         "can't be found");
             is_valid = false;
         }

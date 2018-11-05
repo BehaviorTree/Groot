@@ -170,6 +170,7 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
             _tree_nodes_model.erase( selected_name );
             _model_registry->unregisterModel( selected_name );
             addNewModel( new_model.first, new_model.second );
+            emit this->treeNodeEdited(selected_name, new_model.first);
         }
     } );
 

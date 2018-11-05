@@ -94,6 +94,8 @@ private slots:
 
     void on_actionClear_triggered();
 
+    void onTreeNodeEdited(QString prev_ID, QString new_ID);
+
 private:
 
     void updateCurrentMode();

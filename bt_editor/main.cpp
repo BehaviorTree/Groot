@@ -29,7 +29,6 @@ main(int argc, char *argv[])
     app.setOrganizationDomain("eurecat.org");
     app.setApplicationName("BehaviorTreeEditor");
 
-
     qRegisterMetaType<AbsBehaviorTree>();
 
     QCommandLineParser parser;

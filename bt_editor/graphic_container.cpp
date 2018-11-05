@@ -328,7 +328,8 @@ void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &)
 QtNodes::Node* GraphicContainer::substituteNode(Node *node, const QString& new_node_name)
 {
     const QSignalBlocker blocker(this);
-    auto pos = _scene->getNodePosition( *node );
+    QPointF prev_pos   = _scene->getNodePosition( *node );
+    double prev_width = node->nodeGeometry().width();
     auto new_datamodel = _model_registry->create(new_node_name);
 
     if( !new_datamodel )
@@ -336,7 +337,13 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *node, const QString& new_n
         return nullptr;
     }
 
-    auto& new_node = _scene->createNode( std::move(new_datamodel), pos );
+    auto& new_node = _scene->createNode( std::move(new_datamodel), prev_pos );
+
+    QPointF new_pos = prev_pos;
+    double new_width = new_node.nodeGeometry().width();
+
+    new_pos.setX( prev_pos.x() - (new_width - prev_width)*0.5 );
+    _scene->setNodePosition(new_node, new_pos);
 
     if( node->nodeDataModel()->nPorts( PortType::In ) == 1 &&
         new_node.nodeDataModel()->nPorts( PortType::In ) == 1 )
@@ -520,13 +527,6 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
     if( bt_node ){
         bt_node->init();
     }
-
-    // TODO?
-//    if (!data_model)
-//    {
-//        addToModelRegistry(_scene->registry(), ID, model);
-//        data_model = _scene->registry().create( abs_node->registration_name );
-//    }
 
     if(!data_model)
     {
