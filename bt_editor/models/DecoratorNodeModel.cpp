@@ -6,36 +6,36 @@ DecoratorNodeModel::DecoratorNodeModel(QString decorator_ID,
     BehaviorTreeDataModel(decorator_ID, model )
 {
     _line_edit_name->setReadOnly(true);
+    _line_edit_name->setHidden(true);
 }
 
 RetryNodeModel::RetryNodeModel(const TreeNodeModel& model):
   DecoratorNodeModel( RetryNodeModel::Name(), model )
 {
-  _line_edit_name->setHidden(true);
 }
 
 InverterNodeModel::InverterNodeModel(const TreeNodeModel& model):
   DecoratorNodeModel( InverterNodeModel::Name(), model )
 {
-  _line_edit_name->setHidden(true);
 }
 
 RepeatNodeModel::RepeatNodeModel(const TreeNodeModel& model):
   DecoratorNodeModel( RepeatNodeModel::Name(), model )
 {
-  _line_edit_name->setHidden(true);
 }
 
 
 BlackboardConditionModel::BlackboardConditionModel(const TreeNodeModel &model):
     DecoratorNodeModel( RepeatNodeModel::Name(), model )
 {
-  _line_edit_name->setHidden(true);
 }
 
 TimeoutModel::TimeoutModel(const TreeNodeModel &model):
     DecoratorNodeModel( RepeatNodeModel::Name(), model )
 {
-  _line_edit_name->setHidden(true);
 }
 
+
+ForceSuccess::ForceSuccess(): DecoratorNodeModel( Name(), TreeNodeModel()){}
+
+ForceFailure::ForceFailure(): DecoratorNodeModel( Name(), TreeNodeModel()){}

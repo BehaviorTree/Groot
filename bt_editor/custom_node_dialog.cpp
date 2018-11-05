@@ -74,7 +74,7 @@ std::pair<QString,TreeNodeModel> CustomNodeDialog::getTreeNodeModel() const
         const auto value = ui->tableWidget->item(row,1)->text();
         model.params.push_back( {key,value} );
     }
-    model.is_editable = true;
+    model.is_editable = false;
     return { ui->lineEdit->text(), model };
 }
 

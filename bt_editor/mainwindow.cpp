@@ -264,7 +264,10 @@ void MainWindow::loadFromXML(const QString& xml_text)
             _main_tree = document_root->Attribute("main_tree_to_execute");
         }
 
-        ReadTreeNodesModel( document_root, *_model_registry, _tree_nodes_model );
+        auto custom_models = ReadTreeNodesModel( document_root );
+
+        MergeTreeNodeModels(this, _tree_nodes_model, custom_models);
+
         _editor_widget->updateTreeView();
 
         onActionClearTriggered(false);

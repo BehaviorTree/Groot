@@ -54,6 +54,7 @@
         <file>svg/fallback_star.svg</file>
         <file>svg/sequence.svg</file>
         <file>svg/sequence_star.svg</file>
+        <file>svg/timeout.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

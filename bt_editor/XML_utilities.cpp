@@ -7,6 +7,7 @@
 
 #include <QtDebug>
 #include <QLineEdit>
+#include <QMessageBox>
 
 using namespace tinyxml2;
 using namespace QtNodes;
@@ -72,10 +73,9 @@ buildTreeNodeModel(const tinyxml2::XMLElement* node,
 
 //------------------------------------------------------------------
 
-void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
-                        QtNodes::DataModelRegistry& registry,
-                        TreeNodeModels& models_list)
+TreeNodeModels ReadTreeNodesModel(const tinyxml2::XMLElement* root)
 {
+    TreeNodeModels models;
     using QtNodes::DataModelRegistry;
 
     auto model_root = root->FirstChildElement("TreeNodesModel");
@@ -87,8 +87,7 @@ void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
              node = node->NextSiblingElement() )
         {
             auto model_pair = buildTreeNodeModel(node, true);
-            addToModelRegistry(registry, model_pair.first, model_pair.second);
-            models_list.insert( model_pair );
+            models.insert( model_pair );
         }
     }
 
@@ -96,8 +95,7 @@ void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
     recursiveStep = [&](const XMLElement* node)
     {
         auto model_pair = buildTreeNodeModel(node, true);
-        addToModelRegistry(registry, model_pair.first, model_pair.second);
-        models_list.insert( model_pair );
+        models.insert( model_pair );
 
         for( const XMLElement* child = node->FirstChildElement();
              child != nullptr;
@@ -113,6 +111,7 @@ void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
     {
         recursiveStep( bt_root->FirstChildElement() );
     }
+    return models;
 }
 
 
@@ -382,4 +381,54 @@ bool VerifyXML(XMLDocument &doc,
         }
     }
     return is_valid;
+}
+
+std::set<const QString *> NotBuiltInNodes(const TreeNodeModels &models)
+{
+    std::set<const QString *> custom_models;
+
+    if( models.size() > BuiltinNodeModels().size() )
+    {
+        for(const auto& it: models)
+        {
+            if( BuiltinNodeModels().count(it.first) == 0)
+            {
+                custom_models.insert( &it.first );
+            }
+        }
+    }
+    return custom_models;
+}
+
+void MergeTreeNodeModels(QWidget *parent, TreeNodeModels &current_models, const TreeNodeModels &new_models)
+{
+    std::set<const QString *> prev_custom_models;
+
+    if( current_models.size() > BuiltinNodeModels().size() )
+    {
+        for(const auto& it: current_models)
+        {
+            if( BuiltinNodeModels().count(it.first) == 0)
+            {
+                prev_custom_models.insert( &it.first );
+            }
+        }
+    }
+
+    for( const auto& name: prev_custom_models)
+    {
+        if( new_models.count( *name ) == 0)
+        {
+            int ret = QMessageBox::question(parent, "Clear Palette?",
+                                  "Do yoy want to remove the previously loaded custom nodes?",
+                                  QMessageBox::No | QMessageBox::Yes );
+            if( ret == QMessageBox::Yes)
+            {
+                current_models = BuiltinNodeModels();
+            }
+            break;
+        }
+    }
+
+    current_models.insert( new_models.begin(), new_models.end() );
 }

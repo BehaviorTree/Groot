@@ -35,21 +35,16 @@ SidepanelEditor::~SidepanelEditor()
 
 void SidepanelEditor::updateTreeView()
 {
-    auto AdjustFont = [](QTreeWidgetItem* item, int size, bool is_bold)
-    {
-      QFont font = item->font(0);
-      font.setBold(is_bold);
-      font.setPointSize(size);
-      item->setFont(0, font);
-    };
-
     ui->treeWidget->clear();
     _tree_view_category_items.clear();
 
     for (const QString& category : {"Root", "Action", "Condition", "Control", "Decorator", "SubTree" } )
     {
       auto item = new QTreeWidgetItem(ui->treeWidget, {category});
-      AdjustFont(item, 11, true);
+      QFont font = item->font(0);
+      font.setBold(true);
+      font.setPointSize(11);
+      item->setFont(0, font);
       item->setFlags( item->flags() ^ Qt::ItemIsDragEnabled );
       item->setFlags( item->flags() ^ Qt::ItemIsSelectable );
       _tree_view_category_items[ category ] = item;
@@ -63,7 +58,10 @@ void SidepanelEditor::updateTreeView()
       const QString& category = toStr(model.node_type);
       auto parent = _tree_view_category_items[category];
       auto item = new QTreeWidgetItem(parent, {ID});
-      AdjustFont(item, 11, false);
+      QFont font = item->font(0);
+      font.setItalic( BuiltinNodeModels().count(ID) == 1 );
+      font.setPointSize(11);
+      item->setFont(0, font);
       item->setData(0, Qt::UserRole, ID);
       item->setTextColor(0, model.is_editable ? Qt::blue : Qt::black);
     }
@@ -139,6 +137,7 @@ void SidepanelEditor::on_buttonAddNode_clicked()
         auto new_model = dialog.getTreeNodeModel();
         addNewModel( new_model.first, new_model.second );
     }
+    updateTreeView();
 }
 
 void SidepanelEditor::onContextMenu(const QPoint& pos)
@@ -316,6 +315,8 @@ void SidepanelEditor::on_buttonDownload_clicked()
         return ;
     }
 
+    TreeNodeModels custom_models;
+
     for( const XMLElement* node = meta_root->FirstChildElement();
          node != nullptr;
          node = node->NextSiblingElement() )
@@ -326,10 +327,13 @@ void SidepanelEditor::on_buttonDownload_clicked()
 
         if( _tree_nodes_model.count(name) == 0)
         {
-            _tree_nodes_model[name] = model;
+            custom_models[name] = model;
             addToModelRegistry(*_model_registry, name, model );
         }
     }
+
+    MergeTreeNodeModels(this, _tree_nodes_model, custom_models );
+
     updateTreeView();
 }
 

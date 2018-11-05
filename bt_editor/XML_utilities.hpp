@@ -11,9 +11,7 @@
 
 
 
-void ReadTreeNodesModel(const tinyxml2::XMLElement* root,
-                        QtNodes::DataModelRegistry& registry,
-                        TreeNodeModels& models_list);
+TreeNodeModels ReadTreeNodesModel(const tinyxml2::XMLElement* root);
 
 void RecursivelyCreateXml(const QtNodes::FlowScene &scene,
                           tinyxml2::XMLDocument& doc,
@@ -27,6 +25,8 @@ bool VerifyXML(tinyxml2::XMLDocument& doc,
 std::pair<QString,TreeNodeModel>
 buildTreeNodeModel(const tinyxml2::XMLElement* node,
                    bool is_tree_node_model);
+
+void MergeTreeNodeModels(QWidget* parent, TreeNodeModels& current_models, const TreeNodeModels& new_models );
 
 
 //--------------------------------------------------------

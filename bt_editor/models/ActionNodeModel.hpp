@@ -72,7 +72,7 @@ public:
 
     static const char* Name() {  return "AlwaysFailure"; }
 
-    std::pair<QString, QColor> caption() const override { return { "FAILURE", Qt::red}; }
+    std::pair<QString, QColor> caption() const override { return { "FAILURE", "#ff2222"}; }
 
 };
 

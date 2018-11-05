@@ -502,11 +502,6 @@ bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
 {
     namespace util = QtNodes::detail;
 
-    if( BuiltinNodeModels().count(ID) )
-    {
-        return false;
-    }
-
     if( model.node_type == NodeType::ACTION )
     {
         DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()

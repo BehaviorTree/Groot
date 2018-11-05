@@ -114,12 +114,16 @@ public:
 
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
+
+    virtual QString captionIicon() const override {
+        return(":/icons/svg/timeout.svg");
+    }
 };
 
 class ForceSuccess : public DecoratorNodeModel
 {
 public:
-    ForceSuccess(): DecoratorNodeModel( Name(), TreeNodeModel()){}
+    ForceSuccess();
 
     static const char* Name() {  return "ForceSuccess"; }
 
@@ -129,11 +133,11 @@ public:
 class ForceFailure : public DecoratorNodeModel
 {
 public:
-    ForceFailure(): DecoratorNodeModel( Name(), TreeNodeModel()){}
+    ForceFailure();
 
     static const char* Name() {  return "ForceFailure"; }
 
-    std::pair<QString, QColor> caption() const override  { return { Name(), Qt::red}; }
+    std::pair<QString, QColor> caption() const override  { return { Name(), "#ff2222"}; }
 };
 
 

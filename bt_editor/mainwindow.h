@@ -42,7 +42,7 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(GraphicMode initial_mode, QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
     void loadFromXML(const QString &xml_text);
 
@@ -133,9 +133,9 @@ signals:
 
 private:
 
-    GraphicMode _current_mode;
-
     Ui::MainWindow *ui;
+
+    GraphicMode _current_mode;
 
     std::shared_ptr<QtNodes::DataModelRegistry> _model_registry;
 
