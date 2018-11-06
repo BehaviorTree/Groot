@@ -55,8 +55,10 @@ save() const
 
   nodeJson["model"] = _nodeDataModel->save();
 
+  double width = _nodeGraphicsObject->boundingRect().width();
+
   QJsonObject obj;
-  obj["x"] = _nodeGraphicsObject->pos().x();
+  obj["x"] = _nodeGraphicsObject->pos().x() + width*0.5;
   obj["y"] = _nodeGraphicsObject->pos().y();
   nodeJson["position"] = obj;
 
@@ -69,13 +71,15 @@ Node::
 restore(QJsonObject const& json)
 {
   _uid = QUuid(json["id"].toString());
+  _nodeDataModel->restore(json["model"].toObject());
+
+  double width = _nodeGraphicsObject->boundingRect().width();
 
   QJsonObject positionJson = json["position"].toObject();
-  QPointF     point(positionJson["x"].toDouble(),
+  QPointF     point(positionJson["x"].toDouble() - width*0.5,
                     positionJson["y"].toDouble());
   _nodeGraphicsObject->setPos(point);
 
-  _nodeDataModel->restore(json["model"].toObject());
 }
 
 

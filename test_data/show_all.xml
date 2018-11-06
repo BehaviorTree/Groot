@@ -13,7 +13,7 @@
                     </FallbackStar>
                 </Fallback>
                 <Sequence>
-                    <SequenceStar>
+                    <SequenceStar name="DoSequenceStar">
                         <Decorator ID="RetryUntilSuccesful" num_attempts="1">
                             <Decorator ID="BB_Precondition" expected="value" key="key">
                                 <Action ID="AlwaysSuccess"/>
