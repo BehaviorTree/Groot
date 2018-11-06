@@ -92,7 +92,7 @@ void RecursiveNodeReorder(AbsBehaviorTree & tree, AbstractTreeNode* root_node, P
     std::vector<QPointF> layer_cursor;
     std::vector< std::vector<AbstractTreeNode*> > nodes_by_level(1);
     layer_cursor.push_back(QPointF(0,0));
-    const qreal LEVEL_SPACING = 100;
+    const qreal LEVEL_SPACING = 80;
     const qreal NODE_SPACING  = 40;
 
     recursiveStep = [&](unsigned current_layer, AbstractTreeNode* node)
@@ -545,7 +545,7 @@ bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
         auto otherID = ID + EXPANDED_SUFFIX;
         node_creator = [ID, otherID, model]()
         {
-          auto node = util::make_unique<SubtreeExpandedNodeModel>(ID, model);
+          auto node = util::make_unique<SubtreeExpandedNodeModel>(otherID, model);
           node->setInstanceName(ID);
           return node;
         };

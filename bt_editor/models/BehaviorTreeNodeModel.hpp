@@ -27,7 +27,7 @@ class BehaviorTreeDataModel : public NodeDataModel
     Q_OBJECT
 
 public:
-  BehaviorTreeDataModel(const QString &instance_name,
+  BehaviorTreeDataModel(const QString &registration_name,
                         const TreeNodeModel &parameters );
 
   ~BehaviorTreeDataModel() override;
