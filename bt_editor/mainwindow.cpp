@@ -39,13 +39,23 @@ using QtNodes::NodeState;
 MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    _current_mode(initial_mode)
+    _current_mode(initial_mode),
+    _current_layout(QtNodes::PortLayout::Vertical)
 {
     ui->setupUi(this);
 
     QSettings settings;
     restoreGeometry(settings.value("MainWindow/geometry").toByteArray());
     restoreState(settings.value("MainWindow/windowState").toByteArray());
+
+    const QString layout = settings.value("MainWindow/layout").toString();
+    if( layout == "HORIZONTAL")
+    {
+        _current_layout = QtNodes::PortLayout::Horizontal;
+    }
+    else{
+        _current_layout = QtNodes::PortLayout::Vertical;
+    }
 
     _model_registry = std::make_shared<QtNodes::DataModelRegistry>();
 
@@ -147,14 +157,6 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 #endif
     onSceneChanged();
 
-    const QString layout = settings.value("MainWindow/layout").toString();
-    if( layout == "HORIZONTAL")
-    {
-        refreshNodesLayout( QtNodes::PortLayout::Horizontal );
-    }
-    else{
-        refreshNodesLayout( QtNodes::PortLayout::Vertical );
-    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -1033,7 +1035,7 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 {
     QString tab_name = ui->tabWidget->tabText(index);
     auto tab = getTabByName(tab_name);
-    if( tab )
+    if( tab && tab->scene()->nodes().size() > 1)
     {
         const QSignalBlocker blocker( tab );
         tab->nodeReorder();

@@ -239,7 +239,10 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
     auto root_node = findRoot( *scene );
     if( !root_node )
     {
-        qDebug() << "Error: can not create a tree from a scene unless it has a single root node ";
+        if( scene->nodes().size() != 0)
+        {
+            qDebug() << "Error: can not create a tree from a scene unless it has a single root node ";
+        }
         return AbsBehaviorTree();
     }
 
