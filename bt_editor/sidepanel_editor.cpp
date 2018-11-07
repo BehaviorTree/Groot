@@ -150,9 +150,9 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
     }
     QTreeWidgetItem* selected_item = selected_items.front();
     QString selected_name          = selected_item->text(0);
-    const TreeNodeModel& model     = _tree_nodes_model.at(selected_name);
 
-    if( (!ui->buttonLock->isChecked() && BuiltinNodeModels().count( selected_name ) == 0) )
+    if( ui->buttonLock->isChecked() ||
+        BuiltinNodeModels().count( selected_name ) != 0 )
     {
         return;
     }
