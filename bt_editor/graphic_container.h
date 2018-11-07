@@ -13,6 +13,15 @@
 #include <nodes/DataModelRegistry>
 #include <nodes/FlowView>
 
+class EditorFlowView: public QtNodes::FlowView
+{
+public:
+    EditorFlowView(QtNodes::FlowScene *scene, QWidget *parent = Q_NULLPTR);
+
+    // we want to override this
+    void contextMenuEvent(QContextMenuEvent *) override {}
+};
+
 
 class GraphicContainer : public QObject
 {
@@ -24,9 +33,8 @@ public:
     EditorFlowScene* scene() { return _scene; }
     QtNodes::FlowView*  view() { return _view; }
 
-
     const EditorFlowScene* scene()  const{ return _scene; }
-    const QtNodes::FlowView* view() const { return _view; }
+    const EditorFlowView* view() const { return _view; }
 
     void lockEditing(bool locked);
 
@@ -71,10 +79,9 @@ public slots:
 
     void onConnectionContextMenu(QtNodes::Connection &connection, const QPointF&);
 
-
 private:
     EditorFlowScene* _scene;
-    QtNodes::FlowView*  _view;
+    EditorFlowView*  _view;
 
     void createMorphSubMenu(QtNodes::Node &node, QMenu *nodeMenu);
 
@@ -89,7 +96,6 @@ private:
    std::shared_ptr<QtNodes::DataModelRegistry> _model_registry;
 
    bool _signal_was_blocked;
-
 
 };
 

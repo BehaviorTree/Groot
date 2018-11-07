@@ -20,7 +20,7 @@ GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_regi
     _signal_was_blocked(true)
 {
     _scene = new EditorFlowScene( _model_registry, parent );
-    _view  = new FlowView( _scene, parent );
+    _view  = new EditorFlowView( _scene, parent );
 
     connect( _scene, &QtNodes::FlowScene::nodeDoubleClicked,
              this, &GraphicContainer::onNodeDoubleClicked);
@@ -603,8 +603,7 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
 
     auto root_node = subtree.rootNode();
 
-    if( root_node->registration_name == "Root" &&
-        root_node->corresponding_node->nodeDataModel()->nPorts(PortType::In) == 0 &&
+    if( root_node->type == NodeType::ROOT &&
         root_node->children_index.size() == 1 )
     {
         root_node = subtree.nodeAtIndex( root_node->children_index.front() );
@@ -620,4 +619,6 @@ void GraphicContainer::loadFromJson(const QByteArray &data)
     scene()->loadFromMemory( data );
 }
 
-
+EditorFlowView::EditorFlowView(FlowScene *scene, QWidget *parent):
+    FlowView(scene,parent)
+{}
