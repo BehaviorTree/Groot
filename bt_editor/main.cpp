@@ -89,9 +89,7 @@ main(int argc, char *argv[])
         }
 
         MainWindow win( mode );
-        win.setWindowTitle("Groot");
         win.show();
         return app.exec();
     }
-    return 0;
 }
