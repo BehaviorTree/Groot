@@ -68,14 +68,18 @@ std::vector<Node*> getChildren(const QtNodes::FlowScene &scene,
             std::sort(children.begin(), children.end(),
                       [&](const Node* a, const Node* b)
             {
-                return scene.getNodePosition( *a ).x() <  scene.getNodePosition( *b ).x();
+                double pos_a = scene.getNodePosition( *a ).x() + scene.getNodeSize( *a ).width()*0.5;
+                double pos_b = scene.getNodePosition( *b ).x() + scene.getNodeSize( *b ).width()*0.5;
+                return pos_a < pos_b;
             } );
         }
         else{
             std::sort(children.begin(), children.end(),
                       [&](const Node* a, const Node* b)
             {
-                return scene.getNodePosition( *a ).y() <  scene.getNodePosition( *b ).y();
+                double pos_a = scene.getNodePosition( *a ).y() + scene.getNodeSize( *a ).height()*0.5;
+                double pos_b = scene.getNodePosition( *b ).y() + scene.getNodeSize( *b ).height()*0.5;
+                return pos_a < pos_b;
             } );
         }
     }
