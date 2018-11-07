@@ -325,16 +325,20 @@ void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &)
     node_menu->exec( QCursor::pos() );
 }
 
-QtNodes::Node* GraphicContainer::substituteNode(Node *node, const QString& new_node_name)
+QtNodes::Node* GraphicContainer::substituteNode(Node *old_node, const QString& new_node_ID)
 {
     const QSignalBlocker blocker(this);
-    QPointF prev_pos   = _scene->getNodePosition( *node );
-    double prev_width = node->nodeGeometry().width();
-    auto new_datamodel = _model_registry->create(new_node_name);
+    QPointF prev_pos   = _scene->getNodePosition( *old_node );
+    double prev_width = old_node->nodeGeometry().width();
+    auto new_datamodel = _model_registry->create(new_node_ID);
 
     if( !new_datamodel )
     {
         return nullptr;
+    }
+    if( auto bt_node = dynamic_cast<BehaviorTreeDataModel*>(new_datamodel.get()))
+    {
+        bt_node->init();
     }
 
     auto& new_node = _scene->createNode( std::move(new_datamodel), prev_pos );
@@ -345,10 +349,10 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *node, const QString& new_n
     new_pos.setX( prev_pos.x() - (new_width - prev_width)*0.5 );
     _scene->setNodePosition(new_node, new_pos);
 
-    if( node->nodeDataModel()->nPorts( PortType::In ) == 1 &&
+    if( old_node->nodeDataModel()->nPorts( PortType::In ) == 1 &&
         new_node.nodeDataModel()->nPorts( PortType::In ) == 1 )
     {
-        auto conn_in  = node->nodeState().connections(PortType::In, 0);
+        auto conn_in  = old_node->nodeState().connections(PortType::In, 0);
         for(auto it: conn_in)
         {
             auto child_node = it.second->getNode(PortType::Out);
@@ -356,17 +360,17 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *node, const QString& new_n
         }
     }
 
-    if( node->nodeDataModel()->nPorts( PortType::Out ) == 1 &&
+    if( old_node->nodeDataModel()->nPorts( PortType::Out ) == 1 &&
         new_node.nodeDataModel()->nPorts( PortType::Out ) == 1 )
     {
-        auto conn_in  = node->nodeState().connections(PortType::Out, 0);
+        auto conn_in  = old_node->nodeState().connections(PortType::Out, 0);
         for(auto it: conn_in)
         {
             auto child_node = it.second->getNode(PortType::In);
             _scene->createConnection( *child_node, 0, new_node, 0 );
         }
     }
-    _scene->removeNode(*node);
+    _scene->removeNode(*old_node);
 
     return &new_node;
 }

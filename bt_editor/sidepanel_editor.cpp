@@ -63,7 +63,9 @@ void SidepanelEditor::updateTreeView()
       font.setPointSize(11);
       item->setFont(0, font);
       item->setData(0, Qt::UserRole, ID);
-      const bool is_editable = (!ui->buttonLock->isChecked() && BuiltinNodeModels().count( ID ) == 0);
+      const bool is_editable = (!ui->buttonLock->isChecked() &&
+                                BuiltinNodeModels().count( ID ) == 0 &&
+                                model.node_type != NodeType::SUBTREE);
       item->setTextColor(0, is_editable ? Qt::blue : Qt::black);
     }
 

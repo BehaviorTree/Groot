@@ -26,10 +26,10 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
     updateNodeSize();
 }
 
-SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
-        const QString &subtree_ID,
+SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(const QString &base_subtree_ID,
         const TreeNodeModel& model):
-    BehaviorTreeDataModel (subtree_ID, model )
+    BehaviorTreeDataModel (base_subtree_ID + SUBTREE_EXPANDED_SUFFIX, model ),
+    _base_ID(base_subtree_ID)
 {
     _line_edit_name->setReadOnly(true);
     _line_edit_name->setHidden(true);
@@ -48,7 +48,6 @@ SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(
              this, &SubtreeExpandedNodeModel::collapseButtonPushed );
 
     updateNodeSize();
-
 }
 
 NodeDataModel::ConnectionPolicy SubtreeExpandedNodeModel::portOutConnectionPolicy(QtNodes::PortIndex) const

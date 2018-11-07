@@ -655,7 +655,7 @@ QToolButton:disabled{
       <widget class="QFrame" name="leftFrame">
        <property name="minimumSize">
         <size>
-         <width>250</width>
+         <width>300</width>
          <height>0</height>
         </size>
        </property>

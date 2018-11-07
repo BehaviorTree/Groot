@@ -257,13 +257,14 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
 
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
 
-        abs_node.instance_name     = bt_model-> instanceName();
-        abs_node.registration_name = bt_model-> registrationName();
+        abs_node.instance_name     = bt_model->instanceName();
+        abs_node.registration_name = bt_model->registrationName();
         abs_node.pos  = scene->getNodePosition(*node) ;
         abs_node.size = scene->getNodeSize(*node);
         abs_node.corresponding_node = node;
         abs_node.parameters = bt_model->getCurrentParameters();
         abs_node.index = tree.nodesCount();
+        abs_node.type = bt_model->nodeType();
 
         node_to_index.insert( { node, abs_node.index } );
         tree.pushBack( bt_model->UID(), abs_node );
@@ -542,14 +543,13 @@ bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
         };
         registry.registerModel("SubTree", node_creator, ID);
 
-        auto otherID = ID + EXPANDED_SUFFIX;
-        node_creator = [ID, otherID, model]()
+        node_creator = [ID, model]()
         {
-          auto node = util::make_unique<SubtreeExpandedNodeModel>(otherID, model);
+          auto node = util::make_unique<SubtreeExpandedNodeModel>(ID, model);
           node->setInstanceName(ID);
           return node;
         };
-        registry.registerModel("SubTreeExpanded", node_creator, otherID);
+        registry.registerModel("SubTreeExpanded", node_creator, ID + SUBTREE_EXPANDED_SUFFIX );
     }
     return true;
 }

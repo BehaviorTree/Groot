@@ -48,7 +48,7 @@ public:
 
     void loadFromJson(const QByteArray& data);
 
-    QtNodes::Node* substituteNode(QtNodes::Node* node, const QString& new_node_name);
+    QtNodes::Node* substituteNode(QtNodes::Node* old_node, const QString& new_node_ID);
 
     void deleteSubTreeRecursively(QtNodes::Node& node);
 

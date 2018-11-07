@@ -13,6 +13,7 @@
 #include <QTreeWidgetItem>
 #include <QShortcut>
 #include <QTabBar>
+#include <QInputDialog>
 #include <nodes/Node>
 #include <nodes/NodeData>
 #include <nodes/NodeStyle>
@@ -157,6 +158,9 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 #endif
     onSceneChanged();
 
+    ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect( ui->tabWidget->tabBar(), &QTabBar::customContextMenuRequested,
+             this, &MainWindow::onTabCustomContextMenuRequested);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -703,7 +707,7 @@ void MainWindow::subTreeExpand(GraphicContainer &container,
             return;
         }
         const auto& subtree  = it->second->loadedTree();
-        auto new_node_ptr = container.substituteNode( &node, subtree_name + EXPANDED_SUFFIX );
+        auto new_node_ptr = container.substituteNode( &node, subtree_name + SUBTREE_EXPANDED_SUFFIX );
         if( new_node_ptr )
         {
             container.appendTreeToNode( *new_node_ptr, subtree );
@@ -723,7 +727,7 @@ void MainWindow::subTreeExpand(GraphicContainer &container,
             return;
         }
 
-        auto new_subtree_name = subtree_name.left( subtree_name.size()-EXPANDED_SUFFIX.length() );
+        auto new_subtree_name = subtree_name.left( subtree_name.size()-SUBTREE_EXPANDED_SUFFIX.length() );
         auto new_node_ptr = container.substituteNode( &node,  new_subtree_name );
         if( new_node_ptr && child_node)
         {
@@ -741,7 +745,7 @@ void MainWindow::subTreeExpand(GraphicContainer &container,
 
         QtNodes::Node* child_node = conn_out.begin()->second->getNode( PortType::In );
 
-        auto original_subtree_name =  subtree_name.left( EXPANDED_SUFFIX.length() );
+        auto original_subtree_name =  subtree_name.left( SUBTREE_EXPANDED_SUFFIX.length() );
         auto it = _tab_info.find(  original_subtree_name );
         if( it == _tab_info.end())
         {
@@ -796,21 +800,26 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
 {
     for (auto& it: _tab_info)
     {
-        auto tab = it.second;
-        auto abs_tree = BuildTreeFromScene( tab->scene() );
-       // tab->clearScene();
+        auto container = it.second;
+        auto abs_tree = BuildTreeFromScene( container->scene() );
 
         for(auto& node: abs_tree.nodes())
         {
             if( node.registration_name == prev_ID )
             {
                 node.registration_name = new_ID;
-                auto new_node = tab->substituteNode(node.corresponding_node, new_ID);
+                auto new_node = container->substituteNode(node.corresponding_node, new_ID);
+                node.corresponding_node = new_node;
+            }
+            if( node.type == NodeType::SUBTREE &&
+                node.registration_name == prev_ID + SUBTREE_EXPANDED_SUFFIX )
+            {
+                node.registration_name = new_ID + SUBTREE_EXPANDED_SUFFIX;
+                auto new_node = container->substituteNode(node.corresponding_node,
+                                                          new_ID + SUBTREE_EXPANDED_SUFFIX);
                 node.corresponding_node = new_node;
             }
         }
-
-        //tab->loadSceneFromTree(abs_tree);
     }
 }
 
@@ -1089,4 +1098,47 @@ void MainWindow::onChangeNodesStyle(const QString& bt_name,
     }
 }
 
+void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
+{
+    int tab_index = ui->tabWidget->tabBar()->tabAt( pos );
 
+    QMenu menu(this);
+    QAction* rename   = menu.addAction("Rename");
+
+    connect( rename, &QAction::triggered, this, [this, tab_index]()
+    {
+        QString old_name = this->ui->tabWidget->tabText(tab_index);
+        bool ok = false;
+        QString new_name = QInputDialog::getText (
+                    this, tr ("Change name"),
+                    tr ("Insert the new name of this BehaviorTree"),
+                    QLineEdit::Normal, old_name, &ok);
+        if (!ok)
+        {
+            return;
+        }
+        ui->tabWidget->setTabText (tab_index, new_name);
+        auto it = _tab_info.find(old_name);
+        auto container = it->second;
+        _tab_info.insert( {new_name, container} );
+        _tab_info.erase( it );
+        if( _main_tree == old_name )
+        {
+            _main_tree = new_name;
+        }
+
+        if( _model_registry->registeredModelsByCategory("SubTree").count( old_name ) )
+        {
+             _model_registry->unregisterModel(old_name);
+             _model_registry->unregisterModel(old_name + SUBTREE_EXPANDED_SUFFIX);
+             _tree_nodes_model.erase(old_name);
+             TreeNodeModel model = {NodeType::SUBTREE,{}};
+             addToModelRegistry(*_model_registry, new_name, model);
+             _tree_nodes_model.insert( { new_name, model} );
+             _editor_widget->updateTreeView();
+             this->onTreeNodeEdited(old_name, new_name);
+        }
+    } );
+    QPoint globalPos = ui->tabWidget->tabBar()->mapToGlobal(pos);
+    menu.exec(globalPos);
+}

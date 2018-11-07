@@ -96,6 +96,8 @@ private slots:
 
     void onTreeNodeEdited(QString prev_ID, QString new_ID);
 
+    void onTabCustomContextMenuRequested(const QPoint &pos);
+
 private:
 
     void updateCurrentMode();

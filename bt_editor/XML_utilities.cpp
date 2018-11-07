@@ -130,19 +130,19 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
 
     if( !bt_node ) return;
 
+    QString registration_name = bt_node->registrationName();
+
     if( is_subtree_expanded )
     {
         element->SetName( SubtreeNodeModel::Name() );
-        auto registration_name = bt_node->registrationName().left( EXPANDED_SUFFIX.length() );
-        element->SetAttribute("ID", registration_name.toStdString().c_str() );
+        const int new_length = registration_name.length() - SUBTREE_EXPANDED_SUFFIX.length();
+        registration_name = registration_name.left( new_length );
     }
 
-    else if( dynamic_cast<const ActionNodeModel*>(node_model) ||
-             dynamic_cast<const ConditionNodeModel*>(node_model) ||
-             dynamic_cast<const DecoratorNodeModel*>(node_model) ||
-             dynamic_cast<const SubtreeNodeModel*>(node_model) )
+    element->SetAttribute("ID", registration_name.toStdString().c_str() );
+    if( bt_node->instanceName() != registration_name )
     {
-        element->SetAttribute("ID", bt_node->registrationName().toStdString().c_str() );
+        element->SetAttribute("name", bt_node->instanceName().toStdString().c_str() );
     }
 
     auto parameters = bt_node->getCurrentParameters();
@@ -152,10 +152,6 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
                                param.second.toStdString().c_str() );
     }
 
-    if( bt_node->instanceName() != bt_node->registrationName())
-    {
-        element->SetAttribute("name", bt_node->instanceName().toStdString().c_str() );
-    }
     parent_element->InsertEndChild( element );
 
     if( !is_subtree_expanded )

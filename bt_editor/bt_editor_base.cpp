@@ -114,7 +114,7 @@ NodeType getNodeTypeFromString(const QString &str)
     if( str == "Condition") return NodeType::CONDITION;
     if( str == "SubTree")   return NodeType::SUBTREE;
     if( str == "Control")   return NodeType::CONTROL;
-    if( str == "Root")   return NodeType::ROOT;
+    if( str == "Root")      return NodeType::ROOT;
     return NodeType::UNDEFINED;
 }
 
@@ -145,7 +145,7 @@ const char *toStr(NodeType type)
     if( type == NodeType::SUBTREE)   return "SubTree";
     if( type == NodeType::CONTROL)   return "Control";
     if( type == NodeType::ROOT)      return "Root";
-    return nullptr;
+    return "Undefined";
 }
 
 const char *toStr(GraphicMode type)
