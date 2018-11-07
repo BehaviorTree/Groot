@@ -121,6 +121,8 @@ private:
     struct SavedState
     {
         QString current_tab_name;
+        QTransform view_transform;
+        QRectF view_area;
         std::map<QString, QByteArray> json_states;
         bool operator ==( const SavedState& other) const;
         bool operator !=( const SavedState& other) const { return !( *this == other); }
@@ -162,6 +164,7 @@ private:
     SidepanelMonitor* _monitor_widget;
 #endif
     
+    MainWindow::SavedState saveCurrentState();
 };
 
 

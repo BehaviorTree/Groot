@@ -161,6 +161,8 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect( ui->tabWidget->tabBar(), &QTabBar::customContextMenuRequested,
              this, &MainWindow::onTabCustomContextMenuRequested);
+
+    _current_state = saveCurrentState();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -280,7 +282,6 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
         onActionClearTriggered(false);
 
-        QString err_message;
         auto saved_state = _current_state;
 
         const QSignalBlocker blocker( currentTabInfo() );
@@ -580,16 +581,25 @@ void MainWindow::on_splitter_splitterMoved(int , int )
     }
 }
 
-void MainWindow::onPushUndo()
+MainWindow::SavedState MainWindow::saveCurrentState()
 {
     SavedState saved;
     int index = ui->tabWidget->currentIndex();
-    saved.current_tab_name =   ui->tabWidget->tabText(index);
+    saved.current_tab_name = ui->tabWidget->tabText(index);
+    auto current_view = getTabByName( saved.current_tab_name )->view();
+    saved.view_transform = current_view->transform();
+    saved.view_area = current_view->sceneRect();
 
     for (auto& it: _tab_info)
     {
         saved.json_states[it.first] = it.second->scene()->saveToMemory();
     }
+    return saved;
+}
+
+void MainWindow::onPushUndo()
+{
+    SavedState saved = saveCurrentState();
 
     if( _undo_stack.empty() || ( saved != _current_state &&  _undo_stack.back() != _current_state) )
     {
@@ -613,10 +623,9 @@ void MainWindow::onUndoInvoked()
 
         loadSavedStateFromJson(_current_state);
 
-     //   qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+        //qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
 }
-
 
 void MainWindow::onRedoInvoked()
 {
@@ -630,8 +639,44 @@ void MainWindow::onRedoInvoked()
 
         loadSavedStateFromJson(_current_state);
 
-    //    qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+       // qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
+}
+
+void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
+{
+    // TODO crash if the name of the container (tab) changed
+    for (auto& it: _tab_info)
+    {
+        it.second->clearScene();
+        it.second->deleteLater();
+    }
+    _tab_info.clear();
+    ui->tabWidget->clear();
+
+    for(auto& it: saved_state.json_states)
+    {
+        _tab_info.insert( {it.first, createTab(it.first)} );
+    }
+    for(auto& it: saved_state.json_states)
+    {
+        const auto& name = it.first;
+        auto container = getTabByName(name);
+        container->loadFromJson( it.second );
+        container->view()->setTransform( saved_state.view_transform );
+        container->view()->setSceneRect( saved_state.view_area );
+    }
+
+    for (int i=0; i< ui->tabWidget->count(); i++)
+    {
+        if( ui->tabWidget->tabText( i ) == saved_state.current_tab_name)
+        {
+            ui->tabWidget->setCurrentIndex(i);
+            ui->tabWidget->widget(i)->setFocus();
+            break;
+        }
+    }
+    onSceneChanged();
 }
 
 void MainWindow::onConnectionUpdate(bool connected)
@@ -670,25 +715,6 @@ void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
     {
         subTreeExpand( container, node, SUBTREE_EXPAND );
     }
-}
-
-void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
-{
-    for(auto& it: saved_state.json_states)
-    {
-        auto container = getTabByName( it.first );
-        container->loadFromJson( it.second );
-        refreshNodesLayout( container->scene()->layout() );
-    }
-    for (int i=0; i< ui->tabWidget->count(); i++)
-    {
-        if( ui->tabWidget->tabText( i ) == saved_state.current_tab_name)
-        {
-            ui->tabWidget->setCurrentIndex(i);
-            break;
-        }
-    }
-    onSceneChanged();
 }
 
 void MainWindow::subTreeExpand(GraphicContainer &container,
@@ -829,6 +855,7 @@ void MainWindow::onActionClearTriggered(bool create_new)
     for (auto& it: _tab_info)
     {
         it.second->clearScene();
+        it.second->deleteLater();
     }
     _tab_info.clear();
 
@@ -1056,7 +1083,7 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) const
 {
     if( current_tab_name != other.current_tab_name ||
-            json_states.size() != other.json_states.size())
+        json_states.size() != other.json_states.size())
     {
         return false;
     }
@@ -1068,6 +1095,11 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
         {
             return false;
         }
+    }
+    if( view_area != other.view_area ||
+        view_transform != other.view_transform)
+    {
+        return false;
     }
     return true;
 }
@@ -1138,6 +1170,12 @@ void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
              _editor_widget->updateTreeView();
              this->onTreeNodeEdited(old_name, new_name);
         }
+
+        // TODO: this is a work around until we find a better solution
+        _undo_stack.clear();
+        _redo_stack.clear();
+        onSceneChanged();
+        onPushUndo();
     } );
     QPoint globalPos = ui->tabWidget->tabBar()->mapToGlobal(pos);
     menu.exec(globalPos);
