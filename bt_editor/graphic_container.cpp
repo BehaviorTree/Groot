@@ -124,8 +124,8 @@ void GraphicContainer::lockSubtreeEditing(Node &node, bool locked)
 
           style.GradientColor0.setBlue(120);
           style.GradientColor1.setBlue(100);
-          style.GradientColor2.setBlue(80);
-          style.GradientColor3.setBlue(70);
+          style.GradientColor2.setBlue(90);
+          style.GradientColor3.setBlue(90);
           node->nodeDataModel()->setNodeStyle(style);
         }
 
@@ -354,7 +354,7 @@ void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &)
     {
         auto subtree = node_menu->addAction("Create SubTree here");
         auto type = bt_node->nodeType();
-        subtree->setEnabled( type == NodeType::CONDITION || type == NodeType::CONTROL);
+        subtree->setEnabled( type == NodeType::DECORATOR || type == NodeType::CONTROL);
 
         connect( subtree, &QAction::triggered, this, [this, &node]()
         {

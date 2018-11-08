@@ -825,6 +825,8 @@ void MainWindow::onDestroySubTree(const QString &ID)
             break;
         }
     }
+    // TODO: this is a work around until we find a better solution
+    clearUndoStacks();
 }
 
 QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
