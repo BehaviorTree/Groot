@@ -20,7 +20,7 @@ GraphicContainer::GraphicContainer(std::shared_ptr<DataModelRegistry> model_regi
     _signal_was_blocked(true)
 {
     _scene = new EditorFlowScene( _model_registry, parent );
-    _view  = new EditorFlowView( _scene, parent );
+    _view  = new QtNodes::FlowView( _scene, parent );
 
     connect( _scene, &QtNodes::FlowScene::nodeDoubleClicked,
              this, &GraphicContainer::onNodeDoubleClicked);
@@ -305,22 +305,26 @@ void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &)
     //--------------------------------
     createMorphSubMenu(node, node_menu);
     //--------------------------------
-    auto *remove = new QAction("Remove ", node_menu);
-    node_menu->addAction(remove);
-
-    auto scene = _scene;
+    auto remove = node_menu->addAction("Remove");
 
     connect( remove, &QAction::triggered,
-             this, [this, &node, scene]()
+             this, [this, &node]()
     {
         {
             const QSignalBlocker blocker(this);
-            scene->removeNode(node);
+            _scene->removeNode(node);
         }
-        undoableChange();
+        emit undoableChange();
     });
     //--------------------------------
     createSmartRemoveAction(node, node_menu);
+    //--------------------------------
+//    if(auto bt_node = dynamic_cast<BehaviorTreeDataModel*>(node.nodeDataModel()))
+//    {
+//        auto subtree = node_menu->addAction("Create SubTree here");
+//        auto type = bt_node->nodeType();
+//        subtree->setEnabled( type == NodeType::CONDITION || type == NodeType::CONTROL);
+//    }
     //--------------------------------
     node_menu->exec( QCursor::pos() );
 }
@@ -619,6 +623,4 @@ void GraphicContainer::loadFromJson(const QByteArray &data)
     scene()->loadFromMemory( data );
 }
 
-EditorFlowView::EditorFlowView(FlowScene *scene, QWidget *parent):
-    FlowView(scene,parent)
-{}
+
