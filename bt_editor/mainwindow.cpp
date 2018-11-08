@@ -771,7 +771,8 @@ void MainWindow::subTreeExpand(GraphicContainer &container,
 
         QtNodes::Node* child_node = conn_out.begin()->second->getNode( PortType::In );
 
-        auto original_subtree_name =  subtree_name.left( SUBTREE_EXPANDED_SUFFIX.length() );
+        int new_length = subtree_name.length() - SUBTREE_EXPANDED_SUFFIX.length();
+        auto original_subtree_name =  subtree_name.left( new_length );
         auto it = _tab_info.find(  original_subtree_name );
         if( it == _tab_info.end())
         {
