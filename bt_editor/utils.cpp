@@ -238,9 +238,12 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 }
 
 
-AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
+AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene, QtNodes::Node* root_node)
 {
-    auto root_node = findRoot( *scene );
+    if(!root_node )
+    {
+        root_node = findRoot( *scene );
+    }
     if( !root_node )
     {
         if( scene->nodes().size() != 0)
@@ -558,3 +561,16 @@ bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
     return true;
 }
 
+
+QtNodes::Node *GetParentNode(QtNodes::Node *node)
+{
+    using namespace QtNodes;
+    auto conn_in = node->nodeState().connections(PortType::In, 0);
+    if( conn_in.size() == 0)
+    {
+        return nullptr;
+    }
+    else{
+        return conn_in.begin()->second->getNode(PortType::Out);
+    }
+}

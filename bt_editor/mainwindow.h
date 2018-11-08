@@ -76,7 +76,7 @@ private slots:
 
     void on_toolButtonCenterView_pressed();
 
-    void onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name);
+    void onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name);
 
     void onChangeNodesStyle(const QString& bt_name, const std::unordered_map<int, NodeStatus>& node_status);
 
@@ -165,6 +165,7 @@ private:
 #endif
     
     MainWindow::SavedState saveCurrentState();
+    void clearUndoStacks();
 };
 
 

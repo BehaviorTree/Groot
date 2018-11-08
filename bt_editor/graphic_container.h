@@ -52,12 +52,7 @@ public:
 
     std::set<QtNodes::Node*> getSubtreeNodesRecursively(QtNodes::Node &root_node);
 
-signals:
-
-    void undoableChange();
-
-    void requestSubTreeExpand(GraphicContainer& container,
-                              QtNodes::Node& node);
+    void createSubtree(QtNodes::Node& root_node);
 
 public slots:
 
@@ -68,6 +63,15 @@ public slots:
     void onNodeContextMenu(QtNodes::Node& node, const QPointF& pos);
 
     void onConnectionContextMenu(QtNodes::Connection &connection, const QPointF&);
+
+signals:
+
+    void undoableChange();
+
+    void requestSubTreeExpand(GraphicContainer& container,
+                              QtNodes::Node& node);
+
+    void requestSubTreeCreate(AbsBehaviorTree tree, QString name);
 
 private:
     EditorFlowScene* _scene;

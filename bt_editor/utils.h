@@ -18,7 +18,7 @@ std::vector<QtNodes::Node *> getChildren(const QtNodes::FlowScene &scene,
                                          const QtNodes::Node &parent_node,
                                          bool ordered);
 
-AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene);
+AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene, QtNodes::Node *root_node = nullptr);
 
 AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree* bt );
 
@@ -30,6 +30,8 @@ QString getCategory(const QtNodes::NodeDataModel* model);
 
 std::pair<QtNodes::NodeStyle, QtNodes::ConnectionStyle>
  getStyleFromStatus(NodeStatus status);
+
+QtNodes::Node* GetParentNode(QtNodes::Node* node);
 
 inline NodeType convert(const BT_Serialization::Type& type)
 {

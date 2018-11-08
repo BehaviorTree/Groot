@@ -140,7 +140,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
              this, &MainWindow::onTreeNodeEdited);
 
     connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
-             this, &MainWindow::onLoadAbsBehaviorTree );
+             this, &MainWindow::onCreateAbsBehaviorTree );
 
     connect( ui->toolButtonSaveFile, &QToolButton::clicked,
              this, &MainWindow::on_actionSave_triggered );
@@ -154,7 +154,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
              this, &MainWindow::onChangeNodesStyle);
 
     connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
-             this, &MainWindow::onLoadAbsBehaviorTree );
+             this, &MainWindow::onCreateAbsBehaviorTree );
 #endif
     onSceneChanged();
 
@@ -193,7 +193,7 @@ GraphicContainer* MainWindow::createTab(const QString &name)
         throw std::runtime_error(std::string("There is already a Tab named ") + name.toStdString() );
     }
     GraphicContainer* ti = new GraphicContainer( _model_registry, this );
-    _tab_info[name] = ti;
+    _tab_info.insert( {name, ti } );
 
     ti->scene()->setLayout( _current_layout );
 
@@ -209,6 +209,9 @@ GraphicContainer* MainWindow::createTab(const QString &name)
 
     connect( ti, &GraphicContainer::requestSubTreeExpand,
              this, &MainWindow::onRequestSubTreeExpand );
+
+    connect( ti, &GraphicContainer::requestSubTreeCreate,
+             this, &MainWindow::onCreateAbsBehaviorTree);
 
     //--------------------------------
 
@@ -302,7 +305,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
                 }
             }
 
-            onLoadAbsBehaviorTree(tree, tree_name);
+            onCreateAbsBehaviorTree(tree, tree_name);
         }
 
         if( !_main_tree.isEmpty() )
@@ -771,7 +774,8 @@ void MainWindow::subTreeExpand(GraphicContainer &container,
 
         QtNodes::Node* child_node = conn_out.begin()->second->getNode( PortType::In );
 
-        auto original_subtree_name =  subtree_name.left( SUBTREE_EXPANDED_SUFFIX.length() );
+        int new_length = subtree_name.length() - SUBTREE_EXPANDED_SUFFIX.length();
+        auto original_subtree_name =  subtree_name.left( new_length );
         auto it = _tab_info.find(  original_subtree_name );
         if( it == _tab_info.end())
         {
@@ -797,25 +801,27 @@ void MainWindow::on_toolButtonCenterView_pressed()
     currentTabInfo()->zoomHomeView();
 }
 
-void MainWindow::onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name)
+void MainWindow::clearUndoStacks()
 {
-    {
-        auto container = getTabByName(bt_name);
-        if( !container )
-        {
-            container = createTab(bt_name);
-        }
-        const QSignalBlocker blocker( container );
-
-        container->loadSceneFromTree( tree );
-        container->nodeReorder();
-    }
     _undo_stack.clear();
     _redo_stack.clear();
     onSceneChanged();
     onPushUndo();
 }
 
+void MainWindow::onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name)
+{
+    auto container = getTabByName(bt_name);
+    if( !container )
+    {
+       container = createTab(bt_name);
+    }
+    const QSignalBlocker blocker( container );
+    container->loadSceneFromTree( tree );
+    container->nodeReorder();
+    // TODO_ clear or not?
+    clearUndoStacks();
+}
 
 void MainWindow::on_actionClear_triggered()
 {
@@ -1172,10 +1178,7 @@ void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
         }
 
         // TODO: this is a work around until we find a better solution
-        _undo_stack.clear();
-        _redo_stack.clear();
-        onSceneChanged();
-        onPushUndo();
+        clearUndoStacks();
     } );
     QPoint globalPos = ui->tabWidget->tabBar()->mapToGlobal(pos);
     menu.exec(globalPos);
