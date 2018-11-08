@@ -18,7 +18,8 @@ std::vector<QtNodes::Node *> getChildren(const QtNodes::FlowScene &scene,
                                          const QtNodes::Node &parent_node,
                                          bool ordered);
 
-AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene, QtNodes::Node *root_node = nullptr);
+AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
+                                   QtNodes::Node *root_node = nullptr);
 
 AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree* bt );
 
@@ -61,7 +62,9 @@ inline NodeStatus convert(const BT_Serialization::Status& status)
 
 ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param);
 
-bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
+bool AddToModelRegistry(QtNodes::DataModelRegistry& registry,
                         const QString& ID,  const TreeNodeModel &model);
+
+void CleanPreviousModels(QWidget *parent, TreeNodeModels &prev_models, const TreeNodeModels &new_models);
 
 #endif // NODE_UTILS_H

@@ -139,6 +139,12 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     connect( _editor_widget, &SidepanelEditor::treeNodeEdited,
              this, &MainWindow::onTreeNodeEdited);
 
+    connect( _editor_widget, &SidepanelEditor::addNewModel,
+             this, &MainWindow::onAddToModelRegistry);
+
+    connect( _editor_widget, &SidepanelEditor::destroySubtree,
+             this, &MainWindow::onDestroySubTree);
+
     connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
              this, &MainWindow::onCreateAbsBehaviorTree );
 
@@ -213,6 +219,9 @@ GraphicContainer* MainWindow::createTab(const QString &name)
     connect( ti, &GraphicContainer::requestSubTreeCreate,
              this, &MainWindow::onCreateAbsBehaviorTree);
 
+    connect( ti, &GraphicContainer::addNewModel,
+             this, &MainWindow::onAddToModelRegistry);
+
     //--------------------------------
 
     ti->view()->update();
@@ -273,13 +282,12 @@ void MainWindow::loadFromXML(const QString& xml_text)
         }
 
         auto custom_models = ReadTreeNodesModel( document_root );
+        CleanPreviousModels(this, _tree_nodes_model, custom_models);
 
         for( const auto& model: custom_models)
         {
-            addToModelRegistry( *_model_registry, model.first, model.second );
+            onAddToModelRegistry( model.first, model.second );
         }
-
-        MergeTreeNodeModels(this, _tree_nodes_model, custom_models);
 
         _editor_widget->updateTreeView();
 
@@ -424,7 +432,7 @@ void MainWindow::on_actionSave_triggered()
         auto& container = it.second;
         auto  scene = container->scene();
 
-        QtNodes::Node* root_node = container->loadedTree().rootNode()->corresponding_node;
+        QtNodes::Node* root_node = BuildTreeFromScene(container->scene()).rootNode()->corresponding_node;
 
         root->InsertEndChild( doc.NewComment("-----------------------------------") );
         XMLElement* root_element = doc.NewElement("BehaviorTree");
@@ -720,22 +728,116 @@ void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
     }
 }
 
-void MainWindow::subTreeExpand(GraphicContainer &container,
-                               QtNodes::Node &node,
-                               MainWindow::SubtreeExpandOption option)
+void MainWindow::onAddToModelRegistry(const QString &ID, const TreeNodeModel &model)
+{
+    namespace util = QtNodes::detail;
+
+    if( BuiltinNodeModels().count(ID) == 1)
+    {
+        return;
+    }
+
+    if( model.node_type == NodeType::ACTION )
+    {
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
+        {
+            return util::make_unique<ActionNodeModel>(ID, model);
+        };
+        _model_registry->registerModel("Action", node_creator, ID);
+    }
+    else if( model.node_type == NodeType::CONDITION )
+    {
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
+        {
+            return util::make_unique<ConditionNodeModel>(ID, model);
+        };
+        _model_registry->registerModel("Condition", node_creator, ID);
+    }
+    else if( model.node_type == NodeType::DECORATOR )
+    {
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
+        {
+            return util::make_unique<DecoratorNodeModel>(ID, model);
+        };
+        _model_registry->registerModel("Decorator", node_creator, ID);
+    }
+    else if( model.node_type == NodeType::SUBTREE )
+    {
+        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
+        {
+            return util::make_unique<SubtreeNodeModel>(ID, model);
+        };
+        _model_registry->registerModel("SubTree", node_creator, ID);
+
+        node_creator = [ID, model]()
+        {
+          auto node = util::make_unique<SubtreeExpandedNodeModel>(ID, model);
+          node->setInstanceName(ID);
+          return node;
+        };
+        _model_registry->registerModel("SubTreeExpanded", node_creator, ID + SUBTREE_EXPANDED_SUFFIX );
+    }
+
+    _tree_nodes_model[ID] = model;
+    _editor_widget->updateTreeView();
+}
+
+void MainWindow::onDestroySubTree(const QString &ID)
+{
+    auto sub_container = getTabByName(ID);
+    auto subtree = BuildTreeFromScene(sub_container->scene());
+
+    for(auto& it: _tab_info)
+    {
+        if( it.first == ID )
+        {
+            continue;
+        }
+        auto container = it.second;
+        auto tree = BuildTreeFromScene(container->scene());
+        for( auto& abs_node: tree.nodes())
+        {
+            auto node = abs_node.corresponding_node;
+            auto bt_node = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
+            if(bt_node->nodeType() == NodeType::SUBTREE && bt_node->instanceName() == ID)
+            {
+                auto new_node = node;
+                if( dynamic_cast<SubtreeNodeModel*>(bt_node) )
+                {
+                    new_node = subTreeExpand( *container, *node,
+                                              SubtreeExpandOption::SUBTREE_EXPAND );
+                }
+                container->lockSubtreeEditing(*new_node, false);
+                container->onSmartRemove( new_node );
+            }
+        }
+        container->nodeReorder();
+    }
+
+    for( int index = 0; index < ui->tabWidget->count(); index++)
+    {
+        if( ui->tabWidget->tabText(index) == ID)
+        {
+            sub_container->scene()->clearScene();
+            sub_container->deleteLater();
+            ui->tabWidget->removeTab( index );
+            _tab_info.erase(ID);
+            break;
+        }
+    }
+}
+
+QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
+                                         QtNodes::Node &node,
+                                         MainWindow::SubtreeExpandOption option)
 {
     const QSignalBlocker blocker( this );
-    const QString& subtree_name = dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() )->registrationName();
+    const QString& subtree_name = dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() )->instanceName();
 
     if( option == SUBTREE_EXPAND )
     {
-        auto it = _tab_info.find( subtree_name );
-        if( it == _tab_info.end())
-        {
-            qDebug() << "ERROR: not found " << subtree_name;
-            return;
-        }
-        const auto& subtree  = it->second->loadedTree();
+        auto subtree_container = getTabByName(subtree_name);
+        const auto& subtree = BuildTreeFromScene( subtree_container->scene() );
         auto new_node_ptr = container.substituteNode( &node, subtree_name + SUBTREE_EXPANDED_SUFFIX );
         if( new_node_ptr )
         {
@@ -743,8 +845,10 @@ void MainWindow::subTreeExpand(GraphicContainer &container,
             container.nodeReorder();
             container.lockSubtreeEditing( *new_node_ptr, true );
         }
+        return new_node_ptr;
     }
-    else if( option == SUBTREE_COLLAPSE )
+
+    if( option == SUBTREE_COLLAPSE )
     {
         const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
         QtNodes::Node* child_node = nullptr;
@@ -753,18 +857,19 @@ void MainWindow::subTreeExpand(GraphicContainer &container,
             child_node = conn_out.begin()->second->getNode( PortType::In );
         }
         else{
-            return;
+            return nullptr;
         }
 
-        auto new_subtree_name = subtree_name.left( subtree_name.size()-SUBTREE_EXPANDED_SUFFIX.length() );
-        auto new_node_ptr = container.substituteNode( &node,  new_subtree_name );
+        auto new_node_ptr = container.substituteNode( &node, subtree_name );
         if( new_node_ptr && child_node)
         {
             container.deleteSubTreeRecursively( *child_node );
             container.nodeReorder();
         }
+        return new_node_ptr;
     }
-    else if( option == SUBTREE_REFRESH && dynamic_cast<SubtreeExpandedNodeModel*>(node.nodeDataModel()) )
+
+    if( option == SUBTREE_REFRESH && dynamic_cast<SubtreeExpandedNodeModel*>(node.nodeDataModel()) )
     {
         const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
         if(conn_out.size() != 1)
@@ -774,21 +879,18 @@ void MainWindow::subTreeExpand(GraphicContainer &container,
 
         QtNodes::Node* child_node = conn_out.begin()->second->getNode( PortType::In );
 
-        int new_length = subtree_name.length() - SUBTREE_EXPANDED_SUFFIX.length();
-        auto original_subtree_name =  subtree_name.left( new_length );
-        auto it = _tab_info.find(  original_subtree_name );
-        if( it == _tab_info.end())
-        {
-            qDebug() << "ERROR: not found " <<  original_subtree_name;
-            return;
-        }
-        const auto& subtree  = it->second->loadedTree();
+        auto subtree_container = getTabByName(subtree_name);
+        const auto& subtree = BuildTreeFromScene( subtree_container->scene() );
 
         container.deleteSubTreeRecursively( *child_node );
         container.appendTreeToNode( node, subtree );
         container.nodeReorder();
         container.lockSubtreeEditing( node, true );
+
+        return &node;
     }
+
+    return nullptr;
 }
 
 void MainWindow::on_toolButtonReorder_pressed()
@@ -1113,14 +1215,14 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
 void MainWindow::onChangeNodesStyle(const QString& bt_name,
                                     const std::unordered_map<int, NodeStatus>& node_status)
 {
-    auto tree = _tab_info[bt_name]->loadedTree();
+    auto tree = BuildTreeFromScene( getTabByName(bt_name)->scene() );
 
     for (auto& it: node_status)
     {
         const int index = it.first;
         auto abs_node = tree.nodeAtIndex(index);
         abs_node->status = it.second;
-        qDebug() << abs_node->instance_name << " -> " << tr(toStr(abs_node->status));
+
         auto& node = abs_node->corresponding_node;
         auto style = getStyleFromStatus( abs_node->status );
         node->nodeDataModel()->setNodeStyle( style.first );
@@ -1171,7 +1273,7 @@ void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
              _model_registry->unregisterModel(old_name + SUBTREE_EXPANDED_SUFFIX);
              _tree_nodes_model.erase(old_name);
              TreeNodeModel model = {NodeType::SUBTREE,{}};
-             addToModelRegistry(*_model_registry, new_name, model);
+             onAddToModelRegistry( new_name, model );
              _tree_nodes_model.insert( { new_name, model} );
              _editor_widget->updateTreeView();
              this->onTreeNodeEdited(old_name, new_name);

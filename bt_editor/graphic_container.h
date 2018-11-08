@@ -64,7 +64,12 @@ public slots:
 
     void onConnectionContextMenu(QtNodes::Connection &connection, const QPointF&);
 
+    void onSmartRemove(QtNodes::Node* node);
+
 signals:
+
+    void addNewModel(const QString& name,
+                     const TreeNodeModel &new_model);
 
     void undoableChange();
 

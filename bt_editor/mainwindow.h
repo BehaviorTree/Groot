@@ -62,8 +62,11 @@ private slots:
 
     void onRequestSubTreeExpand(GraphicContainer& container,
                                 QtNodes::Node& node);
-    
-private slots:
+
+    void onAddToModelRegistry(const QString &ID, const TreeNodeModel& model);
+
+    void onDestroySubTree(const QString &ID);
+
     virtual void closeEvent(QCloseEvent *event) override;
 
     void on_actionLoad_triggered();
@@ -130,7 +133,7 @@ private:
 
     void loadSavedStateFromJson(const SavedState &state);
 
-    void subTreeExpand(GraphicContainer& container,
+    QtNodes::Node *subTreeExpand(GraphicContainer& container,
                        QtNodes::Node& node,
                        SubtreeExpandOption option);
 

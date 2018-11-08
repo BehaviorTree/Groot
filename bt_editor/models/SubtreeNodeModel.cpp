@@ -47,7 +47,7 @@ SubtreeExpandedNodeModel::SubtreeExpandedNodeModel(const QString &base_subtree_I
     connect( _collapse_button, &QPushButton::clicked,
              this, &SubtreeExpandedNodeModel::collapseButtonPushed );
 
-    updateNodeSize();
+    setInstanceName(base_subtree_ID);
 }
 
 NodeDataModel::ConnectionPolicy SubtreeExpandedNodeModel::portOutConnectionPolicy(QtNodes::PortIndex) const

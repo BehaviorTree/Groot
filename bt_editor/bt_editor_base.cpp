@@ -46,13 +46,8 @@ void AbsBehaviorTree::updateRootIndex()
 
     for(const auto& node: _nodes)
     {
-        //qDebug() << "----\nparent node " << node.instance_name ;
-
         for(int child_index: node.children_index)
         {
-//            qDebug() << "node " << nodeAtIndex( child_index )->instance_name <<
-//                        " with index " << child_index <<
-//                        " has parent ";
             index_has_parent[ child_index ] = true;
         }
     }
@@ -74,7 +69,6 @@ void AbsBehaviorTree::updateRootIndex()
                 qDebug() << nodeAtIndex(index)->instance_name << " is root ?";
             }
         }
-
         qDebug() << "Malformed AbsBehaviorTree";
     }
 }

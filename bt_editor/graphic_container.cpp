@@ -10,6 +10,8 @@
 #include <QSignalBlocker>
 #include <QMenu>
 #include <QDebug>
+#include <QApplication>
+#include <QInputDialog>
 
 using namespace QtNodes;
 
@@ -225,11 +227,6 @@ void GraphicContainer::clearScene()
 }
 
 
-AbsBehaviorTree GraphicContainer::loadedTree() const
-{
-    return BuildTreeFromScene( _scene );
-}
-
 std::set<QtNodes::Node*> GraphicContainer::getSubtreeNodesRecursively(Node &root_node)
 {
     std::set<QtNodes::Node*> nodes;
@@ -251,8 +248,19 @@ std::set<QtNodes::Node*> GraphicContainer::getSubtreeNodesRecursively(Node &root
 
 void GraphicContainer::createSubtree(Node &root_node)
 {
-    QString subtree_name("pepito");
-    addToModelRegistry( *_model_registry, subtree_name, {NodeType::SUBTREE, {}} );
+
+    bool ok = false;
+    QString subtree_name = QInputDialog::getText (
+                nullptr, tr ("SubTree Name"),
+                tr ("Insert the name of the Custom SubTree"),
+                QLineEdit::Normal, "", &ok);
+    if (!ok)
+    {
+        return;
+    }
+
+    addNewModel( subtree_name, {NodeType::SUBTREE, {}} );
+    QApplication::processEvents();
 
     auto sub_tree = BuildTreeFromScene(_scene, &root_node);
 
@@ -266,6 +274,8 @@ void GraphicContainer::createSubtree(Node &root_node)
         abs_node.corresponding_node = nullptr;
     }
     substituteNode( sub_tree.rootNode()->corresponding_node, subtree_name);
+
+    nodeReorder();
 
     emit requestSubTreeCreate( sub_tree, subtree_name );
 }
@@ -467,23 +477,35 @@ void GraphicContainer::createSmartRemoveAction(QtNodes::Node &node, QMenu* node_
         return;
     }
 
-    auto node_ptr = &node;
-    auto scene = _scene;
+    QtNodes::Node* node_ptr = &node;
     connect( smart_remove, &QAction::triggered,
-             this, [this, node_ptr, parent_node, conn_out, scene]()
+             this, [this, node_ptr]()
     {
-        {
-            const QSignalBlocker blocker(this);
-            for( auto& it: conn_out)
-            {
-                auto child_node = it.second->getNode(PortType::In);
-                scene->createConnection( *child_node, 0, *parent_node, 0 );
-            }
-            scene->removeNode( *node_ptr );
-            nodeReorder();
-        }
-        undoableChange();
+        onSmartRemove(node_ptr);
     });
+}
+
+void GraphicContainer::onSmartRemove(QtNodes::Node* node)
+{
+    auto parent_node = GetParentNode( node );
+    NodeState::ConnectionPtrSet conn_out = node->nodeState().connections(PortType::Out, 0);
+
+    if( !parent_node || conn_out.size() == 0 )
+    {
+        return;
+    }
+
+    {
+        const QSignalBlocker blocker(this);
+        for( auto& it: conn_out)
+        {
+            auto child_node = it.second->getNode(PortType::In);
+            _scene->createConnection( *child_node, 0, *parent_node, 0 );
+        }
+        _scene->removeNode( *node );
+        nodeReorder();
+    }
+    undoableChange();
 }
 
 void GraphicContainer::insertNodeInConnection(Connection &connection, QString node_name)

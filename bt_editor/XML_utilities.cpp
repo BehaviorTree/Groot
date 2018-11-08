@@ -396,35 +396,4 @@ std::set<const QString *> NotBuiltInNodes(const TreeNodeModels &models)
     return custom_models;
 }
 
-void MergeTreeNodeModels(QWidget *parent, TreeNodeModels &current_models, const TreeNodeModels &new_models)
-{
-    std::set<const QString *> prev_custom_models;
 
-    if( current_models.size() > BuiltinNodeModels().size() )
-    {
-        for(const auto& it: current_models)
-        {
-            if( BuiltinNodeModels().count(it.first) == 0)
-            {
-                prev_custom_models.insert( &it.first );
-            }
-        }
-    }
-
-    for( const auto& name: prev_custom_models)
-    {
-        if( new_models.count( *name ) == 0)
-        {
-            int ret = QMessageBox::question(parent, "Clear Palette?",
-                                  "Do yoy want to remove the previously loaded custom nodes?",
-                                  QMessageBox::No | QMessageBox::Yes );
-            if( ret == QMessageBox::Yes)
-            {
-                current_models = BuiltinNodeModels();
-            }
-            break;
-        }
-    }
-
-    current_models.insert( new_models.begin(), new_models.end() );
-}
