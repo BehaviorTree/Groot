@@ -64,8 +64,7 @@ void SidepanelEditor::updateTreeView()
       item->setFont(0, font);
       item->setData(0, Qt::UserRole, ID);
       const bool is_editable = (!ui->buttonLock->isChecked() &&
-                                BuiltinNodeModels().count( ID ) == 0 &&
-                                model.node_type != NodeType::SUBTREE);
+                                BuiltinNodeModels().count( ID ) == 0);
       item->setTextColor(0, is_editable ? Qt::blue : Qt::black);
     }
 
@@ -122,15 +121,6 @@ void SidepanelEditor::on_lineEditFilter_textChanged(const QString &text)
   }
 }
 
-void SidepanelEditor::addNewModel(const QString& name, const TreeNodeModel& model)
-{
-    if( _tree_nodes_model.count(name) == 0)
-    {
-        _tree_nodes_model[name] = model;
-        updateTreeView();
-        addToModelRegistry(*_model_registry,name, model );
-    }
-}
 
 void SidepanelEditor::on_buttonAddNode_clicked()
 {
@@ -160,32 +150,53 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
     }
 
     QMenu menu(this);
-    QAction* edit   = menu.addAction("Edit");
+
+    const auto& node_type = _tree_nodes_model.at(selected_name).node_type;
+
+    if( node_type == NodeType::ACTION || node_type == NodeType::ACTION)
+    {
+        QAction* edit   = menu.addAction("Edit");
+        connect( edit, &QAction::triggered, this, [this, selected_name]()
+        {
+            CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
+            if( dialog.exec() == QDialog::Accepted)
+            {
+                auto new_model = dialog.getTreeNodeModel();
+                _tree_nodes_model.erase( selected_name );
+                _model_registry->unregisterModel( selected_name );
+                addNewModel( new_model.first, new_model.second );
+                emit this->treeNodeEdited(selected_name, new_model.first);
+            }
+        } );
+    }
+
     QAction* remove = menu.addAction("Remove");
 
-    connect( edit, &QAction::triggered, this, [this, selected_name]()
+    connect( remove, &QAction::triggered, this,[this, selected_name, node_type]()
     {
-        CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
-        if( dialog.exec() == QDialog::Accepted)
+        int ret = QMessageBox::Cancel;
+        if( node_type != NodeType::SUBTREE)
         {
-            auto new_model = dialog.getTreeNodeModel();
-            _tree_nodes_model.erase( selected_name );
-            _model_registry->unregisterModel( selected_name );
-            addNewModel( new_model.first, new_model.second );
-            emit this->treeNodeEdited(selected_name, new_model.first);
-        }
-    } );
-
-    connect( remove, &QAction::triggered, this,[this, selected_name]()
-    {
-        int ret = QMessageBox::warning(this,"Delete TreeNodeModel?",
+            ret = QMessageBox::warning(this,"Delete TreeNode Model?",
                                        "Are you sure?",
                                        QMessageBox::Cancel | QMessageBox::Yes,
                                        QMessageBox::Cancel);
-        if(ret ==  QMessageBox::Yes)
+        }
+        else{
+            ret = QMessageBox::warning(this,"Delete Subtree?",
+                                       "The Model of the Subtrees will be removed."
+                                       "An expanded version will be added to parent trees.",
+                                       QMessageBox::Cancel | QMessageBox::Yes,
+                                       QMessageBox::Cancel);
+        }
+        if(ret == QMessageBox::Yes)
         {
             _tree_nodes_model.erase( selected_name );
             updateTreeView();
+            if( node_type == NodeType::SUBTREE)
+            {
+                emit destroySubtree(selected_name);
+            }
         }
     } );
 
@@ -324,20 +335,15 @@ void SidepanelEditor::on_buttonDownload_clicked()
          node != nullptr;
          node = node->NextSiblingElement() )
     {
-        auto model_pair =  buildTreeNodeModel(node, true);
-        const auto& name  = model_pair.first;
-        const auto& model = model_pair.second;
-
-        if( _tree_nodes_model.count(name) == 0)
-        {
-            custom_models[name] = model;
-            addToModelRegistry(*_model_registry, name, model );
-        }
+        custom_models.insert( buildTreeNodeModel(node, true) );
     }
 
-    MergeTreeNodeModels(this, _tree_nodes_model, custom_models );
+    CleanPreviousModels(this, _tree_nodes_model, custom_models );
 
-    updateTreeView();
+    for(auto& it: custom_models)
+    {
+        addNewModel( it.first, it.second );
+    }
 }
 
 void SidepanelEditor::on_buttonLock_toggled(bool locked)

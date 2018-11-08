@@ -62,8 +62,11 @@ private slots:
 
     void onRequestSubTreeExpand(GraphicContainer& container,
                                 QtNodes::Node& node);
-    
-private slots:
+
+    void onAddToModelRegistry(const QString &ID, const TreeNodeModel& model);
+
+    void onDestroySubTree(const QString &ID);
+
     virtual void closeEvent(QCloseEvent *event) override;
 
     void on_actionLoad_triggered();
@@ -76,7 +79,7 @@ private slots:
 
     void on_toolButtonCenterView_pressed();
 
-    void onLoadAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name);
+    void onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name);
 
     void onChangeNodesStyle(const QString& bt_name, const std::unordered_map<int, NodeStatus>& node_status);
 
@@ -130,7 +133,7 @@ private:
 
     void loadSavedStateFromJson(const SavedState &state);
 
-    void subTreeExpand(GraphicContainer& container,
+    QtNodes::Node *subTreeExpand(GraphicContainer& container,
                        QtNodes::Node& node,
                        SubtreeExpandOption option);
 
@@ -165,6 +168,7 @@ private:
 #endif
     
     MainWindow::SavedState saveCurrentState();
+    void clearUndoStacks();
 };
 
 

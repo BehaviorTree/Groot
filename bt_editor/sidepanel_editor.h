@@ -42,7 +42,11 @@ private slots:
 
 signals:
 
+    void addNewModel(const QString& name, const TreeNodeModel &new_model);
+
     void treeNodeEdited(QString prev_ID, QString new_ID);
+
+    void destroySubtree(QString ID);
 
 private:
     Ui::SidepanelEditor *ui;
@@ -50,7 +54,6 @@ private:
     QtNodes::DataModelRegistry* _model_registry;
     std::map<QString, QTreeWidgetItem*> _tree_view_category_items;
 
-    void addNewModel(const QString& name, const TreeNodeModel &new_model);
 };
 
 #endif // NODE_PALETTE_H

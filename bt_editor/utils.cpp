@@ -3,7 +3,7 @@
 #include <nodes/DataModelRegistry>
 #include <QDebug>
 #include <set>
-
+#include <QMessageBox>
 #include "nodes/internal/memory.hpp"
 #include "models/ActionNodeModel.hpp"
 #include "models/DecoratorNodeModel.hpp"
@@ -238,9 +238,13 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 }
 
 
-AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene)
+AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
+                                   QtNodes::Node* root_node)
 {
-    auto root_node = findRoot( *scene );
+    if(!root_node )
+    {
+        root_node = findRoot( *scene );
+    }
     if( !root_node )
     {
         if( scene->nodes().size() != 0)
@@ -558,3 +562,49 @@ bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
     return true;
 }
 
+
+QtNodes::Node *GetParentNode(QtNodes::Node *node)
+{
+    using namespace QtNodes;
+    auto conn_in = node->nodeState().connections(PortType::In, 0);
+    if( conn_in.size() == 0)
+    {
+        return nullptr;
+    }
+    else{
+        return conn_in.begin()->second->getNode(PortType::Out);
+    }
+}
+
+void CleanPreviousModels(QWidget *parent,
+                         TreeNodeModels &prev_models,
+                         const TreeNodeModels &new_models)
+{
+    std::set<const QString *> prev_custom_models;
+
+    if( prev_models.size() > BuiltinNodeModels().size() )
+    {
+        for(const auto& it: prev_models)
+        {
+            if( BuiltinNodeModels().count(it.first) == 0)
+            {
+                prev_custom_models.insert( &it.first );
+            }
+        }
+    }
+
+    for( const auto& name: prev_custom_models)
+    {
+        if( new_models.count( *name ) == 0)
+        {
+            int ret = QMessageBox::question(parent, "Clear Palette?",
+                                            "Do yoy want to remove the previously loaded custom nodes?",
+                                            QMessageBox::No | QMessageBox::Yes );
+            if( ret == QMessageBox::Yes)
+            {
+                prev_models = BuiltinNodeModels();
+            }
+            break;
+        }
+    }
+}

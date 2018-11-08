@@ -26,9 +26,6 @@ std::pair<QString,TreeNodeModel>
 buildTreeNodeModel(const tinyxml2::XMLElement* node,
                    bool is_tree_node_model);
 
-void MergeTreeNodeModels(QWidget* parent, TreeNodeModels& current_models, const TreeNodeModels& new_models );
-
-
 //--------------------------------------------------------
 
 const QString gTestXML = R"(
