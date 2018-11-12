@@ -948,20 +948,18 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
                     if(subtree_model && subtree_model->expanded())
                     {
                         is_expanded_subtree = true;
-                        // Collapse first
-                        onRequestSubTreeExpand( *container, *node.corresponding_node);
+                        subTreeExpand( *container, *node.corresponding_node, SUBTREE_COLLAPSE);
                     }
                 }
 
-                node.registration_name = new_ID;
                 auto new_node = container->substituteNode(node.corresponding_node, new_ID);
 
                 if( is_expanded_subtree )
                 {
-                    // expand the new one
-                    onRequestSubTreeExpand( *container, *new_node );
+                    subTreeExpand( *container, *new_node, SUBTREE_EXPAND);
                 };
 
+                node.registration_name = new_ID;
                 node.corresponding_node = new_node;
             }
         }
