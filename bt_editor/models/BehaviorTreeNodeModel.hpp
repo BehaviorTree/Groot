@@ -64,8 +64,6 @@ public:
 
   void setParameterValue(const QString& label, const QString& value);
 
-  virtual const char* className() const = 0;
-
   int UID() const { return _uid; }
 
   virtual NodeType nodeType() const = 0;

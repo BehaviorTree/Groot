@@ -12,8 +12,6 @@ public:
 
     virtual unsigned int  nPorts(PortType portType) const override;
 
-    const char* className() const final { return ActionNodeModel::Name();  }
-
     static const char* Name() { return "Action"; }
 
     std::pair<QString,QColor> caption() const override { return {instanceName(),"#ddff55"}; }
@@ -37,8 +35,6 @@ public:
     virtual ~ConditionNodeModel()  = default;
 
     unsigned int  nPorts(PortType portType) const override;
-
-    const char* className() const final { return ConditionNodeModel::Name();  }
 
     static const char* Name() { return "Condition"; }
 

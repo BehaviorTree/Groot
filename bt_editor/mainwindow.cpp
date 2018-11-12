@@ -395,32 +395,13 @@ void MainWindow::on_actionLoad_triggered()
     loadFromXML(xml_text);
 }
 
-
-void MainWindow::on_actionSave_triggered()
+QString MainWindow::saveToXML() const
 {
-    for (auto& it: _tab_info)
-    {
-        auto& container = it.second;
-        if( !container->containsValidTree() )
-        {
-            QMessageBox::warning(this, tr("Oops!"),
-                                 tr("Malformed behavior tree. File can not be saved"),
-                                 QMessageBox::Cancel);
-            return;
-        }
-    }
-
-    //----------------------------
     using namespace tinyxml2;
     XMLDocument doc;
 
     XMLElement* root = doc.NewElement( "root" );
     doc.InsertEndChild( root );
-
-    if( _tab_info.size() == 1 )
-    {
-        _main_tree = _tab_info.begin()->first;
-    }
 
     if( _main_tree.isEmpty() == false)
     {
@@ -436,6 +417,7 @@ void MainWindow::on_actionSave_triggered()
 
         root->InsertEndChild( doc.NewComment("-----------------------------------") );
         XMLElement* root_element = doc.NewElement("BehaviorTree");
+
         root_element->SetAttribute("ID", it.first.toStdString().c_str());
         root->InsertEndChild(root_element);
 
@@ -474,7 +456,31 @@ void MainWindow::on_actionSave_triggered()
     root->InsertEndChild(root_models);
     root->InsertEndChild( doc.NewComment("-----------------------------------") );
 
-    //-------------------------------------
+    XMLPrinter printer;
+    doc.Print( &printer );
+
+    return printer.CStr();
+}
+
+void MainWindow::on_actionSave_triggered()
+{
+    for (auto& it: _tab_info)
+    {
+        auto& container = it.second;
+        if( !container->containsValidTree() )
+        {
+            QMessageBox::warning(this, tr("Oops!"),
+                                 tr("Malformed behavior tree. File can not be saved"),
+                                 QMessageBox::Cancel);
+            return;
+        }
+    }
+
+    if( _tab_info.size() == 1 )
+    {
+        _main_tree = _tab_info.begin()->first;
+    }
+
     QSettings settings;
     QString directory_path  = settings.value("MainWindow.lastSaveDirectory",
                                              QDir::currentPath() ).toString();
@@ -489,13 +495,12 @@ void MainWindow::on_actionSave_triggered()
         fileName += ".xml";
     }
 
-    XMLPrinter printer;
-    doc.Print( &printer );
+    QString xml_text = saveToXML();
 
     QFile file(fileName);
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
-        stream << printer.CStr() << endl;
+        stream << xml_text << endl;
     }
 
     directory_path = QFileInfo(fileName).absolutePath();
@@ -619,7 +624,7 @@ void MainWindow::onPushUndo()
     }
     _current_state = saved;
 
-   // qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+    // qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
 
 void MainWindow::onUndoInvoked()
@@ -650,7 +655,7 @@ void MainWindow::onRedoInvoked()
 
         loadSavedStateFromJson(_current_state);
 
-       // qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+        // qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
 }
 

@@ -101,6 +101,8 @@ public:
         return &_nodes.at( UidToIndex(uid) );
     }
 
+    const AbstractTreeNode *findNode(const QString& instance_name);
+
     int rootIndex() const
     {
       return _root_node_index;

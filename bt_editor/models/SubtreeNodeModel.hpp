@@ -36,6 +36,8 @@ public:
         return(":/icons/svg/subtree.svg");
     }
 
+    QPushButton* expandButton() { return _expand_button; }
+
 signals:
     void expandButtonPushed();
 
@@ -57,7 +59,7 @@ public:
 
     ~SubtreeExpandedNodeModel() override = default;
 
-    unsigned int  nPorts(PortType) const override { return 1; }
+    unsigned int nPorts(PortType) const override { return 1; }
 
     virtual const char* className() const final { return Name(); }
 
@@ -73,6 +75,8 @@ public:
     virtual QString captionIicon() const override {
         return(":/icons/svg/subtree.svg");
     }
+
+    QPushButton* collapseButton() { return _collapse_button; }
 
 signals:
     void collapseButtonPushed();

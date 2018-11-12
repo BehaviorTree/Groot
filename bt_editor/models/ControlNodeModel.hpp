@@ -41,11 +41,6 @@ class ControlNodeModelBase : public ControlNodeModel
 public:
     ControlNodeModelBase();
     virtual ~ControlNodeModelBase() override = default;
-
-    virtual const char* className() const final
-    {
-        return T::Name();
-    }
 };
 
 //-------------------------------------------------

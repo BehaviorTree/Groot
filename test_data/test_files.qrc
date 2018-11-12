@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>crossdor_with_subtree.xml</file>
+        <file>crossdor_palette.xml</file>
+        <file>show_all.xml</file>
+    </qresource>
+</RCC>

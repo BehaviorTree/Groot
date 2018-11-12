@@ -12,6 +12,18 @@ AbstractTreeNode *AbsBehaviorTree::rootNode()
         return &_nodes.at( _root_node_index );
 }
 
+const AbstractTreeNode *AbsBehaviorTree::findNode(const QString &instance_name)
+{
+    for( const auto& node: _nodes)
+    {
+        if( node.instance_name == instance_name)
+        {
+            return &node;
+        }
+    }
+    return nullptr;
+}
+
 const AbstractTreeNode *AbsBehaviorTree::rootNode() const
 {
     if( _root_node_index < 0 ||

@@ -3,12 +3,12 @@
     <BehaviorTree ID="DoorClosed">
         <Root>
             <Sequence name="door_closed_sequence">
-                <Inverter>
+                <Decorator ID="Inverter">
                     <Condition ID="IsDoorOpen"/>
-                </Inverter>
-                <RetryUntilSuccesful num_attempts="4">
+                </Decorator>
+                <Decorator ID="RetryUntilSuccesful" num_attempts="4">
                     <Action ID="OpenDoor"/>
-                </RetryUntilSuccesful>
+                </Decorator>
                 <Action ID="PassThroughDoor"/>
                 <Action ID="CloseDoor"/>
             </Sequence>
@@ -38,4 +38,3 @@
     </TreeNodesModel>
     <!--------------------------------------->
 </root>
-

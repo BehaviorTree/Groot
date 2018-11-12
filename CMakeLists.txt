@@ -38,7 +38,7 @@ set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} -Werror=return-type"
 #set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 #set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
-INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./3rdparty )
+INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./3rdparty ./ )
 
 add_subdirectory( QtNodeEditor )
 
@@ -50,7 +50,6 @@ set(APP_CPPS
     ./bt_editor/models/RootNodeModel.cpp
     ./bt_editor/models/SubtreeNodeModel.cpp
 
-    ./bt_editor/main.cpp
     ./bt_editor/mainwindow.cpp
     ./bt_editor/editor_flowscene.cpp
     ./bt_editor/utils.cpp
@@ -68,6 +67,7 @@ set(APP_CPPS
 
 qt5_add_resources(RESOURCES
     ./bt_editor/resources/icons.qrc
+    ./test_data/test_files.qrc
     )
 
 set(FORMS_UI
@@ -94,15 +94,24 @@ endif()
 
 QT5_WRAP_UI(FORMS_HEADERS ${FORMS_UI})
 
-add_executable(behavior_tree_editor
+add_library(behavior_tree_editor
     ${APP_CPPS}
     ${FORMS_HEADERS}
-    ${RESOURCES})
+)
 
 if( ZMQ_FOUND )
     target_link_libraries(behavior_tree_editor QtNodeEditor zmq )
 else()
     target_link_libraries(behavior_tree_editor QtNodeEditor )
 endif()
+
+
+add_executable(Groot ./bt_editor/main.cpp ${RESOURCES})
+target_link_libraries(Groot behavior_tree_editor )
+
+add_subdirectory(test)
+
+
+
 
 

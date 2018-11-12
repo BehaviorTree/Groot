@@ -47,7 +47,14 @@ public:
 
     void loadFromXML(const QString &xml_text);
 
-private slots:
+    QString saveToXML() const ;
+
+    GraphicContainer* currentTabInfo();
+
+    GraphicContainer *getTabByName(const QString& name);
+
+
+public slots:
 
     void onAutoArrange();
 
@@ -102,6 +109,9 @@ private slots:
 
     void onTabCustomContextMenuRequested(const QPoint &pos);
 
+signals:
+    void updateGraphic();
+
 private:
 
     void updateCurrentMode();
@@ -111,10 +121,6 @@ private:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
     void resizeEvent(QResizeEvent *) override;
-
-    GraphicContainer* currentTabInfo();
-
-    GraphicContainer *getTabByName(const QString& name);
 
     GraphicContainer* createTab(const QString &name);
 
@@ -137,11 +143,6 @@ private:
     QtNodes::Node *subTreeExpand(GraphicContainer& container,
                        QtNodes::Node &node,
                        SubtreeExpandOption option);
-
-signals:
-    void updateGraphic();
-
-private:
 
     Ui::MainWindow *ui;
 
