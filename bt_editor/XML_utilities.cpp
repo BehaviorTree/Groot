@@ -122,8 +122,6 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
     const QtNodes::NodeDataModel* node_model = node->nodeDataModel();
     const std::string model_name = node_model->name().toStdString();
 
-    const bool is_subtree_expanded = dynamic_cast<const SubtreeExpandedNodeModel*>(node_model) != nullptr;
-
     const auto* bt_node = dynamic_cast<const BehaviorTreeDataModel*>(node_model);
 
     XMLElement* element = doc.NewElement( bt_node->className() );
@@ -132,11 +130,10 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
 
     QString registration_name = bt_node->registrationName();
 
-    if( is_subtree_expanded )
+    bool is_subtree_expanded = false;
+    if( auto subtree = dynamic_cast<const SubtreeNodeModel*>(node_model)  )
     {
-        element->SetName( SubtreeNodeModel::Name() );
-        const int new_length = registration_name.length() - SUBTREE_EXPANDED_SUFFIX.length();
-        registration_name = registration_name.left( new_length );
+        is_subtree_expanded = subtree->expanded();
     }
 
     element->SetAttribute("ID", registration_name.toStdString().c_str() );

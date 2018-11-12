@@ -78,9 +78,9 @@ void GraphicContainer::lockEditing(bool locked)
         QtNodes::Node* node = nodes_it.second.get();
         node->nodeGraphicsObject().lock( locked );
 
-        if( dynamic_cast<SubtreeExpandedNodeModel*>( node->nodeDataModel() ) )
+        if( auto subtree = dynamic_cast<SubtreeNodeModel*>( node->nodeDataModel() ) )
         {
-            subtrees_expanded.push_back(node);
+            if( subtree->expanded()) subtrees_expanded.push_back(node);
         }
 
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() );
@@ -299,9 +299,9 @@ void GraphicContainer::onNodeCreated(Node &node)
         connect( bt_node, &BehaviorTreeDataModel::instanceNameChanged,
                  this, &GraphicContainer::undoableChange );
 
-        if( auto sub_node = dynamic_cast<SubtreeNodeModel*>( bt_node ) )
+        if( auto subtree_node = dynamic_cast<SubtreeNodeModel*>( bt_node ) )
         {
-          connect( sub_node, &SubtreeNodeModel::expandButtonPushed,
+          connect( subtree_node, &SubtreeNodeModel::expandButtonPushed,
                    &(node), [&node, this]()
           {
             emit requestSubTreeExpand( *this, node );
@@ -309,16 +309,6 @@ void GraphicContainer::onNodeCreated(Node &node)
         }
 
         bt_node->init();
-
-
-        if( auto sub_node = dynamic_cast<SubtreeExpandedNodeModel*>( bt_node ) )
-        {
-          connect( sub_node, &SubtreeExpandedNodeModel::collapseButtonPushed,
-                   &(node), [&node, this]()
-          {
-            emit requestSubTreeExpand( *this, node );
-          });
-        }
     }
     undoableChange();
 }
@@ -417,7 +407,8 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *old_node, const QString& n
 
 void GraphicContainer::deleteSubTreeRecursively(Node &root_node)
 {
-    const QSignalBlocker blocker( this );
+    const QSignalBlocker blocker1( this );
+    const QSignalBlocker blocker2( _scene );
     auto nodes_to_delete = getSubtreeNodesRecursively(root_node);
     for(auto delete_me: nodes_to_delete)
     {
@@ -572,7 +563,7 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
                                          AbstractTreeNode* abs_node,
                                          Node* parent_node, int nest_level)
 {
-    std::unique_ptr<NodeDataModel> data_model = _scene->registry().create( abs_node->registration_name );
+    auto data_model = _scene->registry().create( abs_node->registration_name );
     BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( data_model.get() );
 
     if( bt_node ){

@@ -507,62 +507,6 @@ ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
     return creator;
 }
 
-
-bool addToModelRegistry(QtNodes::DataModelRegistry& registry,
-                        const QString& ID,
-                        const TreeNodeModel& model)
-{
-    namespace util = QtNodes::detail;
-
-    if( BuiltinNodeModels().count(ID) == 1)
-    {
-        return false;
-    }
-
-    if( model.node_type == NodeType::ACTION )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
-        {
-            return util::make_unique<ActionNodeModel>(ID, model);
-        };
-        registry.registerModel("Action", node_creator, ID);
-    }
-    else if( model.node_type == NodeType::CONDITION )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
-        {
-            return util::make_unique<ConditionNodeModel>(ID, model);
-        };
-        registry.registerModel("Condition", node_creator, ID);
-    }
-    else if( model.node_type == NodeType::DECORATOR )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
-        {
-            return util::make_unique<DecoratorNodeModel>(ID, model);
-        };
-        registry.registerModel("Decorator", node_creator, ID);
-    }
-    else if( model.node_type == NodeType::SUBTREE )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [ID, model]()
-        {
-            return util::make_unique<SubtreeNodeModel>(ID, model);
-        };
-        registry.registerModel("SubTree", node_creator, ID);
-
-        node_creator = [ID, model]()
-        {
-          auto node = util::make_unique<SubtreeExpandedNodeModel>(ID, model);
-          node->setInstanceName(ID);
-          return node;
-        };
-        registry.registerModel("SubTreeExpanded", node_creator, ID + SUBTREE_EXPANDED_SUFFIX );
-    }
-    return true;
-}
-
-
 QtNodes::Node *GetParentNode(QtNodes::Node *node)
 {
     using namespace QtNodes;

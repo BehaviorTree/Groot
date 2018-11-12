@@ -710,19 +710,18 @@ void MainWindow::onConnectionUpdate(bool connected)
 void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
                                         QtNodes::Node& node)
 {
-    bool is_expanded_subtree  = dynamic_cast< SubtreeExpandedNodeModel*>( node.nodeDataModel() );
-    bool is_collapsed_subtree = dynamic_cast< SubtreeNodeModel*>( node.nodeDataModel() );
+    auto subtree = dynamic_cast< SubtreeNodeModel*>( node.nodeDataModel() );
 
-    if( !is_expanded_subtree && !is_collapsed_subtree )
+    if( !subtree )
     {
         throw std::logic_error("passing to onRequestSubTreeExpand something that is not a SubTree");
     }
 
-    if( is_expanded_subtree )
+    if( subtree->expanded() )
     {
         subTreeExpand( container, node, SUBTREE_COLLAPSE );
     }
-    else if( is_collapsed_subtree )
+    else
     {
         subTreeExpand( container, node, SUBTREE_EXPAND );
     }
@@ -768,14 +767,6 @@ void MainWindow::onAddToModelRegistry(const QString &ID, const TreeNodeModel &mo
             return util::make_unique<SubtreeNodeModel>(ID, model);
         };
         _model_registry->registerModel("SubTree", node_creator, ID);
-
-        node_creator = [ID, model]()
-        {
-          auto node = util::make_unique<SubtreeExpandedNodeModel>(ID, model);
-          node->setInstanceName(ID);
-          return node;
-        };
-        _model_registry->registerModel("SubTreeExpanded", node_creator, ID + SUBTREE_EXPANDED_SUFFIX );
     }
 
     _tree_nodes_model[ID] = model;
@@ -834,20 +825,22 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
                                          MainWindow::SubtreeExpandOption option)
 {
     const QSignalBlocker blocker( this );
-    const QString& subtree_name = dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() )->instanceName();
+    auto subtree_model = dynamic_cast<SubtreeNodeModel*>(node.nodeDataModel());
+    const QString& subtree_name = subtree_model->instanceName();
 
     if( option == SUBTREE_EXPAND )
     {
         auto subtree_container = getTabByName(subtree_name);
-        const auto& subtree = BuildTreeFromScene( subtree_container->scene() );
-        auto new_node_ptr = container.substituteNode( &node, subtree_name + SUBTREE_EXPANDED_SUFFIX );
-        if( new_node_ptr )
-        {
-            container.appendTreeToNode( *new_node_ptr, subtree );
-            container.nodeReorder();
-            container.lockSubtreeEditing( *new_node_ptr, true );
-        }
-        return new_node_ptr;
+        const auto& abs_subtree = BuildTreeFromScene( subtree_container->scene() );
+
+        subtree_model->setExpanded(true);
+        node.nodeState().getEntries(PortType::Out).resize(1);
+
+        container.appendTreeToNode( node, abs_subtree );
+        container.nodeReorder();
+        container.lockSubtreeEditing( node, true );
+
+        return &node;
     }
 
     if( option == SUBTREE_COLLAPSE )
@@ -861,17 +854,21 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
         else{
             return nullptr;
         }
-
-        auto new_node_ptr = container.substituteNode( &node, subtree_name );
-        if( new_node_ptr && child_node)
+        const QSignalBlocker blocker( container );
+        if( child_node)
         {
             container.deleteSubTreeRecursively( *child_node );
-            container.nodeReorder();
         }
-        return new_node_ptr;
+
+        subtree_model->setExpanded(false);
+        node.nodeState().getEntries(PortType::Out).resize(0);
+        container.lockSubtreeEditing( node, false );
+        container.nodeReorder();
+
+        return &node;
     }
 
-    if( option == SUBTREE_REFRESH && dynamic_cast<SubtreeExpandedNodeModel*>(node.nodeDataModel()) )
+    if( option == SUBTREE_REFRESH && subtree_model->expanded() )
     {
         const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
         if(conn_out.size() != 1)
@@ -943,16 +940,28 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
         {
             if( node.registration_name == prev_ID )
             {
+                bool is_expanded_subtree = false;
+                if( node.type == NodeType::SUBTREE)
+                {
+                    auto model = node.corresponding_node->nodeDataModel();
+                    auto subtree_model = dynamic_cast<SubtreeNodeModel*>( model );
+                    if(subtree_model && subtree_model->expanded())
+                    {
+                        is_expanded_subtree = true;
+                        // Collapse first
+                        onRequestSubTreeExpand( *container, *node.corresponding_node);
+                    }
+                }
+
                 node.registration_name = new_ID;
                 auto new_node = container->substituteNode(node.corresponding_node, new_ID);
-                node.corresponding_node = new_node;
-            }
-            if( node.type == NodeType::SUBTREE &&
-                node.registration_name == prev_ID + SUBTREE_EXPANDED_SUFFIX )
-            {
-                node.registration_name = new_ID + SUBTREE_EXPANDED_SUFFIX;
-                auto new_node = container->substituteNode(node.corresponding_node,
-                                                          new_ID + SUBTREE_EXPANDED_SUFFIX);
+
+                if( is_expanded_subtree )
+                {
+                    // expand the new one
+                    onRequestSubTreeExpand( *container, *new_node );
+                };
+
                 node.corresponding_node = new_node;
             }
         }
@@ -1092,7 +1101,8 @@ void MainWindow::refreshExpandedSubtrees()
 
     selectRecursively = [&](QtNodes::Node* node)
     {
-        if(dynamic_cast<SubtreeExpandedNodeModel*>(node->nodeDataModel()))
+        auto subtree_model = dynamic_cast<SubtreeNodeModel*>(node->nodeDataModel());
+        if(subtree_model && subtree_model->expanded())
         {
             subtree_nodes.push_back( node );
         }
@@ -1272,7 +1282,6 @@ void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
         if( _model_registry->registeredModelsByCategory("SubTree").count( old_name ) )
         {
              _model_registry->unregisterModel(old_name);
-             _model_registry->unregisterModel(old_name + SUBTREE_EXPANDED_SUFFIX);
              _tree_nodes_model.erase(old_name);
              TreeNodeModel model = {NodeType::SUBTREE,{}};
              onAddToModelRegistry( new_name, model );

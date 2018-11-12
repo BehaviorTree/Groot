@@ -62,8 +62,6 @@ inline NodeStatus convert(const BT_Serialization::Status& status)
 
 ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param);
 
-bool AddToModelRegistry(QtNodes::DataModelRegistry& registry,
-                        const QString& ID,  const TreeNodeModel &model);
 
 void CleanPreviousModels(QWidget *parent, TreeNodeModels &prev_models, const TreeNodeModels &new_models);
 

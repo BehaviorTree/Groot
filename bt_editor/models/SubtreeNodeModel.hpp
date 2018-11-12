@@ -14,8 +14,13 @@ public:
 
     ~SubtreeNodeModel() override = default;
 
+    void setExpanded(bool expand);
+
+    bool expanded() const { return _expanded; }
+
     unsigned int  nPorts(PortType portType) const override {
-        return portType == PortType::In ? 1:0;
+        int out_port = _expanded ? 1 : 0;
+        return portType == PortType::In ? 1:out_port;
     }
 
     virtual const char* className() const final { return Name(); }
@@ -36,9 +41,10 @@ signals:
 
 private:
     QPushButton* _expand_button;
+    bool _expanded;
 
 };
-
+/*
 static const QString SUBTREE_EXPANDED_SUFFIX("[expanded]");
 
 class SubtreeExpandedNodeModel : public BehaviorTreeDataModel
@@ -77,7 +83,7 @@ private:
     QString _base_ID;
 
 };
-
+*/
 
 
 #endif // SUBTREE_NODEMODEL_HPP

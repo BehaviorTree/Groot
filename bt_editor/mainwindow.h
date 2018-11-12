@@ -16,6 +16,7 @@
 #include "XML_utilities.hpp"
 #include "sidepanel_editor.h"
 #include "sidepanel_replay.h"
+#include "models/SubtreeNodeModel.hpp"
 
 #ifdef ZMQ_FOUND
 #include "sidepanel_monitor.h"
@@ -134,7 +135,7 @@ private:
     void loadSavedStateFromJson(const SavedState &state);
 
     QtNodes::Node *subTreeExpand(GraphicContainer& container,
-                       QtNodes::Node& node,
+                       QtNodes::Node &node,
                        SubtreeExpandOption option);
 
 signals:
