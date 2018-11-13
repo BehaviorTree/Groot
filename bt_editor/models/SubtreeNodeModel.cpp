@@ -20,6 +20,7 @@ SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
                                   "padding: 4px; border-radius: 3px; ");
     _expand_button->setFlat(false);
     _expand_button->setFocusPolicy(Qt::NoFocus);
+    _expand_button->adjustSize();
 
     connect( _expand_button, &QPushButton::clicked,
              this, [this]()
@@ -34,4 +35,6 @@ void SubtreeNodeModel::setExpanded(bool expand)
 {
     _expanded = expand;
     _expand_button->setText( _expanded ? "Collapse" : "Expand");
+    _expand_button->adjustSize();
+    _main_widget->adjustSize();
 }
