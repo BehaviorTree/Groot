@@ -12,15 +12,13 @@
                         </Decorator>
                     </FallbackStar>
                 </Fallback>
-                <Sequence>
-                    <SequenceStar name="DoSequenceStar">
-                        <Decorator ID="RetryUntilSuccesful" num_attempts="1">
-                            <Decorator ID="BB_Precondition" expected="value" key="key">
-                                <Action ID="AlwaysSuccess"/>
-                            </Decorator>
+                <SequenceStar name="DoSequenceStar">
+                    <Decorator ID="RetryUntilSuccesful" num_attempts="1">
+                        <Decorator ID="BB_Precondition" expected="value" key="key">
+                            <Action ID="AlwaysSuccess"/>
                         </Decorator>
-                    </SequenceStar>
-                </Sequence>
+                    </Decorator>
+                </SequenceStar>
                 <Decorator ID="Inverter">
                     <Decorator ID="ForceFailure">
                         <Decorator ID="ForceSuccess">

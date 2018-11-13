@@ -932,6 +932,8 @@ void MainWindow::onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QStr
 void MainWindow::on_actionClear_triggered()
 {
     onActionClearTriggered(true);
+    clearTreeModels();
+    clearUndoStacks();
 }
 
 void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)

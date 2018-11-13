@@ -19,7 +19,8 @@ QString readFile(const char* name)
     return data;
 }
 
-void TestMouseEvent(QGraphicsView* view, QEvent::Type type, QPoint pos, Qt::MouseButton button, Qt::KeyboardModifier modifier = Qt::NoModifier)
+void TestMouseEvent(QGraphicsView* view, QEvent::Type type, QPoint pos,
+                    Qt::MouseButton button, Qt::KeyboardModifier modifier = Qt::NoModifier)
 {
     auto event = new QMouseEvent(type, pos, view->viewport()->mapToGlobal(pos), button, button, modifier);
 
@@ -80,7 +81,6 @@ void GrootTest::loadFile()
     QString file_xml = readFile(":/crossdor_with_subtree.xml");
 
     main_win->on_actionClear_triggered();
-    main_win->clearTreeModels();
     main_win->loadFromXML( file_xml );
     QString saved_xml = main_win->saveToXML();
 
@@ -155,22 +155,23 @@ void GrootTest::loadFile()
 }
 
 
-
-
-
 void GrootTest::undoRedo()
 {
     QString file_xml = readFile(":/show_all.xml");
     main_win->on_actionClear_triggered();
-    main_win->clearTreeModels();
     main_win->loadFromXML( file_xml );
+
+    auto GetTreeFromCurrentTab = [this]()
+    {
+        return BuildTreeFromScene( main_win->currentTabInfo()->scene() );
+    };
 
     //------------------------------------------
     AbsBehaviorTree abs_tree_A, abs_tree_B;
     {
         auto container = main_win->currentTabInfo();
         auto view = container->view();
-        abs_tree_A = BuildTreeFromScene( container->scene() );
+        abs_tree_A = GetTreeFromCurrentTab();
 
         QApplication::processEvents();
         SleepAndRefresh( 500 );
@@ -197,27 +198,75 @@ void GrootTest::undoRedo()
     }
     //---------- test undo ----------
     {
+        abs_tree_B = GetTreeFromCurrentTab();
         main_win->onUndoInvoked();
         SleepAndRefresh( 500 );
 
-        auto container = main_win->currentTabInfo();
-        abs_tree_B = BuildTreeFromScene( container->scene() );
+        QCOMPARE( abs_tree_A, GetTreeFromCurrentTab() );
+        SleepAndRefresh( 500 );
     }
-
-    QCOMPARE( abs_tree_A, abs_tree_B);
-    SleepAndRefresh( 1000 );
 
     {
         main_win->onUndoInvoked();
-        SleepAndRefresh( 1000 );
-        auto container = main_win->currentTabInfo();
-        auto empty_abs_tree = BuildTreeFromScene( container->scene() );
+        SleepAndRefresh( 500 );
+        auto empty_abs_tree = GetTreeFromCurrentTab();
         QCOMPARE( empty_abs_tree.nodesCount(), 0);
 
+        // nothing should happen
         main_win->onUndoInvoked();
         main_win->onUndoInvoked();
         main_win->onUndoInvoked();
     }
+
+    {
+        main_win->onRedoInvoked();
+        SleepAndRefresh( 500 );
+        QCOMPARE( GetTreeFromCurrentTab(), abs_tree_A);
+
+        main_win->onRedoInvoked();
+        SleepAndRefresh( 500 );
+        QCOMPARE( GetTreeFromCurrentTab(), abs_tree_B);
+
+        // nothing should happen
+        main_win->onRedoInvoked();
+        main_win->onRedoInvoked();
+        main_win->onRedoInvoked();
+    }
+
+    {
+        auto container = main_win->currentTabInfo();
+        auto view = container->view();
+
+        auto prev_tree = GetTreeFromCurrentTab();
+        int prev_node_count = prev_tree.nodesCount();
+
+        auto node = prev_tree.findNode( "DoSequenceStar" );
+
+        QPoint pos = view->mapFromScene(node->pos);
+        TestMouseEvent(view, QEvent::MouseButtonDblClick, pos , Qt::LeftButton);
+        SleepAndRefresh( 500 );
+
+        QTest::keyPress( view->viewport(), Qt::Key_Delete, Qt::NoModifier );
+        SleepAndRefresh( 500 );
+
+        auto smaller_tree = GetTreeFromCurrentTab();
+        QCOMPARE( prev_node_count - 4 , smaller_tree.nodesCount() );
+
+        main_win->onUndoInvoked();
+        SleepAndRefresh( 500 );
+
+        auto undo_tree = GetTreeFromCurrentTab();
+        int undo_node_count = main_win->currentTabInfo()->scene()->nodes().size();
+        QCOMPARE( prev_node_count , undo_node_count );
+
+        QCOMPARE( prev_tree, undo_tree);
+        main_win->onRedoInvoked();
+        auto redo_tree = GetTreeFromCurrentTab();
+        SleepAndRefresh( 500 );
+
+        QCOMPARE( smaller_tree, redo_tree);
+    }
+    SleepAndRefresh( 500 );
 }
 
 QTEST_MAIN(GrootTest)
