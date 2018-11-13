@@ -3,13 +3,33 @@
 
 AbstractTreeNode *AbsBehaviorTree::rootNode()
 {
-    if( _root_node_index < 0 ||
-        _root_node_index >= static_cast<int>(_nodes.size()) )
-    {
-        return nullptr;
-    }
+    return nodeAtIndex( _root_node_index );
+}
+
+int AbsBehaviorTree::UidToIndex(uint16_t uid) const
+{
+    auto it = _UID_to_index.find(uid);
+    if( it == _UID_to_index.end() )
+        return -1;
     else
-        return &_nodes.at( _root_node_index );
+        return it->second;
+}
+
+AbstractTreeNode *AbsBehaviorTree::nodeAtIndex(int16_t index) {
+    return &_nodes.at( index );
+}
+const AbstractTreeNode *AbsBehaviorTree::nodeAtIndex(int16_t index) const{
+    return &_nodes.at( index );
+}
+
+AbstractTreeNode *AbsBehaviorTree::nodeAtUID(uint16_t uid)
+{
+    int index = UidToIndex(uid);
+    return nodeAtIndex(index);
+}
+const AbstractTreeNode *AbsBehaviorTree::nodeAtUID(uint16_t uid) const{
+    int index = UidToIndex(uid);
+    return nodeAtIndex(index);
 }
 
 const AbstractTreeNode *AbsBehaviorTree::findNode(const QString &instance_name)
@@ -47,14 +67,6 @@ void AbsBehaviorTree::pushBack(uint16_t UID, AbstractTreeNode node)
     _nodes.push_back( std::move(node) );
 }
 
-int AbsBehaviorTree::UidToIndex(uint16_t uid) const
-{
-    auto it = _UID_to_index.find(uid);
-    if( it == _UID_to_index.end() )
-        return -1;
-    else
-        return it->second;
-}
 
 void AbsBehaviorTree::updateRootIndex()
 {

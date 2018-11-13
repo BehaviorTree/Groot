@@ -103,16 +103,9 @@ public:
 
     AbstractTreeNode* rootNode();
 
-    AbstractTreeNode* nodeAtIndex( int16_t index ) {
-        if( index < 0 || index >= static_cast<int>(_nodes.size()) ) return nullptr;
-        return &_nodes.at( index );
-    }
+    AbstractTreeNode* nodeAtIndex( int16_t index );
 
-    AbstractTreeNode* nodeAtUID( uint16_t uid )
-    {
-        int index = UidToIndex(uid);
-        return nodeAtIndex(index);
-    }
+    AbstractTreeNode* nodeAtUID( uint16_t uid );
 
     const AbstractTreeNode *findNode(const QString& instance_name);
 
@@ -123,13 +116,9 @@ public:
 
     const AbstractTreeNode* rootNode() const;
 
-    const AbstractTreeNode* nodeAtIndex( int16_t index ) const{
-        return &_nodes.at( index );
-    }
+    const AbstractTreeNode* nodeAtIndex( int16_t index ) const;
 
-    const AbstractTreeNode* nodeAtUID( uint16_t uid ) const{
-        return &_nodes.at( UidToIndex(uid) );
-    }
+    const AbstractTreeNode* nodeAtUID( uint16_t uid ) const;
 
     void pushBack( uint16_t UID, AbstractTreeNode node );
 
