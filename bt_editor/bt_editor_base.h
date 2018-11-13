@@ -64,18 +64,28 @@ inline TreeNodeModels& BuiltinNodeModels()
 //--------------------------------
 struct AbstractTreeNode
 {
-    AbstractTreeNode() : index(-1), corresponding_node(nullptr) {}
+    AbstractTreeNode() : index(-1),
+        type(NodeType::UNDEFINED),
+        status(NodeStatus::IDLE),
+        corresponding_node(nullptr) {}
 
+    int16_t index;
     QString registration_name;
     QString instance_name;
     NodeType type;
     NodeStatus status;
     QSizeF size;
     QPointF pos; // top left corner
-    int16_t index;
     std::vector<int16_t> children_index;
     QtNodes::Node* corresponding_node;
     std::vector< std::pair<QString,QString> > parameters;
+
+    bool operator ==(const AbstractTreeNode& other) const;
+
+    bool operator !=(const AbstractTreeNode& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 class AbsBehaviorTree
@@ -94,11 +104,14 @@ public:
     AbstractTreeNode* rootNode();
 
     AbstractTreeNode* nodeAtIndex( int16_t index ) {
+        if( index < 0 || index >= static_cast<int>(_nodes.size()) ) return nullptr;
         return &_nodes.at( index );
     }
 
-    AbstractTreeNode* nodeAtUID( uint16_t uid ) {
-        return &_nodes.at( UidToIndex(uid) );
+    AbstractTreeNode* nodeAtUID( uint16_t uid )
+    {
+        int index = UidToIndex(uid);
+        return nodeAtIndex(index);
     }
 
     const AbstractTreeNode *findNode(const QString& instance_name);
@@ -125,6 +138,8 @@ public:
     void updateRootIndex();
 
     void debugPrint();
+
+    bool operator ==(const AbsBehaviorTree &other) const;
 
 private:
     std::vector<AbstractTreeNode> _nodes;

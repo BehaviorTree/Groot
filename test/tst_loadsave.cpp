@@ -61,19 +61,43 @@ void GrootTest::cleanupTestCase()
 
 void GrootTest::loadFile()
 {
-    QString xml = readFile(":/crossdor_with_subtree.xml");
+    QString file_xml = readFile(":/crossdor_with_subtree.xml");
 
     main_win->on_actionClear_triggered();
-    main_win->loadFromXML( xml );
-   // QString saved_xml = main_win->saveToXML();
+    main_win->loadFromXML( file_xml );
+    QString saved_xml = main_win->saveToXML();
 
-   // std::cout << saved_xml.toStdString() << std::endl;
-
-//    QVERIFY2( xml.simplified() == saved_xml.simplified(),
-//              "Loaded and saved XMl are not the same" );
+    QVERIFY2( file_xml.simplified() == saved_xml.simplified(),
+              "Loaded and saved XMl are not the same" );
 
     QApplication::processEvents();
     QTest::qSleep ( 1000 );
+    //-------------------------------
+    // Compare AbsBehaviorTree
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+    auto tree_A1 = BuildTreeFromScene( main_win->getTabByName("MainTree")->scene() );
+    auto tree_A2 = BuildTreeFromScene( main_win->getTabByName("DoorClosed")->scene() );
+
+    main_win->loadFromXML( saved_xml );
+    auto tree_B1 = BuildTreeFromScene( main_win->getTabByName("MainTree")->scene() );
+    auto tree_B2 = BuildTreeFromScene( main_win->getTabByName("DoorClosed")->scene() );
+
+    bool same_maintree   = tree_A1 == tree_B1;
+    bool same_doorclosed = tree_A2 == tree_B2;
+    if( !same_maintree )
+    {
+        tree_A1.debugPrint();
+        tree_B1.debugPrint();
+    }
+    if( !same_doorclosed )
+    {
+        tree_A2.debugPrint();
+        tree_B2.debugPrint();
+    }
+
+    QVERIFY2( same_maintree, "AbsBehaviorTree comparison fails" );
+    QVERIFY2( same_doorclosed, "AbsBehaviorTree comparison fails" );
 
     //-------------------------------
     // Next: expand the Subtree [DoorClosed]
@@ -91,6 +115,12 @@ void GrootTest::loadFile()
     QApplication::processEvents();
     QTest::qSleep ( 1000 );
 
+    //---------------------------------
+    // Expanded tree should save the same file
+    QString saved_xml_expanded = main_win->saveToXML();
+    QVERIFY2( saved_xml_expanded.simplified() == saved_xml.simplified(),
+              "Loaded and saved XMl are not the same" );
+
     //-------------------------------
     // Next: collapse again Subtree [DoorClosed]
     tree = BuildTreeFromScene( main_win->getTabByName("MainTree")->scene() );
@@ -107,7 +137,6 @@ void GrootTest::loadFile()
 
     QApplication::processEvents();
     QTest::qSleep ( 1000 );
-
 }
 
 QTEST_MAIN(GrootTest)

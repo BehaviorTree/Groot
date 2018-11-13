@@ -49,7 +49,11 @@ void AbsBehaviorTree::pushBack(uint16_t UID, AbstractTreeNode node)
 
 int AbsBehaviorTree::UidToIndex(uint16_t uid) const
 {
-    return _UID_to_index.at(uid);
+    auto it = _UID_to_index.find(uid);
+    if( it == _UID_to_index.end() )
+        return -1;
+    else
+        return it->second;
 }
 
 void AbsBehaviorTree::updateRootIndex()
@@ -113,6 +117,22 @@ void AbsBehaviorTree::debugPrint()
   }
 }
 
+bool AbsBehaviorTree::operator ==(const AbsBehaviorTree &other) const
+{
+    if( _nodes.size() != other._nodes.size() ) return false;
+    if( _UID_to_index.size() != other._UID_to_index.size() ) return false;
+
+    for (const auto& it: _UID_to_index)
+    {
+        uint16_t uid   = it.first;
+        uint16_t index = it.second;
+        auto nodeA = nodeAtIndex(index);
+        auto nodeAB = other.nodeAtUID(uid);
+        if( *nodeA != *nodeAB ) return false;
+    }
+    return true;
+}
+
 NodeType getNodeTypeFromString(const QString &str)
 {
     if( str == "Action")    return NodeType::ACTION;
@@ -162,3 +182,24 @@ const char *toStr(GraphicMode type)
     return nullptr;
 }
 
+
+bool AbstractTreeNode::operator ==(const AbstractTreeNode &other) const
+{
+    bool is_same =
+            registration_name == other.registration_name &&
+            instance_name == other.instance_name &&
+            type == other.type &&
+            status == other.status &&
+            size == other.size &&
+            pos == other.pos &&
+            corresponding_node == other.corresponding_node;
+
+    if(!is_same) return false;
+
+    if( parameters.size() != other.parameters.size() ) return false;
+    for (size_t index = 0; index < parameters.size(); index++)
+    {
+        if( parameters[index] != other.parameters[index]) return false;
+    }
+    return true;
+}
