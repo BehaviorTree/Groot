@@ -1,6 +1,8 @@
 #include <QtTest>
 #include <QGuiApplication>
-
+#include <QGraphicsView>
+#include <QMouseEvent>
+#include <QApplication>
 
 // add necessary includes here
 #include "bt_editor/mainwindow.h"
@@ -17,6 +19,20 @@ QString readFile(const char* name)
     return data;
 }
 
+void TestMouseEvent(QGraphicsView* view, QEvent::Type type, QPoint pos, Qt::MouseButton button, Qt::KeyboardModifier modifier = Qt::NoModifier)
+{
+    auto event = new QMouseEvent(type, pos, view->viewport()->mapToGlobal(pos), button, button, modifier);
+
+    QApplication::postEvent(view->viewport(), event);
+    QApplication::processEvents();
+}
+void SleepAndRefresh(int ms)
+{
+    QApplication::processEvents();
+    QTest::qSleep ( ms );
+    QApplication::processEvents();
+}
+
 class GrootTest : public QObject
 {
     Q_OBJECT
@@ -29,6 +45,7 @@ private slots:
     void initTestCase();
     void cleanupTestCase();
     void loadFile();
+    void undoRedo();
 
 private:
     MainWindow *main_win;
@@ -55,7 +72,6 @@ void GrootTest::cleanupTestCase()
 {
     QApplication::processEvents();
     main_win->on_actionClear_triggered();
-    QTest::qSleep ( 1000 );
     main_win->close();
 }
 
@@ -64,14 +80,14 @@ void GrootTest::loadFile()
     QString file_xml = readFile(":/crossdor_with_subtree.xml");
 
     main_win->on_actionClear_triggered();
+    main_win->clearTreeModels();
     main_win->loadFromXML( file_xml );
     QString saved_xml = main_win->saveToXML();
 
     QVERIFY2( file_xml.simplified() == saved_xml.simplified(),
               "Loaded and saved XMl are not the same" );
 
-    QApplication::processEvents();
-    QTest::qSleep ( 1000 );
+    SleepAndRefresh( 500 );
     //-------------------------------
     // Compare AbsBehaviorTree
     main_win->on_actionClear_triggered();
@@ -113,8 +129,7 @@ void GrootTest::loadFile()
         QVERIFY2(subtree_model, "Node [DoorClosed] is not SubtreeNodeModel");
         QTest::mouseClick( subtree_model->expandButton(), Qt::LeftButton );
     }
-    QApplication::processEvents();
-    QTest::qSleep ( 1000 );
+    SleepAndRefresh( 500 );
 
     //---------------------------------
     // Expanded tree should save the same file
@@ -136,8 +151,73 @@ void GrootTest::loadFile()
         QTest::mouseClick( subtree_model->expandButton(), Qt::LeftButton );
     }
 
-    QApplication::processEvents();
-    QTest::qSleep ( 1000 );
+    SleepAndRefresh( 500 );
+}
+
+
+
+
+
+void GrootTest::undoRedo()
+{
+    QString file_xml = readFile(":/show_all.xml");
+    main_win->on_actionClear_triggered();
+    main_win->clearTreeModels();
+    main_win->loadFromXML( file_xml );
+
+    //------------------------------------------
+    AbsBehaviorTree abs_tree_A, abs_tree_B;
+    {
+        auto container = main_win->currentTabInfo();
+        auto view = container->view();
+        abs_tree_A = BuildTreeFromScene( container->scene() );
+
+        QApplication::processEvents();
+        SleepAndRefresh( 500 );
+
+        auto pippo_node = abs_tree_A.findNode("Pippo");
+        auto gui_node = pippo_node->corresponding_node;
+        QPoint pos = view->mapFromScene(pippo_node->pos);
+        QPoint pos_offset = QPoint(100,0);
+
+        auto old_pos = view->mapFromScene( container->scene()->getNodePosition( *gui_node ) );
+
+        QTest::mouseClick( view->viewport(), Qt::LeftButton, Qt::NoModifier, pos );
+
+        QVERIFY2( gui_node->nodeGraphicsObject().isSelected(), "Pippo is not selected");
+
+        TestMouseEvent(view, QEvent::MouseButtonPress,    pos , Qt::LeftButton);
+        TestMouseEvent(view, QEvent::MouseMove,           pos + pos_offset, Qt::LeftButton);
+        TestMouseEvent(view, QEvent::MouseButtonRelease,  pos + pos_offset, Qt::LeftButton);
+
+        QPoint new_pos = view->mapFromScene( container->scene()->getNodePosition( *gui_node ) );
+
+        QCOMPARE( old_pos + pos_offset, new_pos);
+        SleepAndRefresh( 500 );
+    }
+    //---------- test undo ----------
+    {
+        main_win->onUndoInvoked();
+        SleepAndRefresh( 500 );
+
+        auto container = main_win->currentTabInfo();
+        abs_tree_B = BuildTreeFromScene( container->scene() );
+    }
+
+    QCOMPARE( abs_tree_A, abs_tree_B);
+    SleepAndRefresh( 1000 );
+
+    {
+        main_win->onUndoInvoked();
+        SleepAndRefresh( 1000 );
+        auto container = main_win->currentTabInfo();
+        auto empty_abs_tree = BuildTreeFromScene( container->scene() );
+        QCOMPARE( empty_abs_tree.nodesCount(), 0);
+
+        main_win->onUndoInvoked();
+        main_win->onUndoInvoked();
+        main_win->onUndoInvoked();
+    }
 }
 
 QTEST_MAIN(GrootTest)

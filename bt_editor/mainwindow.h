@@ -53,6 +53,7 @@ public:
 
     GraphicContainer *getTabByName(const QString& name);
 
+    void clearTreeModels();
 
 public slots:
 
@@ -172,6 +173,8 @@ private:
     MainWindow::SavedState saveCurrentState();
     void clearUndoStacks();
 };
+
+
 
 
 

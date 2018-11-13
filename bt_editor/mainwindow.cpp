@@ -992,6 +992,7 @@ void MainWindow::onActionClearTriggered(bool create_new)
 #ifdef ZMQ_FOUND
     _monitor_widget->clear();
 #endif
+
 }
 
 
@@ -1298,4 +1299,10 @@ void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
     } );
     QPoint globalPos = ui->tabWidget->tabBar()->mapToGlobal(pos);
     menu.exec(globalPos);
+}
+
+void MainWindow::clearTreeModels()
+{
+    _tree_nodes_model = BuiltinNodeModels();
+    _editor_widget->updateTreeView();
 }
