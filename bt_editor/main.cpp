@@ -51,7 +51,7 @@ main(int argc, char *argv[])
         MainWindow win( GraphicMode::EDITOR );
         win.setWindowTitle("Groot");
         win.show();
-        win.loadFromXML( gTestXML );
+        win.loadFromXML( ":/crossdor_with_subtree.xml" );
         return app.exec();
     }
     else{

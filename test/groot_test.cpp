@@ -84,19 +84,20 @@ void GrootTest::loadFile()
     auto tree_B2 = BuildTreeFromScene( main_win->getTabByName("DoorClosed")->scene() );
 
     bool same_maintree   = tree_A1 == tree_B1;
-    bool same_doorclosed = tree_A2 == tree_B2;
     if( !same_maintree )
     {
         tree_A1.debugPrint();
         tree_B1.debugPrint();
     }
+    QVERIFY2( same_maintree, "AbsBehaviorTree comparison fails" );
+
+    bool same_doorclosed = tree_A2 == tree_B2;
     if( !same_doorclosed )
     {
         tree_A2.debugPrint();
         tree_B2.debugPrint();
     }
 
-    QVERIFY2( same_maintree, "AbsBehaviorTree comparison fails" );
     QVERIFY2( same_doorclosed, "AbsBehaviorTree comparison fails" );
 
     //-------------------------------
@@ -141,4 +142,4 @@ void GrootTest::loadFile()
 
 QTEST_MAIN(GrootTest)
 
-#include "tst_loadsave.moc"
+#include "groot_test.moc"

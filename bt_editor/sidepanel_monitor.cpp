@@ -50,11 +50,11 @@ void SidepanelMonitor::on_timer()
             const uint32_t header_size = flatbuffers::ReadScalar<uint32_t>( buffer );
             const uint32_t num_transitions = flatbuffers::ReadScalar<uint32_t>( &buffer[4+header_size] );
 
-            for(size_t index = 4; index < header_size +4; index +=3 )
+            for(size_t offset = 4; offset < header_size +4; offset +=3 )
             {
-                uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[index]);
-                AbstractTreeNode* node = _loaded_tree.nodeAtUID( uid );
-                node->status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+2] ));
+                uint16_t index = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
+                AbstractTreeNode* node = _loaded_tree.node( index );
+                node->status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+2] ));
             }
 
             std::unordered_map<int, NodeStatus> node_status;
@@ -68,14 +68,13 @@ void SidepanelMonitor::on_timer()
                 //const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[index] );
                 //const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[index+4] );
                 //double timestamp = t_sec + t_usec* 0.000001;
-                uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
+                uint16_t index = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
                 //NodeStatus prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
                 NodeStatus status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+11] ));
 
-                int index = _loaded_tree.UidToIndex(uid);
-                _loaded_tree.nodeAtIndex(index)->status = status;
+                _loaded_tree.node(index)->status = status;
                 node_status[index] = status;
-                qDebug() << _loaded_tree.nodeAtIndex(index)->instance_name << " : " << toStr(status);
+                qDebug() << _loaded_tree.node(index)->instance_name << " : " << toStr(status);
             }
             // update the graphic part
 
@@ -84,7 +83,7 @@ void SidepanelMonitor::on_timer()
     }
     catch( zmq::error_t& err)
     {
-        qDebug() << "ZMQ receive failed ";
+        qDebug() << "ZMQ receive failed " << err.what();
     }
 }
 

@@ -97,7 +97,7 @@ void SidepanelReplay::updateTableModel(const AbsBehaviorTree& locaded_tree)
         for(size_t row=0; row < transitions_count; row++)
         {
             auto& trans = _transitions[row];
-            auto node  = locaded_tree.nodeAtIndex( trans.index );
+            auto node  = locaded_tree.node( trans.index );
 
             QString timestamp;
             timestamp.sprintf("%.3f", trans.timestamp - first_timestamp);
@@ -182,17 +182,16 @@ void SidepanelReplay::on_LoadLog()
     _transitions.clear();
     _transitions.reserve( (content.size() - 4 - bt_header_size) / 12 );
 
-    for (size_t index = 4+bt_header_size; index < content.size(); index += 12)
+    for (size_t offset = 4+bt_header_size; offset < content.size(); offset += 12)
     {
         Transition transition;
-        const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[index] );
-        const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[index+4] );
+        const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[offset] );
+        const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[offset+4] );
         double timestamp = t_sec + t_usec* 0.000001;
         transition.timestamp = timestamp;
-        auto UID = flatbuffers::ReadScalar<uint16_t>(&buffer[index+8]);
-        transition.index = loaded_tree.UidToIndex( UID );
-        transition.prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
-        transition.status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+11] ));
+        transition.index = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
+        transition.prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+10] ));
+        transition.status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+11] ));
 
         _transitions.push_back(transition);
     }

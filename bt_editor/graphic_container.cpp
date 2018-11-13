@@ -597,9 +597,9 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
     _scene->createConnection( *abs_node->corresponding_node, 0,
                              *parent_node, 0 );
 
-    for ( int16_t index: abs_node->children_index )
+    for ( int index: abs_node->children_index)
     {
-        AbstractTreeNode* child = tree.nodeAtIndex(index);
+        AbstractTreeNode* child = tree.node(index);
         recursiveLoadStep(cursor, x_offset, tree, child, abs_node->corresponding_node, nest_level+1 );
         x_offset += 30;
     }
@@ -617,10 +617,12 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
     auto first_qt_node = &(_scene->createNode( _scene->registry().create("Root"), cursor ));
 
     auto root_node = abstract_tree.rootNode();
+
     if( root_node->type == NodeType::ROOT)
     {
       root_node->corresponding_node = first_qt_node;
-      root_node = abstract_tree.nodeAtIndex( root_node->children_index.front() );
+      int root_child_index = root_node->children_index.front();
+      root_node = abstract_tree.node(root_child_index);
     }
 
     recursiveLoadStep(cursor, x_offset, abstract_tree, root_node, first_qt_node, 1 );
@@ -630,7 +632,7 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
 {
     const QSignalBlocker blocker( this );
 
-    for (auto abs_node: subtree.nodes() )
+    for (auto& abs_node: subtree.nodes() )
     {
         abs_node.corresponding_node = nullptr;
     }
@@ -644,7 +646,8 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
     if( root_node->type == NodeType::ROOT &&
         root_node->children_index.size() == 1 )
     {
-        root_node = subtree.nodeAtIndex( root_node->children_index.front() );
+        int root_child_index = root_node->children_index.front();
+        root_node = subtree.node(root_child_index);
     }
 
     recursiveLoadStep(cursor, x_offset, subtree, root_node , &node, 1 );

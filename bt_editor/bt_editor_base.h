@@ -7,6 +7,7 @@
 #include <map>
 #include <unordered_map>
 #include <nodes/Node>
+#include <deque>
 
 enum class NodeType   { ACTION, DECORATOR, CONTROL, CONDITION, SUBTREE, ROOT, UNDEFINED };
 enum class NodeStatus { IDLE, RUNNING, SUCCESS, FAILURE };
@@ -64,19 +65,20 @@ inline TreeNodeModels& BuiltinNodeModels()
 //--------------------------------
 struct AbstractTreeNode
 {
-    AbstractTreeNode() : index(-1),
+    AbstractTreeNode() :
+        index(-1),
         type(NodeType::UNDEFINED),
         status(NodeStatus::IDLE),
         corresponding_node(nullptr) {}
 
-    int16_t index;
+    int index;
     QString registration_name;
     QString instance_name;
     NodeType type;
     NodeStatus status;
     QSizeF size;
     QPointF pos; // top left corner
-    std::vector<int16_t> children_index;
+    std::vector<int> children_index;
     QtNodes::Node* corresponding_node;
     std::vector< std::pair<QString,QString> > parameters;
 
@@ -91,49 +93,41 @@ struct AbstractTreeNode
 class AbsBehaviorTree
 {
 public:
-    AbsBehaviorTree():_root_node_index(-1) {}
+
+    typedef std::deque<AbstractTreeNode> NodesVector;
+
+    AbsBehaviorTree() {}
+
+    ~AbsBehaviorTree();
 
     size_t nodesCount() const {
         return _nodes.size();
     }
 
-    const std::vector<AbstractTreeNode>& nodes() const { return _nodes; }
+    const NodesVector& nodes() const { return _nodes; }
 
-    std::vector<AbstractTreeNode>& nodes() { return _nodes; }
+    NodesVector& nodes() { return _nodes; }
+
+    const AbstractTreeNode* node(size_t index) const { return &_nodes.at(index); }
+
+    AbstractTreeNode* node(size_t index) { return &_nodes.at(index); }
 
     AbstractTreeNode* rootNode();
 
-    AbstractTreeNode* nodeAtIndex( int16_t index );
-
-    AbstractTreeNode* nodeAtUID( uint16_t uid );
+    const AbstractTreeNode* rootNode() const;
 
     const AbstractTreeNode *findNode(const QString& instance_name);
 
-    int rootIndex() const
-    {
-      return _root_node_index;
-    }
-
-    const AbstractTreeNode* rootNode() const;
-
-    const AbstractTreeNode* nodeAtIndex( int16_t index ) const;
-
-    const AbstractTreeNode* nodeAtUID( uint16_t uid ) const;
-
-    void pushBack( uint16_t UID, AbstractTreeNode node );
-
-    int UidToIndex(uint16_t uid) const ;
-
-    void updateRootIndex();
+    AbstractTreeNode* addNode(AbstractTreeNode* parent, AbstractTreeNode &&new_node );
 
     void debugPrint();
 
     bool operator ==(const AbsBehaviorTree &other) const;
 
+    void clear();
+
 private:
-    std::vector<AbstractTreeNode> _nodes;
-    std::unordered_map<uint16_t, int16_t> _UID_to_index;
-    int16_t _root_node_index;
+    NodesVector _nodes;
 };
 
 static int GetUID()

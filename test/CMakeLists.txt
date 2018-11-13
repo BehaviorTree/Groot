@@ -13,7 +13,7 @@ SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 ENABLE_TESTING()
 
 
-add_executable(${PROJECT_NAME} tst_loadsave.cpp ${RESOURCES})
+add_executable(${PROJECT_NAME} groot_test.cpp ${RESOURCES})
 
 add_test(${PROJECT_NAME} COMMAND ${PROJECT_NAME})
 

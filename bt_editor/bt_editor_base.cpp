@@ -1,36 +1,28 @@
 #include "bt_editor_base.h"
 #include <QDebug>
 
+void AbsBehaviorTree::clear()
+{
+    _nodes.resize(0);
+}
+
+AbsBehaviorTree::~AbsBehaviorTree()
+{
+    clear();
+}
+
 AbstractTreeNode *AbsBehaviorTree::rootNode()
 {
-    return nodeAtIndex( _root_node_index );
+    if( _nodes.empty() ) return nullptr;
+    return &_nodes.front();
 }
 
-int AbsBehaviorTree::UidToIndex(uint16_t uid) const
+const AbstractTreeNode *AbsBehaviorTree::rootNode() const
 {
-    auto it = _UID_to_index.find(uid);
-    if( it == _UID_to_index.end() )
-        return -1;
-    else
-        return it->second;
+    if( _nodes.empty() ) return nullptr;
+    return &_nodes.front();
 }
 
-AbstractTreeNode *AbsBehaviorTree::nodeAtIndex(int16_t index) {
-    return &_nodes.at( index );
-}
-const AbstractTreeNode *AbsBehaviorTree::nodeAtIndex(int16_t index) const{
-    return &_nodes.at( index );
-}
-
-AbstractTreeNode *AbsBehaviorTree::nodeAtUID(uint16_t uid)
-{
-    int index = UidToIndex(uid);
-    return nodeAtIndex(index);
-}
-const AbstractTreeNode *AbsBehaviorTree::nodeAtUID(uint16_t uid) const{
-    int index = UidToIndex(uid);
-    return nodeAtIndex(index);
-}
 
 const AbstractTreeNode *AbsBehaviorTree::findNode(const QString &instance_name)
 {
@@ -44,103 +36,60 @@ const AbstractTreeNode *AbsBehaviorTree::findNode(const QString &instance_name)
     return nullptr;
 }
 
-const AbstractTreeNode *AbsBehaviorTree::rootNode() const
+
+
+AbstractTreeNode* AbsBehaviorTree::addNode(AbstractTreeNode* parent, AbstractTreeNode && new_node )
 {
-    if( _root_node_index < 0 ||
-        _root_node_index >= static_cast<int>(_nodes.size()) )
+    int index = _nodes.size();
+    new_node.index = index;
+    if( parent )
     {
-        return nullptr;
+        _nodes.push_back( std::move(new_node) );
+        parent->children_index.push_back( index );
     }
     else{
-        return &_nodes.at( _root_node_index );
+        _nodes.clear();
+        _nodes.push_back(new_node);
     }
-}
-
-void AbsBehaviorTree::pushBack(uint16_t UID, AbstractTreeNode node)
-{
-    node.index = _nodes.size();
-    if( _UID_to_index.count(UID) > 0 )
-    {
-        throw std::logic_error("Duplicated UID in AbsBehaviorTree::pushBack");
-    }
-    _UID_to_index.insert( {UID, node.index} );
-    _nodes.push_back( std::move(node) );
-}
-
-
-void AbsBehaviorTree::updateRootIndex()
-{
-    std::vector<bool> index_has_parent(_nodes.size(), false);
-
-    for(const auto& node: _nodes)
-    {
-        for(int child_index: node.children_index)
-        {
-            index_has_parent[ child_index ] = true;
-        }
-    }
-    int root_count = 0;
-    for(size_t index = 0; index < index_has_parent.size(); index++)
-    {
-        if (! index_has_parent[index] )
-        {
-            root_count++;
-            _root_node_index = index;
-        }
-    }
-    if( root_count != 1)
-    {
-        for(size_t index = 0; index < index_has_parent.size(); index++)
-        {
-            if (! index_has_parent[index] )
-            {
-                qDebug() << nodeAtIndex(index)->instance_name << " is root ?";
-            }
-        }
-        qDebug() << "Malformed AbsBehaviorTree";
-    }
+    return &_nodes.back();
 }
 
 void AbsBehaviorTree::debugPrint()
 {
-  std::function<void(const AbstractTreeNode*,int)> recursiveStep;
-
-  recursiveStep = [&](const AbstractTreeNode* node, int indent)
-  {
-    for(int i=0; i< indent; i++) printf("    ");
-
-    printf("%s (%s)\n",
-           node->instance_name.toStdString().c_str(),
-           node->registration_name.toStdString().c_str() );
-
-    for(auto& child_index: node->children_index)
+    if( !rootNode() )
     {
-      recursiveStep( nodeAtIndex(child_index), indent+1);
+        qDebug() << "Empty AbsBehaviorTree";
+        return;
     }
-  };
+    std::function<void(const AbstractTreeNode*,int)> recursiveStep;
 
-  if(  !rootNode() )
-  {
-      printf("AbsBehaviorTree has root %d and size of nodes vector %d\n",
-             rootIndex(), (int)_nodes.size() );
-  }
-  else {
+    recursiveStep = [&](const AbstractTreeNode* node, int indent)
+    {
+        for(int i=0; i< indent; i++) printf("    ");
+
+        printf("%s (%s)",
+               node->instance_name.toStdString().c_str(),
+               node->registration_name.toStdString().c_str() );
+        std::cout << std::endl; // force flush
+
+        for(int index: node->children_index)
+        {
+            auto child_node = &_nodes[index];
+            recursiveStep( child_node, indent+1);
+        }
+    };
+
     recursiveStep( rootNode(), 0 );
-  }
+
 }
 
 bool AbsBehaviorTree::operator ==(const AbsBehaviorTree &other) const
 {
     if( _nodes.size() != other._nodes.size() ) return false;
-    if( _UID_to_index.size() != other._UID_to_index.size() ) return false;
 
-    for (const auto& it: _UID_to_index)
+    for (size_t index = 0; index < _nodes.size(); index++)
     {
-        uint16_t uid   = it.first;
-        uint16_t index = it.second;
-        auto nodeA = nodeAtIndex(index);
-        auto nodeAB = other.nodeAtUID(uid);
-        if( *nodeA != *nodeAB ) return false;
+        if( _nodes[index] != other._nodes[index]) return false;
     }
     return true;
 }
@@ -198,17 +147,16 @@ const char *toStr(GraphicMode type)
 bool AbstractTreeNode::operator ==(const AbstractTreeNode &other) const
 {
     bool is_same =
-            registration_name == other.registration_name &&
-            instance_name == other.instance_name &&
             type == other.type &&
             status == other.status &&
             size == other.size &&
             pos == other.pos &&
-            corresponding_node == other.corresponding_node;
+            registration_name == other.registration_name &&
+            instance_name == other.instance_name &&
+            parameters.size() == other.parameters.size() ;
 
     if(!is_same) return false;
 
-    if( parameters.size() != other.parameters.size() ) return false;
     for (size_t index = 0; index < parameters.size(); index++)
     {
         if( parameters[index] != other.parameters[index]) return false;

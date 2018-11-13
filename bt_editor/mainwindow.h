@@ -89,7 +89,7 @@ public slots:
 
     void onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name);
 
-    void onChangeNodesStyle(const QString& bt_name, const std::unordered_map<int, NodeStatus>& node_status);
+    void onChangeNodesStatus(const QString& bt_name, const std::unordered_map<int, NodeStatus>& node_status);
 
     void on_toolButtonLayout_clicked();
 

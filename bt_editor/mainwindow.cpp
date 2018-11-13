@@ -152,12 +152,12 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
              this, &MainWindow::on_actionSave_triggered );
 
     connect( _replay_widget, &SidepanelReplay::changeNodeStyle,
-             this, &MainWindow::onChangeNodesStyle);
+             this, &MainWindow::onChangeNodesStatus);
 
 #ifdef ZMQ_FOUND
 
     connect( _monitor_widget, &SidepanelMonitor::changeNodeStyle,
-             this, &MainWindow::onChangeNodesStyle);
+             this, &MainWindow::onChangeNodesStatus);
 
     connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
              this, &MainWindow::onCreateAbsBehaviorTree );
@@ -791,16 +791,16 @@ void MainWindow::onDestroySubTree(const QString &ID)
         }
         auto container = it.second;
         auto tree = BuildTreeFromScene(container->scene());
-        for( auto& abs_node: tree.nodes())
+        for( const auto& abs_node: tree.nodes())
         {
-            auto node = abs_node.corresponding_node;
-            auto bt_node = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
+            auto qt_node = abs_node.corresponding_node;
+            auto bt_node = dynamic_cast<BehaviorTreeDataModel*>(qt_node->nodeDataModel());
             if(bt_node->nodeType() == NodeType::SUBTREE && bt_node->instanceName() == ID)
             {
-                auto new_node = node;
+                auto new_node = qt_node;
                 if( dynamic_cast<SubtreeNodeModel*>(bt_node) )
                 {
-                    new_node = subTreeExpand( *container, *node,
+                    new_node = subTreeExpand( *container, *qt_node,
                                               SubtreeExpandOption::SUBTREE_EXPAND );
                 }
                 container->lockSubtreeEditing(*new_node, false);
@@ -1227,15 +1227,15 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
     return true;
 }
 
-void MainWindow::onChangeNodesStyle(const QString& bt_name,
+void MainWindow::onChangeNodesStatus(const QString& bt_name,
                                     const std::unordered_map<int, NodeStatus>& node_status)
 {
-    auto tree = BuildTreeFromScene( getTabByName(bt_name)->scene() );
+ /*   auto tree = BuildTreeFromScene( getTabByName(bt_name)->scene() );
 
     for (auto& it: node_status)
     {
         const int index = it.first;
-        auto abs_node = tree.nodeAtIndex(index);
+        auto abs_node = tree.nodes(index);
         abs_node->status = it.second;
 
         auto& node = abs_node->corresponding_node;
@@ -1250,7 +1250,7 @@ void MainWindow::onChangeNodesStyle(const QString& bt_name,
             conn->setStyle( style.second );
             conn->connectionGraphicsObject().update();
         }
-    }
+    }*/
 }
 
 void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)

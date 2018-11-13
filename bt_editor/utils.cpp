@@ -89,7 +89,7 @@ std::vector<Node*> getChildren(const QtNodes::FlowScene &scene,
 
 //---------------------------------------------------
 
-void RecursiveNodeReorder(AbsBehaviorTree & tree, AbstractTreeNode* root_node, PortLayout layout)
+void RecursiveNodeReorder(AbsBehaviorTree& tree, PortLayout layout)
 {
     std::function<void(unsigned, AbstractTreeNode*)> recursiveStep;
 
@@ -105,89 +105,91 @@ void RecursiveNodeReorder(AbsBehaviorTree & tree, AbstractTreeNode* root_node, P
         nodes_by_level[current_layer].push_back( node );
 
         //------------------------------------
-        if( node->children_index.size() > 0 )
+        if( node->children_index.size() == 0 )
         {
-            qreal recommended_pos = NODE_SPACING * 0.5;
+            return;
+        }
+        qreal recommended_pos = NODE_SPACING * 0.5;
 
-            current_layer++;
+        current_layer++;
 
-            if( layout == PortLayout::Vertical)
-            {
-                recommended_pos += (node->pos.x() + node->size.width()*0.5)  ;
-                for(int16_t index: node->children_index)
-                {
-                    AbstractTreeNode* child = (tree.nodeAtIndex( index ));
-                    recommended_pos -=  (child->size.width() + NODE_SPACING) * 0.5;
-                }
-
-                if( current_layer >= layer_cursor.size())
-                {
-                    QPointF new_cursor( recommended_pos,
-                                        node->pos.y() + LEVEL_SPACING );
-                    layer_cursor.push_back( new_cursor );
-                    nodes_by_level.push_back( std::vector<AbstractTreeNode*>() );
-                }
-                else{
-                    recommended_pos = std::max( recommended_pos, layer_cursor[current_layer].x() );
-                    layer_cursor[current_layer].setX(recommended_pos);
-                }
-            }//------------------------------------
-            else
-            {
-                recommended_pos += node->pos.y() + node->size.height()*0.5;
-                for(int index: node->children_index)
-                {
-                    AbstractTreeNode* child = (tree.nodeAtIndex( index ));
-                    recommended_pos -=  (child->size.height() + NODE_SPACING) * 0.5;
-                }
-
-                if( current_layer >= layer_cursor.size())
-                {
-                    QPointF new_cursor( node->pos.x() + LEVEL_SPACING,
-                                        recommended_pos);
-                    layer_cursor.push_back( new_cursor );
-                    nodes_by_level.push_back( std::vector<AbstractTreeNode*>() );
-                }
-                else{
-                    recommended_pos = std::max( recommended_pos, layer_cursor[current_layer].y() );
-                    layer_cursor[current_layer].setY(recommended_pos);
-                }
-            }
-            //------------------------------------
-
-            auto initial_pos = layer_cursor[current_layer];
-
+        if( layout == PortLayout::Vertical)
+        {
+            recommended_pos += (node->pos.x() + node->size.width()*0.5)  ;
             for(int index: node->children_index)
             {
-                AbstractTreeNode* child = (tree.nodeAtIndex( index ));
-
-                recursiveStep(current_layer, child);
-                if( layout == PortLayout::Vertical)
-                {
-                    layer_cursor[current_layer]+= QPointF( child->size.width() + NODE_SPACING, 0 );
-                }
-                else{
-                    layer_cursor[current_layer]+= QPointF( 0, child->size.height() + NODE_SPACING );
-                }
+                const auto& child_node = tree.nodes()[index];
+                recommended_pos -=  (child_node.size.width() + NODE_SPACING) * 0.5;
             }
 
-            auto final_pos = layer_cursor[current_layer];
-
-            // rebalance father
-            if( layout == PortLayout::Vertical)
+            if( current_layer >= layer_cursor.size())
             {
-                double diff = (node->pos.x() + node->size.width()*0.5) - (final_pos.x() + initial_pos.x() - NODE_SPACING)* 0.5 ;
-                node->pos += QPointF( - diff, 0 );
-                layer_cursor[current_layer -1 ] += QPointF( - diff, 0 );
+                QPointF new_cursor( recommended_pos,
+                                    node->pos.y() + LEVEL_SPACING );
+                layer_cursor.push_back( new_cursor );
+                nodes_by_level.push_back( std::vector<AbstractTreeNode*>() );
             }
             else{
-                double diff = (node->pos.y() + node->size.height()*0.5) - (final_pos.y() + initial_pos.y() - NODE_SPACING)* 0.5 ;
-                node->pos += QPointF( 0, - diff );
-                layer_cursor[current_layer -1 ] += QPointF( 0, - diff );
+                recommended_pos = std::max( recommended_pos, layer_cursor[current_layer].x() );
+                layer_cursor[current_layer].setX(recommended_pos);
             }
+        }//------------------------------------
+        else
+        {
+            recommended_pos += node->pos.y() + node->size.height()*0.5;
+            for(int index: node->children_index)
+            {
+                const auto& child_node = tree.nodes()[index];
+                recommended_pos -=  (child_node.size.height() + NODE_SPACING) * 0.5;
+            }
+
+            if( current_layer >= layer_cursor.size())
+            {
+                QPointF new_cursor( node->pos.x() + LEVEL_SPACING,
+                                    recommended_pos);
+                layer_cursor.push_back( new_cursor );
+                nodes_by_level.push_back( std::vector<AbstractTreeNode*>() );
+            }
+            else{
+                recommended_pos = std::max( recommended_pos, layer_cursor[current_layer].y() );
+                layer_cursor[current_layer].setY(recommended_pos);
+            }
+        }
+        //------------------------------------
+
+        auto initial_pos = layer_cursor[current_layer];
+
+        for(int index: node->children_index)
+        {
+            AbstractTreeNode* child_node = tree.node(index);
+
+            recursiveStep(current_layer, child_node);
+            if( layout == PortLayout::Vertical)
+            {
+                layer_cursor[current_layer]+= QPointF( child_node->size.width() + NODE_SPACING, 0 );
+            }
+            else{
+                layer_cursor[current_layer]+= QPointF( 0, child_node->size.height() + NODE_SPACING );
+            }
+        }
+
+        auto final_pos = layer_cursor[current_layer];
+
+        // rebalance father
+        if( layout == PortLayout::Vertical)
+        {
+            double diff = (node->pos.x() + node->size.width()*0.5) - (final_pos.x() + initial_pos.x() - NODE_SPACING)* 0.5 ;
+            node->pos += QPointF( - diff, 0 );
+            layer_cursor[current_layer -1 ] += QPointF( - diff, 0 );
+        }
+        else{
+            double diff = (node->pos.y() + node->size.height()*0.5) - (final_pos.y() + initial_pos.y() - NODE_SPACING)* 0.5 ;
+            node->pos += QPointF( 0, - diff );
+            layer_cursor[current_layer -1 ] += QPointF( 0, - diff );
         }
     };
 
+    auto root_node = tree.rootNode();
     recursiveStep(0, root_node);
 
     if( layout == PortLayout::Vertical)
@@ -226,14 +228,12 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
         return;
     }
 
-    AbstractTreeNode* root_node =  tree.rootNode();
-    RecursiveNodeReorder(tree, root_node, scene.layout() );
+    RecursiveNodeReorder(tree, scene.layout() );
 
-    for (size_t index = 0; index < tree.nodesCount(); index++)
+    for (const auto& abs_node: tree.nodes())
     {
-        auto abs_node = tree.nodeAtIndex(index);
-        Node& node = *( abs_node->corresponding_node);
-        scene.setNodePosition( node, abs_node->pos );
+        Node& node = *( abs_node.corresponding_node);
+        scene.setNodePosition( node, abs_node.pos );
     }
 }
 
@@ -256,10 +256,9 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
 
     AbsBehaviorTree tree;
 
-    std::map<QtNodes::Node*,int> node_to_index;
+    std::function<void(AbstractTreeNode*, QtNodes::Node*)> pushRecursively;
 
-    std::function<void(QtNodes::Node*)> pushRecursively;
-    pushRecursively = [&](QtNodes::Node* node)
+    pushRecursively = [&](AbstractTreeNode* parent, QtNodes::Node* node)
     {
         AbstractTreeNode abs_node;
 
@@ -271,36 +270,19 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
         abs_node.size = scene->getNodeSize(*node);
         abs_node.corresponding_node = node;
         abs_node.parameters = bt_model->getCurrentParameters();
-        abs_node.index = tree.nodesCount();
         abs_node.type = bt_model->nodeType();
 
-        node_to_index.insert( { node, abs_node.index } );
-        tree.pushBack( bt_model->UID(), abs_node );
+        auto added_node = tree.addNode( parent, std::move(abs_node) );
 
         auto children = getChildren( *scene, *node, true );
 
         for(auto& child_node: children )
         {
-            pushRecursively( child_node );
+            pushRecursively( added_node, child_node );
         }
     };
 
-    pushRecursively( root_node );
-
-    for( auto& abs_node: tree.nodes())
-    {
-        auto node = abs_node.corresponding_node;
-        auto children = getChildren( *scene, *node, true );
-
-        abs_node.children_index.reserve( children.size() );
-
-        for(auto& child_node: children )
-        {
-            abs_node.children_index.push_back( node_to_index[child_node] );
-        }
-    }
-
-    tree.updateRootIndex();
+    pushRecursively( nullptr, root_node );
 
     return tree;
 }
@@ -343,9 +325,9 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
         throw std::runtime_error( "expecting a node called <BehaviorTree>");
     }
 
-    std::function<void(const XMLElement*, int)> recursiveStep;
+    std::function<void(AbstractTreeNode* parent, const XMLElement*)> recursiveStep;
 
-    recursiveStep = [&](const XMLElement* xml_node, int parent_index)
+    recursiveStep = [&](AbstractTreeNode* parent, const XMLElement* xml_node)
     {
         // The nodes with a ID used that QString to insert into the registry()
         QString modelID = xml_node->Name();
@@ -378,27 +360,18 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
             }
         }
 
-        const int CURRENT_INDEX = tree.nodesCount();
-        tree.pushBack( CURRENT_INDEX, tree_node);
-
-        if( parent_index >= 0 )
-        {
-            auto parent_node = tree.nodeAtIndex(parent_index);
-            parent_node->children_index.push_back( CURRENT_INDEX );
-        }
+        auto added_node = tree.addNode(parent, std::move(tree_node));
 
         for (const XMLElement*  child = xml_node->FirstChildElement( )  ;
              child != nullptr;
              child = child->NextSiblingElement( ) )
         {
-            recursiveStep( child, CURRENT_INDEX );
+            recursiveStep( added_node, child );
         }
     };
 
     // start recursion
-    recursiveStep( bt_root->FirstChildElement(), -1 );
-
-    tree.updateRootIndex();
+    recursiveStep( nullptr, bt_root->FirstChildElement() );
 
     return tree;
 }
@@ -408,47 +381,46 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
 {
     AbsBehaviorTree tree;
 
-    AbstractTreeNode root_node;
-    root_node.instance_name = "Root";
-    root_node.registration_name = "Root";
-    root_node.type = NodeType::ROOT;
-    root_node.children_index.push_back( 1 );
+    AbstractTreeNode abs_root;
+    abs_root.instance_name = "Root";
+    abs_root.registration_name = "Root";
+    abs_root.type = NodeType::ROOT;
+    abs_root.children_index.push_back( 1 );
 
-    tree.pushBack( std::numeric_limits<uint16_t>::max(), root_node );
+    tree.addNode( nullptr, std::move(abs_root) );
 
-    for( const BT_Serialization::TreeNode* node: *(fb_behavior_tree->nodes()) )
+    std::unordered_map<int, int> uid_to_index;
+
+    // just copy the vector
+    for( const BT_Serialization::TreeNode* fb_node: *(fb_behavior_tree->nodes()) )
     {
         AbstractTreeNode abs_node;
-        abs_node.instance_name = node->instance_name()->c_str();
-        abs_node.registration_name = node->registration_name()->c_str();
-        abs_node.type   = convert( node->type() );
-        abs_node.status = convert( node->status() );
+        abs_node.instance_name = fb_node->instance_name()->c_str();
+        abs_node.registration_name = fb_node->registration_name()->c_str();
+        abs_node.type   = convert( fb_node->type() );
+        abs_node.status = convert( fb_node->status() );
 
-        for( const BT_Serialization::KeyValue* pair: *(node->params()) )
+        for( const BT_Serialization::KeyValue* pair: *(fb_node->params()) )
         {
             abs_node.parameters.push_back( { QString(pair->key()->c_str()),
                                              QString(pair->value()->c_str()) } );
         }
-
-        tree.pushBack(node->uid(), abs_node);
+        int index = tree.nodesCount();
+        abs_node.index = index;
+        tree.nodes().push_back( std::move(abs_node) );
+        uid_to_index.insert( { fb_node->uid(), index} );
     }
 
     for(size_t index = 0; index < fb_behavior_tree->nodes()->size(); index++ )
     {
         const BT_Serialization::TreeNode* fb_node = fb_behavior_tree->nodes()->Get(index);
-        // index+1 because we added the Root
-        AbstractTreeNode* abs_node = tree.nodeAtIndex( index+1 );
-
+        AbstractTreeNode* abs_node = tree.node( index + 1);
         for( const auto child_uid: *(fb_node->children_uid()) )
         {
-            int child_index = tree.UidToIndex( child_uid );
-            abs_node->children_index.push_back( child_index );
+            int child_index = uid_to_index[ child_uid ];
+            abs_node->children_index.push_back(child_index);
         }
     }
-
-    tree.updateRootIndex();
-//    tree.debugPrint();
-//    std::cout << " .....  " << std::endl;
     return tree;
 }
 
@@ -471,19 +443,19 @@ getStyleFromStatus(NodeStatus status)
     if( status == NodeStatus::SUCCESS )
     {
         node_style.NormalBoundaryColor =
-        node_style.ShadowColor = QColor(51, 200, 51);
+                node_style.ShadowColor = QColor(51, 200, 51);
         conn_style.NormalColor = node_style.NormalBoundaryColor;
     }
     else if( status == NodeStatus::RUNNING )
     {
         node_style.NormalBoundaryColor =
-        node_style.ShadowColor =  QColor(220, 140, 20);
+                node_style.ShadowColor =  QColor(220, 140, 20);
         conn_style.NormalColor = node_style.NormalBoundaryColor;
     }
     else if( status == NodeStatus::FAILURE )
     {
         node_style.NormalBoundaryColor =
-        node_style.ShadowColor = QColor(250, 50, 50);
+                node_style.ShadowColor = QColor(250, 50, 50);
         conn_style.NormalColor = node_style.NormalBoundaryColor;
     }
 
