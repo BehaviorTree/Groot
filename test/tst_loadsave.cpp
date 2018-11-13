@@ -47,6 +47,7 @@ GrootTest::~GrootTest()
 void GrootTest::initTestCase()
 {
     main_win = new MainWindow(GraphicMode::EDITOR, nullptr);
+    main_win->resize(1200, 800);
     main_win->show();
 }
 
@@ -99,9 +100,9 @@ void GrootTest::loadFile()
 
     {
         auto data_model = subtree_abs_node->corresponding_node->nodeDataModel();
-        auto subtree_model = dynamic_cast<SubtreeExpandedNodeModel*>(data_model);
-        QVERIFY2(subtree_model, "Node [DoorClosed] is not SubtreeExpandedNodeModel");
-        QTest::mouseClick( subtree_model->collapseButton(), Qt::LeftButton );
+        auto subtree_model = dynamic_cast<SubtreeNodeModel*>(data_model);
+        QVERIFY2(subtree_model, "Node [DoorClosed] is not SubtreeNodeModel");
+        QTest::mouseClick( subtree_model->expandButton(), Qt::LeftButton );
     }
 
     QApplication::processEvents();
