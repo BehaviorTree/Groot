@@ -781,7 +781,6 @@ void MainWindow::onAddToModelRegistry(const QString &ID, const TreeNodeModel &mo
 void MainWindow::onDestroySubTree(const QString &ID)
 {
     auto sub_container = getTabByName(ID);
-    auto subtree = BuildTreeFromScene(sub_container->scene());
 
     for(auto& it: _tab_info)
     {
@@ -798,7 +797,8 @@ void MainWindow::onDestroySubTree(const QString &ID)
             if(bt_node->nodeType() == NodeType::SUBTREE && bt_node->instanceName() == ID)
             {
                 auto new_node = qt_node;
-                if( dynamic_cast<SubtreeNodeModel*>(bt_node) )
+                auto subtree_model = dynamic_cast<SubtreeNodeModel*>(bt_node);
+                if( subtree_model && subtree_model->expanded() == false )
                 {
                     new_node = subTreeExpand( *container, *qt_node,
                                               SubtreeExpandOption::SUBTREE_EXPAND );
@@ -833,7 +833,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
     auto subtree_model = dynamic_cast<SubtreeNodeModel*>(node.nodeDataModel());
     const QString& subtree_name = subtree_model->instanceName();
 
-    if( option == SUBTREE_EXPAND )
+    if( option == SUBTREE_EXPAND && subtree_model->expanded() == false)
     {
         auto subtree_container = getTabByName(subtree_name);
         const auto& abs_subtree = BuildTreeFromScene( subtree_container->scene() );
@@ -848,7 +848,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
         return &node;
     }
 
-    if( option == SUBTREE_COLLAPSE )
+    if( option == SUBTREE_COLLAPSE && subtree_model->expanded() == true)
     {
         const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
         QtNodes::Node* child_node = nullptr;
@@ -873,7 +873,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
         return &node;
     }
 
-    if( option == SUBTREE_REFRESH && subtree_model->expanded() )
+    if( option == SUBTREE_REFRESH && subtree_model->expanded() == true )
     {
         const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
         if(conn_out.size() != 1)

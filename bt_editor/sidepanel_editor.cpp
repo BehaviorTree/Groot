@@ -21,8 +21,9 @@ SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
 {
     ui->setupUi(this);   
     ui->paramsFrame->setHidden(true);
-    ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect( ui->treeWidget, &QWidget::customContextMenuRequested,
+    ui->paletteTreeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect( ui->paletteTreeWidget, &QWidget::customContextMenuRequested,
              this, &SidepanelEditor::onContextMenu);
 
     ui->buttonLock->setChecked(true);
@@ -35,13 +36,13 @@ SidepanelEditor::~SidepanelEditor()
 
 void SidepanelEditor::updateTreeView()
 {
-    ui->treeWidget->clear();
+    ui->paletteTreeWidget->clear();
     _tree_view_category_items.clear();
 
     for (const QString& category : {"Root", "Action", "Condition",
                                     "Control", "Decorator", "SubTree" } )
     {
-      auto item = new QTreeWidgetItem(ui->treeWidget, {category});
+      auto item = new QTreeWidgetItem(ui->paletteTreeWidget, {category});
       QFont font = item->font(0);
       font.setBold(true);
       font.setPointSize(11);
@@ -69,7 +70,7 @@ void SidepanelEditor::updateTreeView()
       item->setTextColor(0, is_editable ? Qt::blue : Qt::black);
     }
 
-    ui->treeWidget->expandAll();
+    ui->paletteTreeWidget->expandAll();
 }
 
 void SidepanelEditor::clear()
@@ -79,7 +80,7 @@ void SidepanelEditor::clear()
 
 void SidepanelEditor::on_treeWidget_itemSelectionChanged()
 {
-  auto selected_items = ui->treeWidget->selectedItems();
+  auto selected_items = ui->paletteTreeWidget->selectedItems();
   if(selected_items.size() == 0)
   {
     ui->paramsFrame->setHidden(true);
@@ -134,15 +135,46 @@ void SidepanelEditor::on_buttonAddNode_clicked()
     updateTreeView();
 }
 
+void SidepanelEditor::onRemoveModel(QString selected_name, bool ask_confirmation)
+{
+    NodeType node_type = _tree_nodes_model.at(selected_name).node_type;
+    int ret = QMessageBox::Cancel;
+    if( ask_confirmation )
+    {
+        if( node_type != NodeType::SUBTREE && ask_confirmation)
+        {
+            ret = QMessageBox::warning(this,"Delete TreeNode Model?",
+                                       "Are you sure?",
+                                       QMessageBox::Cancel | QMessageBox::Yes,
+                                       QMessageBox::Cancel);
+        }
+        else{
+            ret = QMessageBox::warning(this,"Delete Subtree?",
+                                       "The Model of the Subtrees will be removed."
+                                       "An expanded version will be added to parent trees.",
+                                       QMessageBox::Cancel | QMessageBox::Yes,
+                                       QMessageBox::Cancel);
+        }
+    }
+    if(ret == QMessageBox::Yes || !ask_confirmation)
+    {
+        _tree_nodes_model.erase( selected_name );
+        updateTreeView();
+        if( node_type == NodeType::SUBTREE)
+        {
+            emit destroySubtree(selected_name);
+        }
+    }
+}
+
 void SidepanelEditor::onContextMenu(const QPoint& pos)
 {
-    auto selected_items = ui->treeWidget->selectedItems();
-    if( selected_items.count() != 1)
+    QTreeWidgetItem* selected_item = ui->paletteTreeWidget->itemAt(pos);
+    if( selected_item == nullptr)
     {
         return;
     }
-    QTreeWidgetItem* selected_item = selected_items.front();
-    QString selected_name          = selected_item->text(0);
+    QString selected_name = selected_item->text(0);
 
     if( ui->buttonLock->isChecked() ||
         BuiltinNodeModels().count( selected_name ) != 0 )
@@ -173,35 +205,12 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
 
     QAction* remove = menu.addAction("Remove");
 
-    connect( remove, &QAction::triggered, this,[this, selected_name, node_type]()
+    connect( remove, &QAction::triggered, this,[this, selected_name]()
     {
-        int ret = QMessageBox::Cancel;
-        if( node_type != NodeType::SUBTREE)
-        {
-            ret = QMessageBox::warning(this,"Delete TreeNode Model?",
-                                       "Are you sure?",
-                                       QMessageBox::Cancel | QMessageBox::Yes,
-                                       QMessageBox::Cancel);
-        }
-        else{
-            ret = QMessageBox::warning(this,"Delete Subtree?",
-                                       "The Model of the Subtrees will be removed."
-                                       "An expanded version will be added to parent trees.",
-                                       QMessageBox::Cancel | QMessageBox::Yes,
-                                       QMessageBox::Cancel);
-        }
-        if(ret == QMessageBox::Yes)
-        {
-            _tree_nodes_model.erase( selected_name );
-            updateTreeView();
-            if( node_type == NodeType::SUBTREE)
-            {
-                emit destroySubtree(selected_name);
-            }
-        }
+        onRemoveModel(selected_name, true);
     } );
 
-    QPoint globalPos = ui->treeWidget->mapToGlobal(pos);
+    QPoint globalPos = ui->paletteTreeWidget->mapToGlobal(pos);
     menu.exec(globalPos);
 
     QApplication::processEvents();

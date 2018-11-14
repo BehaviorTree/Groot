@@ -52,7 +52,7 @@ public:
 
     std::set<QtNodes::Node*> getSubtreeNodesRecursively(QtNodes::Node &root_node);
 
-    void createSubtree(QtNodes::Node& root_node);
+    void createSubtree(QtNodes::Node& root_node, QString subtree_name = QString());
 
 public slots:
 

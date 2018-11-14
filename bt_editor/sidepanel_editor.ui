@@ -300,7 +300,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTreeWidget" name="treeWidget">
+    <widget class="QTreeWidget" name="paletteTreeWidget">
      <property name="maximumSize">
       <size>
        <width>16777215</width>

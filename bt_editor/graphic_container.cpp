@@ -246,17 +246,19 @@ std::set<QtNodes::Node*> GraphicContainer::getSubtreeNodesRecursively(Node &root
     return nodes;
 }
 
-void GraphicContainer::createSubtree(Node &root_node)
+void GraphicContainer::createSubtree(Node &root_node, QString subtree_name )
 {
-
     bool ok = false;
-    QString subtree_name = QInputDialog::getText (
-                nullptr, tr ("SubTree Name"),
-                tr ("Insert the name of the Custom SubTree"),
-                QLineEdit::Normal, "", &ok);
-    if (!ok)
+    if( subtree_name.isEmpty() )
     {
-        return;
+        subtree_name = QInputDialog::getText (
+                   nullptr, tr ("SubTree Name"),
+                   tr ("Insert the name of the Custom SubTree"),
+                   QLineEdit::Normal, "", &ok);
+        if (!ok)
+        {
+            return;
+        }
     }
 
     addNewModel( subtree_name, {NodeType::SUBTREE, {}} );

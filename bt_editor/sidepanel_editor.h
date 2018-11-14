@@ -24,6 +24,9 @@ public:
 
     void clear();
 
+public slots:
+    void onRemoveModel(QString selected_name, bool ask_confirmation);
+
 private slots:
 
     void on_treeWidget_itemSelectionChanged();
