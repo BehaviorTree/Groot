@@ -29,9 +29,10 @@ endif(catkin_FOUND)
 #############################################################
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
 
 add_definitions(${Qt5Widgets_DEFINITIONS} -DNODE_EDITOR_STATIC -std=c++11 )
 set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} -Werror=return-type")
@@ -66,13 +67,10 @@ set(APP_CPPS
     ./bt_editor/XML_utilities.cpp
     )
 
-qt5_add_resources(RESOURCE_FILES
+set(RESOURCE_FILES
     ./bt_editor/resources/icons.qrc
     ./test_data/test_files.qrc
     )
-
-set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/qrc_icons.cpp PROPERTY SKIP_AUTOMOC ON)
-set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/qrc_test_files.cpp PROPERTY SKIP_AUTOMOC ON)
 
 set(FORMS_UI
   ./bt_editor/mainwindow.ui
@@ -101,7 +99,6 @@ QT5_WRAP_UI(FORMS_HEADERS ${FORMS_UI})
 add_library(behavior_tree_editor
     ${APP_CPPS}
     ${FORMS_HEADERS}
-    ${RESOURCE_FILES}
 )
 
 if( ZMQ_FOUND )
@@ -111,7 +108,7 @@ else()
 endif()
 
 
-add_executable(Groot ./bt_editor/main.cpp ${RESOURCE_FILES})
+add_executable(Groot ./bt_editor/main.cpp  ${RESOURCE_FILES})
 target_link_libraries(Groot behavior_tree_editor )
 
 add_subdirectory(test)
