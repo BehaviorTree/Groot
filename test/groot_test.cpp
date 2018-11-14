@@ -210,7 +210,7 @@ void GrootTest::undoRedo()
         main_win->onUndoInvoked();
         SleepAndRefresh( 500 );
         auto empty_abs_tree = GetTreeFromCurrentTab();
-        QCOMPARE( empty_abs_tree.nodesCount(), 0);
+        QCOMPARE( empty_abs_tree.nodesCount(), size_t(0) );
 
         // nothing should happen
         main_win->onUndoInvoked();
@@ -238,7 +238,7 @@ void GrootTest::undoRedo()
         auto view = container->view();
 
         auto prev_tree = GetTreeFromCurrentTab();
-        int prev_node_count = prev_tree.nodesCount();
+        size_t prev_node_count = prev_tree.nodesCount();
 
         auto node = prev_tree.findNode( "DoSequenceStar" );
 
@@ -256,7 +256,7 @@ void GrootTest::undoRedo()
         SleepAndRefresh( 500 );
 
         auto undo_tree = GetTreeFromCurrentTab();
-        int undo_node_count = main_win->currentTabInfo()->scene()->nodes().size();
+        size_t undo_node_count = main_win->currentTabInfo()->scene()->nodes().size();
         QCOMPARE( prev_node_count , undo_node_count );
 
         QCOMPARE( prev_tree, undo_tree);
