@@ -71,8 +71,8 @@ qt5_add_resources(RESOURCE_FILES
     ./test_data/test_files.qrc
     )
 
-set_property(SOURCE qrc_icons.cpp PROPERTY SKIP_AUTOMOC ON)
-
+set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/qrc_icons.cpp PROPERTY SKIP_AUTOMOC ON)
+set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/qrc_test_files.cpp PROPERTY SKIP_AUTOMOC ON)
 
 set(FORMS_UI
   ./bt_editor/mainwindow.ui
