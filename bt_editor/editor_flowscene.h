@@ -3,6 +3,7 @@
 
 #include <nodes/FlowScene>
 #include <nodes/DataModelRegistry>
+#include "bt_editor/bt_editor_base.h"
 
 class EditorFlowScene : public QtNodes::FlowScene
 {
@@ -20,7 +21,10 @@ private:
     void dropEvent(QGraphicsSceneDragDropEvent *event) override;
     void dragMoveEvent(QGraphicsSceneDragDropEvent* event) override;
 
+    void keyPressEvent( QKeyEvent * event ) override;
+
     bool _editor_locked;
+    QString _clipboard_node_name;
 };
 
 #endif // EDITOR_FLOWSCENE_H

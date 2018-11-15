@@ -193,8 +193,7 @@ mousePressEvent(QGraphicsSceneMouseEvent * event)
   if(_locked) return;
 
   // deselect all other items after this one is selected
-  if (!isSelected() &&
-      !(event->modifiers() & Qt::ControlModifier))
+  if (!isSelected() && event->modifiers() != Qt::ControlModifier)
   {
     _scene.clearSelection();
   }
@@ -327,7 +326,7 @@ mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
     return;
   }
   else{
-    if( !isSelected() )
+    if (!isSelected() && event->modifiers() != Qt::ControlModifier)
     {
       _scene.clearSelection();
     }
