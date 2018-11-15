@@ -76,4 +76,5 @@ void GrootTestBase::testMessageBox(int deplay_ms, TestLocation location,
     });
     callable_action();
     semaphore.tryLock( deplay_ms * 2 );
+    semaphore.unlock();
 }

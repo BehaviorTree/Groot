@@ -78,7 +78,7 @@ void SidepanelEditor::clear()
 
 }
 
-void SidepanelEditor::on_treeWidget_itemSelectionChanged()
+void SidepanelEditor::on_paletteTreeWidget_itemSelectionChanged()
 {
   auto selected_items = ui->paletteTreeWidget->selectedItems();
   if(selected_items.size() == 0)

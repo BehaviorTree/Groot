@@ -137,12 +137,12 @@ QToolButton:disabled{
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/connect.png</normaloff>:/icons/connect.png</iconset>
+           <normaloff>:/icons/svg/connect.svg</normaloff>:/icons/svg/connect.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
-           <width>32</width>
-           <height>32</height>
+           <width>36</width>
+           <height>36</height>
           </size>
          </property>
          <property name="checkable">
@@ -205,12 +205,12 @@ QToolButton:disabled{
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/load_file.png</normaloff>:/icons/load_file.png</iconset>
+           <normaloff>:/icons/svg/folder.svg</normaloff>:/icons/svg/folder.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
-           <width>32</width>
-           <height>32</height>
+           <width>36</width>
+           <height>36</height>
           </size>
          </property>
          <property name="checkable">
@@ -279,12 +279,12 @@ QToolButton:disabled{
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/download.png</normaloff>:/icons/download.png</iconset>
+           <normaloff>:/icons/svg/server_download.svg</normaloff>:/icons/svg/server_download.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
-           <width>32</width>
-           <height>32</height>
+           <width>36</width>
+           <height>36</height>
           </size>
          </property>
          <property name="checkable">
@@ -347,12 +347,12 @@ QToolButton:disabled{
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
+           <normaloff>:/icons/svg/save_white.svg</normaloff>:/icons/svg/save_white.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
-           <width>28</width>
-           <height>28</height>
+           <width>34</width>
+           <height>34</height>
           </size>
          </property>
          <property name="checkable">
@@ -428,7 +428,7 @@ QToolButton:disabled{
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/home.png</normaloff>:/icons/home.png</iconset>
+           <normaloff>:/icons/svg/zoom_home.svg</normaloff>:/icons/svg/zoom_home.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -561,7 +561,7 @@ QToolButton:disabled{
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">
-           <normaloff>:/icons/wand.png</normaloff>:/icons/wand.png</iconset>
+           <normaloff>:/icons/svg/magic-wand.svg</normaloff>:/icons/svg/magic-wand.svg</iconset>
          </property>
          <property name="iconSize">
           <size>

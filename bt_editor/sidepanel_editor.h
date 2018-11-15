@@ -29,7 +29,7 @@ public slots:
 
 private slots:
 
-    void on_treeWidget_itemSelectionChanged();
+    void on_paletteTreeWidget_itemSelectionChanged();
 
     void on_lineEditFilter_textChanged(const QString &arg1);
 

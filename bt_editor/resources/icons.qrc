@@ -1,22 +1,5 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>home.png</file>
-        <file>green-circle.png</file>
-        <file>red-circle.png</file>
-        <file>play.png</file>
-        <file>BT.png</file>
-        <file>BT-edit.png</file>
-        <file>BT-log.png</file>
-        <file>BT-monitor.png</file>
-        <file>connect.png</file>
-        <file>download.png</file>
-        <file>load_file.png</file>
-        <file>save.png</file>
-        <file>BTE-Logo.png</file>
-        <file>wand.png</file>
-        <file>BT-vertical.png</file>
-        <file>BT-horizontal.png</file>
-        <file>close_x.png</file>
         <file>svg/arrow_right.svg</file>
         <file>svg/edit_list.svg</file>
         <file>svg/exclaimation_mark.svg</file>
@@ -41,7 +24,6 @@
         <file>svg/logo_splashscreen.svg</file>
         <file>svg/list_add.svg</file>
         <file>svg/settings.svg</file>
-        <file>svg/save_file.svg</file>
         <file>svg/files.svg</file>
         <file>svg/download.svg</file>
         <file>svg/upload.svg</file>
@@ -52,6 +34,24 @@
         <file>svg/sequence.svg</file>
         <file>svg/sequence_star.svg</file>
         <file>svg/timeout.svg</file>
+        <file>green-circle.png</file>
+        <file>red-circle.png</file>
+        <file>svg/magic-wand.svg</file>
+        <file>BT-horizontal.png</file>
+        <file>BT-vertical.png</file>
+        <file>svg/zoom_home.svg</file>
+        <file>svg/save_dark.svg</file>
+        <file>svg/save_white.svg</file>
+        <file>BT-edit.png</file>
+        <file>BT-log.png</file>
+        <file>BT-monitor.png</file>
+        <file>svg/folder.svg</file>
+        <file>svg/connect.svg</file>
+        <file>svg/server_download.svg</file>
+        <file>BT.png</file>
+        <file>close_x.png</file>
+        <file>icons.qrc</file>
+        <file>play.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>
