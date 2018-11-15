@@ -5,27 +5,25 @@
             <Sequence>
                 <Fallback>
                     <FallbackStar>
-                        <Decorator ID="Repeat" num_cycles="1">
-                            <Decorator ID="Repeat" num_cycles="1">
-                                <Action ID="AlwaysFailure"/>
-                            </Decorator>
-                        </Decorator>
+                        <Repeat num_cycles="1">
+                            <AlwaysFailure/>
+                        </Repeat>
                     </FallbackStar>
                 </Fallback>
                 <SequenceStar name="DoSequenceStar">
-                    <Decorator ID="RetryUntilSuccesful" num_attempts="1">
-                        <Decorator ID="BB_Precondition" expected="value" key="key">
-                            <Action ID="AlwaysSuccess"/>
-                        </Decorator>
-                    </Decorator>
+                    <RetryUntilSuccesful num_attempts="1">
+                        <BB_Precondition expected="value" key="key">
+                            <AlwaysSuccess/>
+                        </BB_Precondition>
+                    </RetryUntilSuccesful>
                 </SequenceStar>
-                <Decorator ID="Inverter">
-                    <Decorator ID="ForceFailure">
-                        <Decorator ID="ForceSuccess">
-                            <Action ID="SetBlackboard" key="key" value="value"/>
-                        </Decorator>
-                    </Decorator>
-                </Decorator>
+                <Inverter>
+                    <ForceFailure>
+                        <ForceSuccess>
+                            <SetBlackboard key="key" value="value"/>
+                        </ForceSuccess>
+                    </ForceFailure>
+                </Inverter>
                 <Action ID="Pippo"/>
             </Sequence>
         </Root>

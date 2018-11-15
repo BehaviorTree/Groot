@@ -55,13 +55,13 @@
      <widget class="QFrame" name="frame">
       <property name="minimumSize">
        <size>
-        <width>92</width>
+        <width>80</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>92</width>
+        <width>80</width>
         <height>16777215</height>
        </size>
       </property>
@@ -95,13 +95,13 @@
         <widget class="QToolButton" name="toolButtonConnect">
          <property name="minimumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
@@ -141,8 +141,8 @@ QToolButton:disabled{
          </property>
          <property name="iconSize">
           <size>
-           <width>36</width>
-           <height>36</height>
+           <width>34</width>
+           <height>34</height>
           </size>
          </property>
          <property name="checkable">
@@ -160,13 +160,13 @@ QToolButton:disabled{
         <widget class="QToolButton" name="toolButtonLoadFile">
          <property name="minimumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
@@ -209,8 +209,8 @@ QToolButton:disabled{
          </property>
          <property name="iconSize">
           <size>
-           <width>36</width>
-           <height>36</height>
+           <width>34</width>
+           <height>34</height>
           </size>
          </property>
          <property name="checkable">
@@ -231,13 +231,13 @@ QToolButton:disabled{
          </property>
          <property name="minimumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
@@ -283,8 +283,8 @@ QToolButton:disabled{
          </property>
          <property name="iconSize">
           <size>
-           <width>36</width>
-           <height>36</height>
+           <width>34</width>
+           <height>34</height>
           </size>
          </property>
          <property name="checkable">
@@ -302,13 +302,13 @@ QToolButton:disabled{
         <widget class="QToolButton" name="toolButtonSaveFile">
          <property name="minimumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
@@ -383,13 +383,13 @@ QToolButton:disabled{
         <widget class="QToolButton" name="toolButtonCenterView">
          <property name="minimumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
@@ -448,19 +448,19 @@ QToolButton:disabled{
         <widget class="QToolButton" name="toolButtonLayout">
          <property name="minimumSize">
           <size>
-           <width>78</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
          <property name="baseSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>65</height>
           </size>
          </property>
@@ -492,7 +492,7 @@ QToolButton:disabled{
 </string>
          </property>
          <property name="text">
-          <string>Switch Layout</string>
+          <string>Layout H/V</string>
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">
@@ -500,8 +500,8 @@ QToolButton:disabled{
          </property>
          <property name="iconSize">
           <size>
-           <width>36</width>
-           <height>36</height>
+           <width>34</width>
+           <height>34</height>
           </size>
          </property>
          <property name="toolButtonStyle">
@@ -519,13 +519,13 @@ QToolButton:disabled{
          </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>90</horstretch>
+           <horstretch>80</horstretch>
            <verstretch>70</verstretch>
           </sizepolicy>
          </property>
          <property name="minimumSize">
           <size>
-           <width>90</width>
+           <width>80</width>
            <height>70</height>
           </size>
          </property>
@@ -824,6 +824,7 @@ QToolButton:disabled{
   </action>
  </widget>
  <resources>
+  <include location="resources/icons.qrc"/>
   <include location="resources/icons.qrc"/>
  </resources>
  <connections>

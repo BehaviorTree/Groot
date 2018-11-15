@@ -27,7 +27,6 @@ main(int argc, char *argv[])
     app.setWindowIcon(QPixmap(":/icons/BT.png"));
     app.setOrganizationName("EurecatRobotics");
     app.setOrganizationDomain("eurecat.org");
-    app.setApplicationName("BehaviorTreeEditor");
 
     qRegisterMetaType<AbsBehaviorTree>();
 
