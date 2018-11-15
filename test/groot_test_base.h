@@ -6,15 +6,22 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 #include <QApplication>
-
+#include <QMessageBox>
 #include "bt_editor/mainwindow.h"
 #include "bt_editor/utils.h"
 #include "bt_editor/models/SubtreeNodeModel.hpp"
 
+#define TEST_LOCATION() {  __FILE__, __LINE__ }
 
 class GrootTestBase : public QObject
 {
     Q_OBJECT
+
+public:
+    struct TestLocation{
+        const char* file;
+        int line;
+    };
 
 protected:
     QString readFile(const char* name);
@@ -28,6 +35,10 @@ protected:
     void testDragObject(QGraphicsView* view, const QPoint& screen_pos, const QPoint& pos_offset);
 
     AbsBehaviorTree getAbstractTree(const QString& name = QString());
+
+    void testMessageBox(int deplay_ms, TestLocation location,
+                        std::function<void()> callable_action,
+                        QMessageBox::StandardButton button_to_press = QMessageBox::Default);
 
     MainWindow *main_win;
 };

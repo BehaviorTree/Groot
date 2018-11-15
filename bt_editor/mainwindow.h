@@ -110,6 +110,8 @@ public slots:
 
     void onTabCustomContextMenuRequested(const QPoint &pos);
 
+    void onTabRenameRequested(int tab_index, QString new_name = QString());
+
 signals:
     void updateGraphic();
 

@@ -1,5 +1,6 @@
 #include "graphic_container.h"
 #include "utils.h"
+#include "mainwindow.h"
 
 #include "models/ActionNodeModel.hpp"
 #include "models/DecoratorNodeModel.hpp"
@@ -10,6 +11,7 @@
 #include <QSignalBlocker>
 #include <QMenu>
 #include <QDebug>
+#include <QMessageBox>
 #include <QApplication>
 #include <QInputDialog>
 
@@ -259,6 +261,18 @@ void GraphicContainer::createSubtree(Node &root_node, QString subtree_name )
         {
             return;
         }
+    }
+
+    auto main_win = dynamic_cast<MainWindow*>( parent() );
+
+    if( main_win->getTabByName(subtree_name) != nullptr ||
+        _model_registry->registeredModelsByCategory("SubTree").count( subtree_name ))
+    {
+        QMessageBox::warning( nullptr, "SubTree already exists",
+                              tr("There is already a SubTree called [%1].\n"
+                                 "Use another name.").arg(subtree_name),
+                              QMessageBox::Ok);
+        return;
     }
 
     addNewModel( subtree_name, {NodeType::SUBTREE, {}} );

@@ -7,7 +7,6 @@
 
 #include <QtDebug>
 #include <QLineEdit>
-#include <QMessageBox>
 
 using namespace tinyxml2;
 using namespace QtNodes;

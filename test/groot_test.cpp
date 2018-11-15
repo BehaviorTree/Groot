@@ -11,11 +11,12 @@ public:
     ~GrootTest() {}
 
 private slots:
+    void renameTabs();
     void initTestCase();
     void cleanupTestCase();
     void loadFile();
     void undoRedo();
-    void deleteSubTree();
+    void testSubtree();
 };
 
 
@@ -217,7 +218,36 @@ void GrootTest::undoRedo()
     sleepAndRefresh( 500 );
 }
 
-void GrootTest::deleteSubTree()
+void GrootTest::renameTabs()
+{
+    QString file_xml = readFile(":/crossdor_with_subtree.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    testMessageBox(1000, TEST_LOCATION(), [&]()
+    {
+        // Two tabs with same name would exist
+        main_win->onTabRenameRequested( 0 , "DoorClosed" );
+    });
+    testMessageBox(1000, TEST_LOCATION(), [&]()
+    {
+        // Two tabs with same name would exist
+        main_win->onTabRenameRequested( 1 , "MainTree" );
+    });
+
+    main_win->onTabRenameRequested( 0 , "MainTree2" );
+    main_win->onTabRenameRequested( 1 , "DoorClosed2" );
+
+    QVERIFY( main_win->getTabByName("MainTree") == nullptr);
+    QVERIFY( main_win->getTabByName("DoorClosed") == nullptr);
+
+    QVERIFY( main_win->getTabByName("MainTree2") != nullptr);
+    QVERIFY( main_win->getTabByName("DoorClosed2") != nullptr);
+
+     sleepAndRefresh( 500 );
+}
+
+void GrootTest::testSubtree()
 {
     QString file_xml = readFile(":/crossdor_with_subtree.xml");
     main_win->on_actionClear_triggered();
@@ -257,10 +287,17 @@ void GrootTest::deleteSubTree()
     QVERIFY2( main_win->getTabByName("DoorClosed") == nullptr, "Tab DoorClosed not deleted");
     sleepAndRefresh( 500 );
 
+    //---------------------------------------
     // create again the subtree
 
     auto closed_sequence_node = tree_after_remove.findNode("door_closed_sequence");
     auto container = main_win->currentTabInfo();
+    // This must fail and create a MessageBox
+    testMessageBox(1000, TEST_LOCATION(), [&]()
+    {
+        container->createSubtree( *closed_sequence_node->corresponding_node, "MainTree" );
+    });
+
     container->createSubtree( *closed_sequence_node->corresponding_node, "DoorClosed" );
     sleepAndRefresh( 500 );
 
@@ -283,6 +320,7 @@ void GrootTest::deleteSubTree()
     }
     QVERIFY2( is_same, "AbsBehaviorTree comparison fails" );
     sleepAndRefresh( 500 );
+
 }
 
 QTEST_MAIN(GrootTest)

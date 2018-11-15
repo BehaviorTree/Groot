@@ -159,6 +159,7 @@ void SidepanelEditor::onRemoveModel(QString selected_name, bool ask_confirmation
     if(ret == QMessageBox::Yes || !ask_confirmation)
     {
         _tree_nodes_model.erase( selected_name );
+        _model_registry->unregisterModel(selected_name);
         updateTreeView();
         if( node_type == NodeType::SUBTREE)
         {

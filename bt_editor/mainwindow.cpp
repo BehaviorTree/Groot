@@ -1265,9 +1265,20 @@ void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
 
     connect( rename, &QAction::triggered, this, [this, tab_index]()
     {
-        QString old_name = this->ui->tabWidget->tabText(tab_index);
+        onTabRenameRequested(tab_index);
+    } );
+    QPoint globalPos = ui->tabWidget->tabBar()->mapToGlobal(pos);
+    menu.exec(globalPos);
+}
+
+void MainWindow::onTabRenameRequested(int tab_index, QString new_name)
+{
+    QString old_name = this->ui->tabWidget->tabText(tab_index);
+
+    if( new_name.isEmpty())
+    {
         bool ok = false;
-        QString new_name = QInputDialog::getText (
+        new_name = QInputDialog::getText (
                     this, tr ("Change name"),
                     tr ("Insert the new name of this BehaviorTree"),
                     QLineEdit::Normal, old_name, &ok);
@@ -1275,32 +1286,45 @@ void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
         {
             return;
         }
-        ui->tabWidget->setTabText (tab_index, new_name);
-        auto it = _tab_info.find(old_name);
-        auto container = it->second;
-        _tab_info.insert( {new_name, container} );
-        _tab_info.erase( it );
-        if( _main_tree == old_name )
-        {
-            _main_tree = new_name;
-        }
+    }
 
-        if( _model_registry->registeredModelsByCategory("SubTree").count( old_name ) )
-        {
-             _model_registry->unregisterModel(old_name);
-             _tree_nodes_model.erase(old_name);
-             TreeNodeModel model = {NodeType::SUBTREE,{}};
-             onAddToModelRegistry( new_name, model );
-             _tree_nodes_model.insert( { new_name, model} );
-             _editor_widget->updateTreeView();
-             this->onTreeNodeEdited(old_name, new_name);
-        }
+    if( new_name == old_name)
+    {
+        return;
+    }
+    if( getTabByName(new_name) )
+    {
+        QMessageBox::warning( this, "Tab name already is use",
+                              tr("There is already a BehaviorTree called [%1].\n"
+                                 "Use another name.").arg(new_name),
+                              QMessageBox::Ok);
+        return;
+    }
 
-        // TODO: this is a work around until we find a better solution
-        clearUndoStacks();
-    } );
-    QPoint globalPos = ui->tabWidget->tabBar()->mapToGlobal(pos);
-    menu.exec(globalPos);
+    ui->tabWidget->setTabText (tab_index, new_name);
+    auto it = _tab_info.find(old_name);
+    auto container = it->second;
+    _tab_info.insert( {new_name, container} );
+    _tab_info.erase( it );
+    if( _main_tree == old_name )
+    {
+        _main_tree = new_name;
+    }
+
+    // if a subtree SUBTREE already
+    if( _model_registry->registeredModelsByCategory("SubTree").count( old_name ) != 0 )
+    {
+         _model_registry->unregisterModel(old_name);
+         _tree_nodes_model.erase(old_name);
+         TreeNodeModel model = {NodeType::SUBTREE,{}};
+         onAddToModelRegistry( new_name, model );
+         _tree_nodes_model.insert( { new_name, model} );
+         _editor_widget->updateTreeView();
+         this->onTreeNodeEdited(old_name, new_name);
+    }
+
+    // TODO: this is a work around until we find a better solution
+    clearUndoStacks();
 }
 
 void MainWindow::clearTreeModels()
