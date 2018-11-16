@@ -57,7 +57,7 @@ void SidepanelEditor::updateTreeView()
       const QString& ID = it.first;
       const TreeNodeModel& model = it.second;
 
-      const QString& category = toStr(model.node_type);
+      const QString& category = toStr(model.type);
       auto parent = _tree_view_category_items[category];
       auto item = new QTreeWidgetItem(parent, {ID});
       QFont font = item->font(0);
@@ -91,7 +91,7 @@ void SidepanelEditor::on_paletteTreeWidget_itemSelectionChanged()
     ui->paramsFrame->setHidden(false);
     ui->label->setText( item_name + QString(" Parameters"));
 
-    const auto& model = _tree_nodes_model[item_name];
+    const auto& model = _tree_nodes_model.at(item_name);
     int row = 0;
 
     ui->parametersTableWidget->setRowCount(model.params.size());
@@ -99,7 +99,7 @@ void SidepanelEditor::on_paletteTreeWidget_itemSelectionChanged()
     for (const auto& param: model.params)
     {
       ui->parametersTableWidget->setItem(row,0, new QTableWidgetItem( param.label ));
-      ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem( param.default_value ));
+      ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem( param.value ));
       row++;
     }
 
@@ -130,14 +130,14 @@ void SidepanelEditor::on_buttonAddNode_clicked()
     if( dialog.exec() == QDialog::Accepted)
     {
         auto new_model = dialog.getTreeNodeModel();
-        addNewModel( new_model.first, new_model.second );
+        addNewModel( new_model );
     }
     updateTreeView();
 }
 
 void SidepanelEditor::onRemoveModel(QString selected_name, bool ask_confirmation)
 {
-    NodeType node_type = _tree_nodes_model.at(selected_name).node_type;
+    NodeType node_type = _tree_nodes_model.at(selected_name).type;
     int ret = QMessageBox::Cancel;
     if( ask_confirmation )
     {
@@ -168,6 +168,8 @@ void SidepanelEditor::onRemoveModel(QString selected_name, bool ask_confirmation
     }
 }
 
+
+
 void SidepanelEditor::onContextMenu(const QPoint& pos)
 {
     QTreeWidgetItem* selected_item = ui->paletteTreeWidget->itemAt(pos);
@@ -185,7 +187,7 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
 
     QMenu menu(this);
 
-    const auto& node_type = _tree_nodes_model.at(selected_name).node_type;
+    const auto& node_type = _tree_nodes_model.at(selected_name).type;
 
     if( node_type == NodeType::ACTION || node_type == NodeType::ACTION)
     {
@@ -195,11 +197,7 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
             CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
             if( dialog.exec() == QDialog::Accepted)
             {
-                auto new_model = dialog.getTreeNodeModel();
-                _tree_nodes_model.erase( selected_name );
-                _model_registry->unregisterModel( selected_name );
-                addNewModel( new_model.first, new_model.second );
-                emit this->treeNodeEdited(selected_name, new_model.first);
+                onReplaceModel( selected_name, dialog.getTreeNodeModel() );
             }
         } );
     }
@@ -217,6 +215,14 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
     QApplication::processEvents();
 }
 
+void SidepanelEditor::onReplaceModel(const QString& old_name,
+                                     const TreeNodeModel &new_model)
+{
+    _tree_nodes_model.erase( old_name );
+    _model_registry->unregisterModel( old_name );
+    addNewModel( new_model );
+    emit nodeModelEdited(old_name, new_model.registration_ID);
+}
 
 void SidepanelEditor::on_buttonUpload_clicked()
 {
@@ -238,7 +244,7 @@ void SidepanelEditor::on_buttonUpload_clicked()
             continue;
         }
 
-        XMLElement* node = doc.NewElement( toStr(model.node_type) );
+        XMLElement* node = doc.NewElement( toStr(model.type) );
 
         if( node )
         {
@@ -248,7 +254,7 @@ void SidepanelEditor::on_buttonUpload_clicked()
                 XMLElement* param_node = doc.NewElement( "Parameter" );
                 param_node->InsertEndChild(root_models);
                 param_node->SetAttribute("label",   param.label.toStdString().c_str() );
-                param_node->SetAttribute("default", param.default_value.toStdString().c_str() );
+                param_node->SetAttribute("default", param.value.toStdString().c_str() );
                 node->InsertEndChild(param_node);
             }
         }
@@ -346,14 +352,15 @@ void SidepanelEditor::on_buttonDownload_clicked()
          node != nullptr;
          node = node->NextSiblingElement() )
     {
-        custom_models.insert( buildTreeNodeModel(node, true) );
+        auto model = buildTreeNodeModel(node, true);
+        custom_models.insert( { model.registration_ID, model } );
     }
 
     CleanPreviousModels(this, _tree_nodes_model, custom_models );
 
     for(auto& it: custom_models)
     {
-        addNewModel( it.first, it.second );
+        addNewModel( it.second );
     }
 }
 

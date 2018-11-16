@@ -69,7 +69,7 @@ void AbsBehaviorTree::debugPrint()
 
         printf("%s (%s)",
                node->instance_name.toStdString().c_str(),
-               node->registration_name.toStdString().c_str() );
+               node->model.registration_ID.toStdString().c_str() );
         std::cout << std::endl; // force flush
 
         for(int index: node->children_index)
@@ -146,20 +146,24 @@ const char *toStr(GraphicMode type)
 
 bool AbstractTreeNode::operator ==(const AbstractTreeNode &other) const
 {
-    bool is_same =
-            type == other.type &&
+    return  model == other.model &&
             status == other.status &&
             size == other.size &&
             pos == other.pos &&
-            registration_name == other.registration_name &&
-            instance_name == other.instance_name &&
-            parameters.size() == other.parameters.size() ;
+            instance_name == other.instance_name;
+}
 
-    if(!is_same) return false;
+bool TreeNodeModel::operator ==(const TreeNodeModel &other) const
+{
+    bool is_same = ( type == other.type &&
+                     params.size() == other.params.size() &&
+                     registration_ID == other.registration_ID);
+    if( ! is_same ) return false;
 
-    for (size_t index = 0; index < parameters.size(); index++)
+    for (size_t index = 0; index < params.size(); index++)
     {
-        if( parameters[index] != other.parameters[index]) return false;
+        if( params[index].label != other.params[index].label ||
+            params[index].value != other.params[index].value ) return false;
     }
     return true;
 }

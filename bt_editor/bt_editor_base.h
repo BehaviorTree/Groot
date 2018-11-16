@@ -34,23 +34,29 @@ using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
 
 struct TreeNodeModel
 {
-    NodeType node_type;
+    NodeType type;
     struct Param
     {
         QString label;
-        QString default_value;
+        QString value;
     };
 
+    QString registration_ID;
     typedef std::vector<Param> Parameters;
-
     Parameters params;
 
-    TreeNodeModel(){}
-
-    TreeNodeModel(NodeType type, const std::vector<Param>& parameters ):
-        node_type(type),
+    TreeNodeModel(QString reg_name, NodeType type, const std::vector<Param>& parameters ):
+        type(type),
+        registration_ID( std::move(reg_name) ),
         params(parameters)
     {}
+
+    bool operator ==(const TreeNodeModel& other) const;
+
+    bool operator !=(const TreeNodeModel& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 
@@ -66,21 +72,19 @@ inline TreeNodeModels& BuiltinNodeModels()
 struct AbstractTreeNode
 {
     AbstractTreeNode() :
+        model( { "", NodeType::UNDEFINED, {} }),
         index(-1),
-        type(NodeType::UNDEFINED),
         status(NodeStatus::IDLE),
-        corresponding_node(nullptr) {}
+        graphic_node(nullptr) {}
 
+    TreeNodeModel model;
     int index;
-    QString registration_name;
     QString instance_name;
-    NodeType type;
     NodeStatus status;
     QSizeF size;
     QPointF pos; // top left corner
     std::vector<int> children_index;
-    QtNodes::Node* corresponding_node;
-    std::vector< std::pair<QString,QString> > parameters;
+    QtNodes::Node* graphic_node;
 
     bool operator ==(const AbstractTreeNode& other) const;
 

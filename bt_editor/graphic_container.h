@@ -68,8 +68,7 @@ public slots:
 
 signals:
 
-    void addNewModel(const QString& name,
-                     const TreeNodeModel &new_model);
+    void addNewModel( const TreeNodeModel &new_model );
 
     void undoableChange();
 

@@ -27,6 +27,8 @@ public:
 public slots:
     void onRemoveModel(QString selected_name, bool ask_confirmation);
 
+    void onReplaceModel(const QString &old_name, const TreeNodeModel &new_model);
+
 private slots:
 
     void on_paletteTreeWidget_itemSelectionChanged();
@@ -45,9 +47,9 @@ private slots:
 
 signals:
 
-    void addNewModel(const QString& name, const TreeNodeModel &new_model);
+    void addNewModel(const TreeNodeModel &new_model);
 
-    void treeNodeEdited(QString prev_ID, QString new_ID);
+    void nodeModelEdited(QString prev_ID, QString new_ID);
 
     void destroySubtree(QString ID);
 

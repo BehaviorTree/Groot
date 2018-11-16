@@ -3,8 +3,7 @@
 #include <QDebug>
 
 RootNodeModel::RootNodeModel():
-    BehaviorTreeDataModel ( RootNodeModel::Name(),
-                            TreeNodeModel() )
+    BehaviorTreeDataModel ( NodeModel() )
 {
     _line_edit_name->setHidden(true);
 }

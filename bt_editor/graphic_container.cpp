@@ -275,7 +275,7 @@ void GraphicContainer::createSubtree(Node &root_node, QString subtree_name )
         return;
     }
 
-    addNewModel( subtree_name, {NodeType::SUBTREE, {}} );
+    addNewModel( { subtree_name, NodeType::SUBTREE, {}} );
     QApplication::processEvents();
 
     auto sub_tree = BuildTreeFromScene(_scene, &root_node);
@@ -286,10 +286,10 @@ void GraphicContainer::createSubtree(Node &root_node, QString subtree_name )
         {
             continue;
         }
-        _scene->removeNode( *abs_node.corresponding_node );
-        abs_node.corresponding_node = nullptr;
+        _scene->removeNode( *abs_node.graphic_node );
+        abs_node.graphic_node = nullptr;
     }
-    substituteNode( sub_tree.rootNode()->corresponding_node, subtree_name);
+    substituteNode( sub_tree.rootNode()->graphic_node, subtree_name);
 
     nodeReorder();
 
@@ -579,7 +579,7 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
                                          AbstractTreeNode* abs_node,
                                          Node* parent_node, int nest_level)
 {
-    auto data_model = _scene->registry().create( abs_node->registration_name );
+    auto data_model = _scene->registry().create( abs_node->model.registration_ID );
     BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( data_model.get() );
 
     if( bt_node ){
@@ -590,14 +590,14 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
     {
         char buffer[250];
         sprintf(buffer, "No registered model with name: [%s](%s)",
-                abs_node->registration_name.toStdString().c_str(),
+                abs_node->model.registration_ID.toStdString().c_str(),
                 abs_node->instance_name.toStdString().c_str() );
         throw std::runtime_error( buffer );
     }
 
-    for (auto& it: abs_node->parameters)
+    for (auto& it: abs_node->model.params)
     {
-        bt_node->setParameterValue( it.first, it.second );
+        bt_node->setParameterValue( it.label, it.value );
     }
     bt_node->setInstanceName( abs_node->instance_name );
 
@@ -608,15 +608,15 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
     abs_node->pos = cursor;
     abs_node->size = _scene->getNodeSize( new_node );
 
-    abs_node->corresponding_node = &new_node;
+    abs_node->graphic_node = &new_node;
 
-    _scene->createConnection( *abs_node->corresponding_node, 0,
+    _scene->createConnection( *abs_node->graphic_node, 0,
                              *parent_node, 0 );
 
     for ( int index: abs_node->children_index)
     {
         AbstractTreeNode* child = tree.node(index);
-        recursiveLoadStep(cursor, x_offset, tree, child, abs_node->corresponding_node, nest_level+1 );
+        recursiveLoadStep(cursor, x_offset, tree, child, abs_node->graphic_node, nest_level+1 );
         x_offset += 30;
     }
 }
@@ -634,9 +634,9 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
 
     auto root_node = abstract_tree.rootNode();
 
-    if( root_node->type == NodeType::ROOT)
+    if( root_node->model.type == NodeType::ROOT)
     {
-      root_node->corresponding_node = first_qt_node;
+      root_node->graphic_node = first_qt_node;
       int root_child_index = root_node->children_index.front();
       root_node = abstract_tree.node(root_child_index);
     }
@@ -650,7 +650,7 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
 
     for (auto& abs_node: subtree.nodes() )
     {
-        abs_node.corresponding_node = nullptr;
+        abs_node.graphic_node = nullptr;
     }
 
     //--------------------------------------
@@ -659,7 +659,7 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
 
     auto root_node = subtree.rootNode();
 
-    if( root_node->type == NodeType::ROOT &&
+    if( root_node->model.type == NodeType::ROOT &&
         root_node->children_index.size() == 1 )
     {
         int root_child_index = root_node->children_index.front();

@@ -21,9 +21,8 @@ bool VerifyXML(tinyxml2::XMLDocument& doc,
                const std::vector<QString> &registered_ID,
                std::vector<QString> &error_messages);
 
-std::pair<QString,TreeNodeModel>
-buildTreeNodeModel(const tinyxml2::XMLElement* node,
-                   bool is_tree_node_model);
+TreeNodeModel buildTreeNodeModel(const tinyxml2::XMLElement* node,
+                                 bool is_tree_node_model);
 
 
 #endif // XMLPARSERS_HPP

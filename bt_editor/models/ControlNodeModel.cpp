@@ -2,8 +2,8 @@
 #include "ControlNodeModel.hpp"
 #include <QtDebug>
 
-ControlNodeModel::ControlNodeModel(const QString &ID, const TreeNodeModel &model ):
-    BehaviorTreeDataModel(ID , model)
+ControlNodeModel::ControlNodeModel(const TreeNodeModel &model ):
+    BehaviorTreeDataModel(model)
 {
     _line_edit_name->setEnabled(true);
     _line_edit_name->setReadOnly(false);
@@ -14,23 +14,23 @@ ControlNodeModel::ControlNodeModel(const QString &ID, const TreeNodeModel &model
 }
 
 
-SequenceModel::SequenceModel(): ControlNodeModelBase()
+SequenceModel::SequenceModel(): ControlNodeModel( NodeModel() )
 {
 }
 
-FallbackModel::FallbackModel(): ControlNodeModelBase()
+FallbackModel::FallbackModel(): ControlNodeModel( NodeModel() )
 {
 }
 
-SequenceStarModel::SequenceStarModel(): ControlNodeModelBase()
+SequenceStarModel::SequenceStarModel(): ControlNodeModel( NodeModel() )
 {
 }
 
-IfThenElseModel::IfThenElseModel(): ControlNodeModelBase()
+IfThenElseModel::IfThenElseModel(): ControlNodeModel( NodeModel() )
 {
 }
 
 
-FallbackStarModel::FallbackStarModel(): ControlNodeModelBase()
+FallbackStarModel::FallbackStarModel(): ControlNodeModel( NodeModel() )
 {
 }

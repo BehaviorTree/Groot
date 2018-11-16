@@ -17,6 +17,8 @@ private slots:
     void loadFile();
     void undoRedo();
     void testSubtree();
+    void modifyCustomModel();
+
 };
 
 
@@ -30,7 +32,7 @@ void GrootTest::initTestCase()
 void GrootTest::cleanupTestCase()
 {
     QApplication::processEvents();
-    sleepAndRefresh( 2000 );
+    sleepAndRefresh( 1000 );
     main_win->on_actionClear_triggered();
     main_win->close();
 }
@@ -83,7 +85,7 @@ void GrootTest::loadFile()
     QVERIFY2(subtree_abs_node, "Can't find node with ID [DoorClosed]");
 
     {
-        auto data_model = subtree_abs_node->corresponding_node->nodeDataModel();
+        auto data_model = subtree_abs_node->graphic_node->nodeDataModel();
         auto subtree_model = dynamic_cast<SubtreeNodeModel*>(data_model);
         QVERIFY2(subtree_model, "Node [DoorClosed] is not SubtreeNodeModel");
         QTest::mouseClick( subtree_model->expandButton(), Qt::LeftButton );
@@ -104,7 +106,7 @@ void GrootTest::loadFile()
     QVERIFY2(subtree_abs_node, "Can't find node with ID [DoorClosed]");
 
     {
-        auto data_model = subtree_abs_node->corresponding_node->nodeDataModel();
+        auto data_model = subtree_abs_node->graphic_node->nodeDataModel();
         auto subtree_model = dynamic_cast<SubtreeNodeModel*>(data_model);
         QVERIFY2(subtree_model, "Node [DoorClosed] is not SubtreeNodeModel");
         QTest::mouseClick( subtree_model->expandButton(), Qt::LeftButton );
@@ -130,7 +132,7 @@ void GrootTest::undoRedo()
         sleepAndRefresh( 500 );
 
         auto pippo_node = abs_tree_A.findNode("Pippo");
-        auto gui_node = pippo_node->corresponding_node;
+        auto gui_node = pippo_node->graphic_node;
         QPoint pippo_screen_pos = view->mapFromScene(pippo_node->pos);
         const QPoint pos_offset(100,0);
 
@@ -224,12 +226,12 @@ void GrootTest::renameTabs()
     main_win->on_actionClear_triggered();
     main_win->loadFromXML( file_xml );
 
-    testMessageBox(1000, TEST_LOCATION(), [&]()
+    testMessageBox(500, TEST_LOCATION(), [&]()
     {
         // Two tabs with same name would exist
         main_win->onTabRenameRequested( 0 , "DoorClosed" );
     });
-    testMessageBox(1000, TEST_LOCATION(), [&]()
+    testMessageBox(500, TEST_LOCATION(), [&]()
     {
         // Two tabs with same name would exist
         main_win->onTabRenameRequested( 1 , "MainTree" );
@@ -257,7 +259,7 @@ void GrootTest::testSubtree()
     auto closed_tree = getAbstractTree("DoorClosed");
 
     auto subtree_abs_node = main_tree.findNode("DoorClosed");
-    auto data_model = subtree_abs_node->corresponding_node->nodeDataModel();
+    auto data_model = subtree_abs_node->graphic_node->nodeDataModel();
     auto subtree_model = dynamic_cast<SubtreeNodeModel*>(data_model);
 
     QTest::mouseClick( subtree_model->expandButton(), Qt::LeftButton );
@@ -265,7 +267,7 @@ void GrootTest::testSubtree()
     QAbstractButton *button_lock = main_win->findChild<QAbstractButton*>("buttonLock");
     QVERIFY2(button_lock != nullptr, "Can't find the object [buttonLock]");
 
-    QTest::mouseClick( button_lock, Qt::LeftButton );
+    button_lock->setChecked(false);
 
     QTreeWidget* treeWidget = main_win->findChild<QTreeWidget*>("paletteTreeWidget");
     QVERIFY2(treeWidget != nullptr, "Can't find the object [paletteTreeWidget]");
@@ -295,10 +297,10 @@ void GrootTest::testSubtree()
     // This must fail and create a MessageBox
     testMessageBox(1000, TEST_LOCATION(), [&]()
     {
-        container->createSubtree( *closed_sequence_node->corresponding_node, "MainTree" );
+        container->createSubtree( *closed_sequence_node->graphic_node, "MainTree" );
     });
 
-    container->createSubtree( *closed_sequence_node->corresponding_node, "DoorClosed" );
+    container->createSubtree( *closed_sequence_node->graphic_node, "DoorClosed" );
     sleepAndRefresh( 500 );
 
     auto new_main_tree   = getAbstractTree("MainTree");
@@ -320,7 +322,42 @@ void GrootTest::testSubtree()
     }
     QVERIFY2( is_same, "AbsBehaviorTree comparison fails" );
     sleepAndRefresh( 500 );
+}
 
+void GrootTest::modifyCustomModel()
+{
+    QString file_xml = readFile(":/crossdor_with_subtree.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    QAbstractButton *button_lock = main_win->findChild<QAbstractButton*>("buttonLock");
+    button_lock->setChecked(false);
+
+    auto sidepanel_editor = main_win->findChild<SidepanelEditor*>("SidepanelEditor");
+    auto treeWidget = sidepanel_editor->findChild<QTreeWidget*>("paletteTreeWidget");
+
+    TreeNodeModel jump_model = { "JumpOutWindow",
+                                 NodeType::ACTION,
+                                 { {"UseParachute", "true" } } };
+
+    sidepanel_editor->onReplaceModel("PassThroughWindow", jump_model);
+
+    auto pass_window_items = treeWidget->findItems("PassThroughWindow", Qt::MatchExactly | Qt::MatchRecursive);
+    QCOMPARE( pass_window_items.empty(), true);
+
+    auto jump_window_items = treeWidget->findItems( jump_model.registration_ID, Qt::MatchExactly | Qt::MatchRecursive);
+    QCOMPARE( jump_window_items.size(), 1);
+
+    auto abs_tree = getAbstractTree();
+
+    auto jump_abs_node = abs_tree.findNode( jump_model.registration_ID );
+    QVERIFY( jump_abs_node != nullptr);
+    QVERIFY( jump_abs_node->model.params.size() == 1 );
+    auto jump_param = jump_abs_node->model.params.front();
+    QCOMPARE( jump_param.label, tr("UseParachute") );
+    QCOMPARE( jump_param.value, tr("true") );
+
+    sleepAndRefresh( 500 );
 }
 
 QTEST_MAIN(GrootTest)

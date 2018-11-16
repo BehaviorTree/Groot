@@ -49,13 +49,11 @@ void EditorFlowScene::keyPressEvent(QKeyEvent *event)
         auto node_model = dynamic_cast<BehaviorTreeDataModel*>( selected_node.nodeDataModel() );
         if( !node_model ) return;
 
-        qDebug() << "copy: ";
         _clipboard_node_name = node_model->registrationName();
     }
     else if( event->key() == Qt::Key_V && event->modifiers() == Qt::ControlModifier &&
             registry().isRegistered( _clipboard_node_name ) )
     {
-        qDebug() << "paste: ";
         auto views_ = views();
         QGraphicsView* view = views_.front();
         auto mouse_pos = view->viewport()->mapFromGlobal( QCursor::pos() );

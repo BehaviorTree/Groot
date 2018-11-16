@@ -1,50 +1,49 @@
 #include "DecoratorNodeModel.hpp"
 #include <QLineEdit>
 
-DecoratorNodeModel::DecoratorNodeModel(QString decorator_ID,
-                                       const TreeNodeModel &model):
-    BehaviorTreeDataModel(decorator_ID, model )
+DecoratorNodeModel::DecoratorNodeModel(const TreeNodeModel &model):
+    BehaviorTreeDataModel(model )
 {
     _line_edit_name->setReadOnly(true);
     _line_edit_name->setHidden(true);
 }
 
 RetryNodeModel::RetryNodeModel():
-  DecoratorNodeModel( Name(), NodeModel() )
+  DecoratorNodeModel( NodeModel() )
 {
 }
 
 InverterNodeModel::InverterNodeModel():
-  DecoratorNodeModel( Name(), TreeNodeModel() )
+    DecoratorNodeModel( NodeModel() )
 {
 }
 
 RepeatNodeModel::RepeatNodeModel():
-  DecoratorNodeModel( Name(), NodeModel() )
+  DecoratorNodeModel( NodeModel() )
 {
     _line_edit_name->setHidden(true);
 }
 
 
 BlackboardConditionModel::BlackboardConditionModel():
-    DecoratorNodeModel( Name(), NodeModel() )
+    DecoratorNodeModel( NodeModel() )
 {
 }
 
 TimeoutModel::TimeoutModel():
-    DecoratorNodeModel( Name(), NodeModel() )
+    DecoratorNodeModel( NodeModel() )
 {
 }
 
 
 ForceSuccess::ForceSuccess():
-    DecoratorNodeModel( Name(), TreeNodeModel())
+    DecoratorNodeModel( NodeModel() )
 {
     _line_edit_name->setHidden(true);
 }
 
 ForceFailure::ForceFailure():
-    DecoratorNodeModel( Name(), TreeNodeModel())
+    DecoratorNodeModel( NodeModel() )
 {
     _line_edit_name->setHidden(true);
 }

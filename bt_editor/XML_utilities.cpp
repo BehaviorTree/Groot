@@ -12,12 +12,11 @@ using namespace tinyxml2;
 using namespace QtNodes;
 
 
-std::pair<QString,TreeNodeModel>
+TreeNodeModel
 buildTreeNodeModel(const tinyxml2::XMLElement* node,
                    bool is_tree_node_model)
 {
-
-    TreeNodeModel node_model;
+    std::vector<TreeNodeModel::Param> model_params;
 
     QString node_name (node->Name());
     QString ID = node_name;
@@ -27,7 +26,6 @@ buildTreeNodeModel(const tinyxml2::XMLElement* node,
     }
 
     const auto node_type = getNodeTypeFromString(node_name);
-    node_model.node_type = node_type;
 
     ParameterWidgetCreators parameters;
 
@@ -41,11 +39,11 @@ buildTreeNodeModel(const tinyxml2::XMLElement* node,
             model_param.label = param_node->Attribute("label");
 
             if( param_node->Attribute("default") ){
-                model_param.default_value = param_node->Attribute("default");
+                model_param.value = param_node->Attribute("default");
             }
             auto widget_creator = buildWidgetCreator( model_param );
             parameters.push_back(widget_creator);
-            node_model.params.push_back( std::move(model_param) );
+            model_params.push_back( std::move(model_param) );
         }
     }
     else
@@ -59,15 +57,15 @@ buildTreeNodeModel(const tinyxml2::XMLElement* node,
             {
                 TreeNodeModel::Param model_param;
                 model_param.label = attr_name;
-                model_param.default_value = attr->Value();
+                model_param.value = attr->Value();
 
                 auto widget_creator = buildWidgetCreator( model_param );
                 parameters.push_back(widget_creator);
-                node_model.params.push_back( std::move(model_param) );
+                model_params.push_back( std::move(model_param) );
             }
         }
     }
-    return std::make_pair(ID, node_model );
+    return { ID, node_type, model_params };
 }
 
 //------------------------------------------------------------------
@@ -85,16 +83,16 @@ TreeNodeModels ReadTreeNodesModel(const tinyxml2::XMLElement* root)
              node != nullptr;
              node = node->NextSiblingElement() )
         {
-            auto model_pair = buildTreeNodeModel(node, true);
-            models.insert( model_pair );
+            auto model = buildTreeNodeModel(node, true);
+            models.insert( {model.registration_ID, model} );
         }
     }
 
     std::function<void(const XMLElement*)> recursiveStep;
     recursiveStep = [&](const XMLElement* node)
     {
-        auto model_pair = buildTreeNodeModel(node, true);
-        models.insert( model_pair );
+        auto model = buildTreeNodeModel(node, true);
+        models.insert( {model.registration_ID, model} );
 
         for( const XMLElement* child = node->FirstChildElement();
              child != nullptr;
@@ -150,8 +148,8 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
     auto parameters = bt_node->getCurrentParameters();
     for(const auto& param: parameters)
     {
-        element->SetAttribute( param.first.toStdString().c_str(),
-                               param.second.toStdString().c_str() );
+        element->SetAttribute( param.label.toStdString().c_str(),
+                               param.value.toStdString().c_str() );
     }
 
     parent_element->InsertEndChild( element );

@@ -2,9 +2,8 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 
-SubtreeNodeModel::SubtreeNodeModel(const QString &subtree_ID,
-                                   const TreeNodeModel& model):
-    BehaviorTreeDataModel (subtree_ID, model ),
+SubtreeNodeModel::SubtreeNodeModel(const TreeNodeModel& model):
+    BehaviorTreeDataModel ( model ),
     _expanded(false)
 {
     _line_edit_name->setReadOnly(true);

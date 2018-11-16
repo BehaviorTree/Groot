@@ -232,7 +232,7 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 
     for (const auto& abs_node: tree.nodes())
     {
-        Node& node = *( abs_node.corresponding_node);
+        Node& node = *( abs_node.graphic_node);
         scene.setNodePosition( node, abs_node.pos );
     }
 }
@@ -265,12 +265,12 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
 
         abs_node.instance_name     = bt_model->instanceName();
-        abs_node.registration_name = bt_model->registrationName();
+        abs_node.model.registration_ID = bt_model->registrationName();
         abs_node.pos  = scene->getNodePosition(*node) ;
         abs_node.size = scene->getNodeSize(*node);
-        abs_node.corresponding_node = node;
-        abs_node.parameters = bt_model->getCurrentParameters();
-        abs_node.type = bt_model->nodeType();
+        abs_node.graphic_node = node;
+        abs_node.model.params = bt_model->getCurrentParameters();
+        abs_node.model.type = bt_model->nodeType();
 
         auto added_node = tree.addNode( parent, std::move(abs_node) );
 
@@ -338,8 +338,8 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
 
         AbstractTreeNode tree_node;
 
-        tree_node.registration_name = modelID;
-        tree_node.type = getNodeTypeFromString( xml_node->Name() );
+        tree_node.model.registration_ID = modelID;
+        tree_node.model.type = getNodeTypeFromString( xml_node->Name() );
 
         if( xml_node->Attribute("name") )
         {
@@ -356,7 +356,7 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
             const QString attr_name( attribute->Name() );
             if( attr_name!= "ID" && attr_name != "name")
             {
-                tree_node.parameters.push_back( { attr_name, attribute->Value() } );
+                tree_node.model.params.push_back( { attr_name, attribute->Value() } );
             }
         }
 
@@ -383,8 +383,8 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
 
     AbstractTreeNode abs_root;
     abs_root.instance_name = "Root";
-    abs_root.registration_name = "Root";
-    abs_root.type = NodeType::ROOT;
+    abs_root.model.registration_ID = "Root";
+    abs_root.model.type = NodeType::ROOT;
     abs_root.children_index.push_back( 1 );
 
     tree.addNode( nullptr, std::move(abs_root) );
@@ -396,13 +396,13 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
     {
         AbstractTreeNode abs_node;
         abs_node.instance_name = fb_node->instance_name()->c_str();
-        abs_node.registration_name = fb_node->registration_name()->c_str();
-        abs_node.type   = convert( fb_node->type() );
+        abs_node.model.registration_ID = fb_node->registration_name()->c_str();
+        abs_node.model.type   = convert( fb_node->type() );
         abs_node.status = convert( fb_node->status() );
 
         for( const BT_Serialization::KeyValue* pair: *(fb_node->params()) )
         {
-            abs_node.parameters.push_back( { QString(pair->key()->c_str()),
+            abs_node.model.params.push_back( { QString(pair->key()->c_str()),
                                              QString(pair->value()->c_str()) } );
         }
         int index = tree.nodesCount();
@@ -472,7 +472,7 @@ ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
         QLineEdit* line = new QLineEdit();
         line->setAlignment( Qt::AlignHCenter);
         line->setMaximumWidth(140);
-        line->setText( param.default_value );
+        line->setText( param.value );
         return line;
     };
 

@@ -14,12 +14,11 @@ const int DEFAULT_LINE_WIDTH  = 100;
 const int DEFAULT_FIELD_WIDTH = 50;
 const int DEFAULT_LABEL_WIDTH = 50;
 
-BehaviorTreeDataModel::BehaviorTreeDataModel(const QString& registration_name,
-                                             const TreeNodeModel &model):
+BehaviorTreeDataModel::BehaviorTreeDataModel(const TreeNodeModel &model):
     _params_widget(nullptr),
     _uid( GetUID() ),
-    _registration_name(registration_name),
-    _instance_name(registration_name),
+    _registration_name(model.registration_ID),
+    _instance_name(model.registration_ID),
     _icon_renderer(nullptr)
 {
     _main_widget = new QFrame();
@@ -247,25 +246,24 @@ const QString &BehaviorTreeDataModel::instanceName() const
     return _instance_name;
 }
 
-std::vector<std::pair<QString, QString>> BehaviorTreeDataModel::getCurrentParameters() const
+std::vector<TreeNodeModel::Param> BehaviorTreeDataModel::getCurrentParameters() const
 {
-    std::vector<std::pair<QString, QString>> out;
+    std::vector<TreeNodeModel::Param> out;
 
     for(const auto& it: _params_map)
     {
         const auto& label = it.first;
-        const auto& field_widget = it.second;
+        const auto& value = it.second;
 
-        if(auto linedit = dynamic_cast<QLineEdit*>( field_widget ) )
+        if(auto linedit = dynamic_cast<QLineEdit*>( value ) )
         {
             out.push_back( { label, linedit->text() } );
         }
-        else if( auto combo = dynamic_cast<QComboBox*>( field_widget ) )
+        else if( auto combo = dynamic_cast<QComboBox*>( value ) )
         {
             out.push_back( { label, combo->currentText() } );
         }
     }
-
     return out;
 }
 

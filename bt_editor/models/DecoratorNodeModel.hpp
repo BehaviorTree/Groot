@@ -8,7 +8,7 @@
 class DecoratorNodeModel : public BehaviorTreeDataModel
 {
 public:
-    DecoratorNodeModel(QString decorator_ID, const TreeNodeModel &model);
+    DecoratorNodeModel(const TreeNodeModel &model);
 
     virtual ~DecoratorNodeModel() = default;
 
@@ -29,10 +29,8 @@ class RetryNodeModel : public DecoratorNodeModel
 public:
     RetryNodeModel();
 
-    static const TreeNodeModel& NodeModel()
-    {
-        static TreeNodeModel model = { NodeType::DECORATOR, { {tr("num_attempts"), "1" } } };
-        return model;
+    static TreeNodeModel NodeModel(){
+        return { Name(), NodeType::DECORATOR, { {tr("num_attempts"), "1" } } };
     }
 
     static const char* Name() {  return "RetryUntilSuccesful"; }
@@ -53,6 +51,10 @@ public:
 
     static const char* Name() {  return "Inverter"; }
 
+    static TreeNodeModel NodeModel(){
+        return { Name(), NodeType::DECORATOR, {} };
+    }
+
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
@@ -67,13 +69,11 @@ class RepeatNodeModel : public DecoratorNodeModel
 public:
     RepeatNodeModel();
 
-    static const TreeNodeModel& NodeModel()
-    {
-        static TreeNodeModel model = { NodeType::DECORATOR, { {tr("num_cycles"), "1"} } };
-        return model;
-    }
-
     static const char* Name() {  return "Repeat"; }
+
+    static TreeNodeModel NodeModel(){
+        return { Name(), NodeType::DECORATOR, { {tr("num_cycles"), "1"} } };
+    }
 
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
@@ -89,12 +89,11 @@ class BlackboardConditionModel : public DecoratorNodeModel
 public:
     BlackboardConditionModel();
 
-    static const TreeNodeModel& NodeModel()
-    {
-        static TreeNodeModel model = { NodeType::DECORATOR, { {"key", "key"}, {"expected", "value"} } };
-        return model;
-    }
     static const char* Name() {  return "BB_Precondition"; }
+
+    static TreeNodeModel NodeModel() {
+        return { Name(), NodeType::DECORATOR, { {"key", "key"}, {"expected", "value"} } };
+    }
 
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
@@ -105,10 +104,9 @@ class TimeoutModel : public DecoratorNodeModel
 public:
     TimeoutModel();
 
-    static const TreeNodeModel& NodeModel()
+    static TreeNodeModel NodeModel()
     {
-        static TreeNodeModel model = { NodeType::DECORATOR, { {"msec", "0"} } };
-        return model;
+        return { Name(), NodeType::DECORATOR, { {"msec", "0"} } };
     }
     static const char* Name() {  return "Timeout"; }
 
@@ -127,6 +125,10 @@ public:
 
     static const char* Name() {  return "ForceSuccess"; }
 
+    static TreeNodeModel NodeModel() {
+        return { Name(), NodeType::DECORATOR, {} };
+    }
+
     std::pair<QString, QColor> caption() const override  { return { Name(), Qt::green}; }
 };
 
@@ -136,6 +138,10 @@ public:
     ForceFailure();
 
     static const char* Name() {  return "ForceFailure"; }
+
+    static TreeNodeModel NodeModel() {
+        return { Name(), NodeType::DECORATOR, {} };
+    }
 
     std::pair<QString, QColor> caption() const override  { return { Name(), "#ff2222"}; }
 };

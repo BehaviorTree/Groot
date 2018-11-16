@@ -29,6 +29,12 @@ public:
   }
   static const char* Name() { return "Root"; }
 
+  static const TreeNodeModel& NodeModel()
+  {
+      static TreeNodeModel model = { Name(), NodeType::ROOT, {} };
+      return model;
+  }
+
   virtual NodeType nodeType() const final { return NodeType::ROOT; }
 };
 

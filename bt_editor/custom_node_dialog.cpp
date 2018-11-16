@@ -32,9 +32,9 @@ CustomNodeDialog::CustomNodeDialog(const TreeNodeModels &models,
                 ui->tableWidget->setRowCount(row+1);
 
                 ui->tableWidget->setItem(row,0, new QTableWidgetItem( param.label ));
-                ui->tableWidget->setItem(row,1, new QTableWidgetItem( param.default_value ));
+                ui->tableWidget->setItem(row,1, new QTableWidgetItem( param.value ));
             }
-            switch( it->second.node_type )
+            switch( it->second.type )
             {
             case NodeType::ACTION:    ui->comboBox->setCurrentIndex(0); break;
             case NodeType::CONDITION: ui->comboBox->setCurrentIndex(1); break;
@@ -60,21 +60,24 @@ CustomNodeDialog::~CustomNodeDialog()
     delete ui;
 }
 
-std::pair<QString,TreeNodeModel> CustomNodeDialog::getTreeNodeModel() const
+TreeNodeModel CustomNodeDialog::getTreeNodeModel() const
 {
-    TreeNodeModel model;
+    QString ID = ui->lineEdit->text();
+    NodeType type = NodeType::UNDEFINED;
+    std::vector<TreeNodeModel::Param> params;
+
     switch( ui->comboBox->currentIndex() )
     {
-    case 0: model.node_type = NodeType::ACTION; break;
-    case 1: model.node_type = NodeType::CONDITION; break;
+    case 0: type = NodeType::ACTION; break;
+    case 1: type = NodeType::CONDITION; break;
     }
     for (int row=0; row < ui->tableWidget->rowCount(); row++ )
     {
         const auto key   = ui->tableWidget->item(row,0)->text();
         const auto value = ui->tableWidget->item(row,1)->text();
-        model.params.push_back( {key,value} );
+        params.push_back( {key,value} );
     }
-    return { ui->lineEdit->text(), model };
+    return { ID, type, std::move(params) };
 }
 
 void CustomNodeDialog::on_toolButtonAdd_pressed()

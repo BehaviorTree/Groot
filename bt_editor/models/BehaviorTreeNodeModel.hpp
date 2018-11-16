@@ -27,8 +27,7 @@ class BehaviorTreeDataModel : public NodeDataModel
     Q_OBJECT
 
 public:
-  BehaviorTreeDataModel(const QString &registration_name,
-                        const TreeNodeModel &parameters );
+  BehaviorTreeDataModel(const TreeNodeModel &parameters );
 
   ~BehaviorTreeDataModel() override;
 
@@ -50,7 +49,7 @@ public:
 
   virtual std::pair<QString,QColor> caption() const;
 
-  std::vector<std::pair<QString, QString> > getCurrentParameters() const;
+  std::vector<TreeNodeModel::Param> getCurrentParameters() const;
 
   QWidget *embeddedWidget() final { return _main_widget; }
 

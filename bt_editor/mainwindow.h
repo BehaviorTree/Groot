@@ -72,7 +72,7 @@ public slots:
     void onRequestSubTreeExpand(GraphicContainer& container,
                                 QtNodes::Node& node);
 
-    void onAddToModelRegistry(const QString &ID, const TreeNodeModel& model);
+    void onAddToModelRegistry(const TreeNodeModel& model);
 
     void onDestroySubTree(const QString &ID);
 
