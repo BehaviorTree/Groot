@@ -175,7 +175,18 @@ void SidepanelReplay::on_LoadLog()
 
     auto fb_behavior_tree = BT_Serialization::GetBehaviorTree( &buffer[4] );
 
-    AbsBehaviorTree loaded_tree = BuildTreeFromFlatbuffers( fb_behavior_tree );
+    auto res_pair = BuildTreeFromFlatbuffers( fb_behavior_tree );
+
+    const auto& loaded_tree  = res_pair.first;
+    const auto& uid_to_index = res_pair.second;
+
+    for (const auto& tree_node: loaded_tree.nodes() )
+    {
+        if( BuiltinNodeModels().count( tree_node.model.registration_ID) == 0)
+        {
+            emit addNewModel( tree_node.model );
+        }
+    }
 
     emit loadBehaviorTree( loaded_tree, "BehaviorTree" );
 
@@ -189,7 +200,8 @@ void SidepanelReplay::on_LoadLog()
         const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[offset+4] );
         double timestamp = t_sec + t_usec* 0.000001;
         transition.timestamp = timestamp;
-        transition.index = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
+        const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
+        transition.index = uid_to_index.at(uid);
         transition.prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+10] ));
         transition.status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+11] ));
 

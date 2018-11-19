@@ -377,9 +377,11 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
 }
 
 
-AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
+std::pair<AbsBehaviorTree, std::unordered_map<int, int>>
+BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
 {
     AbsBehaviorTree tree;
+    std::unordered_map<int, int> uid_to_index;
 
     AbstractTreeNode abs_root;
     abs_root.instance_name = "Root";
@@ -388,8 +390,6 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
     abs_root.children_index.push_back( 1 );
 
     tree.addNode( nullptr, std::move(abs_root) );
-
-    std::unordered_map<int, int> uid_to_index;
 
     // just copy the vector
     for( const BT_Serialization::TreeNode* fb_node: *(fb_behavior_tree->nodes()) )
@@ -421,7 +421,7 @@ AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *f
             abs_node->children_index.push_back(child_index);
         }
     }
-    return tree;
+    return { tree, uid_to_index };
 }
 
 std::pair<QtNodes::NodeStyle, QtNodes::ConnectionStyle>

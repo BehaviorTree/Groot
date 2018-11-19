@@ -50,6 +50,7 @@ private:
     QTimer* _timer;
     int _msg_count;
     AbsBehaviorTree _loaded_tree;
+    std::unordered_map<int, int> _uid_to_index;
 
     bool getTreeFromServer();
 

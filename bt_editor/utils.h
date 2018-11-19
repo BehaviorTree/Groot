@@ -21,7 +21,8 @@ std::vector<QtNodes::Node *> getChildren(const QtNodes::FlowScene &scene,
 AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
                                    QtNodes::Node *root_node = nullptr);
 
-AbsBehaviorTree BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree* bt );
+std::pair<AbsBehaviorTree, std::unordered_map<int, int> >
+BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree* bt );
 
 AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root);
 

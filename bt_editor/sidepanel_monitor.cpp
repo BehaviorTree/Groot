@@ -65,11 +65,12 @@ void SidepanelMonitor::on_timer()
             {
                 size_t offset = 8 + header_size + 12*t;
 
-                //const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[index] );
-                //const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[index+4] );
-                //double timestamp = t_sec + t_usec* 0.000001;
-                uint16_t index = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
-                //NodeStatus prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
+               // const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[offset] );
+               // const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[offset+4] );
+               // double timestamp = t_sec + t_usec* 0.000001;
+                const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
+                const uint16_t index = _uid_to_index.at(uid);
+               // NodeStatus prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
                 NodeStatus status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+11] ));
 
                 _loaded_tree.node(index)->status = status;
@@ -77,7 +78,6 @@ void SidepanelMonitor::on_timer()
                 qDebug() << _loaded_tree.node(index)->instance_name << " : " << toStr(status);
             }
             // update the graphic part
-
             emit changeNodeStyle( "BehaviorTree", node_status );
         }
     }
@@ -110,7 +110,10 @@ bool SidepanelMonitor::getTreeFromServer()
         const char* buffer = reinterpret_cast<const char*>(reply.data());
         auto fb_behavior_tree = BT_Serialization::GetBehaviorTree( buffer );
 
-        _loaded_tree = BuildTreeFromFlatbuffers( fb_behavior_tree );
+        auto res_pair = BuildTreeFromFlatbuffers( fb_behavior_tree );
+
+        _loaded_tree  = std::move( res_pair.first );
+        _uid_to_index = std::move( res_pair.second );
 
         // add new models to registry
         for(const auto& tree_node: _loaded_tree.nodes())

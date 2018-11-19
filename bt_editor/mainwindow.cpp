@@ -1247,27 +1247,27 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
 void MainWindow::onChangeNodesStatus(const QString& bt_name,
                                     const std::unordered_map<int, NodeStatus>& node_status)
 {
- /*   auto tree = BuildTreeFromScene( getTabByName(bt_name)->scene() );
+    auto tree = BuildTreeFromScene( getTabByName(bt_name)->scene() );
 
     for (auto& it: node_status)
     {
         const int index = it.first;
-        auto abs_node = tree.nodes(index);
-        abs_node->status = it.second;
+        const NodeStatus status = it.second;
+        auto& abs_node = tree.nodes().at(index);
 
-        auto& node = abs_node->graphic_node;
-        auto style = getStyleFromStatus( abs_node->status );
-        node->nodeDataModel()->setNodeStyle( style.first );
-        node->nodeGraphicsObject().update();
+        auto gui_node = abs_node.graphic_node;
+        auto style = getStyleFromStatus( status );
+        gui_node->nodeDataModel()->setNodeStyle( style.first );
+        gui_node->nodeGraphicsObject().update();
 
-        const auto& conn_in = node->nodeState().connections(PortType::In, 0 );
+        const auto& conn_in = gui_node->nodeState().connections(PortType::In, 0 );
         if(conn_in.size() == 1)
         {
             auto conn = conn_in.begin()->second;
             conn->setStyle( style.second );
             conn->connectionGraphicsObject().update();
         }
-    }*/
+    }
 }
 
 void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
