@@ -80,11 +80,11 @@ main(int argc, char *argv[])
         else{
             StartupDialog dialog;
             dialog.setWindowFlags( Qt::FramelessWindowHint );
-            mode = dialog.getGraphicMode();
             if(dialog.exec() != QDialog::Accepted)
             {
                 return 0;
             }
+            mode = dialog.getGraphicMode();
         }
 
         MainWindow win( mode );
