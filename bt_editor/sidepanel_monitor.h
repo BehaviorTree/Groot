@@ -15,7 +15,7 @@ class SidepanelMonitor : public QFrame
     Q_OBJECT
 
 public:
-    explicit SidepanelMonitor(QWidget *parent = 0);
+    explicit SidepanelMonitor(QWidget *parent = nullptr);
     ~SidepanelMonitor();
 
     void clear();
@@ -34,7 +34,7 @@ signals:
     void connectionUpdate(bool connected);
 
     void changeNodeStyle(const QString& bt_name,
-                         const std::unordered_map<int, NodeStatus>& node_status);
+                         const std::vector<std::pair<int, NodeStatus>>& node_status);
 
     void addNewModel(const TreeNodeModel &new_model);
 

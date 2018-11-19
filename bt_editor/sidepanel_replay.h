@@ -46,7 +46,7 @@ signals:
     void loadBehaviorTree(const AbsBehaviorTree& tree, const QString& name );
 
     void changeNodeStyle(const QString& bt_name,
-                         const std::unordered_map<int, NodeStatus>& node_status);
+                         const std::vector<std::pair<int, NodeStatus>>& node_status);
 
     void addNewModel(const TreeNodeModel &new_model);
 
@@ -81,6 +81,8 @@ private:
     QTimer *_layout_update_timer;
 
     QTimer *_play_timer;
+
+    AbsBehaviorTree _loaded_tree;
 
     void updateTableModel(const AbsBehaviorTree &tree);
 };

@@ -177,10 +177,10 @@ void SidepanelReplay::on_LoadLog()
 
     auto res_pair = BuildTreeFromFlatbuffers( fb_behavior_tree );
 
-    const auto& loaded_tree  = res_pair.first;
+    _loaded_tree  = res_pair.first;
     const auto& uid_to_index = res_pair.second;
 
-    for (const auto& tree_node: loaded_tree.nodes() )
+    for (const auto& tree_node: _loaded_tree.nodes() )
     {
         if( BuiltinNodeModels().count( tree_node.model.registration_ID) == 0)
         {
@@ -188,7 +188,7 @@ void SidepanelReplay::on_LoadLog()
         }
     }
 
-    emit loadBehaviorTree( loaded_tree, "BehaviorTree" );
+    emit loadBehaviorTree( _loaded_tree, "BehaviorTree" );
 
     _transitions.clear();
     _transitions.reserve( (content.size() - 4 - bt_header_size) / 12 );
@@ -210,7 +210,7 @@ void SidepanelReplay::on_LoadLog()
 
     _timepoint.clear();
     _prev_row = -1;
-    updateTableModel(loaded_tree);
+    updateTableModel(_loaded_tree);
 }
 
 
@@ -281,15 +281,26 @@ void SidepanelReplay::onRowChanged(int current_row)
     const QString bt_name("BehaviorTree");
 
     std::unordered_map<int, NodeStatus> node_status;
+    for(size_t index = 0; index < _loaded_tree.nodes().size(); index++ )
+    {
+        node_status.insert( { index, NodeStatus::IDLE} );
+    }
 
-    // We can do better, but it is so fast that I don't even care... for the time being.
+    // THIS CAN BE OPTIMIZED, but it is so fast that I don't even care... for the time being.
     for (int t = 0; t <= current_row; t++)
     {
         auto& trans = _transitions[t];
         node_status[ trans.index ] = trans.status;
-        qDebug() << trans.index << " : " << tr(toStr(trans.status));
+        //qDebug() << trans.index << " : " << tr(toStr(trans.status));
     }
-    emit changeNodeStyle( bt_name, node_status );
+    std::vector<std::pair<int, NodeStatus>> node_status_vector;
+    node_status_vector.reserve( node_status.size() );
+    for (const auto& it: node_status)
+    {
+        node_status_vector.push_back( it );
+    }
+
+    emit changeNodeStyle( bt_name, node_status_vector );
 
     _prev_row = current_row;
 }

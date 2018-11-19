@@ -1245,7 +1245,7 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
 }
 
 void MainWindow::onChangeNodesStatus(const QString& bt_name,
-                                    const std::unordered_map<int, NodeStatus>& node_status)
+                                    const std::vector<std::pair<int, NodeStatus> > &node_status)
 {
     auto tree = BuildTreeFromScene( getTabByName(bt_name)->scene() );
 

@@ -57,7 +57,7 @@ void SidepanelMonitor::on_timer()
                 node->status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+2] ));
             }
 
-            std::unordered_map<int, NodeStatus> node_status;
+            std::vector<std::pair<int, NodeStatus>> node_status;
 
             qDebug() << "--------";
 
@@ -74,7 +74,7 @@ void SidepanelMonitor::on_timer()
                 NodeStatus status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+11] ));
 
                 _loaded_tree.node(index)->status = status;
-                node_status[index] = status;
+                node_status.push_back( {index, status} );
                 qDebug() << _loaded_tree.node(index)->instance_name << " : " << toStr(status);
             }
             // update the graphic part
@@ -127,13 +127,14 @@ bool SidepanelMonitor::getTreeFromServer()
 
         loadBehaviorTree( _loaded_tree, "BehaviorTree" );
 
-        std::unordered_map<int, NodeStatus> node_status;
+        std::vector<std::pair<int, NodeStatus>> node_status;
+        node_status.reserve(_loaded_tree.nodesCount());
 
         qDebug() << "--------";
 
         for(size_t t=0; t < _loaded_tree.nodesCount(); t++)
         {
-            node_status[t] = _loaded_tree.nodes()[t].status;
+            node_status.push_back( { t, _loaded_tree.nodes()[t].status } );
         }
         emit changeNodeStyle( "BehaviorTree", node_status );
     }
