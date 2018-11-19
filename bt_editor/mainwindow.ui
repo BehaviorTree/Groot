@@ -750,9 +750,6 @@ QToolButton:disabled{
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionLoad"/>
-    <addaction name="actionLoadRemote"/>
-    <addaction name="actionSave"/>
     <addaction name="actionClear"/>
     <addaction name="actionQuit"/>
    </widget>
