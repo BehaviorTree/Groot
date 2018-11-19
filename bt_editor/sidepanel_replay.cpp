@@ -280,27 +280,21 @@ void SidepanelReplay::onRowChanged(int current_row)
 
     const QString bt_name("BehaviorTree");
 
-    std::unordered_map<int, NodeStatus> node_status;
+    std::vector<std::pair<int, NodeStatus>>  node_status;
     for(size_t index = 0; index < _loaded_tree.nodes().size(); index++ )
     {
-        node_status.insert( { index, NodeStatus::IDLE} );
+        node_status.push_back( { index, NodeStatus::IDLE} );
     }
 
     // THIS CAN BE OPTIMIZED, but it is so fast that I don't even care... for the time being.
     for (int t = 0; t <= current_row; t++)
     {
         auto& trans = _transitions[t];
-        node_status[ trans.index ] = trans.status;
+        node_status[ trans.index ].second = trans.status;
         //qDebug() << trans.index << " : " << tr(toStr(trans.status));
     }
-    std::vector<std::pair<int, NodeStatus>> node_status_vector;
-    node_status_vector.reserve( node_status.size() );
-    for (const auto& it: node_status)
-    {
-        node_status_vector.push_back( it );
-    }
 
-    emit changeNodeStyle( bt_name, node_status_vector );
+    emit changeNodeStyle( bt_name, node_status );
 
     _prev_row = current_row;
 }
