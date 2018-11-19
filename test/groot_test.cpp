@@ -18,7 +18,6 @@ private slots:
     void undoRedo();
     void testSubtree();
     void modifyCustomModel();
-
 };
 
 
@@ -352,10 +351,8 @@ void GrootTest::modifyCustomModel()
 
     auto jump_abs_node = abs_tree.findNode( jump_model.registration_ID );
     QVERIFY( jump_abs_node != nullptr);
-    QVERIFY( jump_abs_node->model.params.size() == 1 );
-    auto jump_param = jump_abs_node->model.params.front();
-    QCOMPARE( jump_param.label, tr("UseParachute") );
-    QCOMPARE( jump_param.value, tr("true") );
+    QCOMPARE( jump_abs_node->model, jump_model );
+
 
     sleepAndRefresh( 500 );
 }

@@ -155,6 +155,12 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
              this, &MainWindow::onCreateAbsBehaviorTree );
 
+    connect( _replay_widget, &SidepanelReplay::addNewModel,
+             this, &MainWindow::onAddToModelRegistry);
+
+    connect( _monitor_widget, &SidepanelMonitor::addNewModel,
+             this, &MainWindow::onAddToModelRegistry);
+
     connect( ui->toolButtonSaveFile, &QToolButton::clicked,
              this, &MainWindow::on_actionSave_triggered );
 

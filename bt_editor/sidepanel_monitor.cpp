@@ -112,6 +112,16 @@ bool SidepanelMonitor::getTreeFromServer()
 
         _loaded_tree = BuildTreeFromFlatbuffers( fb_behavior_tree );
 
+        // add new models to registry
+        for(const auto& tree_node: _loaded_tree.nodes())
+        {
+            const auto& registration_ID = tree_node.model.registration_ID;
+            if( BuiltinNodeModels().count(registration_ID) == 0)
+            {
+                addNewModel( tree_node.model );
+            }
+        }
+
         loadBehaviorTree( _loaded_tree, "BehaviorTree" );
 
         std::unordered_map<int, NodeStatus> node_status;

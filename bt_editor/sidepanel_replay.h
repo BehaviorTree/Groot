@@ -45,7 +45,10 @@ private slots:
 signals:
     void loadBehaviorTree(const AbsBehaviorTree& tree, const QString& name );
 
-    void changeNodeStyle(const QString& bt_name, const std::unordered_map<int, NodeStatus>& node_status);
+    void changeNodeStyle(const QString& bt_name,
+                         const std::unordered_map<int, NodeStatus>& node_status);
+
+    void addNewModel(const TreeNodeModel &new_model);
 
 private:
 

@@ -36,6 +36,8 @@ signals:
     void changeNodeStyle(const QString& bt_name,
                          const std::unordered_map<int, NodeStatus>& node_status);
 
+    void addNewModel(const TreeNodeModel &new_model);
+
 private:
     Ui::SidepanelMonitor *ui;
 
