@@ -2,18 +2,18 @@
 #include "bt_editor/sidepanel_editor.h"
 #include <QAction>
 
-class GrootTest : public GrootTestBase
+class EditorTest : public GrootTestBase
 {
     Q_OBJECT
 
 public:
-    GrootTest() {}
-    ~GrootTest() {}
+    EditorTest() {}
+    ~EditorTest() {}
 
 private slots:
-    void renameTabs();
     void initTestCase();
     void cleanupTestCase();
+    void renameTabs();
     void loadFile();
     void undoRedo();
     void testSubtree();
@@ -21,14 +21,14 @@ private slots:
 };
 
 
-void GrootTest::initTestCase()
+void EditorTest::initTestCase()
 {
     main_win = new MainWindow(GraphicMode::EDITOR, nullptr);
     main_win->resize(1200, 800);
     main_win->show();
 }
 
-void GrootTest::cleanupTestCase()
+void EditorTest::cleanupTestCase()
 {
     QApplication::processEvents();
     sleepAndRefresh( 1000 );
@@ -36,7 +36,7 @@ void GrootTest::cleanupTestCase()
     main_win->close();
 }
 
-void GrootTest::loadFile()
+void EditorTest::loadFile()
 {
     QString file_xml = readFile(":/crossdoor_with_subtree.xml");
     main_win->on_actionClear_triggered();
@@ -115,7 +115,7 @@ void GrootTest::loadFile()
 }
 
 
-void GrootTest::undoRedo()
+void EditorTest::undoRedo()
 {
     QString file_xml = readFile(":/show_all.xml");
     main_win->on_actionClear_triggered();
@@ -219,7 +219,7 @@ void GrootTest::undoRedo()
     sleepAndRefresh( 500 );
 }
 
-void GrootTest::renameTabs()
+void EditorTest::renameTabs()
 {
     QString file_xml = readFile(":/crossdoor_with_subtree.xml");
     main_win->on_actionClear_triggered();
@@ -248,7 +248,7 @@ void GrootTest::renameTabs()
      sleepAndRefresh( 500 );
 }
 
-void GrootTest::testSubtree()
+void EditorTest::testSubtree()
 {
     QString file_xml = readFile(":/crossdoor_with_subtree.xml");
     main_win->on_actionClear_triggered();
@@ -323,7 +323,7 @@ void GrootTest::testSubtree()
     sleepAndRefresh( 500 );
 }
 
-void GrootTest::modifyCustomModel()
+void EditorTest::modifyCustomModel()
 {
     QString file_xml = readFile(":/crossdoor_with_subtree.xml");
     main_win->on_actionClear_triggered();
@@ -353,10 +353,9 @@ void GrootTest::modifyCustomModel()
     QVERIFY( jump_abs_node != nullptr);
     QCOMPARE( jump_abs_node->model, jump_model );
 
-
     sleepAndRefresh( 500 );
 }
 
-QTEST_MAIN(GrootTest)
+QTEST_MAIN(EditorTest)
 
-#include "groot_test.moc"
+#include "editor_test.moc"

@@ -169,8 +169,11 @@ void SidepanelReplay::on_LoadLog()
     settings.sync();
 
     QByteArray content = file.readAll();
-    //--------------------------------
+    loadLog( content );
+}
 
+void SidepanelReplay::loadLog(const QByteArray &content)
+{
     const char* buffer = reinterpret_cast<const char*>(content.data());
 
     size_t bt_header_size = flatbuffers::ReadScalar<uint32_t>(buffer);

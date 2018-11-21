@@ -12,17 +12,18 @@ SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 ENABLE_TESTING()
 
+function(CompileTest name)
+    add_executable(${name} ${name}.cpp groot_test_base.cpp ${RESOURCE_FILES} )
+    target_link_libraries(${name} PRIVATE Qt5::Gui Qt5::Test behavior_tree_editor)
+    add_test(${name} COMMAND ${name})
+endfunction()
+
 set(RESOURCE_FILES
     ../QtNodeEditor/resources/resources.qrc
     ../bt_editor/resources/icons.qrc
     ../test_data/test_files.qrc
     )
 
-add_executable(${PROJECT_NAME}
-    groot_test_base.cpp
-    groot_test.cpp
-    ${RESOURCE_FILES} )
-
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Gui Qt5::Test behavior_tree_editor)
-add_test(${PROJECT_NAME} COMMAND ${PROJECT_NAME})
+CompileTest( editor_test )
+CompileTest( replay_test )
 

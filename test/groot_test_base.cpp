@@ -2,12 +2,12 @@
 #include <QTimer>
 #include <QKeyEvent>
 
-QString GrootTestBase::readFile(const char *name)
+QByteArray GrootTestBase::readFile(const char *name)
 {
     QString fileName(name);
     QFile file(fileName);
     bool ret = file.open(QIODevice::ReadOnly);
-    QString data = file.readAll();
+    QByteArray data = file.readAll();
     file.close();
     if( !ret ){
         QTest::qFail("can't load file", __FILE__, __LINE__);

@@ -18,9 +18,13 @@ class SidepanelReplay : public QFrame
 
 public:
     explicit SidepanelReplay(QWidget *parent = 0);
-    ~SidepanelReplay();
+    ~SidepanelReplay() override;
 
     void clear();
+
+    void loadLog(const QByteArray& content);
+
+    size_t transitionsCount() const { return _transitions.size(); }
 
 public slots:
 
@@ -71,8 +75,6 @@ private:
 
     int _prev_row;
     int _next_row;
-
-   //AbsBehaviorTree _loaded_tree;
 
     void updatedSpinAndSlider(int row);
 

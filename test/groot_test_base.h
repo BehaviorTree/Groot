@@ -24,7 +24,7 @@ public:
     };
 
 protected:
-    QString readFile(const char* name);
+    QByteArray readFile(const char* name);
 
     void sleepAndRefresh(int ms);
 
