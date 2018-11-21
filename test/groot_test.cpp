@@ -38,7 +38,7 @@ void GrootTest::cleanupTestCase()
 
 void GrootTest::loadFile()
 {
-    QString file_xml = readFile(":/crossdor_with_subtree.xml");
+    QString file_xml = readFile(":/crossdoor_with_subtree.xml");
     main_win->on_actionClear_triggered();
     main_win->loadFromXML( file_xml );
 
@@ -221,7 +221,7 @@ void GrootTest::undoRedo()
 
 void GrootTest::renameTabs()
 {
-    QString file_xml = readFile(":/crossdor_with_subtree.xml");
+    QString file_xml = readFile(":/crossdoor_with_subtree.xml");
     main_win->on_actionClear_triggered();
     main_win->loadFromXML( file_xml );
 
@@ -250,7 +250,7 @@ void GrootTest::renameTabs()
 
 void GrootTest::testSubtree()
 {
-    QString file_xml = readFile(":/crossdor_with_subtree.xml");
+    QString file_xml = readFile(":/crossdoor_with_subtree.xml");
     main_win->on_actionClear_triggered();
     main_win->loadFromXML( file_xml );
 
@@ -325,7 +325,7 @@ void GrootTest::testSubtree()
 
 void GrootTest::modifyCustomModel()
 {
-    QString file_xml = readFile(":/crossdor_with_subtree.xml");
+    QString file_xml = readFile(":/crossdoor_with_subtree.xml");
     main_win->on_actionClear_triggered();
     main_win->loadFromXML( file_xml );
 
