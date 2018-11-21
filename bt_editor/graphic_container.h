@@ -28,7 +28,7 @@ public:
 
     void lockEditing(bool locked);
 
-    void lockSubtreeEditing(QtNodes::Node& node, bool locked);
+    void lockSubtreeEditing(QtNodes::Node& node, bool locked, bool change_style);
 
     void nodeReorder();
 

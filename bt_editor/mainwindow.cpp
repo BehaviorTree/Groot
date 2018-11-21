@@ -817,7 +817,7 @@ void MainWindow::onDestroySubTree(const QString &ID)
                     new_node = subTreeExpand( *container, *qt_node,
                                               SubtreeExpandOption::SUBTREE_EXPAND );
                 }
-                container->lockSubtreeEditing(*new_node, false);
+                container->lockSubtreeEditing(*new_node, false, false);
                 container->onSmartRemove( new_node );
             }
         }
@@ -843,6 +843,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
                                          QtNodes::Node &node,
                                          MainWindow::SubtreeExpandOption option)
 {
+    bool is_editor_mode = (_current_mode == GraphicMode::EDITOR);
     const QSignalBlocker blocker( this );
     auto subtree_model = dynamic_cast<SubtreeNodeModel*>(node.nodeDataModel());
     const QString& subtree_name = subtree_model->instanceName();
@@ -857,7 +858,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
 
         container.appendTreeToNode( node, abs_subtree );
         container.nodeReorder();
-        container.lockSubtreeEditing( node, true );
+        container.lockSubtreeEditing( node, true, is_editor_mode );
 
         return &node;
     }
@@ -881,7 +882,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
 
         subtree_model->setExpanded(false);
         node.nodeState().getEntries(PortType::Out).resize(0);
-        container.lockSubtreeEditing( node, false );
+        container.lockSubtreeEditing( node, false, is_editor_mode );
         container.nodeReorder();
 
         return &node;
@@ -903,7 +904,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
         container.deleteSubTreeRecursively( *child_node );
         container.appendTreeToNode( node, subtree );
         container.nodeReorder();
-        container.lockSubtreeEditing( node, true );
+        container.lockSubtreeEditing( node, true, is_editor_mode );
 
         return &node;
     }

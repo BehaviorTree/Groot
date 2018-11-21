@@ -102,7 +102,7 @@ void GraphicContainer::lockEditing(bool locked)
 
     for (auto& subtree: subtrees_expanded )
     {
-        lockSubtreeEditing(*subtree, true);
+        lockSubtreeEditing(*subtree, true, !locked);
     }
 
     for (auto& conn_it: _scene->connections() )
@@ -112,37 +112,15 @@ void GraphicContainer::lockEditing(bool locked)
     }
 }
 
-void GraphicContainer::lockSubtreeEditing(Node &node, bool locked)
+void GraphicContainer::lockSubtreeEditing(Node &root_node, bool locked, bool change_style)
 {
-    auto nodes = getSubtreeNodesRecursively( node );
-
-    for (auto node: nodes )
+    for (auto node: getSubtreeNodesRecursively( root_node ) )
     {
         node->nodeGraphicsObject().lock( locked );
 
-        if( locked)
-        {
-          QtNodes::NodeStyle style;
-
-          style.GradientColor0.setBlue(120);
-          style.GradientColor1.setBlue(100);
-          style.GradientColor2.setBlue(90);
-          style.GradientColor3.setBlue(90);
-          node->nodeDataModel()->setNodeStyle(style);
-        }
-
-        auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() );
-        if( bt_model )
+        if( auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() ) )
         {
             bt_model->lock(locked);
-        }
-
-        if( !locked ) //TODO : change style
-        {
-            node->nodeGraphicsObject().setGeometryChanged();
-            QtNodes::NodeStyle style;
-            node->nodeDataModel()->setNodeStyle( style );
-            node->nodeGraphicsObject().update();
         }
 
         auto connections = node->nodeState().getEntries(PortType::Out);
@@ -154,6 +132,19 @@ void GraphicContainer::lockSubtreeEditing(Node &node, bool locked)
                 conn->connectionGraphicsObject().lock( locked );
             }
         }
+        //--------------------------------
+        QtNodes::NodeStyle style;
+
+        if( locked && change_style )
+        {
+          style.GradientColor0.setBlue(120);
+          style.GradientColor1.setBlue(100);
+          style.GradientColor2.setBlue(90);
+          style.GradientColor3.setBlue(90);
+        }
+        node->nodeGraphicsObject().setGeometryChanged();
+        node->nodeDataModel()->setNodeStyle( style );
+        node->nodeGraphicsObject().update();
     }
 }
 
