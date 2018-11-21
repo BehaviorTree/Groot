@@ -62,13 +62,13 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>150</width>
+         <width>200</width>
          <height>16777215</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <pointsize>11</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -450,6 +450,7 @@
   </layout>
  </widget>
  <resources>
+  <include location="resources/icons.qrc"/>
   <include location="resources/icons.qrc"/>
  </resources>
  <connections/>

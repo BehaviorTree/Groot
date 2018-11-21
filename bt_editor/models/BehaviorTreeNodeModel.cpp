@@ -41,7 +41,6 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const TreeNodeModel &model):
 
     QFont capt_font = _caption_label->font();
     capt_font.setPointSize(12);
-    capt_font.setBold(true);
     _caption_label->setFont(capt_font);
 
     capt_layout->addWidget(_caption_logo_left, 0, Qt::AlignRight);

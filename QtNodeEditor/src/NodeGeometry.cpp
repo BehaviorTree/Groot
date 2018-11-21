@@ -36,8 +36,6 @@ NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
 {
   QFont f;
   f.setPointSize(12);
-  f.setBold(true);
-
   _boldFontMetrics = QFontMetrics(f);
 }
 
@@ -124,9 +122,7 @@ recalculateSize(QFont const & font) const
 {
   QFontMetrics fontMetrics(font);
   QFont boldFont = font;
-
   boldFont.setPointSize(12);
-  boldFont.setBold(true);
 
   QFontMetrics boldFontMetrics(boldFont);
 
@@ -134,7 +130,6 @@ recalculateSize(QFont const & font) const
   {
     _fontMetrics     = fontMetrics;
     _boldFontMetrics = boldFontMetrics;
-
     recalculateSize();
   }
 }
@@ -243,7 +238,6 @@ NodeGeometry::
 validationHeight() const
 {
   QString msg = _dataModel->validationMessage();
-
   return _boldFontMetrics.boundingRect(msg).height();
 }
 
@@ -253,7 +247,6 @@ NodeGeometry::
 validationWidth() const
 {
   QString msg = _dataModel->validationMessage();
-
   return _boldFontMetrics.boundingRect(msg).width();
 }
 

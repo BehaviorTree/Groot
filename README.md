@@ -8,6 +8,13 @@ It is compliant with the the library [BehaviorTree.CPP](https://github.com/Behav
 
 [![Groot Editor](groot-screenshot.png)](https://vimeo.com/275066768)
 
+# Quick Start
+
+You can download and launch Groot straight away downloading the latest 
+[AppImage](https://github.com/BehaviorTree/Groot/releases/download/0.4.0/Groot-0.4-x86_64.AppImage) .
+
+It should work wit Ubuntu 16.04 or later.
+
 # Dependencies, Installation, and Usage
 
 To compile the project you need:
