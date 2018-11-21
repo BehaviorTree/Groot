@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>Groot</name>
+  <name>groot</name>
   <version>0.3.0</version>
   <description>Graphical editor to create behaviour trees</description>
 

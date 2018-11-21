@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(Groot)
+project(groot)
 
 find_package(Qt5 COMPONENTS  Core Widgets Gui OpenGL Xml Svg)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
