@@ -150,10 +150,12 @@ void SidepanelReplay::on_LoadLog()
     QString directory_path  = settings.value("SidepanelReplay.lastLoadDirectory",
                                              QDir::homePath() ).toString();
 
-    QString fileName = QFileDialog::getOpenFileName(nullptr,
+    QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open Flow Scene"), directory_path,
                                                     tr("Flatbuffers log (*.fbl)"));
-    if (!QFileInfo::exists(fileName)){
+
+    if (fileName.isEmpty() || !QFileInfo::exists(fileName))
+    {
         return;
     }
     QFile file(fileName);

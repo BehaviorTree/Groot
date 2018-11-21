@@ -60,7 +60,6 @@ void SidepanelMonitor::on_timer()
             std::vector<std::pair<int, NodeStatus>> node_status;
 
             //qDebug() << "--------";
-
             for(size_t t=0; t < num_transitions; t++)
             {
                 size_t offset = 8 + header_size + 12*t;
@@ -75,7 +74,7 @@ void SidepanelMonitor::on_timer()
 
                 _loaded_tree.node(index)->status = status;
                 node_status.push_back( {index, status} );
-                //qDebug() << _loaded_tree.node(index)->instance_name << " : " << toStr(status);
+
             }
             // update the graphic part
             emit changeNodeStyle( "BehaviorTree", node_status );
@@ -83,7 +82,7 @@ void SidepanelMonitor::on_timer()
     }
     catch( zmq::error_t& err)
     {
-        qDebug() << "ZMQ receive failed " << err.what();
+        qDebug() << "ZMQ receive failed: " << err.what();
     }
 }
 
