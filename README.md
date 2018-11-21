@@ -10,10 +10,14 @@ It is compliant with the the library [BehaviorTree.CPP](https://github.com/Behav
 
 # Quick Start
 
-You can download and launch Groot straight away downloading the latest 
-[AppImage](https://github.com/BehaviorTree/Groot/releases/download/0.4.0/Groot-0.4-x86_64.AppImage) .
+You can download and execute Groot easily downloading the latest stable
+[AppImage](https://appimage.org/) .
 
-It should work wit Ubuntu 16.04 or later.
+      wget https://github.com/BehaviorTree/Groot/releases/download/0.4.0/Groot-0.4-x86_64.AppImage
+      chmod +x ./Groot-0.4-x86_64.AppImage
+      ./Groot-0.4-x86_64.AppImage
+
+It should work with Ubuntu 16.04 or later.
 
 # Dependencies, Installation, and Usage
 
