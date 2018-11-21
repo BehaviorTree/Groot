@@ -33,6 +33,16 @@ public:
 
 public:
 
+  virtual NodeType nodeType() const = 0;
+
+  virtual std::pair<QString,QColor> caption() const;
+
+  virtual QString captionIicon() const { return QString(); }
+
+  virtual void setInstanceName(const QString& name);
+
+public:
+
   void init();
 
   NodeDataType dataType(PortType , PortIndex ) const final;
@@ -46,8 +56,6 @@ public:
   QString name() const final { return registrationName(); }
 
   const QString& instanceName() const;
-
-  virtual std::pair<QString,QColor> caption() const;
 
   std::vector<TreeNodeModel::Param> getCurrentParameters() const;
 
@@ -65,17 +73,13 @@ public:
 
   int UID() const { return _uid; }
 
-  virtual NodeType nodeType() const = 0;
-
   bool eventFilter(QObject *obj, QEvent *event) override;
 
-  virtual QString captionIicon() const { return QString(); }
 
 public slots:
 
   void updateNodeSize();
 
-  void setInstanceName(const QString& name);
 
 protected:
   QFrame*  _main_widget;

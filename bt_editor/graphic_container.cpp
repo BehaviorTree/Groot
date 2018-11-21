@@ -610,8 +610,21 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
 
     abs_node->graphic_node = &new_node;
 
+    // Special case for node Subtree. Expand if necessary
+    if( abs_node->model.type == NodeType::SUBTREE &&
+        abs_node->children_index.size() == 1 )
+    {
+        if( auto subtree_node = dynamic_cast<SubtreeNodeModel*>( bt_node ) )
+        {
+            subtree_node->setExpanded(true);
+            new_node.nodeState().getEntries(PortType::Out).resize(1);
+            subtree_node->expandButton()->setHidden( true );
+            emit subtree_node->updateNodeSize();
+        }
+    }
+
     _scene->createConnection( *abs_node->graphic_node, 0,
-                             *parent_node, 0 );
+                              *parent_node, 0 );
 
     for ( int index: abs_node->children_index)
     {

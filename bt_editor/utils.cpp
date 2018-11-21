@@ -400,6 +400,13 @@ BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
         abs_node.model.type   = convert( fb_node->type() );
         abs_node.status = convert( fb_node->status() );
 
+        // special case for SubTrees
+        if( abs_node.model.type == NodeType::DECORATOR &&
+            abs_node.model.registration_ID == "SubTree")
+        {
+           abs_node.model.type = NodeType::SUBTREE;
+        }
+
         for( const BT_Serialization::KeyValue* pair: *(fb_node->params()) )
         {
             abs_node.model.params.push_back( { QString(pair->key()->c_str()),

@@ -99,6 +99,18 @@ createConnection(Node& nodeIn,
                                  portIndexOut,
                                  converter);
 
+  if( nodeIn.nodeDataModel()->nPorts(PortType::In) <= static_cast<unsigned>(portIndexIn))
+  {
+      throw std::runtime_error("Fatal error in [FlowScene::createConnection]: the nodeModel "
+                               "doesn't provide this portIndexIn");
+  }
+
+  if( nodeOut.nodeDataModel()->nPorts(PortType::Out) <= static_cast<unsigned>(portIndexOut) )
+  {
+      throw std::runtime_error("Fatal error in [FlowScene::createConnection]: the nodeModel "
+                               "doesn't provide this portIndexOut");
+  }
+
   auto cgo = detail::make_unique<ConnectionGraphicsObject>(*this, *connection);
 
   nodeIn.nodeState().setConnection(PortType::In, portIndexIn, *connection);

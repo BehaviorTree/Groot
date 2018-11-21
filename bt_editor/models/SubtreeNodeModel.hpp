@@ -26,16 +26,15 @@ public:
 
     static const char* Name() { return "SubTree";  }
 
-    std::pair<QString, QColor> caption() const override
-    { return { registrationName(), QtNodes::NodeStyle().FontColor}; }
+    std::pair<QString, QColor> caption() const override;
 
     NodeType nodeType() const final { return NodeType::SUBTREE; }
 
-    virtual QString captionIicon() const override {
-        return(":/icons/svg/subtree.svg");
-    }
+    virtual QString captionIicon() const override;
 
     QPushButton* expandButton() { return _expand_button; }
+
+    virtual void setInstanceName(const QString& name) override;
 
 signals:
     void expandButtonPushed();
