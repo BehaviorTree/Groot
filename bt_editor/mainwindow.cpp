@@ -309,7 +309,6 @@ void MainWindow::loadFromXML(const QString& xml_text)
         auto saved_state = _current_state;
 
         const QSignalBlocker blocker( currentTabInfo() );
-        std::cout<< "Starting parsing"<< std::endl;
 
         for (auto bt_root = document_root->FirstChildElement("BehaviorTree");
              bt_root != nullptr;
