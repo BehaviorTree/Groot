@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Groot
+Exec=Groot
+Icon=groot_icon
+Comment=Graphical Editor for BehaviorTrees
+Terminal=false
+Categories=Development;
+Name[en_US]=Groot

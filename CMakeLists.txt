@@ -113,6 +113,26 @@ target_link_libraries(Groot behavior_tree_editor )
 
 add_subdirectory(test)
 
+######################################################
+# INSTALL
+if(catkin_FOUND)
+    set( GROOT_LIB_DESTINATION   ${CATKIN_PACKAGE_LIB_DESTINATION} )
+    set( GROOT_INC_DESTINATION   ${CATKIN_PACKAGE_INCLUDE_DESTINATION} )
+    set( GROOT_BIN_DESTINATION   ${CATKIN_PACKAGE_BIN_DESTINATION} )
+else()
+    set( GROOT_LIB_DESTINATION   lib )
+    set( GROOT_INC_DESTINATION   include )
+    set( GROOT_BIN_DESTINATION   bin )
+    
+    INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/groot_icon.png
+			 DESTINATION share/icons/hicolor/256x256)
+			 
+	INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/Groot.desktop
+			 DESTINATION share/applications)
+    
+endif()
+
+INSTALL(TARGETS Groot RUNTIME DESTINATION ${GROOT_BIN_DESTINATION} )
 
 
 
