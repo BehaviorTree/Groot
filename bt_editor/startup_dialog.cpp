@@ -99,12 +99,12 @@ void StartupDialog::on_toolButtonReplay_clicked()
 void StartupDialog::updateCurrentMode()
 {
     const QString selected_style( "color:white; "
-                                  "border: 2px solid rgb(115, 210, 22); border-radius: 10px;"
-                                  "background-color: rgb(50, 150, 0);" );
+                                  "border: 2px solid #9cff71; border-radius: 10px;"
+                                  "background-color: #2f981a;" );
 
     const QString default_style( "QToolButton {"
                                  "color:white; "
-                                 "border: 2px solid rgb(115, 210, 22); border-radius: 10px;"
+                                 "border: 2px solid #9cff71; border-radius: 10px;"
                                  "background-color: rgba(0, 0, 0, 0);"
                                  "}\n"
                                  "QToolButton:hover {color:white; background-color: rgb(111, 111, 111);}");

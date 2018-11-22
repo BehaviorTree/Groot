@@ -20,7 +20,7 @@
    <string>Dialog</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(65, 65, 65);</string>
+   <string notr="true">background-color: #1c2b36;</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>
@@ -151,7 +151,7 @@
        </property>
        <property name="styleSheet">
         <string notr="true">color:white;
-border: 2px solid rgb(115, 210, 22); 
+border: 2px solid #9cff71; 
 border-radius: 10px;
 </string>
        </property>
@@ -204,7 +204,7 @@ border-radius: 10px;
        </property>
        <property name="styleSheet">
         <string notr="true">color:white;
-border: 2px solid rgb(115, 210, 22); 
+border: 2px solid #9cff71; 
 border-radius: 10px;
 
 
@@ -259,7 +259,7 @@ border-radius: 10px;
        </property>
        <property name="styleSheet">
         <string notr="true">color:white;
-border: 2px solid rgb(115, 210, 22); 
+border: 2px solid  #9cff71; 
 border-radius: 10px;
 
 </string>
@@ -311,7 +311,7 @@ border-radius: 10px;
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; color:#eeeeec;&quot;&gt;Launch the application&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
-        <string notr="true">color: rgb(115, 210, 22)</string>
+        <string notr="true">color:  #9cff71</string>
        </property>
        <property name="text">
         <string>START</string>
@@ -376,6 +376,7 @@ border-radius: 10px;
   </layout>
  </widget>
  <resources>
+  <include location="resources/icons.qrc"/>
   <include location="resources/icons.qrc"/>
  </resources>
  <connections/>

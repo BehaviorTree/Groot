@@ -1,0 +1,6 @@
+dark_background: #1c2b36 
+dark_blueish:    #005562
+green:           #b9f2a1
+mint:            #10c4b5
+
+
