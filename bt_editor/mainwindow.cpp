@@ -11,8 +11,10 @@
 #include <QToolButton>
 #include <QWidgetAction>
 #include <QTreeWidgetItem>
+#include <QSvgWidget>
 #include <QShortcut>
 #include <QTabBar>
+#include <QDesktopServices>
 #include <QInputDialog>
 #include <nodes/Node>
 #include <nodes/NodeData>
@@ -29,6 +31,8 @@
 #include "models/SubtreeNodeModel.hpp"
 
 #include "utils.h"
+
+#include "ui_about_dialog.h"
 
 using QtNodes::DataModelRegistry;
 using QtNodes::FlowView;
@@ -1345,4 +1349,29 @@ void MainWindow::clearTreeModels()
 {
     _tree_nodes_model = BuiltinNodeModels();
     _editor_widget->updateTreeView();
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    auto ui = new Ui_Dialog;
+    QDialog dialog(this);
+    ui->setupUi(&dialog);
+
+    auto svg_widget = new QSvgWidget( tr(":/icons/svg/logo_splashscreen.svg") );
+    ui->frame->layout()->addWidget(svg_widget);
+    dialog.setWindowFlags( Qt::SplashScreen );
+   // dialog.setFixedSize( dialog.minimumSizeHint() );
+    dialog.exec();
+
+}
+
+void MainWindow::on_actionReportIssue_triggered()
+{
+    const char* url = "https://github.com/BehaviorTree/Groot/issues";
+    QMessageBox::warning( this, "Issue Reporting",
+                          tr("Reporting an issue you allow us to make this software better and better. Thanks!\n"
+                             "You will be redirected to our Github Page:\n\n"
+                             "%1").arg(url),
+                          QMessageBox::Ok);
+   QDesktopServices::openUrl(QUrl(url));
 }

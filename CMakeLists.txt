@@ -73,6 +73,7 @@ set(RESOURCE_FILES
     )
 
 set(FORMS_UI
+  ./bt_editor/about_dialog.ui
   ./bt_editor/mainwindow.ui
   ./bt_editor/action_form.ui
   ./bt_editor/sidepanel_editor.ui

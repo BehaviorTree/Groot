@@ -767,8 +767,16 @@ QToolButton:disabled{
     </widget>
     <addaction name="menuSwitch_To"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionReportIssue"/>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuLoad"/>
    <addaction name="menuMode"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionLoad">
    <property name="text">
@@ -817,6 +825,16 @@ QToolButton:disabled{
   <action name="actionReplay_mode">
    <property name="text">
     <string>Log Replay</string>
+   </property>
+  </action>
+  <action name="actionReportIssue">
+   <property name="text">
+    <string>Report an Issue...</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>

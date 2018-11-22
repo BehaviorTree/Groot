@@ -115,6 +115,11 @@ public slots:
 signals:
     void updateGraphic();
 
+private slots:
+    void on_actionAbout_triggered();
+
+    void on_actionReportIssue_triggered();
+
 private:
 
     void updateCurrentMode();
