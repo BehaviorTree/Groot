@@ -367,7 +367,7 @@ void EditorTest::multipleSubtrees()
 
     auto sequence_node = abs_tree.findFirstNode("main_sequence");
     QVERIFY( sequence_node != nullptr );
-    QCOMPARE( sequence_node->children_index.size(), 2 );
+    QCOMPARE( sequence_node->children_index.size(), size_t(2) );
 
     int index_1 = sequence_node->children_index[0];
     int index_2 = sequence_node->children_index[1];
@@ -375,8 +375,8 @@ void EditorTest::multipleSubtrees()
     auto first_child  = abs_tree.node(index_1);
     auto second_child = abs_tree.node(index_2);
 
-    QCOMPARE( first_child->instance_name,  "MoveToPredefinedPoint");
-    QCOMPARE( second_child->instance_name, "SubtreeOne");
+    QCOMPARE( first_child->instance_name,  tr("MoveToPredefinedPoint") );
+    QCOMPARE( second_child->instance_name, tr("SubtreeOne") );
 
     sleepAndRefresh( 500 );
 }
