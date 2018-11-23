@@ -2,8 +2,8 @@
 Changelog for package Groot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.1 (2018-11-23)
+------------------
 * improved node reorder
 * Fix issue #8 (and more changes)
   - Added EditorFlowScene::createNodeAtPos to simplify code
