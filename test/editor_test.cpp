@@ -18,6 +18,7 @@ private slots:
     void undoRedo();
     void testSubtree();
     void modifyCustomModel();
+    void multipleSubtrees();
 };
 
 
@@ -80,7 +81,7 @@ void EditorTest::loadFile()
     // Next: expand the Subtree [DoorClosed]
     auto tree = getAbstractTree("MainTree");
 
-    auto subtree_abs_node = tree.findNode("DoorClosed");
+    auto subtree_abs_node = tree.findFirstNode("DoorClosed");
     QVERIFY2(subtree_abs_node, "Can't find node with ID [DoorClosed]");
 
     {
@@ -101,7 +102,7 @@ void EditorTest::loadFile()
     // Next: collapse again Subtree [DoorClosed]
     tree = getAbstractTree("MainTree");
 
-    subtree_abs_node = tree.findNode("DoorClosed");
+    subtree_abs_node = tree.findFirstNode("DoorClosed");
     QVERIFY2(subtree_abs_node, "Can't find node with ID [DoorClosed]");
 
     {
@@ -130,7 +131,7 @@ void EditorTest::undoRedo()
 
         sleepAndRefresh( 500 );
 
-        auto pippo_node = abs_tree_A.findNode("Pippo");
+        auto pippo_node = abs_tree_A.findFirstNode("Pippo");
         auto gui_node = pippo_node->graphic_node;
         QPoint pippo_screen_pos = view->mapFromScene(pippo_node->pos);
         const QPoint pos_offset(100,0);
@@ -190,7 +191,7 @@ void EditorTest::undoRedo()
         auto prev_tree = getAbstractTree();
         size_t prev_node_count = prev_tree.nodesCount();
 
-        auto node = prev_tree.findNode( "DoSequenceStar" );
+        auto node = prev_tree.findFirstNode( "DoSequenceStar" );
 
         QPoint pos = view->mapFromScene(node->pos);
         testMouseEvent(view, QEvent::MouseButtonDblClick, pos , Qt::LeftButton);
@@ -257,7 +258,7 @@ void EditorTest::testSubtree()
     auto main_tree   = getAbstractTree("MainTree");
     auto closed_tree = getAbstractTree("DoorClosed");
 
-    auto subtree_abs_node = main_tree.findNode("DoorClosed");
+    auto subtree_abs_node = main_tree.findFirstNode("DoorClosed");
     auto data_model = subtree_abs_node->graphic_node->nodeDataModel();
     auto subtree_model = dynamic_cast<SubtreeNodeModel*>(data_model);
 
@@ -282,7 +283,7 @@ void EditorTest::testSubtree()
     sleepAndRefresh( 500 );
 
     auto tree_after_remove = getAbstractTree("MainTree");
-    auto fallback_node = tree_after_remove.findNode("root_Fallback");
+    auto fallback_node = tree_after_remove.findFirstNode("root_Fallback");
 
     QCOMPARE(fallback_node->children_index.size(), size_t(3) );
     QVERIFY2( main_win->getTabByName("DoorClosed") == nullptr, "Tab DoorClosed not deleted");
@@ -291,7 +292,7 @@ void EditorTest::testSubtree()
     //---------------------------------------
     // create again the subtree
 
-    auto closed_sequence_node = tree_after_remove.findNode("door_closed_sequence");
+    auto closed_sequence_node = tree_after_remove.findFirstNode("door_closed_sequence");
     auto container = main_win->currentTabInfo();
     // This must fail and create a MessageBox
     testMessageBox(1000, TEST_LOCATION(), [&]()
@@ -349,9 +350,33 @@ void EditorTest::modifyCustomModel()
 
     auto abs_tree = getAbstractTree();
 
-    auto jump_abs_node = abs_tree.findNode( jump_model.registration_ID );
+    auto jump_abs_node = abs_tree.findFirstNode( jump_model.registration_ID );
     QVERIFY( jump_abs_node != nullptr);
     QCOMPARE( jump_abs_node->model, jump_model );
+
+    sleepAndRefresh( 500 );
+}
+
+void EditorTest::multipleSubtrees()
+{
+    QString file_xml = readFile(":/test_subtrees_issue_8.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    auto abs_tree = getAbstractTree("MainTree");
+
+    auto sequence_node = abs_tree.findFirstNode("main_sequence");
+    QVERIFY( sequence_node != nullptr );
+    QCOMPARE( sequence_node->children_index.size(), 2 );
+
+    int index_1 = sequence_node->children_index[0];
+    int index_2 = sequence_node->children_index[1];
+
+    auto first_child  = abs_tree.node(index_1);
+    auto second_child = abs_tree.node(index_2);
+
+    QCOMPARE( first_child->instance_name,  "MoveToPredefinedPoint");
+    QCOMPARE( second_child->instance_name, "PickingItem");
 
     sleepAndRefresh( 500 );
 }

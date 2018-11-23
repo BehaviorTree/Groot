@@ -1,0 +1,15 @@
+<root main_tree_to_execute = "MainTree">
+    <BehaviorTree ID="SubtreeOne">
+            <Action ID = "AdjustOrientation"/>
+    </BehaviorTree>
+    <BehaviorTree ID="MoveToPredefinedPoint">
+            <Action ID = "LinearMove"/>
+    </BehaviorTree>
+
+    <BehaviorTree ID="MainTree">
+        <Sequence name="main_sequence">
+            <SubTree ID = "MoveToPredefinedPoint"/>
+            <SubTree ID = "SubtreeOne"/>
+        </Sequence>
+    </BehaviorTree>
+</root>

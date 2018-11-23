@@ -4,5 +4,6 @@
         <file>crossdoor_palette.xml</file>
         <file>show_all.xml</file>
         <file>crossdoor_trace.fbl</file>
+        <file>test_subtrees_issue_8.xml</file>
     </qresource>
 </RCC>

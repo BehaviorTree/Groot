@@ -120,7 +120,9 @@ public:
 
     const AbstractTreeNode* rootNode() const;
 
-    const AbstractTreeNode *findNode(const QString& instance_name);
+    std::vector<const AbstractTreeNode*> findNodes(const QString& instance_name);
+
+    const AbstractTreeNode* findFirstNode(const QString& instance_name);
 
     AbstractTreeNode* addNode(AbstractTreeNode* parent, AbstractTreeNode &&new_node );
 

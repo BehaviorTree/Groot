@@ -24,13 +24,29 @@ const AbstractTreeNode *AbsBehaviorTree::rootNode() const
 }
 
 
-const AbstractTreeNode *AbsBehaviorTree::findNode(const QString &instance_name)
+std::vector<const AbstractTreeNode*> AbsBehaviorTree::findNodes(const QString &instance_name)
+{
+    std::vector<const AbstractTreeNode*> out;
+    out.reserve( 4 );
+
+    for( const auto& node: _nodes)
+    {
+        if( node.instance_name == instance_name)
+        {
+            out.push_back( &node );
+        }
+    }
+    return out;
+}
+
+const AbstractTreeNode* AbsBehaviorTree::findFirstNode(const QString &instance_name)
 {
     for( const auto& node: _nodes)
     {
         if( node.instance_name == instance_name)
         {
-            return &node;
+            qDebug() << node.instance_name << " / " << instance_name ;
+            return ( &node );
         }
     }
     return nullptr;
