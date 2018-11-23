@@ -45,7 +45,6 @@ const AbstractTreeNode* AbsBehaviorTree::findFirstNode(const QString &instance_n
     {
         if( node.instance_name == instance_name)
         {
-            qDebug() << node.instance_name << " / " << instance_name ;
             return ( &node );
         }
     }
@@ -70,7 +69,7 @@ AbstractTreeNode* AbsBehaviorTree::addNode(AbstractTreeNode* parent, AbstractTre
     return &_nodes.back();
 }
 
-void AbsBehaviorTree::debugPrint()
+void AbsBehaviorTree::debugPrint() const
 {
     if( !rootNode() )
     {

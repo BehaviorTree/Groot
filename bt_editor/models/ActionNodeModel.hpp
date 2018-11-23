@@ -14,13 +14,15 @@ public:
 
     static const char* Name() { return "Action"; }
 
-    std::pair<QString,QColor> caption() const override { return {instanceName(),"#ddff55"}; }
+    std::pair<QString,QColor> caption() const override;
 
     virtual NodeType nodeType() const final { return NodeType::ACTION; }
 
     virtual QString captionIicon() const override {
         return(":/icons/svg/letter_A.svg");
     }
+
+    virtual void setInstanceName(const QString& name) override;
 
 private:
 

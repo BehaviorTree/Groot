@@ -43,7 +43,7 @@ public:
 
 public:
 
-  void init();
+  void initWidget();
 
   NodeDataType dataType(PortType , PortIndex ) const final;
 

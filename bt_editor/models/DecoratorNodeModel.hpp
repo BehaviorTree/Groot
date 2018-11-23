@@ -18,10 +18,11 @@ public:
 
     virtual const char* className() const final {  return "Decorator"; }
 
-    std::pair<QString, QColor> caption() const override
-    { return { "Decorator", QtNodes::NodeStyle().FontColor}; }
+    std::pair<QString, QColor> caption() const override;
 
     virtual NodeType nodeType() const final { return NodeType::DECORATOR; }
+
+    virtual void setInstanceName(const QString &name) override;
 };
 
 class RetryNodeModel : public DecoratorNodeModel

@@ -943,6 +943,7 @@ void MainWindow::onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QStr
     const QSignalBlocker blocker( container );
     container->loadSceneFromTree( tree );
     container->nodeReorder();
+
     // TODO_ clear or not?
     clearUndoStacks();
 }

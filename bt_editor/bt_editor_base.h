@@ -126,9 +126,13 @@ public:
 
     AbstractTreeNode* addNode(AbstractTreeNode* parent, AbstractTreeNode &&new_node );
 
-    void debugPrint();
+    void debugPrint() const;
 
     bool operator ==(const AbsBehaviorTree &other) const;
+
+    bool operator !=(const AbsBehaviorTree &other) const{
+        return !(*this == other);
+    }
 
     void clear();
 

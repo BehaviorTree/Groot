@@ -128,7 +128,7 @@ BehaviorTreeDataModel::~BehaviorTreeDataModel()
 
 }
 
-void BehaviorTreeDataModel::init()
+void BehaviorTreeDataModel::initWidget()
 {
     const auto resource_file = captionIicon();
     if( resource_file.isEmpty() == false )

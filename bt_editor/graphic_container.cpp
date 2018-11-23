@@ -150,7 +150,7 @@ void GraphicContainer::lockSubtreeEditing(Node &root_node, bool locked, bool cha
 
 void GraphicContainer::nodeReorder()
 {
-    {
+   {
         const QSignalBlocker blocker(this);
         auto abstract_tree = BuildTreeFromScene( _scene );
         NodeReorder( *_scene, abstract_tree );
@@ -315,7 +315,7 @@ void GraphicContainer::onNodeCreated(Node &node)
           });
         }
 
-        bt_node->init();
+        bt_node->initWidget();
     }
     undoableChange();
 }
@@ -367,18 +367,8 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *old_node, const QString& n
     const QSignalBlocker blocker(this);
     QPointF prev_pos   = _scene->getNodePosition( *old_node );
     double prev_width = old_node->nodeGeometry().width();
-    auto new_datamodel = _model_registry->create(new_node_ID);
 
-    if( !new_datamodel )
-    {
-        return nullptr;
-    }
-    if( auto bt_node = dynamic_cast<BehaviorTreeDataModel*>(new_datamodel.get()))
-    {
-        bt_node->init();
-    }
-
-    auto& new_node = _scene->createNode( std::move(new_datamodel), prev_pos );
+    auto& new_node = scene()->createNodeAtPos( new_node_ID, new_node_ID, prev_pos);
 
     QPointF new_pos = prev_pos;
     double new_width = new_node.nodeGeometry().width();
@@ -511,14 +501,13 @@ void GraphicContainer::insertNodeInConnection(Connection &connection, QString no
     {
         const QSignalBlocker blocker(this);
 
-        auto node_model = _model_registry->create(node_name);
         auto parent_node = connection.getNode(PortType::Out);
         auto child_node  = connection.getNode(PortType::In);
 
         QPointF pos = child_node->nodeGraphicsObject().pos();
         pos.setX( pos.x() - 50 );
 
-        QtNodes::Node& inserted_node = _scene->createNode( std::move(node_model), pos );
+        QtNodes::Node& inserted_node = _scene->createNodeAtPos( node_name, node_name, pos );
 
         _scene->deleteConnection(connection);
         _scene->createConnection(*child_node, 0, inserted_node, 0);
@@ -565,40 +554,26 @@ void GraphicContainer::onConnectionContextMenu(QtNodes::Connection &connection, 
     conn_menu->exec( QCursor::pos() );
 }
 
-void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
+void GraphicContainer::recursiveLoadStep(QPointF& cursor,
                                          AbsBehaviorTree& tree,
                                          AbstractTreeNode* abs_node,
                                          Node* parent_node, int nest_level)
 {
-    auto data_model = _scene->registry().create( abs_node->model.registration_ID );
-    BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( data_model.get() );
-
-    if( bt_node ){
-        bt_node->init();
-    }
-
-    if(!data_model)
-    {
-        char buffer[250];
-        sprintf(buffer, "No registered model with name: [%s](%s)",
-                abs_node->model.registration_ID.toStdString().c_str(),
-                abs_node->instance_name.toStdString().c_str() );
-        throw std::runtime_error( buffer );
-    }
+    Node& new_node = _scene->createNodeAtPos( abs_node->model.registration_ID,
+                                              abs_node->instance_name,
+                                              cursor);
+    BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( new_node.nodeDataModel() );
 
     for (auto& it: abs_node->model.params)
     {
         bt_node->setParameterValue( it.label, it.value );
     }
-    bt_node->setInstanceName( abs_node->instance_name );
+    bt_node->initWidget();
 
-    cursor.setY( cursor.y() + 65);
-    cursor.setX( nest_level * 400 + x_offset );
+    new_node.nodeGeometry().recalculateSize();
 
-    Node& new_node = _scene->createNode( std::move(data_model), cursor);
     abs_node->pos = cursor;
     abs_node->size = _scene->getNodeSize( new_node );
-
     abs_node->graphic_node = &new_node;
 
     // Special case for node Subtree. Expand if necessary
@@ -619,33 +594,34 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor, double &x_offset,
 
     for ( int index: abs_node->children_index)
     {
+        cursor.setX( cursor.x() + abs_node->size.width() );
+        cursor.setY( cursor.y() + abs_node->size.height() );
         AbstractTreeNode* child = tree.node(index);
-        recursiveLoadStep(cursor, x_offset, tree, child, abs_node->graphic_node, nest_level+1 );
-        x_offset += 30;
+        recursiveLoadStep(cursor, tree, child, abs_node->graphic_node, nest_level+1 );
     }
 }
 
 
 void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
 {
-    AbsBehaviorTree abstract_tree = tree;
+    AbsBehaviorTree abs_tree = tree;
 
     QPointF cursor(0,0);
-    double x_offset = 0;
 
     _scene->clearScene();
-    auto first_qt_node = &(_scene->createNode( _scene->registry().create("Root"), cursor ));
 
-    auto root_node = abstract_tree.rootNode();
+    auto& first_qt_node = _scene->createNodeAtPos( "Root", "Root", cursor );
+
+    auto root_node = abs_tree.rootNode();
 
     if( root_node->model.type == NodeType::ROOT)
     {
-      root_node->graphic_node = first_qt_node;
+      root_node->graphic_node = &first_qt_node;
       int root_child_index = root_node->children_index.front();
-      root_node = abstract_tree.node(root_child_index);
+      root_node = abs_tree.node(root_child_index);
     }
 
-    recursiveLoadStep(cursor, x_offset, abstract_tree, root_node, first_qt_node, 1 );
+    recursiveLoadStep(cursor, abs_tree, root_node, &first_qt_node, 1 );
 }
 
 void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
@@ -659,7 +635,6 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
 
     //--------------------------------------
     QPointF cursor = _scene->getNodePosition(node) + QPointF(100,100);
-    double x_offset = 0;
 
     auto root_node = subtree.rootNode();
 
@@ -670,7 +645,7 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
         root_node = subtree.node(root_child_index);
     }
 
-    recursiveLoadStep(cursor, x_offset, subtree, root_node , &node, 1 );
+    recursiveLoadStep(cursor, subtree, root_node , &node, 1 );
 }
 
 void GraphicContainer::loadFromJson(const QByteArray &data)

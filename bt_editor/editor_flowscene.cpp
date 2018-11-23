@@ -18,6 +18,24 @@ EditorFlowScene::EditorFlowScene(std::shared_ptr<QtNodes::DataModelRegistry> reg
 
 }
 
+QtNodes::Node &EditorFlowScene::createNodeAtPos(const QString &ID, const QString &instance_name, QPointF scene_pos)
+{
+    auto node_model = registry().create(ID);
+    if( !node_model )
+    {
+        char buffer[250];
+        sprintf(buffer, "No registered model with ID: [%s])",
+                ID.toStdString().c_str() );
+        throw std::runtime_error( buffer );
+    }
+    auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node_model.get() );
+    bt_model->setInstanceName( instance_name );
+    bt_model->initWidget();
+    auto& node_qt = createNode(std::move(node_model));
+    setNodePosition(node_qt, scene_pos);
+    return node_qt;
+}
+
 void EditorFlowScene::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
     if(event->mimeData()->hasFormat("application/x-qabstractitemmodeldatalist")  )
@@ -49,20 +67,21 @@ void EditorFlowScene::keyPressEvent(QKeyEvent *event)
         auto node_model = dynamic_cast<BehaviorTreeDataModel*>( selected_node.nodeDataModel() );
         if( !node_model ) return;
 
-        _clipboard_node_name = node_model->registrationName();
+        _clipboard_node.model.registration_ID = node_model->registrationName();
+        _clipboard_node.instance_name  = node_model->instanceName();
+        // TODO add parameters?
     }
     else if( event->key() == Qt::Key_V && event->modifiers() == Qt::ControlModifier &&
-            registry().isRegistered( _clipboard_node_name ) )
+            registry().isRegistered( _clipboard_node.model.registration_ID  ) )
     {
         auto views_ = views();
         QGraphicsView* view = views_.front();
         auto mouse_pos = view->viewport()->mapFromGlobal( QCursor::pos() );
         auto scene_pos = view->mapToScene( mouse_pos );
-        auto new_node = registry().create( _clipboard_node_name );
-        if (new_node)
-        {
-            this->createNode(std::move(new_node), scene_pos);
-        }
+
+        createNodeAtPos( _clipboard_node.model.registration_ID,
+                         _clipboard_node.instance_name,
+                         scene_pos );
     }
 }
 
@@ -73,6 +92,7 @@ void EditorFlowScene::dropEvent(QGraphicsSceneDragDropEvent *event)
     {
         QByteArray encoded = event->mimeData()->data("application/x-qabstractitemmodeldatalist");
         QDataStream stream(&encoded, QIODevice::ReadOnly);
+        QPointF scene_pos = event->scenePos();
 
         while (!stream.atEnd())
         {
@@ -83,13 +103,8 @@ void EditorFlowScene::dropEvent(QGraphicsSceneDragDropEvent *event)
             auto it = roleDataMap.find(0);
             if (it != roleDataMap.end() )
             {
-                auto new_node = registry().create(it.value().toString());
-
-                if (new_node)
-                {
-                    QPointF pos = event->scenePos();
-                    this->createNode(std::move(new_node), pos);
-                }
+                const auto& ID = it.value().toString();
+                createNodeAtPos( ID, ID, scene_pos);
             }
         }
     }

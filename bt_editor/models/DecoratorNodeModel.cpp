@@ -8,8 +8,17 @@ DecoratorNodeModel::DecoratorNodeModel(const TreeNodeModel &model):
     _line_edit_name->setHidden(true);
 }
 
+std::pair<QString, QColor> DecoratorNodeModel::caption() const
+{ return { "Decorator", QtNodes::NodeStyle().FontColor}; }
+
+void DecoratorNodeModel::setInstanceName(const QString &name)
+{
+    _line_edit_name->setHidden( name == registrationName() );
+    BehaviorTreeDataModel::setInstanceName(name);
+}
+
 RetryNodeModel::RetryNodeModel():
-  DecoratorNodeModel( NodeModel() )
+    DecoratorNodeModel( NodeModel() )
 {
 }
 

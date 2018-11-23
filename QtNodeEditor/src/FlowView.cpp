@@ -166,7 +166,8 @@ contextMenuEvent(QContextMenuEvent *event)
     {
       QPoint pos = event->pos();
       QPointF posView = this->mapToScene(pos);
-      _scene->createNode(std::move(type), posView);
+      auto& new_node = _scene->createNode(std::move(type));
+      _scene->setNodePosition(new_node, posView);
     }
     else
     {

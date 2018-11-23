@@ -201,12 +201,10 @@ deleteConnection(Connection& connection)
 
 Node&
 FlowScene::
-createNode(std::unique_ptr<NodeDataModel> && dataModel, QPointF pos)
+createNode(std::unique_ptr<NodeDataModel> && dataModel)
 {
   auto node = detail::make_unique<Node>(std::move(dataModel));
   auto ngo  = detail::make_unique<NodeGraphicsObject>(*this, *node);
-
-  ngo->setPos(pos);
 
   node->setGraphicsObject(std::move(ngo));
 
@@ -407,7 +405,8 @@ QSizeF
 FlowScene::
 getNodeSize(const Node& node) const
 {
-  return QSizeF(node.nodeGeometry().width(), node.nodeGeometry().height());
+  return QSizeF(node.nodeGeometry().width(),
+                node.nodeGeometry().height());
 }
 
 

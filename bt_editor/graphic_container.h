@@ -87,8 +87,8 @@ private:
 
    void insertNodeInConnection(QtNodes::Connection &connection, QString node_name);
 
-   void recursiveLoadStep(QPointF &cursor, double &x_offset, AbsBehaviorTree &tree,
-                          AbstractTreeNode* abs_node,
+   void recursiveLoadStep(QPointF &cursor, AbsBehaviorTree &tree,
+                          AbstractTreeNode *abs_node,
                           QtNodes::Node* parent_node, int nest_level);
 
    std::shared_ptr<QtNodes::DataModelRegistry> _model_registry;

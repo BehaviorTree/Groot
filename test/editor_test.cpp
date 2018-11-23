@@ -376,7 +376,7 @@ void EditorTest::multipleSubtrees()
     auto second_child = abs_tree.node(index_2);
 
     QCOMPARE( first_child->instance_name,  "MoveToPredefinedPoint");
-    QCOMPARE( second_child->instance_name, "PickingItem");
+    QCOMPARE( second_child->instance_name, "SubtreeOne");
 
     sleepAndRefresh( 500 );
 }
