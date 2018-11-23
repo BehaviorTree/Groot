@@ -175,18 +175,34 @@ void RecursiveNodeReorder(AbsBehaviorTree& tree, PortLayout layout)
 
         auto final_pos = layer_cursor[current_layer];
 
+        if( node->children_index.size() > 0)
+        {
+            auto first_child = tree.node( node->children_index.front() );
+            auto last_child = tree.node( node->children_index.back() );
+
+            initial_pos = QPointF( first_child->pos.x() + first_child->size.width()*0.5,
+                                   first_child->pos.y() + first_child->size.height()*0.5);
+
+            final_pos   = QPointF( last_child->pos.x() + last_child->size.width()*0.5,
+                                   last_child->pos.y() + last_child->size.height()*0.5);
+        }
+
         // rebalance father
+        QPointF pos_offset(0,0);
         if( layout == PortLayout::Vertical)
         {
-            double diff = (node->pos.x() + node->size.width()*0.5) - (final_pos.x() + initial_pos.x() - NODE_SPACING)* 0.5 ;
-            node->pos += QPointF( - diff, 0 );
-            layer_cursor[current_layer -1 ] += QPointF( - diff, 0 );
+            double new_x = (final_pos.x() + initial_pos.x()) * 0.5 - node->size.width()*0.5;
+            double diff = node->pos.x() - new_x;
+            pos_offset = QPointF( - diff, 0 );
         }
         else{
-            double diff = (node->pos.y() + node->size.height()*0.5) - (final_pos.y() + initial_pos.y() - NODE_SPACING)* 0.5 ;
-            node->pos += QPointF( 0, - diff );
-            layer_cursor[current_layer -1 ] += QPointF( 0, - diff );
+            double new_y = (final_pos.y() + initial_pos.y()) * 0.5 - node->size.height()*0.5;
+            double diff = node->pos.y() - new_y;
+            pos_offset = QPointF( 0, - diff );
         }
+
+        node->pos += pos_offset;
+        layer_cursor[current_layer -1 ] += pos_offset;
     };
 
     auto root_node = tree.rootNode();
