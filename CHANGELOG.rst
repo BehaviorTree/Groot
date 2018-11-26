@@ -2,6 +2,11 @@
 Changelog for package Groot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* CRITICAL BUG fixed: QLineEdit where not editble in the embeddedWidget
+* Contributors: Davide Faconti
+
 0.4.1 (2018-11-23)
 ------------------
 * improved node reorder
