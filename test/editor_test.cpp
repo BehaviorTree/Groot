@@ -1,6 +1,7 @@
 #include "groot_test_base.h"
 #include "bt_editor/sidepanel_editor.h"
 #include <QAction>
+#include <QLineEdit>
 
 class EditorTest : public GrootTestBase
 {
@@ -19,6 +20,7 @@ private slots:
     void testSubtree();
     void modifyCustomModel();
     void multipleSubtrees();
+    void editText();
 };
 
 
@@ -377,6 +379,49 @@ void EditorTest::multipleSubtrees()
 
     QCOMPARE( first_child->instance_name,  tr("MoveToPredefinedPoint") );
     QCOMPARE( second_child->instance_name, tr("SubtreeOne") );
+
+    sleepAndRefresh( 500 );
+}
+
+void EditorTest::editText()
+{
+    QString file_xml = readFile("://show_all.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    auto abs_tree = getAbstractTree();
+
+    std::list<QLineEdit*> line_editable;
+
+    for(const auto& node: abs_tree.nodes())
+    {
+        auto lines = node.graphic_node->nodeDataModel()->embeddedWidget()->findChildren<QLineEdit*>();
+        for(const auto& line: lines)
+        {
+            if( line->isReadOnly() == false && line->isHidden() == false)
+            {
+                line_editable.push_back( line );
+            }
+        }
+    }
+
+    auto container = main_win->currentTabInfo();
+    auto view = container->view();
+
+    for(const auto& line: line_editable)
+    {
+        QTest::mouseDClick( line, Qt::LeftButton );
+        sleepAndRefresh( 100 );
+
+        QTest::keyClick(line, Qt::Key_Delete, Qt::NoModifier );
+        sleepAndRefresh( 100 );
+        QCOMPARE( line->text(), QString() );
+
+        QTest::mouseClick( line, Qt::LeftButton );
+        sleepAndRefresh( 100 );
+        QTest::keyClicks(view->viewport(), "was_here");
+        QCOMPARE( line->text(), tr("was_here") );
+    }
 
     sleepAndRefresh( 500 );
 }
