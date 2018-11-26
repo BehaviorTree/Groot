@@ -132,6 +132,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     dynamic_cast<QVBoxLayout*>(ui->leftFrame->layout())->setStretch(1,1);
 
     createTab("BehaviorTree");
+    onTabSetMainTree(0);
 
     auto arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
 
@@ -340,6 +341,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
                 {
                     ui->tabWidget->tabBar()->moveTab(i, 0);
                     ui->tabWidget->setCurrentIndex(0);
+                    ui->tabWidget->tabBar()->setTabIcon(0, QIcon(":/icons/svg/star.svg"));
                     break;
                 }
             }
@@ -617,6 +619,7 @@ MainWindow::SavedState MainWindow::saveCurrentState()
 {
     SavedState saved;
     int index = ui->tabWidget->currentIndex();
+    saved.main_tree = _main_tree;
     saved.current_tab_name = ui->tabWidget->tabText(index);
     auto current_view = getTabByName( saved.current_tab_name )->view();
     saved.view_transform = current_view->transform();
@@ -686,6 +689,8 @@ void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
     _tab_info.clear();
     ui->tabWidget->clear();
 
+    _main_tree = saved_state.main_tree;
+
     for(auto& it: saved_state.json_states)
     {
         _tab_info.insert( {it.first, createTab(it.first)} );
@@ -705,8 +710,15 @@ void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
         {
             ui->tabWidget->setCurrentIndex(i);
             ui->tabWidget->widget(i)->setFocus();
-            break;
         }
+        if( ui->tabWidget->tabText(i) == _main_tree)
+        {
+            onTabSetMainTree(i);
+        }
+    }
+    if( ui->tabWidget->count() == 1 )
+    {
+        onTabSetMainTree(0);
     }
     onSceneChanged();
 }
@@ -838,6 +850,12 @@ void MainWindow::onDestroySubTree(const QString &ID)
             break;
         }
     }
+
+    if( ui->tabWidget->count() == 1 )
+    {
+        onTabSetMainTree(0);
+    }
+
     // TODO: this is a work around until we find a better solution
     clearUndoStacks();
 }
@@ -1286,6 +1304,14 @@ void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
     {
         onTabRenameRequested(tab_index);
     } );
+
+    QAction* set_main   = menu.addAction("Set as main tree");
+
+    connect( set_main, &QAction::triggered, this, [this, tab_index]()
+    {
+        onTabSetMainTree(tab_index);
+    } );
+
     QPoint globalPos = ui->tabWidget->tabBar()->mapToGlobal(pos);
     menu.exec(globalPos);
 }
@@ -1345,6 +1371,23 @@ void MainWindow::onTabRenameRequested(int tab_index, QString new_name)
     // TODO: this is a work around until we find a better solution
     clearUndoStacks();
 }
+
+
+void MainWindow::onTabSetMainTree(int tab_index)
+{
+    for (int i=0; i<ui->tabWidget->count(); i++ )
+    {
+        if( i == tab_index )
+        {
+            ui->tabWidget->tabBar()->setTabIcon(i, QIcon(":/icons/svg/star.svg") );
+            _main_tree = ui->tabWidget->tabBar()->tabText(i);
+        }
+        else{
+            ui->tabWidget->tabBar()->setTabIcon( i, QIcon());
+        }
+    }
+}
+
 
 void MainWindow::clearTreeModels()
 {

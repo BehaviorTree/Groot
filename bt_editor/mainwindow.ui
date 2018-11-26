@@ -721,7 +721,7 @@ QToolButton:disabled{
            </size>
           </property>
           <property name="focusPolicy">
-           <enum>Qt::ClickFocus</enum>
+           <enum>Qt::NoFocus</enum>
           </property>
           <property name="acceptDrops">
            <bool>true</bool>

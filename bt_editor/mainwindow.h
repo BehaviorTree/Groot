@@ -112,6 +112,8 @@ public slots:
 
     void onTabRenameRequested(int tab_index, QString new_name = QString());
 
+    void onTabSetMainTree(int tab_index);
+
 signals:
     void updateGraphic();
 
@@ -138,6 +140,7 @@ private:
     
     struct SavedState
     {
+        QString main_tree;
         QString current_tab_name;
         QTransform view_transform;
         QRectF view_area;

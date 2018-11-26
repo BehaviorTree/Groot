@@ -52,6 +52,8 @@
         <file>close_x.png</file>
         <file>icons.qrc</file>
         <file>play.png</file>
+        <file>svg/star.svg</file>
+        <file>green_star.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>
