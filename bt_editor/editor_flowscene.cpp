@@ -5,6 +5,7 @@
 #include <QGraphicsSceneDragDropEvent>
 #include <QKeyEvent>
 #include <QCursor>
+#include <QApplication>
 #include "models/BehaviorTreeNodeModel.hpp"
 #include <QGraphicsView>
 
@@ -33,6 +34,7 @@ QtNodes::Node &EditorFlowScene::createNodeAtPos(const QString &ID, const QString
     bt_model->initWidget();
     auto& node_qt = createNode(std::move(node_model));
     setNodePosition(node_qt, scene_pos);
+
     return node_qt;
 }
 
@@ -56,6 +58,22 @@ void EditorFlowScene::dragMoveEvent(QGraphicsSceneDragDropEvent* event)
 
 void EditorFlowScene::keyPressEvent(QKeyEvent *event)
 {
+
+    for( const auto& it: nodes())
+    {
+        const auto& node = it.second;
+        auto line_edits = node->nodeDataModel()->embeddedWidget()->findChildren<QLineEdit*>();
+        for(auto line_edit: line_edits )
+        {
+            if( line_edit->hasFocus() )
+            {
+                // Do not swallow the keyPressEvent, you are editing a QLineEdit
+                QGraphicsScene::keyPressEvent(event);
+                return;
+            }
+        }
+    }
+
     auto selected_items = selectedItems();
     if( selected_items.size() == 1 && event->key() == Qt::Key_C &&
             event->modifiers() == Qt::ControlModifier)
@@ -71,8 +89,9 @@ void EditorFlowScene::keyPressEvent(QKeyEvent *event)
         _clipboard_node.instance_name  = node_model->instanceName();
         // TODO add parameters?
     }
-    else if( event->key() == Qt::Key_V && event->modifiers() == Qt::ControlModifier &&
-            registry().isRegistered( _clipboard_node.model.registration_ID  ) )
+    else if( event->key() == Qt::Key_V &&
+             event->modifiers() == Qt::ControlModifier &&
+             registry().isRegistered( _clipboard_node.model.registration_ID  ) )
     {
         auto views_ = views();
         QGraphicsView* view = views_.front();
@@ -82,6 +101,9 @@ void EditorFlowScene::keyPressEvent(QKeyEvent *event)
         createNodeAtPos( _clipboard_node.model.registration_ID,
                          _clipboard_node.instance_name,
                          scene_pos );
+    }
+    else{
+        QGraphicsScene::keyPressEvent(event);
     }
 }
 
