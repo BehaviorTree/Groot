@@ -1,37 +1,35 @@
 <root main_tree_to_execute="BehaviorTree">
-    <!--------------------------------------->
+    <!--  -----------------------------------  -->
     <BehaviorTree ID="BehaviorTree">
-        <Root>
-            <Sequence>
-                <Fallback>
-                    <FallbackStar>
-                        <Repeat num_cycles="1">
-                            <AlwaysFailure/>
-                        </Repeat>
-                    </FallbackStar>
-                </Fallback>
-                <SequenceStar name="DoSequenceStar">
-                    <RetryUntilSuccesful num_attempts="1">
-                        <BB_Precondition expected="value" key="key">
-                            <AlwaysSuccess/>
-                        </BB_Precondition>
-                    </RetryUntilSuccesful>
-                </SequenceStar>
-                <Inverter>
-                    <ForceFailure>
-                        <ForceSuccess>
-                            <SetBlackboard key="key" value="value"/>
-                        </ForceSuccess>
-                    </ForceFailure>
-                </Inverter>
-                <Action ID="Pippo"/>
-            </Sequence>
-        </Root>
+        <Sequence>
+            <Fallback>
+                <FallbackStar>
+                    <Repeat num_cycles="1">
+                        <AlwaysFailure/>
+                    </Repeat>
+                </FallbackStar>
+            </Fallback>
+            <SequenceStar name="DoSequenceStar">
+                <RetryUntilSuccesful num_attempts="1">
+                    <BB_Precondition expected="value" key="key">
+                        <AlwaysSuccess/>
+                    </BB_Precondition>
+                </RetryUntilSuccesful>
+            </SequenceStar>
+            <Inverter>
+                <ForceFailure>
+                    <ForceSuccess>
+                        <SetBlackboard key="key" value="value"/>
+                    </ForceSuccess>
+                </ForceFailure>
+            </Inverter>
+            <Action ID="Pippo"/>
+        </Sequence>
     </BehaviorTree>
-    <!--------------------------------------->
+    <!--  -----------------------------------  -->
     <TreeNodesModel>
         <Action ID="Pippo"/>
     </TreeNodesModel>
-    <!--------------------------------------->
+    <!--  -----------------------------------  -->
 </root>
 

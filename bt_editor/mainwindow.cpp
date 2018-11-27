@@ -418,6 +418,8 @@ QString MainWindow::saveToXML() const
     using namespace tinyxml2;
     XMLDocument doc;
 
+    const char* COMMENT_SEPARATOR = "  -----------------------------------  ";
+
     XMLElement* root = doc.NewElement( "root" );
     doc.InsertEndChild( root );
 
@@ -431,9 +433,18 @@ QString MainWindow::saveToXML() const
         auto& container = it.second;
         auto  scene = container->scene();
 
-        QtNodes::Node* root_node = BuildTreeFromScene(container->scene()).rootNode()->graphic_node;
+        auto abs_tree = BuildTreeFromScene(container->scene());
+        auto abs_root = abs_tree.rootNode();
+        if( abs_root->children_index.size() == 1 &&
+            abs_root->model.type == NodeType::ROOT  )
+        {
+            // mofe to the child of ROOT
+            abs_root = abs_tree.node( abs_root->children_index.front() );
+        }
 
-        root->InsertEndChild( doc.NewComment("-----------------------------------") );
+        QtNodes::Node* root_node = abs_root->graphic_node;
+
+        root->InsertEndChild( doc.NewComment(COMMENT_SEPARATOR) );
         XMLElement* root_element = doc.NewElement("BehaviorTree");
 
         root_element->SetAttribute("ID", it.first.toStdString().c_str());
@@ -441,7 +452,7 @@ QString MainWindow::saveToXML() const
 
         RecursivelyCreateXml(*scene, doc, root_element, root_node );
     }
-    root->InsertEndChild( doc.NewComment("-----------------------------------") );
+    root->InsertEndChild( doc.NewComment(COMMENT_SEPARATOR) );
 
     XMLElement* root_models = doc.NewElement("TreeNodesModel");
 
@@ -472,7 +483,7 @@ QString MainWindow::saveToXML() const
         root_models->InsertEndChild(node);
     }
     root->InsertEndChild(root_models);
-    root->InsertEndChild( doc.NewComment("-----------------------------------") );
+    root->InsertEndChild( doc.NewComment(COMMENT_SEPARATOR) );
 
     XMLPrinter printer;
     doc.Print( &printer );
