@@ -8,6 +8,8 @@
 #include <QMenu>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QJsonDocument>
+#include <QJsonArray>
 #include "models/ActionNodeModel.hpp"
 
 
@@ -224,6 +226,7 @@ void SidepanelEditor::onReplaceModel(const QString& old_name,
     emit nodeModelEdited(old_name, new_model.registration_ID);
 }
 
+
 void SidepanelEditor::on_buttonUpload_clicked()
 {
     using namespace tinyxml2;
@@ -298,8 +301,10 @@ void SidepanelEditor::on_buttonDownload_clicked()
                                              QDir::homePath() ).toString();
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Load TreenNodeModel from file"), directory_path,
-                                                    tr("BehaviorTree files (*.xml)"));
-    if (!QFileInfo::exists(fileName)){
+                                                    tr("BehaviorTree (*.xml); Skills (*.skills.json)" ));
+    QFileInfo fileInfo(fileName);
+
+    if (!fileInfo.exists(fileName)){
         return;
     }
 
@@ -314,15 +319,42 @@ void SidepanelEditor::on_buttonDownload_clicked()
     settings.sync();
 
     //--------------------------------
+    TreeNodeModels imported_models;
+    if( fileInfo.suffix() == "xml" )
+    {
+        imported_models = importFromXML( fileName );
+    }
+    else if( fileInfo.completeSuffix() == "skills.json" )
+    {
+        imported_models = importFromSkills( fileName );
+    }
+
+    if( imported_models.empty() )
+    {
+        return;
+    }
+
+    CleanPreviousModels(this, _tree_nodes_model, imported_models );
+
+    for(auto& it: imported_models)
+    {
+        addNewModel( it.second );
+    }
+}
+
+TreeNodeModels SidepanelEditor::importFromXML(const QString &fileName)
+{
     using namespace tinyxml2;
     XMLDocument doc;
     doc.LoadFile( fileName.toStdString().c_str() );
+
+    TreeNodeModels custom_models;
 
     if (doc.Error())
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "The XML was not correctly loaded");
-        return;
+        return custom_models;
     }
 
     auto strEqual = [](const char* str1, const char* str2) -> bool {
@@ -334,7 +366,7 @@ void SidepanelEditor::on_buttonDownload_clicked()
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "The XML must have a root node called <root>");
-        return;
+        return custom_models;
     }
 
     auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
@@ -343,10 +375,8 @@ void SidepanelEditor::on_buttonDownload_clicked()
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "Expecting <TreeNodesModel> under <root>");
-        return ;
+        return custom_models;
     }
-
-    TreeNodeModels custom_models;
 
     for( const XMLElement* node = meta_root->FirstChildElement();
          node != nullptr;
@@ -356,13 +386,50 @@ void SidepanelEditor::on_buttonDownload_clicked()
         custom_models.insert( { model.registration_ID, model } );
     }
 
-    CleanPreviousModels(this, _tree_nodes_model, custom_models );
-
-    for(auto& it: custom_models)
-    {
-        addNewModel( it.second );
-    }
+    return custom_models;
 }
+
+TreeNodeModels SidepanelEditor::importFromSkills(const QString &fileName)
+{
+    TreeNodeModels custom_models;
+
+    QFile loadFile(fileName);
+
+    if (!loadFile.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::warning(this,"Error loading Skills",
+                             tr("Something wrong with %1").arg(fileName) );
+        return custom_models;
+    }
+
+     QJsonDocument loadDoc =  QJsonDocument::fromJson( loadFile.readAll() ) ;
+
+     QJsonArray root_array = loadDoc.array();
+
+     for (QJsonValueRef skill_node : root_array)
+     {
+
+         auto skill = skill_node.toObject()["skill"].toObject();
+         auto name = skill["name"].toString();
+         qDebug() << name;
+
+         auto attributes = skill["inAttribute"].toObject();
+         auto params_keys = attributes.keys();
+
+         TreeNodeModel::Parameters model_params;
+         model_params.reserve( params_keys.size() );
+         for (const auto& key: params_keys)
+         {
+             model_params.push_back(
+             {key, attributes[key].toString()} );
+         }
+         TreeNodeModel model(name, NodeType::ACTION, model_params);
+         custom_models.insert( {name, model} );
+     }
+
+    return custom_models;
+}
+
 
 void SidepanelEditor::on_buttonLock_toggled(bool locked)
 {

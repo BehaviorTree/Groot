@@ -29,6 +29,7 @@ public slots:
 
     void onReplaceModel(const QString &old_name, const TreeNodeModel &new_model);
 
+
 private slots:
 
     void on_paletteTreeWidget_itemSelectionChanged();
@@ -58,6 +59,10 @@ private:
     TreeNodeModels &_tree_nodes_model;
     QtNodes::DataModelRegistry* _model_registry;
     std::map<QString, QTreeWidgetItem*> _tree_view_category_items;
+
+    TreeNodeModels importFromXML(const QString& filename);
+
+    TreeNodeModels importFromSkills(const QString& filename);
 
 };
 

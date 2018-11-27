@@ -47,6 +47,8 @@ void EditorTest::loadFile()
 
     QString saved_xml = main_win->saveToXML();
 
+    std::cout << saved_xml.toStdString() << std::endl;
+
     QVERIFY2( file_xml.simplified() == saved_xml.simplified(),
               "Loaded and saved XML are not the same" );
 

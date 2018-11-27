@@ -1,0 +1,38 @@
+
+[
+{"skill" :
+	{ 
+		"name" : "moverobot_approach_region_purepursuit",
+		"skillDefinitionFQN" : "CommNavigationObjects.CdlSkills.moverobot_approach_region_purepursuit",
+		"inAttribute" : {
+			"location" : "String"
+		},
+		"outAttribute" : {
+		},
+		"results" : [ 
+			{ "result" : "ERROR", "resultValue" : "UNKNOWN LOCATION" },
+			{ "result" : "ERROR", "resultValue" : "ROBOT BLOCKED" },
+			{ "result" : "SUCCESS", "resultValue" : "OK" },
+			{ "result" : "SUCCESS", "resultValue" : "" }
+		]
+	}
+},
+{"skill" :
+	{ 
+		"name" : "moverobot_approach_region_purepursuit_xy",
+		"skillDefinitionFQN" : "CommNavigationObjects.CdlSkills.moverobot_approach_region_purepursuit_xy",
+		"inAttribute" : {
+			"x" : "Double",
+			"y" : "Double"
+		},
+		"outAttribute" : {
+		},
+		"results" : [ 
+			{ "result" : "ERROR", "resultValue" : "UNKNOWN LOCATION" },
+			{ "result" : "ERROR", "resultValue" : "ROBOT BLOCKED" },
+			{ "result" : "SUCCESS", "resultValue" : "OK" },
+			{ "result" : "SUCCESS", "resultValue" : "" }
+		]
+	}
+}
+]
