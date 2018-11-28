@@ -471,13 +471,11 @@ QString MainWindow::saveToXML() const
         if( node )
         {
             node->SetAttribute("ID", ID.toStdString().c_str());
+
             for(const auto& param: model.params)
             {
-                XMLElement* param_node = doc.NewElement( "Parameter" );
-                param_node->InsertEndChild(root_models);
-                param_node->SetAttribute("label",   param.label.toStdString().c_str() );
-                param_node->SetAttribute("default", param.value.toStdString().c_str() );
-                node->InsertEndChild(param_node);
+                node->SetAttribute(param.label.toStdString().c_str(),
+                                   param.value.toStdString().c_str() );
             }
         }
         root_models->InsertEndChild(node);
