@@ -21,6 +21,7 @@ private slots:
     void modifyCustomModel();
     void multipleSubtrees();
     void editText();
+    void loadModelLess();
 };
 
 
@@ -46,8 +47,6 @@ void EditorTest::loadFile()
     main_win->loadFromXML( file_xml );
 
     QString saved_xml = main_win->saveToXML();
-
-    std::cout << saved_xml.toStdString() << std::endl;
 
     QVERIFY2( file_xml.simplified() == saved_xml.simplified(),
               "Loaded and saved XML are not the same" );
@@ -426,6 +425,24 @@ void EditorTest::editText()
     }
 
     sleepAndRefresh( 500 );
+}
+
+void EditorTest::loadModelLess()
+{
+    QString file_xml = readFile("://simple_without_model.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    auto models = main_win->registeredModels();
+
+    QVERIFY( models.find("moverobot") != models.end() );
+
+    const auto& moverobot_model = models.at("moverobot");
+
+    QCOMPARE( moverobot_model.params.size(),  size_t(1) );
+    QCOMPARE( moverobot_model.params.front().label, tr("location") );
+    QCOMPARE( moverobot_model.params.front().value, tr("1") );
+
 }
 
 QTEST_MAIN(EditorTest)

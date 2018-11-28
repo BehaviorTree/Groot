@@ -91,7 +91,7 @@ TreeNodeModels ReadTreeNodesModel(const tinyxml2::XMLElement* root)
     std::function<void(const XMLElement*)> recursiveStep;
     recursiveStep = [&](const XMLElement* node)
     {
-        auto model = buildTreeNodeModel(node, true);
+        auto model = buildTreeNodeModel(node, false);
         models.insert( {model.registration_ID, model} );
 
         for( const XMLElement* child = node->FirstChildElement();

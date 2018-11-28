@@ -1,0 +1,10 @@
+<root main_tree_to_execute="BehaviorTree">
+
+    <BehaviorTree ID="BehaviorTree">
+        <SequenceStar>
+            <Action ID="moverobot" location="1"/>
+        </SequenceStar>
+    </BehaviorTree>
+
+</root>
+
