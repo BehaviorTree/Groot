@@ -67,7 +67,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     //------------------------------------------------------
     auto addModelToTree = [this](const TreeNodeModel& model)
     {
-        _tree_nodes_model.insert( { model.registration_ID, model } );
+        _treenode_models.insert( { model.registration_ID, model } );
     };
 
     _model_registry->registerModel<RootNodeModel>("Root");
@@ -105,10 +105,10 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     addModelToTree( ActionFailure::NodeModel() );
     addModelToTree( ActionSetBlackboard::NodeModel() );
 
-    BuiltinNodeModels() = _tree_nodes_model;
+    BuiltinNodeModels() = _treenode_models;
     //------------------------------------------------------
 
-    _editor_widget = new SidepanelEditor(_model_registry.get(), _tree_nodes_model, this);
+    _editor_widget = new SidepanelEditor(_model_registry.get(), _treenode_models, this);
     _replay_widget = new SidepanelReplay(this);
 
     ui->leftFrame->layout()->addWidget( _editor_widget );
@@ -260,7 +260,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
         document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
         //---------------
         std::vector<QString> registered_ID;
-        for (const auto& it: _tree_nodes_model)
+        for (const auto& it: _treenode_models)
         {
             registered_ID.push_back( it.first );
         }
@@ -300,7 +300,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
         }
 
         auto custom_models = ReadTreeNodesModel( document_root );
-        CleanPreviousModels(this, _tree_nodes_model, custom_models);
+        CleanPreviousModels(this, _treenode_models, custom_models);
 
         for( const auto& model: custom_models)
         {
@@ -456,7 +456,7 @@ QString MainWindow::saveToXML() const
 
     XMLElement* root_models = doc.NewElement("TreeNodesModel");
 
-    for(const auto& tree_it: _tree_nodes_model)
+    for(const auto& tree_it: _treenode_models)
     {
         const auto& ID    = tree_it.first;
         const auto& model = tree_it.second;
@@ -814,7 +814,7 @@ void MainWindow::onAddToModelRegistry(const TreeNodeModel &model)
         _model_registry->registerModel("SubTree", node_creator, ID);
     }
 
-    _tree_nodes_model.insert( {ID, model } );
+    _treenode_models.insert( {ID, model } );
     _editor_widget->updateTreeView();
 }
 
@@ -1371,10 +1371,10 @@ void MainWindow::onTabRenameRequested(int tab_index, QString new_name)
     if( _model_registry->registeredModelsByCategory("SubTree").count( old_name ) != 0 )
     {
          _model_registry->unregisterModel(old_name);
-         _tree_nodes_model.erase(old_name);
+         _treenode_models.erase(old_name);
          TreeNodeModel model = { new_name, NodeType::SUBTREE,{}};
          onAddToModelRegistry( model );
-         _tree_nodes_model.insert( { new_name, model} );
+         _treenode_models.insert( { new_name, model} );
          _editor_widget->updateTreeView();
          this->onTreeNodeEdited(old_name, new_name);
     }
@@ -1402,8 +1402,13 @@ void MainWindow::onTabSetMainTree(int tab_index)
 
 void MainWindow::clearTreeModels()
 {
-    _tree_nodes_model = BuiltinNodeModels();
+    _treenode_models = BuiltinNodeModels();
     _editor_widget->updateTreeView();
+}
+
+const TreeNodeModels &MainWindow::registeredModels() const
+{
+    return _treenode_models;
 }
 
 void MainWindow::on_actionAbout_triggered()

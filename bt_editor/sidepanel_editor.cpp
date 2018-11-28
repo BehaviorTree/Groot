@@ -413,7 +413,7 @@ TreeNodeModels SidepanelEditor::importFromSkills(const QString &fileName)
          auto name = skill["name"].toString();
          qDebug() << name;
 
-         auto attributes = skill["inAttribute"].toObject();
+         auto attributes = skill["in-attribute"].toObject();
          auto params_keys = attributes.keys();
 
          TreeNodeModel::Parameters model_params;

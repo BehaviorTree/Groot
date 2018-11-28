@@ -55,6 +55,8 @@ public:
 
     void clearTreeModels();
 
+    const TreeNodeModels& registeredModels() const;
+
 public slots:
 
     void onAutoArrange();
@@ -170,7 +172,7 @@ private:
     SavedState _current_state;
     QtNodes::PortLayout _current_layout;
 
-    TreeNodeModels _tree_nodes_model;
+    TreeNodeModels _treenode_models;
 
     QString _main_tree;
 
