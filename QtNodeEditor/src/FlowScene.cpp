@@ -238,6 +238,9 @@ restoreNode(QJsonObject const& nodeJson)
 
   node->restore(nodeJson);
 
+  node->nodeState().getEntries(PortType::In).resize( node->nodeDataModel()->nPorts(PortType::In));
+  node->nodeState().getEntries(PortType::Out).resize( node->nodeDataModel()->nPorts(PortType::Out));
+
   auto nodePtr = node.get();
   nodePtr->nodeGeometry().setPortLayout( layout() );
   auto id = node->id();

@@ -63,9 +63,9 @@ public:
 
   QWidget *parametersWidget() { return _params_widget; }
 
-  QJsonObject save() const final;
+  QJsonObject save() const override;
 
-  void restore(QJsonObject const &) final;
+  void restore(QJsonObject const &) override;
 
   void lock(bool locked);
 

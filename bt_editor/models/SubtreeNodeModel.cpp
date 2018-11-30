@@ -53,3 +53,25 @@ void SubtreeNodeModel::setInstanceName(const QString &name)
     _line_edit_name->setHidden( name == registrationName() );
     BehaviorTreeDataModel::setInstanceName(name);
 }
+
+
+QJsonObject SubtreeNodeModel::save() const
+{
+    QJsonObject modelJson;
+    modelJson["name"]  = registrationName();
+    modelJson["alias"] = instanceName();
+    modelJson["expanded"] = _expanded;
+
+    return modelJson;
+}
+
+void SubtreeNodeModel::restore(const QJsonObject &modelJson)
+{
+    if( registrationName() != modelJson["name"].toString() )
+    {
+        throw std::runtime_error(" error restoring: different registration_name");
+    }
+    QString alias = modelJson["alias"].toString();
+    setInstanceName( alias );
+    setExpanded( modelJson["expanded"].toBool() );
+}

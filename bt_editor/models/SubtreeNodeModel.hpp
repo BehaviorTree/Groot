@@ -36,6 +36,10 @@ public:
 
     virtual void setInstanceName(const QString& name) override;
 
+    QJsonObject save() const override;
+
+    void restore(QJsonObject const &) override;
+
 signals:
     void expandButtonPushed();
 
