@@ -22,6 +22,7 @@ private slots:
     void multipleSubtrees();
     void editText();
     void loadModelLess();
+    void undoWithSubtreeExpanded();
 };
 
 
@@ -443,6 +444,39 @@ void EditorTest::loadModelLess()
     QCOMPARE( moverobot_model.params.front().label, tr("location") );
     QCOMPARE( moverobot_model.params.front().value, tr("1") );
 
+}
+
+void EditorTest::undoWithSubtreeExpanded()
+{
+    QString file_xml = readFile(":/crossdoor_with_subtree.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    auto abs_tree = getAbstractTree("MainTree");
+    auto subtree_node = abs_tree.findFirstNode("DoorClosed")->graphic_node;
+    auto window_node  = abs_tree.findFirstNode("PassThroughWindow")->graphic_node;
+
+    auto subtree_model = dynamic_cast<SubtreeNodeModel*>( subtree_node->nodeDataModel() );
+    QTest::mouseClick( subtree_model->expandButton(), Qt::LeftButton );
+
+    sleepAndRefresh( 500 );
+
+    auto scene = main_win->getTabByName("MainTree")->scene();
+    int node_count_A = scene->nodes().size();
+    scene->removeNode(*window_node);
+
+    sleepAndRefresh( 500 );
+
+    abs_tree = getAbstractTree("MainTree");
+    int node_count_B = scene->nodes().size();
+    QCOMPARE( node_count_A -1 , node_count_B );
+
+    main_win->onUndoInvoked();
+    scene = main_win->getTabByName("MainTree")->scene();
+    int node_count_C = scene->nodes().size();
+     QCOMPARE( node_count_A , node_count_C );
+
+     sleepAndRefresh( 500 );
 }
 
 QTEST_MAIN(EditorTest)
