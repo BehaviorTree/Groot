@@ -22,6 +22,7 @@ private slots:
     void multipleSubtrees();
     void editText();
     void loadModelLess();
+    void clearModels();
     void undoWithSubtreeExpanded();
 };
 
@@ -444,6 +445,38 @@ void EditorTest::loadModelLess()
     QCOMPARE( moverobot_model.params.front().label, tr("location") );
     QCOMPARE( moverobot_model.params.front().value, tr("1") );
 
+}
+
+void EditorTest::clearModels()
+{
+    QString file_xml = readFile(":/crossdoor_with_subtree.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    file_xml = readFile(":/show_all.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    auto container = main_win->currentTabInfo();
+    auto view = container->view();
+
+    auto abs_tree = getAbstractTree();
+    auto node = abs_tree.findFirstNode( "DoSequenceStar" );
+
+    QTimer::singleShot(300, [&]()
+    {
+        // No message box expected
+        QWidget* modal_widget = QApplication::activeModalWidget();
+
+        if (dynamic_cast<QMessageBox*>(modal_widget))
+        {
+            QKeyEvent* event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
+            QCoreApplication::postEvent(modal_widget, event);
+            QFAIL("no QMessageBox");
+        }
+    });
+
+    container->createSubtree( *node->graphic_node, "DoorClosed" );
 }
 
 void EditorTest::undoWithSubtreeExpanded()

@@ -291,7 +291,9 @@ void MainWindow::loadFromXML(const QString& xml_text)
     auto saved_state = _current_state;
 
     try {
-        _main_tree.clear();
+
+        on_actionClear_triggered();
+
         auto document_root = document.RootElement();
 
         if( document_root->Attribute("main_tree_to_execute"))
@@ -310,8 +312,6 @@ void MainWindow::loadFromXML(const QString& xml_text)
         _editor_widget->updateTreeView();
 
         onActionClearTriggered(false);
-
-        auto saved_state = _current_state;
 
         const QSignalBlocker blocker( currentTabInfo() );
 
@@ -1401,6 +1401,20 @@ void MainWindow::onTabSetMainTree(int tab_index)
 void MainWindow::clearTreeModels()
 {
     _treenode_models = BuiltinNodeModels();
+
+    std::list<QString> ID_to_delete;
+    for(const auto& it: _model_registry->registeredModelCreators() )
+    {
+        const auto& ID = it.first;
+        if( _treenode_models.count( ID ) == 0)
+        {
+            ID_to_delete.push_back(ID);
+        }
+    }
+    for(const auto& ID: ID_to_delete )
+    {
+        _model_registry->unregisterModel(ID);
+    }
     _editor_widget->updateTreeView();
 }
 
