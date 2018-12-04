@@ -323,13 +323,6 @@ void GraphicContainer::onNodeCreated(Node &node)
 void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &)
 {
     QMenu* node_menu = new QMenu(_view);
-
-    node_menu->setStyleSheet(
-                "QMenu { background-color: #101020; color:white; }"
-                "QMenu::item { background: transparent; color:white; }"
-                "QMenu::item:selected { background: #404050; color:white; }"
-                "QMenu::item:disabled { background: transparent; color:grey; }" );
-
     //--------------------------------
     createMorphSubMenu(node, node_menu);
     //--------------------------------
@@ -520,11 +513,6 @@ void GraphicContainer::insertNodeInConnection(Connection &connection, QString no
 void GraphicContainer::onConnectionContextMenu(QtNodes::Connection &connection, const QPointF&)
 {
     QMenu* conn_menu = new QMenu(_view);
-    conn_menu->setStyleSheet(
-                "QMenu { background-color: #101020; color:white; }"
-                "QMenu::item { background: transparent; color:white; }"
-                "QMenu::item:selected { background: #404050; color:white; }"
-                "QMenu::item:disabled { background: transparent; color:grey; }" );
 
     auto categories = {"Control", "Decorator"};
 
