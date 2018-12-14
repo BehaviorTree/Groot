@@ -124,7 +124,15 @@ bool SidepanelMonitor::getTreeFromServer()
             }
         }
 
-        loadBehaviorTree( _loaded_tree, "BehaviorTree" );
+        try {
+            loadBehaviorTree( _loaded_tree, "BehaviorTree" );
+        }
+        catch (std::exception& err) {
+            QMessageBox messageBox;
+            messageBox.critical(this,"Error Connecting to remote server", err.what() );
+            messageBox.show();
+            return false;
+        }
 
         std::vector<std::pair<int, NodeStatus>> node_status;
         node_status.reserve(_loaded_tree.nodesCount());
