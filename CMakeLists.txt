@@ -13,7 +13,7 @@ if( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
 endif()
 
 if(catkin_FOUND)
-  find_package(catkin REQUIRED COMPONENTS behavior_tree_core rosbag rosbag_storage roscpp)
+  find_package(catkin REQUIRED COMPONENTS behaviortree_cpp rosbag rosbag_storage roscpp)
 
   message(STATUS "------------------------------------------------")
   message(STATUS "BehaviourTreeEditor is being built using CATKIN.")
@@ -22,7 +22,7 @@ if(catkin_FOUND)
   catkin_package(
     INCLUDE_DIRS 
     LIBRARIES qt_node_editor
-    CATKIN_DEPENDS behavior_tree_core
+    CATKIN_DEPENDS behaviortree_cpp
     DEPENDS 
     )
 endif(catkin_FOUND)
