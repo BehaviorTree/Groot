@@ -418,7 +418,7 @@ QString MainWindow::saveToXML() const
     using namespace tinyxml2;
     XMLDocument doc;
 
-    const char* COMMENT_SEPARATOR = "  -----------------------------------  ";
+    const char* COMMENT_SEPARATOR = " ////////// ";
 
     XMLElement* root = doc.NewElement( "root" );
     doc.InsertEndChild( root );
