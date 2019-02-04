@@ -256,7 +256,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
 {
     QDomDocument document;
     try{
-        document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
+        document.setContent( xml_text );
         //---------------
         std::vector<QString> registered_ID;
         for (const auto& it: _treenode_models)
@@ -300,7 +300,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
             _main_tree = document_root.attribute("main_tree_to_execute");
         }
 
-        auto custom_models = ReadTreeNodesModel( &document_root );
+        auto custom_models = ReadTreeNodesModel( document_root );
         CleanPreviousModels(this, _treenode_models, custom_models);
 
         for( const auto& model: custom_models)
@@ -443,7 +443,7 @@ QString MainWindow::saveToXML() const
 
         QtNodes::Node* root_node = abs_root->graphic_node;
 
-        root.appendChild( doc.NewComment(COMMENT_SEPARATOR) );
+        root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
         QDomElement root_element = doc.createElement("BehaviorTree");
 
         root_element.setAttribute("ID", it.first.toStdString().c_str());
@@ -451,7 +451,7 @@ QString MainWindow::saveToXML() const
 
         RecursivelyCreateXml(*scene, doc, root_element, root_node );
     }
-    root.appendChild( doc.NewComment(COMMENT_SEPARATOR) );
+    root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
 
     QDomElement root_models = doc.createElement("TreeNodesModel");
 
@@ -480,12 +480,10 @@ QString MainWindow::saveToXML() const
         root_models.appendChild(node);
     }
     root.appendChild(root_models);
-    root.appendChild( doc.NewComment(COMMENT_SEPARATOR) );
+    root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
 
-    XMLPrinter printer;
-    doc.Print( &printer );
 
-    return printer.CStr();
+    return doc.toString(4);
 }
 
 void MainWindow::on_actionSave_triggered()

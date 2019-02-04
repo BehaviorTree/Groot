@@ -276,13 +276,11 @@ void SidepanelEditor::on_buttonUpload_clicked()
         fileName += ".xml";
     }
 
-    XMLPrinter printer;
-    doc.Print( &printer );
 
     QFile file(fileName);
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
-        stream << printer.CStr() << endl;
+        stream << doc.toString(4) << endl;
     }
 
     directory_path = QFileInfo(fileName).absolutePath();
@@ -341,7 +339,7 @@ void SidepanelEditor::on_buttonDownload_clicked()
 TreeNodeModels SidepanelEditor::importFromXML(const QString &fileName)
 {
     QDomDocument doc;
-    doc.LoadFile( fileName.toStdString().c_str() );
+    doc.setContent( fileName.toStdString().c_str() );
 
     TreeNodeModels custom_models;
 
@@ -357,7 +355,7 @@ TreeNodeModels SidepanelEditor::importFromXML(const QString &fileName)
     };
 
     QDomElement xml_root = doc.documentElement();
-    if ( xml_root.isNull() || !strEqual(xml_root->Name(), "root"))
+    if ( xml_root.isNull() || xml_root.nodeName() != "root")
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "The XML must have a root node called <root>");

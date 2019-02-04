@@ -17,7 +17,7 @@ buildTreeNodeModel(const QDomElement& node)
 {
     std::vector<TreeNodeModel::Param> model_params;
 
-    QString node_name (node->Name());
+    QString node_name = node.nodeName();
     QString ID = node_name;
     if(  node.hasAttribute("ID") )
     {
@@ -28,16 +28,17 @@ buildTreeNodeModel(const QDomElement& node)
 
     ParameterWidgetCreators parameters;
 
-    for (const XMLAttribute* attr = node.firstAttribute();
-         attr != nullptr;
-         attr = attr->Next() )
+    QDomNamedNodeMap attributes = node.attributes ();
+    for (int i=0; i< attributes.size(); i++ )
     {
-        QString attr_name( attr->Name() );
+        QDomAttr attr = attributes.item(i).toAttr();
+
+        QString attr_name( attr.name() );
         if(attr_name != "ID" && attr_name != "name")
         {
             TreeNodeModel::Param model_param;
             model_param.label = attr_name;
-            model_param.value = attr->Value();
+            model_param.value = attr.value();
 
             auto widget_creator = buildWidgetCreator( model_param );
             parameters.push_back(widget_creator);
@@ -148,11 +149,6 @@ bool VerifyXML(QDomDocument &doc,
                const std::vector<QString>& registered_ID,
                std::vector<QString>& error_messages)
 {
-    if (doc.Error())
-    {
-        error_messages.emplace_back("The XML was not correctly loaded");
-        return false;
-    }
     bool is_valid = true;
 
     //-------- Helper functions (lambdas) -----------------
@@ -167,9 +163,10 @@ bool VerifyXML(QDomDocument &doc,
         is_valid = false;
     };
 
-    auto ChildrenCount = [](QDomElement* parent_node) {
+    auto ChildrenCount = [](QDomElement& parent_node) {
         int count = 0;
-        for (auto node = parent_node.firstChildElement(); node != nullptr;
+        for (auto node = parent_node.firstChildElement();
+             !node.isNull();
              node = node.nextSiblingElement())
         {
             count++;
@@ -179,50 +176,52 @@ bool VerifyXML(QDomDocument &doc,
 
     //-----------------------------
 
-    QDomElement* xml_root = doc.documentElement();
+    QDomElement xml_root = doc.documentElement();
 
-    if (!xml_root || !strEqual(xml_root->Name(), "root"))
+    if ( xml_root.isNull() || xml_root.nodeName() != "root")
     {
         error_messages.emplace_back("The XML must have a root node called <root>");
         return false;
     }
     //-------------------------------------------------
     auto meta_root = xml_root.firstChildElement("TreeNodesModel");
-    auto meta_sibling = meta_root ? meta_root.nextSiblingElement("TreeNodesModel") : nullptr;
+    auto meta_sibling = meta_root.isNull ? meta_root.nextSiblingElement("TreeNodesModel") : nullptr;
 
     if (meta_sibling)
     {
-        AppendError(meta_sibling->GetLineNum(), " Only a single node <TreeNodesModel> is supported");
+        AppendError(meta_sibling.lineNumber(), " Only a single node <TreeNodesModel> is supported");
     }
-    if (meta_root)
+    if ( !meta_root.isNull() )
     {
         // not having a MetaModel is not an error. But consider that the
         // Graphical editor needs it.
-        for (auto node = xml_root.firstChildElement(); node != nullptr;
+        for (auto node = xml_root.firstChildElement();
+             !node.isNull();
              node = node.nextSiblingElement())
         {
-            const char* name = node->Name();
-            if (strEqual(name, "Action") || strEqual(name, "Decorator") ||
-                    strEqual(name, "SubTree") || strEqual(name, "Condition"))
+            QString name = node.nodeName();
+            if ( name == "Action" || name == "Decorator" ||
+                 name == "SubTree" || name == "Condition")
             {
-                const char* ID = node->Attribute("ID");
-                if (!ID)
+                if ( !node.hasAttribute("ID") )
                 {
-                    AppendError(node->GetLineNum(), "Error at line %d: -> The attribute [ID] is "
+                    AppendError(node.lineNumber(), "Error at line %d: -> The attribute [ID] is "
                                                     "mandatory");
                 }
+                QString ID = node.attribute("ID");
+
                 for (auto param_node = xml_root.firstChildElement("Parameter");
-                     param_node != nullptr;
+                     !param_node.isNull();
                      param_node = param_node.nextSiblingElement("Parameter"))
                 {
-                    const char* label = node->Attribute("label");
-                    const char* type = node->Attribute("type");
-                    if (!label || !type)
+                    if (! node.hasAttribute("label") || !node.hasAttribute("type") )
                     {
-                        AppendError(node->GetLineNum(),
+                        AppendError(node.lineNumber(),
                                     "The node <Parameter> requires the attributes [type] and "
                                     "[label]");
                     }
+                    QString label = node.attribute("label");
+                    QString type  = node.attribute("type");
                 }
             }
         }
@@ -231,63 +230,63 @@ bool VerifyXML(QDomDocument &doc,
     //-------------------------------------------------
 
     // function to be called recursively
-    std::function<void(QDomElement*)> recursiveStep;
+    std::function<void(QDomElement&)> recursiveStep;
 
-    recursiveStep = [&](QDomElement* node) {
+    recursiveStep = [&](QDomElement& node) {
         const int children_count = ChildrenCount(node);
-        const char* name = node->Name();
-        if (strEqual(name, "Decorator"))
+        QString name = node.nodeName();
+        if (name == "Decorator")
         {
             if (children_count != 1)
             {
-                AppendError(node->GetLineNum(), "The node <Decorator> must have exactly 1 child");
+                AppendError(node.lineNumber(), "The node <Decorator> must have exactly 1 child");
             }
-            if (!node->Attribute("ID"))
+            if (!node.hasAttribute("ID"))
             {
-                AppendError(node->GetLineNum(), "The node <Decorator> must have the attribute "
+                AppendError(node.lineNumber(), "The node <Decorator> must have the attribute "
                                                 "[ID]");
             }
         }
-        else if (strEqual(name, "Action"))
+        else if (name == "Action")
         {
             if (children_count != 0)
             {
-                AppendError(node->GetLineNum(), "The node <Action> must not have any child");
+                AppendError(node.lineNumber(), "The node <Action> must not have any child");
             }
-            if (!node->Attribute("ID"))
+            if (!node.hasAttribute("ID"))
             {
-                AppendError(node->GetLineNum(), "The node <Action> must have the attribute [ID]");
+                AppendError(node.lineNumber(), "The node <Action> must have the attribute [ID]");
             }
         }
-        else if (strEqual(name, "Condition"))
+        else if (name == "Condition")
         {
             if (children_count != 0)
             {
-                AppendError(node->GetLineNum(), "The node <Condition> must not have any child");
+                AppendError(node.lineNumber(), "The node <Condition> must not have any child");
             }
-            if (!node->Attribute("ID"))
+            if (!node.hasAttribute("ID"))
             {
-                AppendError(node->GetLineNum(), "The node <Condition> must have the attribute "
+                AppendError(node.lineNumber(), "The node <Condition> must have the attribute "
                                                 "[ID]");
             }
         }
-        else if (strEqual(name, "Sequence") || strEqual(name, "SequenceStar") ||
-                 strEqual(name, "Fallback") || strEqual(name, "FallbackStar"))
+        else if (name == "Sequence" || name == "SequenceStar" ||
+                 name == "Fallback" || name == "FallbackStar")
         {
             if (children_count == 0)
             {
-                AppendError(node->GetLineNum(), "A Control node must have at least 1 child");
+                AppendError(node.lineNumber(), "A Control node must have at least 1 child");
             }
         }
-        else if (strEqual(name, "SubTree"))
+        else if (name == "SubTree")
         {
             if (children_count > 0)
             {
-                AppendError(node->GetLineNum(), "The <SubTree> node must have no children");
+                AppendError(node.lineNumber(), "The <SubTree> node must have no children");
             }
-            if (!node->Attribute("ID"))
+            if (!node.hasAttribute("ID"))
             {
-                AppendError(node->GetLineNum(), "The node <SubTree> must have the attribute [ID]");
+                AppendError(node.lineNumber(), "The node <SubTree> must have the attribute [ID]");
             }
         }
         else
@@ -304,11 +303,11 @@ bool VerifyXML(QDomDocument &doc,
             }
             if (!found)
             {
-                AppendError(node->GetLineNum(), (std::string("Node not recognized: ") + name).c_str() );
+                AppendError(node.lineNumber(), (std::string("Node not recognized: ") + name).c_str() );
             }
         }
         //recursion
-        for (auto child = node.firstChildElement(); child != nullptr;
+        for (auto child = node.firstChildElement(); !child.isNull();
              child = child.nextSiblingElement())
         {
             recursiveStep(child);
@@ -318,27 +317,27 @@ bool VerifyXML(QDomDocument &doc,
     std::vector<std::string> tree_names;
     int tree_count = 0;
 
-    for (auto bt_root = xml_root.firstChildElement("BehaviorTree"); bt_root != nullptr;
+    for (auto bt_root = xml_root.firstChildElement("BehaviorTree"); !bt_root.isNull();
          bt_root = bt_root.nextSiblingElement("BehaviorTree"))
     {
         tree_count++;
-        if (bt_root->Attribute("ID"))
+        if (bt_root.hasAttribute("ID"))
         {
-            tree_names.push_back(bt_root->Attribute("ID"));
+            tree_names.push_back( bt_root.attribute("ID").toStdString() );
         }
         if (ChildrenCount(bt_root) != 1)
         {
-            AppendError(bt_root->GetLineNum(), "The node <BehaviorTree> must have exactly 1 child");
+            AppendError(bt_root.lineNumber(), "The node <BehaviorTree> must have exactly 1 child");
         }
         else
         {
-            recursiveStep(bt_root.firstChildElement());
+            recursiveStep( bt_root.firstChildElement() );
         }
     }
 
-    if (xml_root->Attribute("main_tree_to_execute"))
+    if (xml_root.hasAttribute("main_tree_to_execute"))
     {
-        std::string main_tree = xml_root->Attribute("main_tree_to_execute");
+        std::string main_tree = xml_root.attribute("main_tree_to_execute").toStdString();
         if (std::find(tree_names.begin(), tree_names.end(), main_tree) == tree_names.end())
         {
             error_messages.emplace_back("The tree specified in [main_tree_to_execute] "

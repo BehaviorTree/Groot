@@ -335,7 +335,7 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
 {
     AbsBehaviorTree tree;
 
-    if( strcmp( bt_root->Name(), "BehaviorTree" ) != 0)
+    if( bt_root.nodeName() == "BehaviorTree" )
     {
         throw std::runtime_error( "expecting a node called <BehaviorTree>");
     }
@@ -345,7 +345,7 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
     recursiveStep = [&](AbstractTreeNode* parent, QDomElement xml_node)
     {
         // The nodes with a ID used that QString to insert into the registry()
-        QString modelID = xml_node->Name();
+        QString modelID = xml_node.nodeName();
         if( xml_node.hasAttribute("ID") )
         {
             modelID = xml_node.attribute("ID");
@@ -354,7 +354,7 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
         AbstractTreeNode tree_node;
 
         tree_node.model.registration_ID = modelID;
-        tree_node.model.type = getNodeTypeFromString( xml_node->Name() );
+        tree_node.model.type = getNodeTypeFromString( xml_node.nodeName() );
 
         if( xml_node.hasAttribute("name") )
         {
