@@ -63,7 +63,6 @@ set(APP_CPPS
     ./bt_editor/sidepanel_replay.cpp
     ./bt_editor/custom_node_dialog.cpp
 
-    ./3rdparty/tinyXML2/tinyxml2.cpp
     ./bt_editor/XML_utilities.cpp
     )
 

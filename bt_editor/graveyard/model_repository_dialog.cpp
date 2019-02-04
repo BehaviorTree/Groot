@@ -6,7 +6,7 @@
 #include <QSettings>
 #include <QFileInfo>
 #include <QMessageBox>
-
+#include <QDomDocument>
 
 ModelsRepositoryDialog::ModelsRepositoryDialog(TreeNodeModels* tree_node_models, QWidget *parent) :
     QDialog(parent),
@@ -161,9 +161,8 @@ bool ModelsRepositoryDialog::parseXML(const QString &filename,
                               ModelsByFile& models_by_file,
                               QString* error_message)
 {
-    using namespace tinyxml2;
     TreeNodeModels models;
-    XMLDocument doc;
+    QDomDocument doc;
     doc.LoadFile( filename.toStdString().c_str() );
 
     if (doc.Error())
@@ -176,14 +175,14 @@ bool ModelsRepositoryDialog::parseXML(const QString &filename,
         return strcmp(str1, str2) == 0;
     };
 
-    const tinyxml2::XMLElement* xml_root = doc.RootElement();
+    QDomElement* xml_root = doc.documentElement();
     if (!xml_root || !strEqual(xml_root->Name(), "root"))
     {
         (*error_message) = ("The XML must have a root node called <root>");
         return false;
     }
 
-    auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
+    auto meta_root = xml_root.firstChildElement("TreeNodesModel");
 
     if (!meta_root)
     {
@@ -191,9 +190,9 @@ bool ModelsRepositoryDialog::parseXML(const QString &filename,
         return false;
     }
 
-    for( const XMLElement* node = meta_root->FirstChildElement();
+    for( QDomElement node = meta_root.firstChildElement();
          node != nullptr;
-         node = node->NextSiblingElement() )
+         node = node.nextSiblingElement() )
     {
         models.insert( buildTreeNodeModel(node, true) );
     }

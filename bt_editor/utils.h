@@ -1,6 +1,7 @@
 #ifndef NODE_UTILS_H
 #define NODE_UTILS_H
 
+#include <QDomDocument>
 #include <nodes/NodeData>
 #include <nodes/FlowScene>
 #include <nodes/NodeStyle>
@@ -8,9 +9,7 @@
 #include "bt_editor_base.h"
 #include "BT_logger_generated.h"
 
-namespace tinyxml2{
-    class XMLElement;
-}
+
 
 QtNodes::Node* findRoot(const QtNodes::FlowScene &scene);
 
@@ -24,7 +23,7 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
 std::pair<AbsBehaviorTree, std::unordered_map<int, int> >
 BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree* bt );
 
-AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root);
+AbsBehaviorTree BuildTreeFromXML(const QDomElement &bt_root);
 
 void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree &abstract_tree );
 

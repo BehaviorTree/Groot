@@ -8,27 +8,27 @@
 #include <QtDebug>
 #include <QLineEdit>
 
-using namespace tinyxml2;
+
 using namespace QtNodes;
 
 
 TreeNodeModel
-buildTreeNodeModel(const tinyxml2::XMLElement* node)
+buildTreeNodeModel(const QDomElement& node)
 {
     std::vector<TreeNodeModel::Param> model_params;
 
     QString node_name (node->Name());
     QString ID = node_name;
-    if(  node->Attribute("ID") )
+    if(  node.hasAttribute("ID") )
     {
-        ID = QString(node->Attribute("ID"));
+        ID = QString(node.attribute("ID"));
     }
 
     const auto node_type = getNodeTypeFromString(node_name);
 
     ParameterWidgetCreators parameters;
 
-    for (const XMLAttribute* attr = node->FirstAttribute();
+    for (const XMLAttribute* attr = node.firstAttribute();
          attr != nullptr;
          attr = attr->Next() )
     {
@@ -50,67 +50,67 @@ buildTreeNodeModel(const tinyxml2::XMLElement* node)
 
 //------------------------------------------------------------------
 
-TreeNodeModels ReadTreeNodesModel(const tinyxml2::XMLElement* root)
+TreeNodeModels ReadTreeNodesModel(const QDomElement &root)
 {
     TreeNodeModels models;
     using QtNodes::DataModelRegistry;
 
-    auto model_root = root->FirstChildElement("TreeNodesModel");
+    auto model_root = root.firstChildElement("TreeNodesModel");
 
-    if( model_root )
+    if( !model_root.isNull() )
     {
-        for( const XMLElement* node = model_root->FirstChildElement();
-             node != nullptr;
-             node = node->NextSiblingElement() )
+        for( QDomElement node = model_root.firstChildElement();
+             !node.isNull();
+             node = node.nextSiblingElement() )
         {
             auto model = buildTreeNodeModel(node);
             models.insert( {model.registration_ID, model} );
         }
     }
 
-    std::function<void(const XMLElement*)> recursiveStep;
-    recursiveStep = [&](const XMLElement* node)
+    std::function<void(QDomElement)> recursiveStep;
+    recursiveStep = [&](QDomElement node)
     {
         auto model = buildTreeNodeModel(node);
         models.insert( {model.registration_ID, model} );
 
-        for( const XMLElement* child = node->FirstChildElement();
-             child != nullptr;
-             child = child->NextSiblingElement() )
+        for( QDomElement child = node.firstChildElement();
+             !child.isNull();
+             child = child.nextSiblingElement() )
         {
             recursiveStep(child);
         }
     };
 
-    for( const XMLElement* bt_root = root->FirstChildElement("BehaviorTree");
-         bt_root != nullptr;
-         bt_root = bt_root->NextSiblingElement("BehaviorTree") )
+    for( QDomElement bt_root = root.firstChildElement("BehaviorTree");
+         !bt_root.isNull();
+         bt_root = bt_root.nextSiblingElement("BehaviorTree") )
     {
-        recursiveStep( bt_root->FirstChildElement() );
+        recursiveStep( bt_root.firstChildElement() );
     }
     return models;
 }
 
 
 
-void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *parent_element, const Node *node)
+void RecursivelyCreateXml(const FlowScene &scene, QDomDocument &doc, QDomElement& parent_element, const Node *node)
 {
-    using namespace tinyxml2;
+
     const QtNodes::NodeDataModel* node_model = node->nodeDataModel();
     const std::string model_name = node_model->name().toStdString();
 
     const auto* bt_node = dynamic_cast<const BehaviorTreeDataModel*>(node_model);
 
     QString registration_name = bt_node->registrationName();
-    XMLElement* element = nullptr;
+    QDomElement element;
 
     if( BuiltinNodeModels().count(registration_name) != 0)
     {
-        element = doc.NewElement( registration_name.toStdString().c_str() );
+        element = doc.createElement( registration_name.toStdString().c_str() );
     }
     else{
-        element = doc.NewElement( toStr(bt_node->nodeType()) );
-        element->SetAttribute("ID", registration_name.toStdString().c_str() );
+        element = doc.createElement( toStr(bt_node->nodeType()) );
+        element.setAttribute("ID", registration_name.toStdString().c_str() );
     }
 
 
@@ -122,17 +122,17 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
 
     if( bt_node->instanceName() != registration_name )
     {
-        element->SetAttribute("name", bt_node->instanceName().toStdString().c_str() );
+        element.setAttribute("name", bt_node->instanceName().toStdString().c_str() );
     }
 
     auto parameters = bt_node->getCurrentParameters();
     for(const auto& param: parameters)
     {
-        element->SetAttribute( param.label.toStdString().c_str(),
+        element.setAttribute( param.label.toStdString().c_str(),
                                param.value.toStdString().c_str() );
     }
 
-    parent_element->InsertEndChild( element );
+    parent_element.appendChild( element );
 
     if( !is_subtree_expanded )
     {
@@ -144,7 +144,7 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
     }
 }
 
-bool VerifyXML(XMLDocument &doc,
+bool VerifyXML(QDomDocument &doc,
                const std::vector<QString>& registered_ID,
                std::vector<QString>& error_messages)
 {
@@ -167,10 +167,10 @@ bool VerifyXML(XMLDocument &doc,
         is_valid = false;
     };
 
-    auto ChildrenCount = [](const tinyxml2::XMLElement* parent_node) {
+    auto ChildrenCount = [](QDomElement* parent_node) {
         int count = 0;
-        for (auto node = parent_node->FirstChildElement(); node != nullptr;
-             node = node->NextSiblingElement())
+        for (auto node = parent_node.firstChildElement(); node != nullptr;
+             node = node.nextSiblingElement())
         {
             count++;
         }
@@ -179,7 +179,7 @@ bool VerifyXML(XMLDocument &doc,
 
     //-----------------------------
 
-    const tinyxml2::XMLElement* xml_root = doc.RootElement();
+    QDomElement* xml_root = doc.documentElement();
 
     if (!xml_root || !strEqual(xml_root->Name(), "root"))
     {
@@ -187,8 +187,8 @@ bool VerifyXML(XMLDocument &doc,
         return false;
     }
     //-------------------------------------------------
-    auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
-    auto meta_sibling = meta_root ? meta_root->NextSiblingElement("TreeNodesModel") : nullptr;
+    auto meta_root = xml_root.firstChildElement("TreeNodesModel");
+    auto meta_sibling = meta_root ? meta_root.nextSiblingElement("TreeNodesModel") : nullptr;
 
     if (meta_sibling)
     {
@@ -198,8 +198,8 @@ bool VerifyXML(XMLDocument &doc,
     {
         // not having a MetaModel is not an error. But consider that the
         // Graphical editor needs it.
-        for (auto node = xml_root->FirstChildElement(); node != nullptr;
-             node = node->NextSiblingElement())
+        for (auto node = xml_root.firstChildElement(); node != nullptr;
+             node = node.nextSiblingElement())
         {
             const char* name = node->Name();
             if (strEqual(name, "Action") || strEqual(name, "Decorator") ||
@@ -211,9 +211,9 @@ bool VerifyXML(XMLDocument &doc,
                     AppendError(node->GetLineNum(), "Error at line %d: -> The attribute [ID] is "
                                                     "mandatory");
                 }
-                for (auto param_node = xml_root->FirstChildElement("Parameter");
+                for (auto param_node = xml_root.firstChildElement("Parameter");
                      param_node != nullptr;
-                     param_node = param_node->NextSiblingElement("Parameter"))
+                     param_node = param_node.nextSiblingElement("Parameter"))
                 {
                     const char* label = node->Attribute("label");
                     const char* type = node->Attribute("type");
@@ -231,9 +231,9 @@ bool VerifyXML(XMLDocument &doc,
     //-------------------------------------------------
 
     // function to be called recursively
-    std::function<void(const tinyxml2::XMLElement*)> recursiveStep;
+    std::function<void(QDomElement*)> recursiveStep;
 
-    recursiveStep = [&](const tinyxml2::XMLElement* node) {
+    recursiveStep = [&](QDomElement* node) {
         const int children_count = ChildrenCount(node);
         const char* name = node->Name();
         if (strEqual(name, "Decorator"))
@@ -308,8 +308,8 @@ bool VerifyXML(XMLDocument &doc,
             }
         }
         //recursion
-        for (auto child = node->FirstChildElement(); child != nullptr;
-             child = child->NextSiblingElement())
+        for (auto child = node.firstChildElement(); child != nullptr;
+             child = child.nextSiblingElement())
         {
             recursiveStep(child);
         }
@@ -318,8 +318,8 @@ bool VerifyXML(XMLDocument &doc,
     std::vector<std::string> tree_names;
     int tree_count = 0;
 
-    for (auto bt_root = xml_root->FirstChildElement("BehaviorTree"); bt_root != nullptr;
-         bt_root = bt_root->NextSiblingElement("BehaviorTree"))
+    for (auto bt_root = xml_root.firstChildElement("BehaviorTree"); bt_root != nullptr;
+         bt_root = bt_root.nextSiblingElement("BehaviorTree"))
     {
         tree_count++;
         if (bt_root->Attribute("ID"))
@@ -332,7 +332,7 @@ bool VerifyXML(XMLDocument &doc,
         }
         else
         {
-            recursiveStep(bt_root->FirstChildElement());
+            recursiveStep(bt_root.firstChildElement());
         }
     }
 

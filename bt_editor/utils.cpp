@@ -10,7 +10,7 @@
 #include "models/ControlNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 #include "models/RootNodeModel.hpp"
-#include "tinyXML2/tinyxml2.h"
+#include <QDomDocument>
 
 using QtNodes::PortLayout;
 using QtNodes::DataModelRegistry;
@@ -331,9 +331,8 @@ QString getCategory(const NodeDataModel *dataModel)
 }
 
 
-AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
+AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
 {
-    using namespace tinyxml2;
     AbsBehaviorTree tree;
 
     if( strcmp( bt_root->Name(), "BehaviorTree" ) != 0)
@@ -341,15 +340,15 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
         throw std::runtime_error( "expecting a node called <BehaviorTree>");
     }
 
-    std::function<void(AbstractTreeNode* parent, const XMLElement*)> recursiveStep;
+    std::function<void(AbstractTreeNode* parent, QDomElement)> recursiveStep;
 
-    recursiveStep = [&](AbstractTreeNode* parent, const XMLElement* xml_node)
+    recursiveStep = [&](AbstractTreeNode* parent, QDomElement xml_node)
     {
         // The nodes with a ID used that QString to insert into the registry()
         QString modelID = xml_node->Name();
-        if( xml_node->Attribute("ID") )
+        if( xml_node.hasAttribute("ID") )
         {
-            modelID = xml_node->Attribute("ID");
+            modelID = xml_node.attribute("ID");
         }
 
         AbstractTreeNode tree_node;
@@ -357,15 +356,15 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
         tree_node.model.registration_ID = modelID;
         tree_node.model.type = getNodeTypeFromString( xml_node->Name() );
 
-        if( xml_node->Attribute("name") )
+        if( xml_node.hasAttribute("name") )
         {
-            tree_node.instance_name = ( xml_node->Attribute("name") );
+            tree_node.instance_name = ( xml_node.attribute("name") );
         }
         else{
             tree_node.instance_name = modelID;
         }
 
-        for( const XMLAttribute* attribute= xml_node->FirstAttribute();
+        for( auto attribute= xml_node->FirstAttribute();
              attribute != nullptr;
              attribute = attribute->Next() )
         {
@@ -378,16 +377,16 @@ AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
 
         auto added_node = tree.addNode(parent, std::move(tree_node));
 
-        for (const XMLElement*  child = xml_node->FirstChildElement( )  ;
-             child != nullptr;
-             child = child->NextSiblingElement( ) )
+        for (QDomElement  child = xml_node.firstChildElement( )  ;
+             !child.isNull();
+             child = child.nextSiblingElement( ) )
         {
             recursiveStep( added_node, child );
         }
     };
 
     // start recursion
-    recursiveStep( nullptr, bt_root->FirstChildElement() );
+    recursiveStep( nullptr, bt_root.firstChildElement() );
 
     return tree;
 }

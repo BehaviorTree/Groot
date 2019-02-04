@@ -254,8 +254,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadFromXML(const QString& xml_text)
 {
-    using namespace tinyxml2;
-    XMLDocument document;
+    QDomDocument document;
     try{
         document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
         //---------------
@@ -294,14 +293,14 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
         on_actionClear_triggered();
 
-        auto document_root = document.RootElement();
+        auto document_root = document.documentElement();
 
-        if( document_root->Attribute("main_tree_to_execute"))
+        if( document_root.hasAttribute("main_tree_to_execute"))
         {
-            _main_tree = document_root->Attribute("main_tree_to_execute");
+            _main_tree = document_root.attribute("main_tree_to_execute");
         }
 
-        auto custom_models = ReadTreeNodesModel( document_root );
+        auto custom_models = ReadTreeNodesModel( &document_root );
         CleanPreviousModels(this, _treenode_models, custom_models);
 
         for( const auto& model: custom_models)
@@ -315,15 +314,16 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
         const QSignalBlocker blocker( currentTabInfo() );
 
-        for (auto bt_root = document_root->FirstChildElement("BehaviorTree");
-             bt_root != nullptr;
-             bt_root = bt_root->NextSiblingElement("BehaviorTree"))
+        for (auto bt_root = document_root.firstChildElement("BehaviorTree");
+             !bt_root.isNull();
+             bt_root = bt_root.nextSiblingElement("BehaviorTree"))
         {
             auto tree = BuildTreeFromXML( bt_root );
             QString tree_name("BehaviorTree");
-            if( bt_root->Attribute("ID") )
+
+            if( bt_root.hasAttribute("ID") )
             {
-                tree_name = bt_root->Attribute("ID");
+                tree_name = bt_root.attribute("ID");
                 if( _main_tree.isEmpty() )  // valid when there is only one
                 {
                     _main_tree = tree_name;
@@ -415,17 +415,16 @@ void MainWindow::on_actionLoad_triggered()
 
 QString MainWindow::saveToXML() const
 {
-    using namespace tinyxml2;
-    XMLDocument doc;
+    QDomDocument doc;
 
     const char* COMMENT_SEPARATOR = " ////////// ";
 
-    XMLElement* root = doc.NewElement( "root" );
-    doc.InsertEndChild( root );
+    QDomElement root = doc.createElement( "root" );
+    doc.appendChild( root );
 
     if( _main_tree.isEmpty() == false)
     {
-        root->SetAttribute("main_tree_to_execute", _main_tree.toStdString().c_str());
+        root.setAttribute("main_tree_to_execute", _main_tree.toStdString().c_str());
     }
 
     for (auto& it: _tab_info)
@@ -444,17 +443,17 @@ QString MainWindow::saveToXML() const
 
         QtNodes::Node* root_node = abs_root->graphic_node;
 
-        root->InsertEndChild( doc.NewComment(COMMENT_SEPARATOR) );
-        XMLElement* root_element = doc.NewElement("BehaviorTree");
+        root.appendChild( doc.NewComment(COMMENT_SEPARATOR) );
+        QDomElement root_element = doc.createElement("BehaviorTree");
 
-        root_element->SetAttribute("ID", it.first.toStdString().c_str());
-        root->InsertEndChild(root_element);
+        root_element.setAttribute("ID", it.first.toStdString().c_str());
+        root.appendChild(root_element);
 
         RecursivelyCreateXml(*scene, doc, root_element, root_node );
     }
-    root->InsertEndChild( doc.NewComment(COMMENT_SEPARATOR) );
+    root.appendChild( doc.NewComment(COMMENT_SEPARATOR) );
 
-    XMLElement* root_models = doc.NewElement("TreeNodesModel");
+    QDomElement root_models = doc.createElement("TreeNodesModel");
 
     for(const auto& tree_it: _treenode_models)
     {
@@ -466,22 +465,22 @@ QString MainWindow::saveToXML() const
             continue;
         }
 
-        XMLElement* node = doc.NewElement( toStr(model.type) );
+        QDomElement node = doc.createElement( toStr(model.type) );
 
-        if( node )
+        if( !node.isNull() )
         {
-            node->SetAttribute("ID", ID.toStdString().c_str());
+            node.setAttribute("ID", ID.toStdString().c_str());
 
             for(const auto& param: model.params)
             {
-                node->SetAttribute(param.label.toStdString().c_str(),
+                node.setAttribute(param.label.toStdString().c_str(),
                                    param.value.toStdString().c_str() );
             }
         }
-        root_models->InsertEndChild(node);
+        root_models.appendChild(node);
     }
-    root->InsertEndChild(root_models);
-    root->InsertEndChild( doc.NewComment(COMMENT_SEPARATOR) );
+    root.appendChild(root_models);
+    root.appendChild( doc.NewComment(COMMENT_SEPARATOR) );
 
     XMLPrinter printer;
     doc.Print( &printer );

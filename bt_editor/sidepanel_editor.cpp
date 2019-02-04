@@ -229,13 +229,12 @@ void SidepanelEditor::onReplaceModel(const QString& old_name,
 
 void SidepanelEditor::on_buttonUpload_clicked()
 {
-    using namespace tinyxml2;
-    XMLDocument doc;
+    QDomDocument doc;
 
-    XMLElement* root = doc.NewElement( "root" );
-    doc.InsertEndChild( root );
+    QDomElement root = doc.createElement( "root" );
+    doc.appendChild( root );
 
-    XMLElement* root_models = doc.NewElement("TreeNodesModel");
+    QDomElement root_models = doc.createElement("TreeNodesModel");
 
     for(const auto& tree_it: _tree_nodes_model)
     {
@@ -247,20 +246,20 @@ void SidepanelEditor::on_buttonUpload_clicked()
             continue;
         }
 
-        XMLElement* node = doc.NewElement( toStr(model.type) );
+        QDomElement node = doc.createElement( toStr(model.type) );
 
-        if( node )
+        if( !node.isNull() )
         {
-            node->SetAttribute("ID", ID.toStdString().c_str());
+            node.setAttribute("ID", ID.toStdString().c_str());
             for(const auto& param: model.params)
             {
-                node->SetAttribute(param.label.toStdString().c_str(),
+                node.setAttribute(param.label.toStdString().c_str(),
                                    param.value.toStdString().c_str() );
             }
         }
-        root_models->InsertEndChild(node);
+        root_models.appendChild(node);
     }
-    root->InsertEndChild(root_models);
+    root.appendChild(root_models);
 
     //-------------------------------------
     QSettings settings;
@@ -341,8 +340,7 @@ void SidepanelEditor::on_buttonDownload_clicked()
 
 TreeNodeModels SidepanelEditor::importFromXML(const QString &fileName)
 {
-    using namespace tinyxml2;
-    XMLDocument doc;
+    QDomDocument doc;
     doc.LoadFile( fileName.toStdString().c_str() );
 
     TreeNodeModels custom_models;
@@ -358,26 +356,26 @@ TreeNodeModels SidepanelEditor::importFromXML(const QString &fileName)
         return strcmp(str1, str2) == 0;
     };
 
-    const tinyxml2::XMLElement* xml_root = doc.RootElement();
-    if (!xml_root || !strEqual(xml_root->Name(), "root"))
+    QDomElement xml_root = doc.documentElement();
+    if ( xml_root.isNull() || !strEqual(xml_root->Name(), "root"))
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "The XML must have a root node called <root>");
         return custom_models;
     }
 
-    auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
+    auto meta_root = xml_root.firstChildElement("TreeNodesModel");
 
-    if (!meta_root)
+    if ( meta_root.isNull() )
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "Expecting <TreeNodesModel> under <root>");
         return custom_models;
     }
 
-    for( const XMLElement* node = meta_root->FirstChildElement();
-         node != nullptr;
-         node = node->NextSiblingElement() )
+    for( QDomElement node = meta_root.firstChildElement();
+         !node.isNull();
+         node = node.nextSiblingElement() )
     {
         auto model = buildTreeNodeModel(node);
         custom_models.insert( { model.registration_ID, model } );

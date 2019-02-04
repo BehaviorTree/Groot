@@ -11,6 +11,7 @@ set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 find_package(Qt5 COMPONENTS
              Core
              Widgets
+             Xml
              Gui
              Svg)
 
@@ -64,6 +65,7 @@ target_link_libraries(QtNodeEditor
     Qt5::Widgets
     Qt5::Gui
     Qt5::Svg
+    Qt5::Xml
 )
 
 target_compile_definitions(QtNodeEditor

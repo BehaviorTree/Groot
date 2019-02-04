@@ -1,7 +1,7 @@
 #ifndef XMLPARSERS_HPP
 #define XMLPARSERS_HPP
 
-#include "tinyXML2/tinyxml2.h"
+#include <QDomDocument>
 #include "bt_editor_base.h"
 
 #include <nodes/Node>
@@ -10,18 +10,18 @@
 #include <nodes/DataModelRegistry>
 
 
-TreeNodeModels ReadTreeNodesModel(const tinyxml2::XMLElement* root);
+TreeNodeModels ReadTreeNodesModel(const QDomElement& root);
 
 void RecursivelyCreateXml(const QtNodes::FlowScene &scene,
-                          tinyxml2::XMLDocument& doc,
-                          tinyxml2::XMLElement* parent_element,
+                          QDomDocument& doc,
+                          QDomElement& parent_element,
                           const QtNodes::Node* node);
 
-bool VerifyXML(tinyxml2::XMLDocument& doc,
+bool VerifyXML(QDomDocument& doc,
                const std::vector<QString> &registered_ID,
                std::vector<QString> &error_messages);
 
-TreeNodeModel buildTreeNodeModel(const tinyxml2::XMLElement* node);
+TreeNodeModel buildTreeNodeModel(const QDomElement &node);
 
 
 #endif // XMLPARSERS_HPP
