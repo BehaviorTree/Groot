@@ -364,7 +364,7 @@ TreeNodeModels SidepanelEditor::importFromXML(QFile* file)
     TreeNodeModels custom_models;
 
     QDomElement xml_root = doc.documentElement();
-    if ( xml_root.isNull() || xml_root.nodeName() != "root")
+    if ( xml_root.isNull() || xml_root.tagName() != "root")
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "The XML must have a root node called <root>");

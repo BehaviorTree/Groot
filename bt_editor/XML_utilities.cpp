@@ -17,7 +17,7 @@ buildTreeNodeModel(const QDomElement& node)
 {
     std::vector<TreeNodeModel::Param> model_params;
 
-    QString node_name = node.nodeName();
+    QString node_name = node.tagName();
     QString ID = node_name;
     if(  node.hasAttribute("ID") )
     {
@@ -178,7 +178,7 @@ bool VerifyXML(QDomDocument &doc,
 
     QDomElement xml_root = doc.documentElement();
 
-    if ( xml_root.isNull() || xml_root.nodeName() != "root")
+    if ( xml_root.isNull() || xml_root.tagName() != "root")
     {
         error_messages.emplace_back("The XML must have a root node called <root>");
         return false;
@@ -200,7 +200,7 @@ bool VerifyXML(QDomDocument &doc,
              !node.isNull();
              node = node.nextSiblingElement())
         {
-            QString name = node.nodeName();
+            QString name = node.tagName();
             if ( name == "Action" || name == "Decorator" ||
                  name == "SubTree" || name == "Condition")
             {
@@ -235,7 +235,7 @@ bool VerifyXML(QDomDocument &doc,
 
     recursiveStep = [&](const QDomElement& node) {
         const int children_count = ChildrenCount(node);
-        QString name = node.nodeName();
+        QString name = node.tagName();
         if (name == "Decorator")
         {
             if (children_count != 1)
@@ -318,13 +318,16 @@ bool VerifyXML(QDomDocument &doc,
     std::vector<std::string> tree_names;
     int tree_count = 0;
 
-    for (auto bt_root = xml_root.firstChildElement("BehaviorTree"); !bt_root.isNull();
+    for (auto bt_root = xml_root.firstChildElement("BehaviorTree");
+         !bt_root.isNull();
          bt_root = bt_root.nextSiblingElement("BehaviorTree"))
     {
         tree_count++;
+        qDebug() << "BehaviorTree " << tree_count;
         if (bt_root.hasAttribute("ID"))
         {
             tree_names.push_back( bt_root.attribute("ID").toStdString() );
+            qDebug() << "id " << tree_names.back().c_str();
         }
         if (ChildrenCount(bt_root) != 1)
         {
@@ -336,9 +339,12 @@ bool VerifyXML(QDomDocument &doc,
         }
     }
 
-    if (xml_root.hasAttribute("main_tree_to_execute"))
+    if ( xml_root.hasAttribute("main_tree_to_execute") )
     {
         std::string main_tree = xml_root.attribute("main_tree_to_execute").toStdString();
+
+        qDebug() << "main_tree " << main_tree.c_str();
+
         if (std::find(tree_names.begin(), tree_names.end(), main_tree) == tree_names.end())
         {
             error_messages.emplace_back("The tree specified in [main_tree_to_execute] "

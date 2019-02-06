@@ -356,11 +356,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
             currentTabInfo()->nodeReorder();
         }
     }
-    catch (std::runtime_error& err) {
-        error = true;
-        err_message = err.what();
-    }
-    catch (std::logic_error& err) {
+    catch (std::exception& err) {
         error = true;
         err_message = err.what();
     }

@@ -1,5 +1,5 @@
 <root main_tree_to_execute="BehaviorTree">
-    <!--  -----------------------------------  -->
+    <!--   //////////   -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
             <Fallback>
@@ -26,10 +26,10 @@
             <Action ID="Pippo"/>
         </Sequence>
     </BehaviorTree>
-    <!--  -----------------------------------  -->
+    <!--   //////////   -->
     <TreeNodesModel>
         <Action ID="Pippo"/>
     </TreeNodesModel>
-    <!--  -----------------------------------  -->
+    <!--   //////////   -->
 </root>
 
