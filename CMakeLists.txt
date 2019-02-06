@@ -44,6 +44,16 @@ INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./3rdparty ./
 
 add_subdirectory( QtNodeEditor )
 
+##########################################
+# FIX ME in the future....
+
+set(BUILD_EXAMPLES   OFF CACHE BOOL "")
+set(BUILD_UNIT_TESTS OFF CACHE BOOL "")
+set(BUILD_TOOLS OFF CACHE BOO "")
+add_subdirectory( depend/BehaviorTree.CPP )
+include_directories( depend/BehaviorTree.CPP/include )
+##########################################
+
 set(APP_CPPS
     ./bt_editor/models/BehaviorTreeNodeModel.cpp
     ./bt_editor/models/ActionNodeModel.cpp

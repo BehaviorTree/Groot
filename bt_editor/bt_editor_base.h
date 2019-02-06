@@ -8,19 +8,16 @@
 #include <unordered_map>
 #include <nodes/Node>
 #include <deque>
+#include <behaviortree_cpp/bt_factory.h>
 
-enum class NodeType   { ACTION, DECORATOR, CONTROL, CONDITION, SUBTREE, ROOT, UNDEFINED };
-enum class NodeStatus { IDLE, RUNNING, SUCCESS, FAILURE };
+using BT::NodeStatus;
+using BT::NodeType;
+using TreeNodeModel = BT::TreeNodeManifest;
+
+
 enum class GraphicMode { EDITOR, MONITOR, REPLAY };
 
-
-NodeType getNodeTypeFromString(const QString& str);
-
 GraphicMode getGraphicModeFromString(const QString& str);
-
-const char* toStr(NodeStatus type);
-
-const char* toStr(NodeType type);
 
 const char* toStr(GraphicMode type);
 
@@ -32,35 +29,8 @@ struct ParameterWidgetCreator{
 using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
 
 
-struct TreeNodeModel
-{
-    NodeType type;
-    struct Param
-    {
-        QString label;
-        QString value;
-    };
+typedef std::unordered_map<std::string, BT::TreeNodeManifest> TreeNodeModels;
 
-    QString registration_ID;
-    typedef std::vector<Param> Parameters;
-    Parameters params;
-
-    TreeNodeModel(QString reg_name, NodeType type, const std::vector<Param>& parameters ):
-        type(type),
-        registration_ID( std::move(reg_name) ),
-        params(parameters)
-    {}
-
-    bool operator ==(const TreeNodeModel& other) const;
-
-    bool operator !=(const TreeNodeModel& other) const
-    {
-        return !(*this == other);
-    }
-};
-
-
-typedef std::map<QString, TreeNodeModel> TreeNodeModels;
 
 inline TreeNodeModels& BuiltinNodeModels()
 {
@@ -72,15 +42,14 @@ inline TreeNodeModels& BuiltinNodeModels()
 struct AbstractTreeNode
 {
     AbstractTreeNode() :
-        model( { "", NodeType::UNDEFINED, {} }),
         index(-1),
         status(NodeStatus::IDLE),
         graphic_node(nullptr) {}
 
-    TreeNodeModel model;
+    BT::TreeNodeManifest model;
     int index;
     QString instance_name;
-    NodeStatus status;
+    BT::NodeStatus status;
     QSizeF size;
     QPointF pos; // top left corner
     std::vector<int> children_index;
