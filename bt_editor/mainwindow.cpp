@@ -256,7 +256,12 @@ void MainWindow::loadFromXML(const QString& xml_text)
 {
     QDomDocument document;
     try{
-        document.setContent( xml_text );
+        QString errorMsg;
+        int errorLine;
+        if( ! document.setContent(xml_text, &errorMsg, &errorLine ) )
+        {
+            throw std::runtime_error( tr("Error parsing XML (line %1): %2").arg(errorLine).arg(errorMsg).toStdString() );
+        }
         //---------------
         std::vector<QString> registered_ID;
         for (const auto& it: _treenode_models)

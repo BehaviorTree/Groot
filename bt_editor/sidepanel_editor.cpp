@@ -341,22 +341,21 @@ TreeNodeModels SidepanelEditor::importFromXML(QFile* file)
 {
     QDomDocument doc;
 
-    bool error = false;
 
     if (!file->open(QIODevice::ReadOnly))
     {
-        error = true;
-    }
-    if (!doc.setContent(file))
-    {
-        file->close();
-        error = true;
-    }
-
-    if (error)
-    {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "The XML was not correctly loaded");
+        return {};
+    }
+
+    QString errorMsg;
+    int errorLine;
+    if( ! doc.setContent(file, &errorMsg, &errorLine ) )
+    {
+        auto error = tr("Error parsing XML (line %1): %2").arg(errorLine).arg(errorMsg);
+        QMessageBox::warning(this,"Error loading TreeNodeModel form file", error);
+        file->close();
         return {};
     }
     file->close();
