@@ -163,7 +163,7 @@ bool VerifyXML(QDomDocument &doc,
         is_valid = false;
     };
 
-    auto ChildrenCount = [](QDomElement& parent_node) {
+    auto ChildrenCount = [](const QDomElement& parent_node) {
         int count = 0;
         for (auto node = parent_node.firstChildElement();
              !node.isNull();
@@ -185,11 +185,12 @@ bool VerifyXML(QDomDocument &doc,
     }
     //-------------------------------------------------
     auto meta_root = xml_root.firstChildElement("TreeNodesModel");
-    auto meta_sibling = meta_root.isNull ? meta_root.nextSiblingElement("TreeNodesModel") : nullptr;
+    bool has_sibling = !meta_root.isNull() && !meta_root.nextSiblingElement("TreeNodesModel").isNull();
 
-    if (meta_sibling)
+    if (has_sibling)
     {
-        AppendError(meta_sibling.lineNumber(), " Only a single node <TreeNodesModel> is supported");
+        AppendError(meta_root.nextSiblingElement("TreeNodesModel").lineNumber(),
+                    " Only a single node <TreeNodesModel> is supported");
     }
     if ( !meta_root.isNull() )
     {
@@ -230,9 +231,9 @@ bool VerifyXML(QDomDocument &doc,
     //-------------------------------------------------
 
     // function to be called recursively
-    std::function<void(QDomElement&)> recursiveStep;
+    std::function<void(const QDomElement&)> recursiveStep;
 
-    recursiveStep = [&](QDomElement& node) {
+    recursiveStep = [&](const QDomElement& node) {
         const int children_count = ChildrenCount(node);
         QString name = node.nodeName();
         if (name == "Decorator")
@@ -303,7 +304,7 @@ bool VerifyXML(QDomDocument &doc,
             }
             if (!found)
             {
-                AppendError(node.lineNumber(), (std::string("Node not recognized: ") + name).c_str() );
+                AppendError(node.lineNumber(), (std::string("Node not recognized: ") + name.toStdString()).c_str() );
             }
         }
         //recursion

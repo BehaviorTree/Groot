@@ -364,14 +364,13 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
             tree_node.instance_name = modelID;
         }
 
-        for( auto attribute= xml_node->FirstAttribute();
-             attribute != nullptr;
-             attribute = attribute->Next() )
+        auto attributes = xml_node.attributes();
+        for( int attr=0; attr < attributes.size(); attr++ )
         {
-            const QString attr_name( attribute->Name() );
-            if( attr_name!= "ID" && attr_name != "name")
+            auto attribute = attributes.item(attr).toAttr();
+            if( attribute.name() != "ID" && attribute.name() != "name")
             {
-                tree_node.model.params.push_back( { attr_name, attribute->Value() } );
+                tree_node.model.params.push_back( { attribute.name(), attribute.value() } );
             }
         }
 

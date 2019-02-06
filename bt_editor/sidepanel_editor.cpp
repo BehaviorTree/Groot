@@ -316,7 +316,8 @@ void SidepanelEditor::on_buttonDownload_clicked()
     TreeNodeModels imported_models;
     if( fileInfo.suffix() == "xml" )
     {
-        imported_models = importFromXML( fileName );
+        QFile file(fileName);
+        imported_models = importFromXML( &file );
     }
     else if( fileInfo.completeSuffix() == "skills.json" )
     {
@@ -336,23 +337,31 @@ void SidepanelEditor::on_buttonDownload_clicked()
     }
 }
 
-TreeNodeModels SidepanelEditor::importFromXML(const QString &fileName)
+TreeNodeModels SidepanelEditor::importFromXML(QFile* file)
 {
     QDomDocument doc;
-    doc.setContent( fileName.toStdString().c_str() );
 
-    TreeNodeModels custom_models;
+    bool error = false;
 
-    if (doc.Error())
+    if (!file->open(QIODevice::ReadOnly))
+    {
+        error = true;
+    }
+    if (!doc.setContent(file))
+    {
+        file->close();
+        error = true;
+    }
+
+    if (error)
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "The XML was not correctly loaded");
-        return custom_models;
+        return {};
     }
+    file->close();
 
-    auto strEqual = [](const char* str1, const char* str2) -> bool {
-        return strcmp(str1, str2) == 0;
-    };
+    TreeNodeModels custom_models;
 
     QDomElement xml_root = doc.documentElement();
     if ( xml_root.isNull() || xml_root.nodeName() != "root")

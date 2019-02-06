@@ -2,6 +2,7 @@
 #define SIDE_PANEL_EDITOR_H
 
 #include <QFrame>
+#include <QFile>
 #include <QTreeWidgetItem>
 #include <QTableWidgetItem>
 #include "XML_utilities.hpp"
@@ -60,7 +61,7 @@ private:
     QtNodes::DataModelRegistry* _model_registry;
     std::map<QString, QTreeWidgetItem*> _tree_view_category_items;
 
-    TreeNodeModels importFromXML(const QString& filename);
+    TreeNodeModels importFromXML(QFile *file);
 
     TreeNodeModels importFromSkills(const QString& filename);
 
