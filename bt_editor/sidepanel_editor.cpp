@@ -14,7 +14,7 @@
 
 
 SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
-                                 BT_NodeModels &tree_nodes_model,
+                                 NodeModels &tree_nodes_model,
                                  QWidget *parent) :
     QFrame(parent),
     ui(new Ui::SidepanelEditor),
@@ -57,18 +57,18 @@ void SidepanelEditor::updateTreeView()
     for (const auto &it : _tree_nodes_model)
     {
       const auto& ID = it.first;
-      const BT_NodeModel& model = it.second;
+      const NodeModel& model = it.second;
 
       const QString& category = toStr(model.type);
       auto parent = _tree_view_category_items[category];
       auto item = new QTreeWidgetItem(parent, {ID});
       QFont font = item->font(0);
-      font.setItalic( BuiltinNodeModels().count(it.first) == 1 );
+      font.setItalic( BuiltinNodeModel().count(it.first) == 1 );
       font.setPointSize(11);
       item->setFont(0, font);
       item->setData(0, Qt::UserRole, ID);
       const bool is_editable = (!ui->buttonLock->isChecked() &&
-                                BuiltinNodeModels().count( ID ) == 0);
+                                BuiltinNodeModel().count( ID ) == 0);
       item->setTextColor(0, is_editable ? Qt::blue : Qt::black);
     }
 
@@ -100,8 +100,8 @@ void SidepanelEditor::on_paletteTreeWidget_itemSelectionChanged()
     int row = 0;
     for (const auto& port_it: model.ports)
     {
-        ui->parametersTableWidget->setItem(row,0, new QTableWidgetItem( QString::fromStdString(port_it.first) ));
-      //TODO ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem( param.value ));
+        ui->parametersTableWidget->setItem(row,0, new QTableWidgetItem( port_it.first ));
+      //TODO VER_3 ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem( param.value ));
       row++;
     }
 
@@ -182,7 +182,7 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
     QString selected_name = selected_item->text(0);
 
     if( ui->buttonLock->isChecked() ||
-        BuiltinNodeModels().count( selected_name ) != 0 )
+        BuiltinNodeModel().count( selected_name ) != 0 )
     {
         return;
     }
@@ -218,12 +218,12 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
 }
 
 void SidepanelEditor::onReplaceModel(const QString& old_name,
-                                     const BT_NodeModel &new_model)
+                                     const NodeModel &new_model)
 {
     _tree_nodes_model.erase( old_name );
     _model_registry->unregisterModel( old_name );
     addNewModel( new_model );
-    emit nodeModelEdited(old_name, QString::fromStdString(new_model.registration_ID));
+    emit nodeModelEdited(old_name, new_model.registration_ID);
 }
 
 
@@ -241,7 +241,7 @@ void SidepanelEditor::on_buttonUpload_clicked()
         const auto& ID    = tree_it.first;
         const auto& model = tree_it.second;
 
-        if( BuiltinNodeModels().count(ID) != 0 )
+        if( BuiltinNodeModel().count(ID) != 0 )
         {
             continue;
         }
@@ -253,7 +253,7 @@ void SidepanelEditor::on_buttonUpload_clicked()
             node.setAttribute("ID", ID.toStdString().c_str());
             for(const auto& port_it: model.ports)
             {
-                node.setAttribute( QString::fromStdString( port_it.first ), ""); //TODO VER_3
+                node.setAttribute( port_it.first , ""); //TODO VER_3
             }
         }
         root_models.appendChild(node);
@@ -312,7 +312,7 @@ void SidepanelEditor::on_buttonDownload_clicked()
     settings.sync();
 
     //--------------------------------
-    BT_NodeModels imported_models;
+    NodeModels imported_models;
     if( fileInfo.suffix() == "xml" )
     {
         QFile file(fileName);
@@ -336,7 +336,7 @@ void SidepanelEditor::on_buttonDownload_clicked()
     }
 }
 
-BT_NodeModels SidepanelEditor::importFromXML(QFile* file)
+NodeModels SidepanelEditor::importFromXML(QFile* file)
 {
     QDomDocument doc;
 
@@ -359,7 +359,7 @@ BT_NodeModels SidepanelEditor::importFromXML(QFile* file)
     }
     file->close();
 
-    BT_NodeModels custom_models;
+    NodeModels custom_models;
 
     QDomElement xml_root = doc.documentElement();
     if ( xml_root.isNull() || xml_root.tagName() != "root")
@@ -382,26 +382,27 @@ BT_NodeModels SidepanelEditor::importFromXML(QFile* file)
          !node.isNull();
          node = node.nextSiblingElement() )
     {
-        auto model = buildTreeNodeModel(node);
-        custom_models.insert( { QString::fromStdString(model.registration_ID), model } );
+        auto model = buildTreeNodeModelFromXML(node);
+        custom_models.insert( { model.registration_ID, model } );
     }
 
     return custom_models;
 }
 
-//BT_NodeModels SidepanelEditor::importFromSkills(const QString &fileName)
-//{
-//    BT_NodeModels custom_models;
+NodeModels SidepanelEditor::importFromSkills(const QString &fileName)
+{
+    NodeModels custom_models;
 
-//    QFile loadFile(fileName);
+    QFile loadFile(fileName);
 
-//    if (!loadFile.open(QIODevice::ReadOnly))
-//    {
-//        QMessageBox::warning(this,"Error loading Skills",
-//                             tr("Something wrong with %1").arg(fileName) );
-//        return custom_models;
-//    }
+    if (!loadFile.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::warning(this,"Error loading Skills",
+                             tr("Something wrong with %1").arg(fileName) );
+        return custom_models;
+    }
 
+    // TODO VER_3
 //     QJsonDocument loadDoc =  QJsonDocument::fromJson( loadFile.readAll() ) ;
 
 //     QJsonArray root_array = loadDoc.array();
@@ -416,18 +417,18 @@ BT_NodeModels SidepanelEditor::importFromXML(QFile* file)
 //         auto attributes = skill["in-attribute"].toObject();
 //         auto params_keys = attributes.keys();
 
-//         PortsMapping ports_mapping;
+//         PortModels ports_models;
 
 //         for (const auto& key: params_keys)
 //         {
-//             ports_mapping.insert(  {key, attributes[key].toString()} );
+//             ports_models.insert(  {key, attributes[key].toString()} );
 //         }
-//         BT_NodeModel model(name, NodeType::ACTION, model_params);
+//         NodeModel model = { NodeType::ACTION, name, ports_mapping };
 //         custom_models.insert( {name, model} );
 //     }
 
-//    return custom_models;
-//}
+    return custom_models;
+}
 
 
 void SidepanelEditor::on_buttonLock_toggled(bool locked)

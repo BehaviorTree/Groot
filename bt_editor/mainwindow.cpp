@@ -66,7 +66,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     //------------------------------------------------------
 //    VER_3 FIXME
-//    auto addModelToTree = [this](const BT_NodeModel& model)
+//    auto addModelToTree = [this](const NodeModel& model)
 //    {
 //        _treenode_models.insert( { model.registration_ID, model } );
 //    };
@@ -106,7 +106,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 //    addModelToTree( ActionFailure::NodeModel() );
 //    addModelToTree( ActionSetBlackboard::NodeModel() );
 
-//    BuiltinNodeModels() = _treenode_models;
+//    BuiltinNodeModel() = _treenode_models;
     //------------------------------------------------------
 
     _editor_widget = new SidepanelEditor(_model_registry.get(), _treenode_models, this);
@@ -462,7 +462,7 @@ QString MainWindow::saveToXML() const
         const auto& ID    = tree_it.first;
         const auto& model = tree_it.second;
 
-        if( BuiltinNodeModels().count(ID) != 0 )
+        if( BuiltinNodeModel().count(ID) != 0 )
         {
             continue;
         }
@@ -479,16 +479,14 @@ QString MainWindow::saveToXML() const
             {
                 const auto& port_name = port_it.first;
                 const auto& port = port_it.second;
-                QDomElement port_element =  doc.createElement( BT::toStr(port.direction()) );
+                QDomElement port_element =  doc.createElement( BT::toStr(port.direction) );
 
-                port_element.setAttribute("name", QString::fromStdString(port_name) );
-                if( port.type() )
+                port_element.setAttribute("name", port_name );
+                port_element.setAttribute("type", port.type_name );
+
+                if( !port.description.isEmpty() )
                 {
-                    port_element.setAttribute("type", BT::demangle( port.type() ).c_str() );
-                }
-                if( !port.description().empty() )
-                {
-                    QDomText description = doc.createTextNode( QString::fromStdString( port.description()) );
+                    QDomText description = doc.createTextNode( port.description );
                     port_element.appendChild( description );
                 }
                 node.appendChild( port_element );
@@ -782,49 +780,21 @@ void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
     }
 }
 
-/* //    VER_3 FIXME
-void MainWindow::onAddToModelRegistry(const BT_NodeModel &model)
+
+void MainWindow::onAddToModelRegistry(const NodeModel &model)
 {
     namespace util = QtNodes::detail;
     const auto& ID = model.registration_ID;
 
-    if( BuiltinNodeModels().count(ID) == 1)
+    if( BuiltinNodeModel().count(ID) == 1)
     {
         return;
     }
-
-    if( model.type == NodeType::ACTION )
+    DataModelRegistry::RegistryItemCreator node_creator = [model]()
     {
-        DataModelRegistry::RegistryItemCreator node_creator = [model]()
-        {
-            return util::make_unique<ActionNodeModel>(model);
-        };
-        _model_registry->registerModel("Action", node_creator, ID);
-    }
-    else if( model.type == NodeType::CONDITION )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [model]()
-        {
-            return util::make_unique<ConditionNodeModel>(model);
-        };
-        _model_registry->registerModel("Condition", node_creator, ID);
-    }
-    else if( model.type == NodeType::DECORATOR )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [model]()
-        {
-            return util::make_unique<DecoratorNodeModel>(model);
-        };
-        _model_registry->registerModel("Decorator", node_creator, ID);
-    }
-    else if( model.type == NodeType::SUBTREE )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [model]()
-        {
-            return util::make_unique<SubtreeNodeModel>(model);
-        };
-        _model_registry->registerModel("SubTree", node_creator, ID);
-    }
+        return util::make_unique<BehaviorTreeDataModel>(model);
+    };
+    _model_registry->registerModel("Action", node_creator, ID);
 
     _treenode_models.insert( {ID, model } );
     _editor_widget->updateTreeView();
@@ -882,7 +852,7 @@ void MainWindow::onDestroySubTree(const QString &ID)
     // TODO: this is a work around until we find a better solution
     clearUndoStacks();
 }
-*/
+
 QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
                                          QtNodes::Node &node,
                                          MainWindow::SubtreeExpandOption option)
@@ -1005,7 +975,7 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
 
         for(auto& node: abs_tree.nodes())
         {
-            if( node.model.registration_ID == prev_ID.toStdString() )
+            if( node.model.registration_ID == prev_ID )
             {
                 bool is_expanded_subtree = false;
                 if( node.model.type == NodeType::SUBTREE)
@@ -1026,7 +996,7 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
                     subTreeExpand( *container, *new_node, SUBTREE_EXPAND);
                 };
 
-                node.model.registration_ID = new_ID.toStdString();
+                node.model.registration_ID = new_ID;
                 node.graphic_node = new_node;
             }
         }
@@ -1384,7 +1354,7 @@ void MainWindow::onTabRenameRequested(int tab_index, QString new_name)
     {
          _model_registry->unregisterModel(old_name);
          _treenode_models.erase(old_name);
-         BT_NodeModel model = { NodeType::SUBTREE, new_name.toStdString(), {}};
+         NodeModel model = { NodeType::SUBTREE, new_name, {}};
          onAddToModelRegistry( model );
          _treenode_models.insert( { new_name, model} );
          _editor_widget->updateTreeView();
@@ -1414,7 +1384,7 @@ void MainWindow::onTabSetMainTree(int tab_index)
 
 void MainWindow::clearTreeModels()
 {
-    _treenode_models = BuiltinNodeModels();
+    _treenode_models = BuiltinNodeModel();
 
     std::list<QString> ID_to_delete;
     for(const auto& it: _model_registry->registeredModelCreators() )
@@ -1432,7 +1402,7 @@ void MainWindow::clearTreeModels()
     _editor_widget->updateTreeView();
 }
 
-const BT_NodeModels &MainWindow::registeredModels() const
+const NodeModels &MainWindow::registeredModels() const
 {
     return _treenode_models;
 }

@@ -60,7 +60,7 @@ set(APP_CPPS
 #    ./bt_editor/models/ControlNodeModel.cpp
 #    ./bt_editor/models/DecoratorNodeModel.cpp
 #    ./bt_editor/models/RootNodeModel.cpp
-#    ./bt_editor/models/SubtreeNodeModel.cpp
+    ./bt_editor/models/SubtreeNodeModel.cpp
 
     ./bt_editor/mainwindow.cpp
     ./bt_editor/editor_flowscene.cpp
@@ -119,7 +119,7 @@ endif()
 
 
 add_executable(Groot ./bt_editor/main.cpp  ${RESOURCE_FILES})
-target_link_libraries(Groot behavior_tree_editor )
+target_link_libraries(Groot behavior_tree_editor behaviortree_cpp )
 
 add_subdirectory(test)
 

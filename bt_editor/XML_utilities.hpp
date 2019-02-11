@@ -10,7 +10,7 @@
 #include <nodes/DataModelRegistry>
 
 
-BT_NodeModels ReadTreeNodesModel(const QDomElement& root);
+NodeModels ReadTreeNodesModel(const QDomElement& root);
 
 void RecursivelyCreateXml(const QtNodes::FlowScene &scene,
                           QDomDocument& doc,
@@ -21,7 +21,7 @@ bool VerifyXML(QDomDocument& doc,
                const std::vector<QString> &registered_ID,
                std::vector<QString> &error_messages);
 
-BT_NodeModel buildTreeNodeModel(const QDomElement &node);
+NodeModel buildTreeNodeModelFromXML(const QDomElement &node);
 
 
 #endif // XMLPARSERS_HPP

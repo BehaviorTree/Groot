@@ -23,7 +23,7 @@ class ControlNodeModel : public BehaviorTreeDataModel
 {
 
 public:
-    ControlNodeModel(const BT_NodeModel &model);
+    ControlNodeModel(const NodeModel &model);
 
     virtual ~ControlNodeModel() override = default;
 
@@ -48,7 +48,7 @@ public:
 
     std::pair<QString,QColor> caption() const override { return {"Sequence","#ff99bb"}; }
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return(":/icons/svg/sequence.svg");
     }
 };
@@ -68,7 +68,7 @@ public:
 
     std::pair<QString,QColor> caption() const override { return { Name(),"#77ccff"}; }
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return(":/icons/svg/fallback.svg");
     }
 };
@@ -88,7 +88,7 @@ public:
 
     std::pair<QString,QColor> caption() const override { return { Name(),"#ff5af3"}; }
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return(":/icons/svg/sequence_star.svg");
     }
 
@@ -108,7 +108,7 @@ public:
 
     std::pair<QString,QColor> caption() const override { return { Name(),"#44aadd"}; }
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return(":/icons/svg/fallback_star.svg");
     }
 };

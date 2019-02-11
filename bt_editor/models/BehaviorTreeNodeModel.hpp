@@ -27,23 +27,25 @@ class BehaviorTreeDataModel : public NodeDataModel
     Q_OBJECT
 
 public:
-  BehaviorTreeDataModel(const BT_NodeModel &parameters );
+  BehaviorTreeDataModel(const NodeModel &model );
 
   ~BehaviorTreeDataModel() override;
 
 public:
 
-  virtual NodeType nodeType() const = 0;
+  NodeType nodeType() const;
 
   virtual std::pair<QString,QColor> caption() const;
 
-  virtual QString captionIicon() const { return QString(); }
+  virtual QString captionIcon() const { return QString(); }
 
   virtual void setInstanceName(const QString& name);
 
 public:
 
   void initWidget();
+
+  unsigned int nPorts(PortType portType) const override;
 
   NodeDataType dataType(PortType , PortIndex ) const final;
 
@@ -57,7 +59,7 @@ public:
 
   const QString& instanceName() const;
 
-  PortsMapping getCurrentParameters() const;
+  PortsMapping getCurrentPortMapping() const;
 
   QWidget *embeddedWidget() final { return _main_widget; }
 
@@ -87,7 +89,7 @@ protected:
 
   QLineEdit* _line_edit_name;
 
-  std::map<QString, QWidget*> _params_map;
+  std::map<QString, QWidget*> _ports_widgets;
   int16_t _uid;
 
   QFormLayout* _form_layout;
@@ -98,10 +100,9 @@ protected:
 
 
 private:
-  const BT_NodeModel _model;
+  const NodeModel _model;
   QString _instance_name;
   QSvgRenderer* _icon_renderer;
-  const QString _registration_ID;
 
 signals:
 

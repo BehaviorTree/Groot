@@ -281,11 +281,11 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
 
         abs_node.instance_name     = bt_model->instanceName();
-        abs_node.model.registration_ID = bt_model->registrationName().toStdString();
+        abs_node.model.registration_ID = bt_model->registrationName();
         abs_node.pos  = scene->getNodePosition(*node) ;
         abs_node.size = scene->getNodeSize(*node);
         abs_node.graphic_node = node;
-        abs_node.ports_mapping = bt_model->getCurrentParameters();
+        abs_node.ports_mapping = bt_model->getCurrentPortMapping();
         abs_node.model.type = bt_model->nodeType();
 
         auto added_node = tree.addNode( parent, std::move(abs_node) );
@@ -302,34 +302,6 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
 
     return tree;
 }
-
-// FIXME ver_3
-//QString getCategory(const NodeDataModel *dataModel)
-//{
-//    QString category;
-//    if( dynamic_cast<const ActionNodeModel*>(dataModel) )
-//    {
-//        category = "Action";
-//    }
-//    else if( dynamic_cast<const DecoratorNodeModel*>(dataModel) )
-//    {
-//        category = "Decorator";
-//    }
-//    else if( dynamic_cast<const ControlNodeModel*>(dataModel) )
-//    {
-//        category = "Control";
-//    }
-//    else if( dynamic_cast<const RootNodeModel*>(dataModel) )
-//    {
-//        category = "Root";
-//    }
-//    else if( dynamic_cast<const SubtreeNodeModel*>(dataModel) )
-//    {
-//        category = "SubTree";
-//    }
-//    return category;
-//}
-
 
 AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
 {
@@ -353,7 +325,7 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
 
         AbstractTreeNode tree_node;
 
-        tree_node.model.registration_ID = modelID.toStdString();
+        tree_node.model.registration_ID = modelID;
         tree_node.model.type = BT::convertFromString<BT::NodeType>( xml_node.tagName().toStdString() );
 
         if( xml_node.hasAttribute("name") )
@@ -483,7 +455,7 @@ getStyleFromStatus(NodeStatus status)
     return {node_style, conn_style};
 }
 
-ParameterWidgetCreator buildWidgetCreator(const BT::PortInfo& port_model,
+ParameterWidgetCreator buildWidgetCreator(const PortModel &port_model,
                                           const QString& name,
                                           const QString& remapping_value)
 {
@@ -516,16 +488,16 @@ QtNodes::Node *GetParentNode(QtNodes::Node *node)
 }
 
 void CleanPreviousModels(QWidget *parent,
-                         BT_NodeModels &prev_models,
-                         const BT_NodeModels &new_models)
+                         NodeModels &prev_models,
+                         const NodeModels &new_models)
 {
     std::set<const QString *> prev_custom_models;
 
-    if( prev_models.size() > BuiltinNodeModels().size() )
+    if( prev_models.size() > BuiltinNodeModel().size() )
     {
         for(const auto& it: prev_models)
         {
-            if( BuiltinNodeModels().count(it.first) == 0)
+            if( BuiltinNodeModel().count(it.first) == 0)
             {
                 prev_custom_models.insert( &it.first );
             }
@@ -541,7 +513,7 @@ void CleanPreviousModels(QWidget *parent,
                                             QMessageBox::No | QMessageBox::Yes );
             if( ret == QMessageBox::Yes)
             {
-                prev_models = BuiltinNodeModels();
+                prev_models = BuiltinNodeModel();
             }
             break;
         }

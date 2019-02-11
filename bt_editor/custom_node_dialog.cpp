@@ -5,7 +5,7 @@
 #include <QPushButton>
 #include <QRegExpValidator>
 
-CustomNodeDialog::CustomNodeDialog(const BT_NodeModels &models,
+CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
                                    QString to_edit,
                                    QWidget *parent):
     QDialog(parent),
@@ -20,24 +20,29 @@ CustomNodeDialog::CustomNodeDialog(const BT_NodeModels &models,
 
     if( to_edit.isEmpty() == false)
     {
-        auto it = models.find(to_edit);
-        if( it != models.end())
+        auto model_it = models.find(to_edit);
+        if( model_it != models.end())
         {
             _editing =true;
             ui->lineEdit->setText( to_edit );
 
-            for( const auto& param : it->second.params )
+            const auto& model = model_it->second;
+            for( const auto& port_it : model.ports )
             {
                 int row = ui->tableWidget->rowCount();
                 ui->tableWidget->setRowCount(row+1);
 
-                ui->tableWidget->setItem(row,0, new QTableWidgetItem( param.label ));
-                ui->tableWidget->setItem(row,1, new QTableWidgetItem( param.value ));
+                ui->tableWidget->setItem(row,0, new QTableWidgetItem(port_it.first) );
+               // TODO VER_3 ui->tableWidget->setItem(row,1, new QTableWidgetItem( param.value ));
             }
-            switch( it->second.type )
+
+            if( model.type == NodeType::ACTION )
             {
-            case NodeType::ACTION:    ui->comboBox->setCurrentIndex(0); break;
-            case NodeType::CONDITION: ui->comboBox->setCurrentIndex(1); break;
+                ui->comboBox->setCurrentIndex(0);
+            }
+            else if( model.type == NodeType::CONDITION )
+            {
+                ui->comboBox->setCurrentIndex(1);
             }
         }
     }
@@ -60,24 +65,26 @@ CustomNodeDialog::~CustomNodeDialog()
     delete ui;
 }
 
-BT_NodeModel CustomNodeDialog::getTreeNodeModel() const
+//TODO VER_3
+NodeModel CustomNodeDialog::getTreeNodeModel() const
 {
-    QString ID = ui->lineEdit->text();
-    NodeType type = NodeType::UNDEFINED;
-    std::vector<BT_NodeModel::Param> params;
+    //    QString ID = ui->lineEdit->text();
+    //    NodeType type = NodeType::UNDEFINED;
+    //    PortsMapping ports_mapping;
 
-    switch( ui->comboBox->currentIndex() )
-    {
-    case 0: type = NodeType::ACTION; break;
-    case 1: type = NodeType::CONDITION; break;
-    }
-    for (int row=0; row < ui->tableWidget->rowCount(); row++ )
-    {
-        const auto key   = ui->tableWidget->item(row,0)->text();
-        const auto value = ui->tableWidget->item(row,1)->text();
-        params.push_back( {key,value} );
-    }
-    return { ID, type, std::move(params) };
+    //    switch( ui->comboBox->currentIndex() )
+    //    {
+    //    case 0: type = NodeType::ACTION; break;
+    //    case 1: type = NodeType::CONDITION; break;
+    //    }
+    //    for (int row=0; row < ui->tableWidget->rowCount(); row++ )
+    //    {
+    //        const auto key   = ui->tableWidget->item(row,0)->text();
+    //        const auto value = ui->tableWidget->item(row,1)->text();
+    //        ports_mapping.insert( {key,value} );
+    //    }
+    //    return { ID, type, std::move(ports_mapping) };
+    return {};
 }
 
 void CustomNodeDialog::on_toolButtonAdd_pressed()

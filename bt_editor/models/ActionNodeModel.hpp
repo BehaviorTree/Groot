@@ -6,7 +6,7 @@
 class ActionNodeModel : public BehaviorTreeDataModel
 {
 public:
-    ActionNodeModel(const BT_NodeModel &model);
+    ActionNodeModel(const NodeModel &model);
 
     virtual ~ActionNodeModel()  = default;
 
@@ -18,7 +18,7 @@ public:
 
     virtual NodeType nodeType() const final { return NodeType::ACTION; }
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return(":/icons/svg/letter_A.svg");
     }
 
@@ -32,7 +32,7 @@ private:
 class ConditionNodeModel : public BehaviorTreeDataModel
 {
 public:
-    ConditionNodeModel(const BT_NodeModel &model);
+    ConditionNodeModel(const NodeModel &model);
 
     virtual ~ConditionNodeModel()  = default;
 
@@ -44,7 +44,7 @@ public:
 
     virtual NodeType nodeType() const final { return NodeType::CONDITION; }
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return(":/icons/svg/letter_C.svg");
     }
 
@@ -97,7 +97,7 @@ public:
     std::pair<QString, QColor> caption() const override { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return(":/icons/svg/edit_list.svg");
     }
 };

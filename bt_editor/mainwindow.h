@@ -55,7 +55,7 @@ public:
 
     void clearTreeModels();
 
-    const BT_NodeModels& registeredModels() const;
+    const NodeModels &registeredModels() const;
 
 public slots:
 
@@ -74,7 +74,7 @@ public slots:
     void onRequestSubTreeExpand(GraphicContainer& container,
                                 QtNodes::Node& node);
 
-    void onAddToModelRegistry(const BT_NodeModel& model);
+    void onAddToModelRegistry(const NodeModel& model);
 
     void onDestroySubTree(const QString &ID);
 
@@ -172,7 +172,7 @@ private:
     SavedState _current_state;
     QtNodes::PortLayout _current_layout;
 
-    BT_NodeModels _treenode_models;
+    NodeModels _treenode_models;
 
     QString _main_tree;
 

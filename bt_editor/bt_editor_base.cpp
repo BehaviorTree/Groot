@@ -84,7 +84,7 @@ void AbsBehaviorTree::debugPrint() const
 
         printf("%s (%s)",
                node->instance_name.toStdString().c_str(),
-               node->model.registration_ID.c_str() );
+               node->model.registration_ID.toStdString().c_str() );
         std::cout << std::endl; // force flush
 
         for(int index: node->children_index)
@@ -138,18 +138,29 @@ bool AbstractTreeNode::operator ==(const AbstractTreeNode &other) const
             instance_name == other.instance_name;
 }
 
-// FIXME VER_3
-//bool BT_NodeModel::operator ==(const BT_NodeModel &other) const
-//{
-//    bool is_same = ( type == other.type &&
-//                     ports.size() == other.ports.size() &&
-//                     registration_ID == other.registration_ID);
-//    if( ! is_same ) return false;
+bool NodeModel::operator ==(const NodeModel &other) const
+{
+    bool is_same = ( type == other.type &&
+                    ports.size() == other.ports.size() &&
+                    registration_ID == other.registration_ID);
+    if( ! is_same ) return false;
 
-//    for (size_t index = 0; index < ports.size(); index++)
-//    {
-//        if( ports[index]. != other.ports[index].label ||
-//            ports[index].value != other.ports[index].value ) return false;
-//    }
-//    return true;
-//}
+    auto other_it = other.ports.begin();
+    for (const auto& port_it: ports)
+    {
+        if( port_it.first  != other_it->first)
+        {
+            return false;
+        }
+        if( port_it.second.direction  != other_it->second.direction )
+        {
+            return false;
+        }
+        if( port_it.second.type_name  != other_it->second.type_name )
+        {
+            return false;
+        }
+        other_it++;
+    }
+    return true;
+}

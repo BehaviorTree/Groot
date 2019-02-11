@@ -12,8 +12,37 @@
 
 using BT::NodeStatus;
 using BT::NodeType;
-using BT_NodeModel = BT::TreeNodeManifest;
-using BT_Parameters = BT::NodeConfiguration;
+using BT::PortDirection;
+
+typedef std::map<QString, QString> PortsMapping;
+
+// alternative type, similar to BT::PortInfo
+struct PortModel
+{
+    PortModel(): direction(PortDirection::INOUT) {}
+
+    QString type_name;
+    PortDirection direction;
+    QString description;
+};
+
+typedef std::map<QString, PortModel> PortModels;
+
+struct  NodeModel
+{
+    NodeType type;
+    QString  registration_ID;
+    PortModels ports;
+
+    bool operator == (const NodeModel& other) const;
+    bool operator != (const NodeModel& other) const
+    {
+        return !( *this == other);
+    }
+};
+
+typedef std::map<QString, NodeModel> NodeModels;
+
 
 enum class GraphicMode { EDITOR, MONITOR, REPLAY };
 
@@ -29,14 +58,10 @@ struct ParameterWidgetCreator{
 using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
 
 
-typedef std::map<QString, BT_NodeModel> BT_NodeModels;
-
-typedef std::map<QString, QString> PortsMapping;
-
 // TOSO VER_3
-inline const BT_NodeModels& BuiltinNodeModels()
+inline const NodeModels& BuiltinNodeModel()
 {
-    static BT_NodeModels builtin_node_models;
+    static NodeModels builtin_node_models;
     return builtin_node_models;
 }
 
@@ -48,7 +73,7 @@ struct AbstractTreeNode
         status(NodeStatus::IDLE),
         graphic_node(nullptr) {}
 
-    BT_NodeModel model;
+    NodeModel model;
     PortsMapping ports_mapping;
     int index;
     QString instance_name;

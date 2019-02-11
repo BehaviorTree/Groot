@@ -9,7 +9,7 @@ class SubtreeNodeModel : public BehaviorTreeDataModel
     Q_OBJECT
 public:
 
-    SubtreeNodeModel(const BT_NodeModel& model);
+    SubtreeNodeModel(const NodeModel& model);
 
     ~SubtreeNodeModel() override = default;
 
@@ -28,9 +28,7 @@ public:
 
     std::pair<QString, QColor> caption() const override;
 
-    NodeType nodeType() const final { return NodeType::SUBTREE; }
-
-    virtual QString captionIicon() const override;
+    virtual QString captionIcon() const override;
 
     QPushButton* expandButton() { return _expand_button; }
 

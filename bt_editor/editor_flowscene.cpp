@@ -74,7 +74,7 @@ void EditorFlowScene::keyPressEvent(QKeyEvent *event)
         }
     }
 
-    QString registration_ID = QString::fromStdString( _clipboard_node.model.registration_ID );
+    const QString& registration_ID = _clipboard_node.model.registration_ID;
 
     auto selected_items = selectedItems();
     if( selected_items.size() == 1 && event->key() == Qt::Key_C &&
@@ -87,7 +87,7 @@ void EditorFlowScene::keyPressEvent(QKeyEvent *event)
         auto node_model = dynamic_cast<BehaviorTreeDataModel*>( selected_node.nodeDataModel() );
         if( !node_model ) return;
 
-        _clipboard_node.model.registration_ID = node_model->registrationName().toStdString();
+        _clipboard_node.model.registration_ID = node_model->registrationName();
         _clipboard_node.instance_name  = node_model->instanceName();
         // TODO add parameters?
     }

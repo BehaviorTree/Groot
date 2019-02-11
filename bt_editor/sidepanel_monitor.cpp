@@ -118,7 +118,7 @@ bool SidepanelMonitor::getTreeFromServer()
         for(const auto& tree_node: _loaded_tree.nodes())
         {
             const auto& registration_ID = tree_node.model.registration_ID;
-            if( BuiltinNodeModels().count(registration_ID) == 0)
+            if( BuiltinNodeModel().count(registration_ID) == 0)
             {
                 addNewModel( tree_node.model );
             }

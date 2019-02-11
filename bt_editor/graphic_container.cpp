@@ -266,7 +266,7 @@ void GraphicContainer::createSubtree(Node &root_node, QString subtree_name )
         return;
     }
 
-    addNewModel( { NodeType::SUBTREE, subtree_name.toStdString(), {}} );
+    addNewModel( { NodeType::SUBTREE, subtree_name, {}} );
     QApplication::processEvents();
 
     auto sub_tree = BuildTreeFromScene(_scene, &root_node);
@@ -409,7 +409,9 @@ void GraphicContainer::deleteSubTreeRecursively(Node &root_node)
 
 void GraphicContainer::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
 {
-    const QString category = getCategory( node.nodeDataModel() );
+    auto bt_model =  dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() );
+    const QString category ( BT::toStr( bt_model->nodeType() ));
+
     auto names_in_category = _model_registry->registeredModelsByCategory( category );
     names_in_category.erase( node.nodeDataModel()->name() );
 
@@ -547,7 +549,7 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor,
                                          AbstractTreeNode* abs_node,
                                          Node* parent_node, int nest_level)
 {
-    Node& new_node = _scene->createNodeAtPos( QString::fromStdString(abs_node->model.registration_ID),
+    Node& new_node = _scene->createNodeAtPos( abs_node->model.registration_ID,
                                               abs_node->instance_name,
                                               cursor);
     BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( new_node.nodeDataModel() );

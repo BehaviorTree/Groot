@@ -27,8 +27,6 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement &bt_root);
 
 void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree &abstract_tree );
 
-QString getCategory(const QtNodes::NodeDataModel* model);
-
 std::pair<QtNodes::NodeStyle, QtNodes::ConnectionStyle>
  getStyleFromStatus(NodeStatus status);
 
@@ -60,13 +58,13 @@ inline NodeStatus convert(const BT_Serialization::Status& status)
     return NodeStatus::IDLE;
 }
 
-ParameterWidgetCreator buildWidgetCreator(const BT::PortInfo& port_model,
+ParameterWidgetCreator buildWidgetCreator(const PortModel& port_model,
                                           const QString &name,
                                           const QString &remapping_value);
 
 
 void CleanPreviousModels(QWidget *parent,
-                         BT_NodeModels &prev_models,
-                         const BT_NodeModels &new_models);
+                         NodeModels &prev_models,
+                         const NodeModels &new_models);
 
 #endif // NODE_UTILS_H

@@ -8,7 +8,7 @@
 #include <QMessageBox>
 #include <QDomDocument>
 
-ModelsRepositoryDialog::ModelsRepositoryDialog(TreeNodeModels* tree_node_models, QWidget *parent) :
+ModelsRepositoryDialog::ModelsRepositoryDialog(TreeNodeModel* tree_node_models, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SettingsDialog),
     _tree_node_models(tree_node_models)
@@ -143,7 +143,7 @@ void ModelsRepositoryDialog::on_listFiles_itemSelectionChanged()
         {
             const auto& ID = it.first;
             const auto& model = it.second;
-            if( BuiltinNodeModels().count(ID))
+            if( BuiltinNodeModel().count(ID))
             {
                 continue;
             }
@@ -161,7 +161,7 @@ bool ModelsRepositoryDialog::parseXML(const QString &filename,
                               ModelsByFile& models_by_file,
                               QString* error_message)
 {
-    TreeNodeModels models;
+    TreeNodeModel models;
     QDomDocument doc;
     doc.LoadFile( filename.toStdString().c_str() );
 

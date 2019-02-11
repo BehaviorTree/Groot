@@ -8,7 +8,7 @@
 class DecoratorNodeModel : public BehaviorTreeDataModel
 {
 public:
-    DecoratorNodeModel(const BT_NodeModel &model);
+    DecoratorNodeModel(const NodeModel &model);
 
     virtual ~DecoratorNodeModel() = default;
 
@@ -39,7 +39,7 @@ public:
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return ":/icons/svg/retry.svg";
     }
 };
@@ -59,7 +59,7 @@ public:
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return(":/icons/svg/not_equal.svg");
     }
 
@@ -79,7 +79,7 @@ public:
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return(":/icons/svg/repeat.svg");
     }
 };
@@ -114,7 +114,7 @@ public:
     std::pair<QString, QColor> caption() const override
     { return { Name(), QtNodes::NodeStyle().FontColor}; }
 
-    virtual QString captionIicon() const override {
+    virtual QString captionIcon() const override {
         return(":/icons/svg/timeout.svg");
     }
 };

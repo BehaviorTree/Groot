@@ -1,7 +1,7 @@
 #include "DecoratorNodeModel.hpp"
 #include <QLineEdit>
 
-DecoratorNodeModel::DecoratorNodeModel(const BT_NodeModel &model):
+DecoratorNodeModel::DecoratorNodeModel(const NodeModel &model):
     BehaviorTreeDataModel(model )
 {
     _line_edit_name->setReadOnly(true);

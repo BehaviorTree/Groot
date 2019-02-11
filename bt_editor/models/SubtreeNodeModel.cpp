@@ -2,7 +2,7 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 
-SubtreeNodeModel::SubtreeNodeModel(const BT_NodeModel &model):
+SubtreeNodeModel::SubtreeNodeModel(const NodeModel &model):
     BehaviorTreeDataModel ( model ),
     _expanded(false)
 {
@@ -44,7 +44,7 @@ std::pair<QString, QColor> SubtreeNodeModel::caption() const
              QtNodes::NodeStyle().FontColor };
 }
 
-QString SubtreeNodeModel::captionIicon() const {
+QString SubtreeNodeModel::captionIcon() const {
     return(":/icons/svg/subtree.svg");
 }
 

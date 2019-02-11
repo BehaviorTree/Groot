@@ -12,18 +12,18 @@
 using namespace QtNodes;
 
 
-BT_NodeModel buildTreeNodeModel(const QDomElement& node)
+NodeModel buildTreeNodeModelFromXML(const QDomElement& node)
 {
-    std::vector<BT_NodeModel::Param> model_params;
+    PortModels ports_list;
 
-    QString node_name = node.tagName();
-    QString ID = node_name;
+    QString tag_name = node.tagName();
+    QString ID = tag_name;
     if(  node.hasAttribute("ID") )
     {
         ID = QString(node.attribute("ID"));
     }
 
-    const auto node_type = BT::convertFromString<BT::NodeType> (node_name);
+    const auto node_type = BT::convertFromString<BT::NodeType>(tag_name.toStdString());
 
     ParameterWidgetCreators parameters;
 
@@ -35,24 +35,23 @@ BT_NodeModel buildTreeNodeModel(const QDomElement& node)
         QString attr_name( attr.name() );
         if(attr_name != "ID" && attr_name != "name")
         {
-            BT::PortInfo port_model;
-            port_model.label = attr_name;
-            port_model.value = attr.value();
+            PortModel port_model;
+            port_model.direction = PortDirection::INOUT;
 
-            auto widget_creator = buildWidgetCreator( port_model );
+            auto widget_creator = buildWidgetCreator( port_model, attr_name, attr.value() );
             parameters.push_back(widget_creator);
-            model_params.push_back( std::move(port_model) );
+            ports_list.insert( { attr_name, std::move(port_model)} );
         }
     }
 
-    return { ID, node_type, model_params };
+    return { node_type, ID, ports_list };
 }
 
 //------------------------------------------------------------------
 
-BT_NodeModels ReadTreeNodesModel(const QDomElement &root)
+NodeModels ReadTreeNodesModel(const QDomElement &root)
 {
-    BT_NodeModels models;
+    NodeModels models;
     using QtNodes::DataModelRegistry;
 
     auto model_root = root.firstChildElement("TreeNodesModel");
@@ -63,7 +62,7 @@ BT_NodeModels ReadTreeNodesModel(const QDomElement &root)
              !node.isNull();
              node = node.nextSiblingElement() )
         {
-            auto model = buildTreeNodeModel(node);
+            auto model = buildTreeNodeModelFromXML(node);
             models.insert( {model.registration_ID, model} );
         }
     }
@@ -71,7 +70,7 @@ BT_NodeModels ReadTreeNodesModel(const QDomElement &root)
     std::function<void(QDomElement)> recursiveStep;
     recursiveStep = [&](QDomElement node)
     {
-        auto model = buildTreeNodeModel(node);
+        auto model = buildTreeNodeModelFromXML(node);
         models.insert( {model.registration_ID, model} );
 
         for( QDomElement child = node.firstChildElement();
@@ -104,7 +103,7 @@ void RecursivelyCreateXml(const FlowScene &scene, QDomDocument &doc, QDomElement
     QString registration_name = bt_node->registrationName();
     QDomElement element;
 
-    if( BuiltinNodeModels().count(registration_name) != 0)
+    if( BuiltinNodeModel().count(registration_name) != 0)
     {
         element = doc.createElement( registration_name.toStdString().c_str() );
     }
@@ -125,11 +124,10 @@ void RecursivelyCreateXml(const FlowScene &scene, QDomDocument &doc, QDomElement
         element.setAttribute("name", bt_node->instanceName().toStdString().c_str() );
     }
 
-    auto parameters = bt_node->getCurrentParameters();
-    for(const auto& param: parameters)
+    auto port_mapping = bt_node->getCurrentPortMapping();
+    for(const auto& port_it: port_mapping)
     {
-        element.setAttribute( param.label.toStdString().c_str(),
-                               param.value.toStdString().c_str() );
+        element.setAttribute( port_it.first, port_it.second );
     }
 
     parent_element.appendChild( element );
@@ -359,21 +357,5 @@ bool VerifyXML(QDomDocument &doc,
     return is_valid;
 }
 
-std::set<const QString *> NotBuiltInNodes(const BT_NodeModels &models)
-{
-    std::set<const QString *> custom_models;
-
-    if( models.size() > BuiltinNodeModels().size() )
-    {
-        for(const auto& it: models)
-        {
-            if( BuiltinNodeModels().count(it.first) == 0)
-            {
-                custom_models.insert( &it.first );
-            }
-        }
-    }
-    return custom_models;
-}
 
 

@@ -14,12 +14,11 @@ const int DEFAULT_LINE_WIDTH  = 100;
 const int DEFAULT_FIELD_WIDTH = 50;
 const int DEFAULT_LABEL_WIDTH = 50;
 
-BehaviorTreeDataModel::BehaviorTreeDataModel(const BT_NodeModel &model):
+BehaviorTreeDataModel::BehaviorTreeDataModel(const NodeModel &model):
     _params_widget(nullptr),
     _uid( GetUID() ),
     _model(model),
-    _icon_renderer(nullptr),
-    _registration_ID( QString::fromStdString(model.registration_ID))
+    _icon_renderer(nullptr)
 {
     _main_widget = new QFrame();
     _line_edit_name = new QLineEdit(_main_widget);
@@ -77,14 +76,14 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const BT_NodeModel &model):
 
     for(const auto& port_it: model.ports )
     {
-        auto param_creator = buildWidgetCreator( port_it.second, QString::fromStdString(port_it.first), {} );
+        auto param_creator = buildWidgetCreator( port_it.second, port_it.first, {} );
         const QString& label = param_creator.label;
         QLabel* form_label  =  new QLabel( label, _params_widget );
         QWidget* form_field = param_creator.instance_factory();
 
         form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
 
-        _params_map.insert( std::make_pair( label, form_field) );
+        _ports_widgets.insert( std::make_pair( label, form_field) );
 
         form_field->setStyleSheet(" color: rgb(30,30,30); "
                                   "background-color: rgb(180,180,180); "
@@ -128,12 +127,17 @@ BehaviorTreeDataModel::~BehaviorTreeDataModel()
 
 }
 
+BT::NodeType BehaviorTreeDataModel::nodeType() const
+{
+    return _model.type;
+}
+
 void BehaviorTreeDataModel::initWidget()
 {
-    const auto resource_file = captionIicon();
+    const auto resource_file = captionIcon();
     if( resource_file.isEmpty() == false )
     {
-        _caption_logo_left->setFixedWidth( 20);
+        _caption_logo_left->setFixedWidth( 20 );
         _caption_logo_right->setFixedWidth( 1 );
 
         QFile file(resource_file);
@@ -164,6 +168,26 @@ void BehaviorTreeDataModel::initWidget()
 
     updateNodeSize();
 }
+
+unsigned int BehaviorTreeDataModel::nPorts(QtNodes::PortType portType) const
+{
+    if( portType == QtNodes::PortType::Out)
+    {
+        if( nodeType() == NodeType::ACTION || nodeType() == NodeType::CONDITION )
+        {
+            return 0;
+        }
+        else{
+            return 1;
+        }
+    }
+    else if( portType == QtNodes::PortType::In )
+    {
+        return 1;
+    }
+    return 0;
+}
+
 void BehaviorTreeDataModel::updateNodeSize()
 {
     int caption_width = _caption_label->width();
@@ -232,12 +256,12 @@ std::shared_ptr<QtNodes::NodeData> BehaviorTreeDataModel::outData(QtNodes::PortI
 }
 
 std::pair<QString, QColor> BehaviorTreeDataModel::caption() const {
-    return { _registration_ID, QtNodes::NodeStyle().FontColor };
+    return { _model.registration_ID, QtNodes::NodeStyle().FontColor };
 }
 
 const QString& BehaviorTreeDataModel::registrationName() const
 {
-    return _registration_ID;
+    return _model.registration_ID;
 }
 
 const QString &BehaviorTreeDataModel::instanceName() const
@@ -245,11 +269,11 @@ const QString &BehaviorTreeDataModel::instanceName() const
     return _instance_name;
 }
 
-PortsMapping BehaviorTreeDataModel::getCurrentParameters() const
+PortsMapping BehaviorTreeDataModel::getCurrentPortMapping() const
 {
     PortsMapping out;
 
-    for(const auto& it: _params_map)
+    for(const auto& it: _ports_widgets)
     {
         const auto& label = it.first;
         const auto& value = it.second;
@@ -272,7 +296,7 @@ QJsonObject BehaviorTreeDataModel::save() const
     modelJson["name"]  = registrationName();
     modelJson["alias"] = instanceName();
 
-    for (const auto& it: _params_map)
+    for (const auto& it: _ports_widgets)
     {
         if( auto linedit = dynamic_cast<QLineEdit*>(it.second)){
             modelJson[it.first] = linedit->text();
@@ -308,7 +332,7 @@ void BehaviorTreeDataModel::lock(bool locked)
 {
     _line_edit_name->setEnabled( !locked );
 
-    for(const auto& it: _params_map)
+    for(const auto& it: _ports_widgets)
     {
         const auto& field_widget = it.second;
 
@@ -325,8 +349,8 @@ void BehaviorTreeDataModel::lock(bool locked)
 
 void BehaviorTreeDataModel::setParameterValue(const QString &label, const QString &value)
 {
-    auto it = _params_map.find(label);
-    if( it != _params_map.end() )
+    auto it = _ports_widgets.find(label);
+    if( it != _ports_widgets.end() )
     {
         if( auto lineedit = dynamic_cast<QLineEdit*>(it->second) )
         {
