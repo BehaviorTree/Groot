@@ -84,7 +84,7 @@ void AbsBehaviorTree::debugPrint() const
 
         printf("%s (%s)",
                node->instance_name.toStdString().c_str(),
-               node->model.registration_ID.toStdString().c_str() );
+               node->model.registration_ID.c_str() );
         std::cout << std::endl; // force flush
 
         for(int index: node->children_index)
@@ -109,16 +109,7 @@ bool AbsBehaviorTree::operator ==(const AbsBehaviorTree &other) const
     return true;
 }
 
-NodeType getNodeTypeFromString(const QString &str)
-{
-    if( str == "Action")    return NodeType::ACTION;
-    if( str == "Decorator") return NodeType::DECORATOR;
-    if( str == "Condition") return NodeType::CONDITION;
-    if( str == "SubTree")   return NodeType::SUBTREE;
-    if( str == "Control")   return NodeType::CONTROL;
-    if( str == "Root")      return NodeType::ROOT;
-    return NodeType::UNDEFINED;
-}
+
 
 GraphicMode getGraphicModeFromString(const QString &str)
 {
@@ -127,27 +118,6 @@ GraphicMode getGraphicModeFromString(const QString &str)
     else if( str == "MONITOR")
         return GraphicMode::MONITOR;
     return GraphicMode::REPLAY;
-}
-
-const char *toStr(NodeStatus type)
-{
-    if( type == NodeStatus::IDLE )   return "IDLE";
-    if( type == NodeStatus::RUNNING) return "RUNNING";
-    if( type == NodeStatus::SUCCESS) return "SUCCESS";
-    if( type == NodeStatus::FAILURE) return "FAILURE";
-
-    return nullptr;
-}
-
-const char *toStr(NodeType type)
-{
-    if( type == NodeType::ACTION )   return "Action";
-    if( type == NodeType::DECORATOR) return "Decorator";
-    if( type == NodeType::CONDITION) return "Condition";
-    if( type == NodeType::SUBTREE)   return "SubTree";
-    if( type == NodeType::CONTROL)   return "Control";
-    if( type == NodeType::ROOT)      return "Root";
-    return "Undefined";
 }
 
 const char *toStr(GraphicMode type)
@@ -161,24 +131,25 @@ const char *toStr(GraphicMode type)
 
 bool AbstractTreeNode::operator ==(const AbstractTreeNode &other) const
 {
-    return  model == other.model &&
+    return  model.registration_ID == other.model.registration_ID &&
             status == other.status &&
             size == other.size &&
             pos == other.pos &&
             instance_name == other.instance_name;
 }
 
-bool TreeNodeModel::operator ==(const TreeNodeModel &other) const
-{
-    bool is_same = ( type == other.type &&
-                     params.size() == other.params.size() &&
-                     registration_ID == other.registration_ID);
-    if( ! is_same ) return false;
+// FIXME VER_3
+//bool BT_NodeModel::operator ==(const BT_NodeModel &other) const
+//{
+//    bool is_same = ( type == other.type &&
+//                     ports.size() == other.ports.size() &&
+//                     registration_ID == other.registration_ID);
+//    if( ! is_same ) return false;
 
-    for (size_t index = 0; index < params.size(); index++)
-    {
-        if( params[index].label != other.params[index].label ||
-            params[index].value != other.params[index].value ) return false;
-    }
-    return true;
-}
+//    for (size_t index = 0; index < ports.size(); index++)
+//    {
+//        if( ports[index]. != other.ports[index].label ||
+//            ports[index].value != other.ports[index].value ) return false;
+//    }
+//    return true;
+//}

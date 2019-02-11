@@ -68,7 +68,7 @@ public slots:
 
 signals:
 
-    void addNewModel( const TreeNodeModel &new_model );
+    void addNewModel( const BT_NodeModel &new_model );
 
     void undoableChange();
 

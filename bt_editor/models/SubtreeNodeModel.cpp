@@ -2,7 +2,7 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 
-SubtreeNodeModel::SubtreeNodeModel(const TreeNodeModel& model):
+SubtreeNodeModel::SubtreeNodeModel(const BT_NodeModel &model):
     BehaviorTreeDataModel ( model ),
     _expanded(false)
 {

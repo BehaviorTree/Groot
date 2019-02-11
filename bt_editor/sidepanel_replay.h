@@ -52,7 +52,7 @@ signals:
     void changeNodeStyle(const QString& bt_name,
                          const std::vector<std::pair<int, NodeStatus>>& node_status);
 
-    void addNewModel(const TreeNodeModel &new_model);
+    void addNewModel(const BT_NodeModel &new_model);
 
 private:
 

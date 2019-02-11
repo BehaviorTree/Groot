@@ -4,11 +4,11 @@
 #include <QLineEdit>
 #include "BehaviorTreeNodeModel.hpp"
 
-
+/*
 class DecoratorNodeModel : public BehaviorTreeDataModel
 {
 public:
-    DecoratorNodeModel(const TreeNodeModel &model);
+    DecoratorNodeModel(const BT_NodeModel &model);
 
     virtual ~DecoratorNodeModel() = default;
 
@@ -147,6 +147,6 @@ public:
     std::pair<QString, QColor> caption() const override  { return { Name(), "#ff2222"}; }
 };
 
-
+*/
 
 #endif // DECORATORNODEMODEL_HPP

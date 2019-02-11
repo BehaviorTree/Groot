@@ -341,7 +341,7 @@ void EditorTest::modifyCustomModel()
     auto sidepanel_editor = main_win->findChild<SidepanelEditor*>("SidepanelEditor");
     auto treeWidget = sidepanel_editor->findChild<QTreeWidget*>("paletteTreeWidget");
 
-    TreeNodeModel jump_model = { "JumpOutWindow",
+    BT_NodeModel jump_model = { "JumpOutWindow",
                                  NodeType::ACTION,
                                  { {"UseParachute", "true" } } };
 

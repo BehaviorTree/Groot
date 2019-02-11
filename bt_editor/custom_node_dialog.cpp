@@ -5,7 +5,7 @@
 #include <QPushButton>
 #include <QRegExpValidator>
 
-CustomNodeDialog::CustomNodeDialog(const TreeNodeModels &models,
+CustomNodeDialog::CustomNodeDialog(const BT_NodeModels &models,
                                    QString to_edit,
                                    QWidget *parent):
     QDialog(parent),
@@ -60,11 +60,11 @@ CustomNodeDialog::~CustomNodeDialog()
     delete ui;
 }
 
-TreeNodeModel CustomNodeDialog::getTreeNodeModel() const
+BT_NodeModel CustomNodeDialog::getTreeNodeModel() const
 {
     QString ID = ui->lineEdit->text();
     NodeType type = NodeType::UNDEFINED;
-    std::vector<TreeNodeModel::Param> params;
+    std::vector<BT_NodeModel::Param> params;
 
     switch( ui->comboBox->currentIndex() )
     {

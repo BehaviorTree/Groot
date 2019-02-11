@@ -9,7 +9,7 @@ class SubtreeNodeModel : public BehaviorTreeDataModel
     Q_OBJECT
 public:
 
-    SubtreeNodeModel(const TreeNodeModel& model);
+    SubtreeNodeModel(const BT_NodeModel& model);
 
     ~SubtreeNodeModel() override = default;
 

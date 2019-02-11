@@ -65,47 +65,48 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _model_registry = std::make_shared<QtNodes::DataModelRegistry>();
 
     //------------------------------------------------------
-    auto addModelToTree = [this](const TreeNodeModel& model)
-    {
-        _treenode_models.insert( { model.registration_ID, model } );
-    };
+//    VER_3 FIXME
+//    auto addModelToTree = [this](const BT_NodeModel& model)
+//    {
+//        _treenode_models.insert( { model.registration_ID, model } );
+//    };
 
-    _model_registry->registerModel<RootNodeModel>("Root");
-    _model_registry->registerModel<SequenceModel>("Control");
-    _model_registry->registerModel<SequenceStarModel>("Control");
-    _model_registry->registerModel<FallbackModel>("Control");
-    _model_registry->registerModel<FallbackStarModel>("Control");
-    addModelToTree( RootNodeModel::NodeModel() );
-    addModelToTree( SequenceModel::NodeModel() );
-    addModelToTree( SequenceStarModel::NodeModel() );
-    addModelToTree( SequenceStarModel::NodeModel() );
-    addModelToTree( FallbackModel::NodeModel() );
-    addModelToTree( FallbackStarModel::NodeModel() );
+//    _model_registry->registerModel<RootNodeModel>("Root");
+//    _model_registry->registerModel<SequenceModel>("Control");
+//    _model_registry->registerModel<SequenceStarModel>("Control");
+//    _model_registry->registerModel<FallbackModel>("Control");
+//    _model_registry->registerModel<FallbackStarModel>("Control");
+//    addModelToTree( RootNodeModel::NodeModel() );
+//    addModelToTree( SequenceModel::NodeModel() );
+//    addModelToTree( SequenceStarModel::NodeModel() );
+//    addModelToTree( SequenceStarModel::NodeModel() );
+//    addModelToTree( FallbackModel::NodeModel() );
+//    addModelToTree( FallbackStarModel::NodeModel() );
 
-    _model_registry->registerModel<InverterNodeModel>("Decorator");
-    _model_registry->registerModel<RetryNodeModel>("Decorator");
-    _model_registry->registerModel<RepeatNodeModel>("Decorator");
-    _model_registry->registerModel<TimeoutModel>("Decorator");
-    _model_registry->registerModel<BlackboardConditionModel>("Decorator");
-    _model_registry->registerModel<ForceSuccess>("Decorator");
-    _model_registry->registerModel<ForceFailure>("Decorator");
+//    _model_registry->registerModel<InverterNodeModel>("Decorator");
+//    _model_registry->registerModel<RetryNodeModel>("Decorator");
+//    _model_registry->registerModel<RepeatNodeModel>("Decorator");
+//    _model_registry->registerModel<TimeoutModel>("Decorator");
+//    _model_registry->registerModel<BlackboardConditionModel>("Decorator");
+//    _model_registry->registerModel<ForceSuccess>("Decorator");
+//    _model_registry->registerModel<ForceFailure>("Decorator");
 
-    addModelToTree( InverterNodeModel::NodeModel() );
-    addModelToTree( RetryNodeModel::NodeModel() );
-    addModelToTree( RepeatNodeModel::NodeModel() );
-    addModelToTree( TimeoutModel::NodeModel() );
-    addModelToTree( BlackboardConditionModel::NodeModel() );
-    addModelToTree( ForceSuccess::NodeModel() );
-    addModelToTree( ForceFailure::NodeModel() );
+//    addModelToTree( InverterNodeModel::NodeModel() );
+//    addModelToTree( RetryNodeModel::NodeModel() );
+//    addModelToTree( RepeatNodeModel::NodeModel() );
+//    addModelToTree( TimeoutModel::NodeModel() );
+//    addModelToTree( BlackboardConditionModel::NodeModel() );
+//    addModelToTree( ForceSuccess::NodeModel() );
+//    addModelToTree( ForceFailure::NodeModel() );
 
-    _model_registry->registerModel<ActionSuccess>("Action");
-    _model_registry->registerModel<ActionFailure>("Action");
-    _model_registry->registerModel<ActionSetBlackboard>("Action");
-    addModelToTree( ActionSuccess::NodeModel() );
-    addModelToTree( ActionFailure::NodeModel() );
-    addModelToTree( ActionSetBlackboard::NodeModel() );
+//    _model_registry->registerModel<ActionSuccess>("Action");
+//    _model_registry->registerModel<ActionFailure>("Action");
+//    _model_registry->registerModel<ActionSetBlackboard>("Action");
+//    addModelToTree( ActionSuccess::NodeModel() );
+//    addModelToTree( ActionFailure::NodeModel() );
+//    addModelToTree( ActionSetBlackboard::NodeModel() );
 
-    BuiltinNodeModels() = _treenode_models;
+//    BuiltinNodeModels() = _treenode_models;
     //------------------------------------------------------
 
     _editor_widget = new SidepanelEditor(_model_registry.get(), _treenode_models, this);
@@ -436,7 +437,7 @@ QString MainWindow::saveToXML() const
         auto abs_tree = BuildTreeFromScene(container->scene());
         auto abs_root = abs_tree.rootNode();
         if( abs_root->children_index.size() == 1 &&
-            abs_root->model.type == NodeType::ROOT  )
+            abs_root->model.registration_ID == "Root"  )
         {
             // mofe to the child of ROOT
             abs_root = abs_tree.node( abs_root->children_index.front() );
@@ -470,19 +471,33 @@ QString MainWindow::saveToXML() const
 
         if( !node.isNull() )
         {
-            node.setAttribute("ID", ID.toStdString().c_str());
+            node.setAttribute("ID", ID);
 
-            for(const auto& param: model.params)
+            QDomElement node = doc.createElement( "description" );
+
+            for(const auto& port_it: model.ports)
             {
-                node.setAttribute(param.label.toStdString().c_str(),
-                                   param.value.toStdString().c_str() );
+                const auto& port_name = port_it.first;
+                const auto& port = port_it.second;
+                QDomElement port_element =  doc.createElement( BT::toStr(port.direction()) );
+
+                port_element.setAttribute("name", QString::fromStdString(port_name) );
+                if( port.type() )
+                {
+                    port_element.setAttribute("type", BT::demangle( port.type() ).c_str() );
+                }
+                if( !port.description().empty() )
+                {
+                    QDomText description = doc.createTextNode( QString::fromStdString( port.description()) );
+                    port_element.appendChild( description );
+                }
+                node.appendChild( port_element );
             }
         }
         root_models.appendChild(node);
     }
     root.appendChild(root_models);
     root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
-
 
     return doc.toString(4);
 }
@@ -767,7 +782,8 @@ void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
     }
 }
 
-void MainWindow::onAddToModelRegistry(const TreeNodeModel &model)
+/* //    VER_3 FIXME
+void MainWindow::onAddToModelRegistry(const BT_NodeModel &model)
 {
     namespace util = QtNodes::detail;
     const auto& ID = model.registration_ID;
@@ -866,7 +882,7 @@ void MainWindow::onDestroySubTree(const QString &ID)
     // TODO: this is a work around until we find a better solution
     clearUndoStacks();
 }
-
+*/
 QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
                                          QtNodes::Node &node,
                                          MainWindow::SubtreeExpandOption option)
@@ -989,7 +1005,7 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
 
         for(auto& node: abs_tree.nodes())
         {
-            if( node.model.registration_ID == prev_ID )
+            if( node.model.registration_ID == prev_ID.toStdString() )
             {
                 bool is_expanded_subtree = false;
                 if( node.model.type == NodeType::SUBTREE)
@@ -1010,7 +1026,7 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
                     subTreeExpand( *container, *new_node, SUBTREE_EXPAND);
                 };
 
-                node.model.registration_ID = new_ID;
+                node.model.registration_ID = new_ID.toStdString();
                 node.graphic_node = new_node;
             }
         }
@@ -1368,7 +1384,7 @@ void MainWindow::onTabRenameRequested(int tab_index, QString new_name)
     {
          _model_registry->unregisterModel(old_name);
          _treenode_models.erase(old_name);
-         TreeNodeModel model = { new_name, NodeType::SUBTREE,{}};
+         BT_NodeModel model = { NodeType::SUBTREE, new_name.toStdString(), {}};
          onAddToModelRegistry( model );
          _treenode_models.insert( { new_name, model} );
          _editor_widget->updateTreeView();
@@ -1416,7 +1432,7 @@ void MainWindow::clearTreeModels()
     _editor_widget->updateTreeView();
 }
 
-const TreeNodeModels &MainWindow::registeredModels() const
+const BT_NodeModels &MainWindow::registeredModels() const
 {
     return _treenode_models;
 }
@@ -1424,15 +1440,15 @@ const TreeNodeModels &MainWindow::registeredModels() const
 void MainWindow::on_actionAbout_triggered()
 {
     auto ui = new Ui_Dialog;
-    QDialog dialog(this);
-    ui->setupUi(&dialog);
+    QDialog* dialog = new QDialog(this);
+    ui->setupUi(dialog);
 
     auto svg_widget = new QSvgWidget( tr(":/icons/svg/logo_splashscreen.svg") );
     ui->frame->layout()->addWidget(svg_widget);
-    dialog.setWindowFlags( Qt::SplashScreen );
-   // dialog.setFixedSize( dialog.minimumSizeHint() );
-    dialog.exec();
+    dialog->setWindowFlags( Qt::SplashScreen );
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
 
+    dialog->show();
 }
 
 void MainWindow::on_actionReportIssue_triggered()

@@ -2,7 +2,7 @@
 #include "ControlNodeModel.hpp"
 #include <QtDebug>
 
-ControlNodeModel::ControlNodeModel(const TreeNodeModel &model ):
+ControlNodeModel::ControlNodeModel(const BT_NodeModel &model ):
     BehaviorTreeDataModel(model)
 {
     _line_edit_name->setEnabled(true);

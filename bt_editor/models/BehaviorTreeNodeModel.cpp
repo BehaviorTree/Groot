@@ -14,12 +14,12 @@ const int DEFAULT_LINE_WIDTH  = 100;
 const int DEFAULT_FIELD_WIDTH = 50;
 const int DEFAULT_LABEL_WIDTH = 50;
 
-BehaviorTreeDataModel::BehaviorTreeDataModel(const TreeNodeModel &model):
+BehaviorTreeDataModel::BehaviorTreeDataModel(const BT_NodeModel &model):
     _params_widget(nullptr),
     _uid( GetUID() ),
-    _registration_name(model.registration_ID),
-    _instance_name(model.registration_ID),
-    _icon_renderer(nullptr)
+    _model(model),
+    _icon_renderer(nullptr),
+    _registration_ID( QString::fromStdString(model.registration_ID))
 {
     _main_widget = new QFrame();
     _line_edit_name = new QLineEdit(_main_widget);
@@ -75,10 +75,10 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const TreeNodeModel &model):
     _form_layout->setVerticalSpacing(2);
     _form_layout->setContentsMargins(0, 0, 0, 0);
 
-    for(const auto& param: model.params )
+    for(const auto& port_it: model.ports )
     {
-        auto param_creator = buildWidgetCreator(param);
-        const QString label = param_creator.label;
+        auto param_creator = buildWidgetCreator( port_it.second, QString::fromStdString(port_it.first), {} );
+        const QString& label = param_creator.label;
         QLabel* form_label  =  new QLabel( label, _params_widget );
         QWidget* form_field = param_creator.instance_factory();
 
@@ -232,12 +232,12 @@ std::shared_ptr<QtNodes::NodeData> BehaviorTreeDataModel::outData(QtNodes::PortI
 }
 
 std::pair<QString, QColor> BehaviorTreeDataModel::caption() const {
-    return {_registration_name, QtNodes::NodeStyle().FontColor };
+    return { _registration_ID, QtNodes::NodeStyle().FontColor };
 }
 
-const QString &BehaviorTreeDataModel::registrationName() const
+const QString& BehaviorTreeDataModel::registrationName() const
 {
-    return _registration_name;
+    return _registration_ID;
 }
 
 const QString &BehaviorTreeDataModel::instanceName() const
@@ -245,9 +245,9 @@ const QString &BehaviorTreeDataModel::instanceName() const
     return _instance_name;
 }
 
-std::vector<TreeNodeModel::Param> BehaviorTreeDataModel::getCurrentParameters() const
+PortsMapping BehaviorTreeDataModel::getCurrentParameters() const
 {
-    std::vector<TreeNodeModel::Param> out;
+    PortsMapping out;
 
     for(const auto& it: _params_map)
     {
@@ -256,11 +256,11 @@ std::vector<TreeNodeModel::Param> BehaviorTreeDataModel::getCurrentParameters() 
 
         if(auto linedit = dynamic_cast<QLineEdit*>( value ) )
         {
-            out.push_back( { label, linedit->text() } );
+            out.insert( std::make_pair( label, linedit->text() ) );
         }
         else if( auto combo = dynamic_cast<QComboBox*>( value ) )
         {
-            out.push_back( { label, combo->currentText() } );
+            out.insert( std::make_pair( label, combo->currentText() ) );
         }
     }
     return out;
@@ -287,7 +287,7 @@ QJsonObject BehaviorTreeDataModel::save() const
 
 void BehaviorTreeDataModel::restore(const QJsonObject &modelJson)
 {
-    if( _registration_name != modelJson["name"].toString() )
+    if( registrationName() != modelJson["name"].toString() )
     {
         throw std::runtime_error(" error restoring: different registration_name");
     }

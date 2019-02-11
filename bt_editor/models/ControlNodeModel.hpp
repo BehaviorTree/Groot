@@ -18,12 +18,12 @@ using QtNodes::PortIndex;
 using QtNodes::NodeData;
 using QtNodes::NodeDataType;
 using QtNodes::NodeDataModel;
-
+/*
 class ControlNodeModel : public BehaviorTreeDataModel
 {
 
 public:
-    ControlNodeModel(const TreeNodeModel &model);
+    ControlNodeModel(const BT_NodeModel &model);
 
     virtual ~ControlNodeModel() override = default;
 
@@ -128,6 +128,6 @@ public:
         return { Name(), NodeType::CONTROL, {} };
     }
 };
-
+*/
 
 

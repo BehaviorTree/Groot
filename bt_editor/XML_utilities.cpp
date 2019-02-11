@@ -12,10 +12,9 @@
 using namespace QtNodes;
 
 
-TreeNodeModel
-buildTreeNodeModel(const QDomElement& node)
+BT_NodeModel buildTreeNodeModel(const QDomElement& node)
 {
-    std::vector<TreeNodeModel::Param> model_params;
+    std::vector<BT_NodeModel::Param> model_params;
 
     QString node_name = node.tagName();
     QString ID = node_name;
@@ -24,7 +23,7 @@ buildTreeNodeModel(const QDomElement& node)
         ID = QString(node.attribute("ID"));
     }
 
-    const auto node_type = getNodeTypeFromString(node_name);
+    const auto node_type = BT::convertFromString<BT::NodeType> (node_name);
 
     ParameterWidgetCreators parameters;
 
@@ -36,13 +35,13 @@ buildTreeNodeModel(const QDomElement& node)
         QString attr_name( attr.name() );
         if(attr_name != "ID" && attr_name != "name")
         {
-            TreeNodeModel::Param model_param;
-            model_param.label = attr_name;
-            model_param.value = attr.value();
+            BT::PortInfo port_model;
+            port_model.label = attr_name;
+            port_model.value = attr.value();
 
-            auto widget_creator = buildWidgetCreator( model_param );
+            auto widget_creator = buildWidgetCreator( port_model );
             parameters.push_back(widget_creator);
-            model_params.push_back( std::move(model_param) );
+            model_params.push_back( std::move(port_model) );
         }
     }
 
@@ -51,9 +50,9 @@ buildTreeNodeModel(const QDomElement& node)
 
 //------------------------------------------------------------------
 
-TreeNodeModels ReadTreeNodesModel(const QDomElement &root)
+BT_NodeModels ReadTreeNodesModel(const QDomElement &root)
 {
-    TreeNodeModels models;
+    BT_NodeModels models;
     using QtNodes::DataModelRegistry;
 
     auto model_root = root.firstChildElement("TreeNodesModel");
@@ -360,7 +359,7 @@ bool VerifyXML(QDomDocument &doc,
     return is_valid;
 }
 
-std::set<const QString *> NotBuiltInNodes(const TreeNodeModels &models)
+std::set<const QString *> NotBuiltInNodes(const BT_NodeModels &models)
 {
     std::set<const QString *> custom_models;
 

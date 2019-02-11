@@ -56,11 +56,11 @@ include_directories( depend/BehaviorTree.CPP/include )
 
 set(APP_CPPS
     ./bt_editor/models/BehaviorTreeNodeModel.cpp
-    ./bt_editor/models/ActionNodeModel.cpp
-    ./bt_editor/models/ControlNodeModel.cpp
-    ./bt_editor/models/DecoratorNodeModel.cpp
-    ./bt_editor/models/RootNodeModel.cpp
-    ./bt_editor/models/SubtreeNodeModel.cpp
+#    ./bt_editor/models/ActionNodeModel.cpp
+#    ./bt_editor/models/ControlNodeModel.cpp
+#    ./bt_editor/models/DecoratorNodeModel.cpp
+#    ./bt_editor/models/RootNodeModel.cpp
+#    ./bt_editor/models/SubtreeNodeModel.cpp
 
     ./bt_editor/mainwindow.cpp
     ./bt_editor/editor_flowscene.cpp

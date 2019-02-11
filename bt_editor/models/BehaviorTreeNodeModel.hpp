@@ -27,7 +27,7 @@ class BehaviorTreeDataModel : public NodeDataModel
     Q_OBJECT
 
 public:
-  BehaviorTreeDataModel(const TreeNodeModel &parameters );
+  BehaviorTreeDataModel(const BT_NodeModel &parameters );
 
   ~BehaviorTreeDataModel() override;
 
@@ -51,13 +51,13 @@ public:
 
   void setInData(std::shared_ptr<NodeData>, int) final {}
 
-  const QString& registrationName() const;
+  const QString &registrationName() const;
 
   QString name() const final { return registrationName(); }
 
   const QString& instanceName() const;
 
-  std::vector<TreeNodeModel::Param> getCurrentParameters() const;
+  PortsMapping getCurrentParameters() const;
 
   QWidget *embeddedWidget() final { return _main_widget; }
 
@@ -98,10 +98,10 @@ protected:
 
 
 private:
-  const QString _registration_name;
+  const BT_NodeModel _model;
   QString _instance_name;
   QSvgRenderer* _icon_renderer;
-
+  const QString _registration_ID;
 
 signals:
 

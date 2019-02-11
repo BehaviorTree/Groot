@@ -14,10 +14,10 @@ class CustomNodeDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CustomNodeDialog(const TreeNodeModels& models, QString to_edit = QString(), QWidget *parent = 0);
+    explicit CustomNodeDialog(const BT_NodeModels& models, QString to_edit = QString(), QWidget *parent = 0);
     ~CustomNodeDialog();
 
-    TreeNodeModel getTreeNodeModel() const;
+    BT_NodeModel getTreeNodeModel() const;
 
 private slots:
     void on_toolButtonAdd_pressed();
@@ -28,7 +28,7 @@ private slots:
 
 private:
     Ui::CustomNodeDialog *ui;
-    const TreeNodeModels &_models;
+    const BT_NodeModels &_models;
     QValidator *_validator;
     bool _editing;
 };

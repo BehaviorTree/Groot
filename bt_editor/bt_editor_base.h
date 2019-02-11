@@ -12,8 +12,8 @@
 
 using BT::NodeStatus;
 using BT::NodeType;
-using TreeNodeModel = BT::TreeNodeManifest;
-
+using BT_NodeModel = BT::TreeNodeManifest;
+using BT_Parameters = BT::NodeConfiguration;
 
 enum class GraphicMode { EDITOR, MONITOR, REPLAY };
 
@@ -29,12 +29,14 @@ struct ParameterWidgetCreator{
 using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
 
 
-typedef std::unordered_map<std::string, BT::TreeNodeManifest> TreeNodeModels;
+typedef std::map<QString, BT_NodeModel> BT_NodeModels;
 
+typedef std::map<QString, QString> PortsMapping;
 
-inline TreeNodeModels& BuiltinNodeModels()
+// TOSO VER_3
+inline const BT_NodeModels& BuiltinNodeModels()
 {
-    static TreeNodeModels builtin_node_models;
+    static BT_NodeModels builtin_node_models;
     return builtin_node_models;
 }
 
@@ -46,7 +48,8 @@ struct AbstractTreeNode
         status(NodeStatus::IDLE),
         graphic_node(nullptr) {}
 
-    BT::TreeNodeManifest model;
+    BT_NodeModel model;
+    PortsMapping ports_mapping;
     int index;
     QString instance_name;
     BT::NodeStatus status;

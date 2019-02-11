@@ -281,11 +281,11 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
 
         abs_node.instance_name     = bt_model->instanceName();
-        abs_node.model.registration_ID = bt_model->registrationName();
+        abs_node.model.registration_ID = bt_model->registrationName().toStdString();
         abs_node.pos  = scene->getNodePosition(*node) ;
         abs_node.size = scene->getNodeSize(*node);
         abs_node.graphic_node = node;
-        abs_node.model.params = bt_model->getCurrentParameters();
+        abs_node.ports_mapping = bt_model->getCurrentParameters();
         abs_node.model.type = bt_model->nodeType();
 
         auto added_node = tree.addNode( parent, std::move(abs_node) );
@@ -303,32 +303,32 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
     return tree;
 }
 
-
-QString getCategory(const NodeDataModel *dataModel)
-{
-    QString category;
-    if( dynamic_cast<const ActionNodeModel*>(dataModel) )
-    {
-        category = "Action";
-    }
-    else if( dynamic_cast<const DecoratorNodeModel*>(dataModel) )
-    {
-        category = "Decorator";
-    }
-    else if( dynamic_cast<const ControlNodeModel*>(dataModel) )
-    {
-        category = "Control";
-    }
-    else if( dynamic_cast<const RootNodeModel*>(dataModel) )
-    {
-        category = "Root";
-    }
-    else if( dynamic_cast<const SubtreeNodeModel*>(dataModel) )
-    {
-        category = "SubTree";
-    }
-    return category;
-}
+// FIXME ver_3
+//QString getCategory(const NodeDataModel *dataModel)
+//{
+//    QString category;
+//    if( dynamic_cast<const ActionNodeModel*>(dataModel) )
+//    {
+//        category = "Action";
+//    }
+//    else if( dynamic_cast<const DecoratorNodeModel*>(dataModel) )
+//    {
+//        category = "Decorator";
+//    }
+//    else if( dynamic_cast<const ControlNodeModel*>(dataModel) )
+//    {
+//        category = "Control";
+//    }
+//    else if( dynamic_cast<const RootNodeModel*>(dataModel) )
+//    {
+//        category = "Root";
+//    }
+//    else if( dynamic_cast<const SubtreeNodeModel*>(dataModel) )
+//    {
+//        category = "SubTree";
+//    }
+//    return category;
+//}
 
 
 AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
@@ -353,8 +353,8 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
 
         AbstractTreeNode tree_node;
 
-        tree_node.model.registration_ID = modelID;
-        tree_node.model.type = getNodeTypeFromString( xml_node.tagName() );
+        tree_node.model.registration_ID = modelID.toStdString();
+        tree_node.model.type = BT::convertFromString<BT::NodeType>( xml_node.tagName().toStdString() );
 
         if( xml_node.hasAttribute("name") )
         {
@@ -370,7 +370,7 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
             auto attribute = attributes.item(attr).toAttr();
             if( attribute.name() != "ID" && attribute.name() != "name")
             {
-                tree_node.model.params.push_back( { attribute.name(), attribute.value() } );
+                tree_node.ports_mapping.insert( { attribute.name(), attribute.value() } );
             }
         }
 
@@ -400,7 +400,7 @@ BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
     AbstractTreeNode abs_root;
     abs_root.instance_name = "Root";
     abs_root.model.registration_ID = "Root";
-    abs_root.model.type = NodeType::ROOT;
+    abs_root.model.type = NodeType::UNDEFINED;
     abs_root.children_index.push_back( 1 );
 
     tree.addNode( nullptr, std::move(abs_root) );
@@ -423,7 +423,7 @@ BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
 
         for( const BT_Serialization::KeyValue* pair: *(fb_node->params()) )
         {
-            abs_node.model.params.push_back( { QString(pair->key()->c_str()),
+            abs_node.ports_mapping.insert( { QString(pair->key()->c_str()),
                                              QString(pair->value()->c_str()) } );
         }
         int index = tree.nodesCount();
@@ -483,17 +483,19 @@ getStyleFromStatus(NodeStatus status)
     return {node_style, conn_style};
 }
 
-ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
+ParameterWidgetCreator buildWidgetCreator(const BT::PortInfo& port_model,
+                                          const QString& name,
+                                          const QString& remapping_value)
 {
     ParameterWidgetCreator creator;
-    creator.label = param.label;
+    creator.label = name;
 
-    creator.instance_factory = [param]()
+    creator.instance_factory = [remapping_value]()
     {
         QLineEdit* line = new QLineEdit();
         line->setAlignment( Qt::AlignHCenter);
         line->setMaximumWidth(140);
-        line->setText( param.value );
+        line->setText( remapping_value );
         return line;
     };
 
@@ -514,8 +516,8 @@ QtNodes::Node *GetParentNode(QtNodes::Node *node)
 }
 
 void CleanPreviousModels(QWidget *parent,
-                         TreeNodeModels &prev_models,
-                         const TreeNodeModels &new_models)
+                         BT_NodeModels &prev_models,
+                         const BT_NodeModels &new_models)
 {
     std::set<const QString *> prev_custom_models;
 
@@ -535,7 +537,7 @@ void CleanPreviousModels(QWidget *parent,
         if( new_models.count( *name ) == 0)
         {
             int ret = QMessageBox::question(parent, "Clear Palette?",
-                                            "Do yoy want to remove the previously loaded custom nodes?",
+                                            "Do you want to remove the previously loaded custom nodes?",
                                             QMessageBox::No | QMessageBox::Yes );
             if( ret == QMessageBox::Yes)
             {

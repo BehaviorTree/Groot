@@ -1,7 +1,7 @@
 #include "ActionNodeModel.hpp"
 #include <QLineEdit>
 
-ActionNodeModel::ActionNodeModel(const TreeNodeModel &model):
+ActionNodeModel::ActionNodeModel(const BT_NodeModel &model):
   BehaviorTreeDataModel(model )
 {
 
@@ -24,7 +24,7 @@ void ActionNodeModel::setInstanceName(const QString &name)
     BehaviorTreeDataModel::setInstanceName(name);
 }
 
-ConditionNodeModel::ConditionNodeModel(const TreeNodeModel &model):
+ConditionNodeModel::ConditionNodeModel(const BT_NodeModel &model):
   BehaviorTreeDataModel( model )
 {
     _line_edit_name->setHidden(true);

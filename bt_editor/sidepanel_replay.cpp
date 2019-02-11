@@ -187,7 +187,8 @@ void SidepanelReplay::loadLog(const QByteArray &content)
 
     for (const auto& tree_node: _loaded_tree.nodes() )
     {
-        if( BuiltinNodeModels().count( tree_node.model.registration_ID) == 0)
+        QString ID = QString::fromStdString( tree_node.model.registration_ID );
+        if( BuiltinNodeModels().count( ID ) == 0)
         {
             emit addNewModel( tree_node.model );
         }

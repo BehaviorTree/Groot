@@ -2,11 +2,11 @@
 
 #include "BehaviorTreeNodeModel.hpp"
 
-
+/*
 class ActionNodeModel : public BehaviorTreeDataModel
 {
 public:
-    ActionNodeModel(const TreeNodeModel &model);
+    ActionNodeModel(const BT_NodeModel &model);
 
     virtual ~ActionNodeModel()  = default;
 
@@ -32,7 +32,7 @@ private:
 class ConditionNodeModel : public BehaviorTreeDataModel
 {
 public:
-    ConditionNodeModel(const TreeNodeModel &model);
+    ConditionNodeModel(const BT_NodeModel &model);
 
     virtual ~ConditionNodeModel()  = default;
 
@@ -101,5 +101,5 @@ public:
         return(":/icons/svg/edit_list.svg");
     }
 };
-
+*/
 
