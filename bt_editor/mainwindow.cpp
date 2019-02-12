@@ -769,11 +769,16 @@ void MainWindow::onAddToModelRegistry(const NodeModel &model)
     {
         return;
     }
-    DataModelRegistry::RegistryItemCreator node_creator = [model]()
+    DataModelRegistry::RegistryItemCreator node_creator = [model]() -> DataModelRegistry::RegistryItemPtr
     {
+        if( model.type == NodeType::SUBTREE)
+        {
+            return util::make_unique<SubtreeNodeModel>(model);
+        }
         return util::make_unique<BehaviorTreeDataModel>(model);
     };
-    _model_registry->registerModel("Action", node_creator, ID);
+
+    _model_registry->registerModel( BT::toStr(model.type), node_creator, ID);
 
     _treenode_models.insert( {ID, model } );
     _editor_widget->updateTreeView();
