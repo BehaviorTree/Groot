@@ -21,6 +21,7 @@ endfunction()
 set(RESOURCE_FILES
     ../QtNodeEditor/resources/resources.qrc
     ../bt_editor/resources/icons.qrc
+    ../bt_editor/resources/style.qrc
     ../test_data/test_files.qrc
     )
 

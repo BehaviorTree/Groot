@@ -38,22 +38,11 @@ void SubtreeNodeModel::setExpanded(bool expand)
     _main_widget->adjustSize();
 }
 
-std::pair<QString, QColor> SubtreeNodeModel::caption() const
-{
-    return { registrationName(),
-             QtNodes::NodeStyle().FontColor };
-}
-
-QString SubtreeNodeModel::captionIcon() const {
-    return(":/icons/svg/subtree.svg");
-}
-
 void SubtreeNodeModel::setInstanceName(const QString &name)
 {
     _line_edit_name->setHidden( name == registrationName() );
     BehaviorTreeDataModel::setInstanceName(name);
 }
-
 
 QJsonObject SubtreeNodeModel::save() const
 {

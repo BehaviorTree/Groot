@@ -65,26 +65,25 @@ CustomNodeDialog::~CustomNodeDialog()
     delete ui;
 }
 
-//TODO VER_3
+
 NodeModel CustomNodeDialog::getTreeNodeModel() const
 {
-    //    QString ID = ui->lineEdit->text();
-    //    NodeType type = NodeType::UNDEFINED;
-    //    PortsMapping ports_mapping;
+    QString ID = ui->lineEdit->text();
+    NodeType type = NodeType::UNDEFINED;
+    PortModels ports;
 
-    //    switch( ui->comboBox->currentIndex() )
-    //    {
-    //    case 0: type = NodeType::ACTION; break;
-    //    case 1: type = NodeType::CONDITION; break;
-    //    }
-    //    for (int row=0; row < ui->tableWidget->rowCount(); row++ )
-    //    {
-    //        const auto key   = ui->tableWidget->item(row,0)->text();
-    //        const auto value = ui->tableWidget->item(row,1)->text();
-    //        ports_mapping.insert( {key,value} );
-    //    }
-    //    return { ID, type, std::move(ports_mapping) };
-    return {};
+    switch( ui->comboBox->currentIndex() )
+    {
+    case 0: type = NodeType::ACTION; break;
+    case 1: type = NodeType::CONDITION; break;
+    }
+    for (int row=0; row < ui->tableWidget->rowCount(); row++ )
+    {
+        const auto key   = ui->tableWidget->item(row,0)->text();
+        const auto value = ui->tableWidget->item(row,1)->text();
+        ports.insert( {key, PortModel()} );
+    }
+    return { type, ID, ports };
 }
 
 void CustomNodeDialog::on_toolButtonAdd_pressed()

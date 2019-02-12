@@ -56,10 +56,6 @@ include_directories( depend/BehaviorTree.CPP/include )
 
 set(APP_CPPS
     ./bt_editor/models/BehaviorTreeNodeModel.cpp
-#    ./bt_editor/models/ActionNodeModel.cpp
-#    ./bt_editor/models/ControlNodeModel.cpp
-#    ./bt_editor/models/DecoratorNodeModel.cpp
-#    ./bt_editor/models/RootNodeModel.cpp
     ./bt_editor/models/SubtreeNodeModel.cpp
 
     ./bt_editor/mainwindow.cpp
@@ -78,6 +74,7 @@ set(APP_CPPS
 
 set(RESOURCE_FILES
     ./bt_editor/resources/icons.qrc
+    ./bt_editor/resources/style.qrc
     ./test_data/test_files.qrc
     )
 

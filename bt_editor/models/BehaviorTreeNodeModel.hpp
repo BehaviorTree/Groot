@@ -35,17 +35,15 @@ public:
 
   NodeType nodeType() const;
 
-  virtual std::pair<QString,QColor> caption() const;
-
-  virtual QString captionIcon() const { return QString(); }
-
   virtual void setInstanceName(const QString& name);
 
 public:
 
   void initWidget();
 
-  unsigned int nPorts(PortType portType) const override;
+  virtual unsigned int nPorts(PortType portType) const override;
+
+  ConnectionPolicy portOutConnectionPolicy(PortIndex) const final;
 
   NodeDataType dataType(PortType , PortIndex ) const final;
 
@@ -84,6 +82,7 @@ public slots:
 
 
 protected:
+
   QFrame*  _main_widget;
   QFrame*  _params_widget;
 
@@ -98,11 +97,15 @@ protected:
   QFrame* _caption_logo_left;
   QFrame* _caption_logo_right;
 
-
 private:
   const NodeModel _model;
   QString _instance_name;
   QSvgRenderer* _icon_renderer;
+
+  void readStyle();
+  QString _style_icon;
+  QColor  _style_caption_color;
+  QString  _style_caption_alias;
 
 signals:
 

@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QFont>
 #include <QApplication>
+#include <QJsonDocument>
 
 const int MARGIN = 10;
 const int DEFAULT_LINE_WIDTH  = 100;
@@ -18,8 +19,11 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const NodeModel &model):
     _params_widget(nullptr),
     _uid( GetUID() ),
     _model(model),
-    _icon_renderer(nullptr)
+    _icon_renderer(nullptr),
+    _style_caption_color( QtNodes::NodeStyle().FontColor ),
+    _style_caption_alias( model.registration_ID )
 {
+    readStyle();
     _main_widget = new QFrame();
     _line_edit_name = new QLineEdit(_main_widget);
     _params_widget = new QFrame();
@@ -134,32 +138,30 @@ BT::NodeType BehaviorTreeDataModel::nodeType() const
 
 void BehaviorTreeDataModel::initWidget()
 {
-    const auto resource_file = captionIcon();
-    if( resource_file.isEmpty() == false )
+    if( _style_icon.isEmpty() == false )
     {
         _caption_logo_left->setFixedWidth( 20 );
         _caption_logo_right->setFixedWidth( 1 );
 
-        QFile file(resource_file);
+        QFile file(_style_icon);
         if(!file.open(QIODevice::ReadOnly))
         {
-            qDebug()<<"file not opened: "<< resource_file;
+            qDebug()<<"file not opened: "<< _style_icon;
             file.close();
         }
         else {
             QByteArray ba = file.readAll();
-            QByteArray new_color_fill = QString("fill:%1;").arg(caption().second.name()).toUtf8();
+            QByteArray new_color_fill = QString("fill:%1;").arg( _style_caption_color.name() ).toUtf8();
             ba.replace("fill:#ffffff;", new_color_fill);
             _icon_renderer =  new QSvgRenderer(ba, this);
         }
     }
 
-    auto label_text = caption().first;
-    auto color = caption().second;
-    _caption_label->setText( label_text );
+    _caption_label->setText( _style_caption_alias );
+
     QPalette capt_palette = _caption_label->palette();
     capt_palette.setColor(_caption_label->backgroundRole(), Qt::transparent);
-    capt_palette.setColor(_caption_label->foregroundRole(), color);
+    capt_palette.setColor(_caption_label->foregroundRole(), _style_caption_color);
     _caption_label->setPalette(capt_palette);
 
     _caption_logo_left->adjustSize();
@@ -183,9 +185,14 @@ unsigned int BehaviorTreeDataModel::nPorts(QtNodes::PortType portType) const
     }
     else if( portType == QtNodes::PortType::In )
     {
-        return 1;
+        return (_model.registration_ID == "Root") ? 0 : 1;
     }
     return 0;
+}
+
+NodeDataModel::ConnectionPolicy BehaviorTreeDataModel::portOutConnectionPolicy(QtNodes::PortIndex) const
+{
+    return ( nodeType() == NodeType::DECORATOR ) ? ConnectionPolicy::One : ConnectionPolicy::Many;
 }
 
 void BehaviorTreeDataModel::updateNodeSize()
@@ -255,8 +262,57 @@ std::shared_ptr<QtNodes::NodeData> BehaviorTreeDataModel::outData(QtNodes::PortI
     return nullptr;
 }
 
-std::pair<QString, QColor> BehaviorTreeDataModel::caption() const {
-    return { _model.registration_ID, QtNodes::NodeStyle().FontColor };
+void BehaviorTreeDataModel::readStyle()
+{
+    QFile style_file(":/NodesStyle.json");
+
+    if (!style_file.open(QIODevice::ReadOnly))
+    {
+        qWarning("Couldn't open NodesStyle.json");
+        return;
+    }
+
+    QByteArray bytearray =  style_file.readAll();
+    style_file.close();
+    QJsonParseError error;
+    QJsonDocument json_doc( QJsonDocument::fromJson( bytearray, &error ));
+
+    if(json_doc.isNull()){
+        qDebug()<<"Failed to create JSON doc: " << error.errorString();
+        return;
+    }
+    if(!json_doc.isObject()){
+        qDebug()<<"JSON is not an object.";
+        return;
+    }
+
+    QJsonObject toplevel_object = json_doc.object();
+
+    if(toplevel_object.isEmpty()){
+        qDebug()<<"JSON object is empty.";
+        return;
+    }
+    QString model_type_name( BT::toStr(_model.type) );
+
+    for (const auto& model_name: { model_type_name, _model.registration_ID} )
+    {
+        if( toplevel_object.contains(model_name) )
+        {
+            auto category_style = toplevel_object[ model_name ].toObject() ;
+            if( category_style.contains("icon"))
+            {
+                _style_icon = category_style["icon"].toString();
+            }
+            if( category_style.contains("caption_color"))
+            {
+                _style_caption_color = category_style["caption_color"].toString();
+            }
+            if( category_style.contains("caption_alias"))
+            {
+                _style_caption_alias = category_style["caption_alias"].toString();
+            }
+        }
+    }
 }
 
 const QString& BehaviorTreeDataModel::registrationName() const

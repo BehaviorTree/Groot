@@ -460,7 +460,7 @@ void EditorTest::clearModels()
     main_win->loadFromXML( file_xml );
 
     auto container = main_win->currentTabInfo();
-    auto view = container->view();
+   // auto view = container->view();
 
     auto abs_tree = getAbstractTree();
     auto node = abs_tree.findFirstNode( "DoSequenceStar" );

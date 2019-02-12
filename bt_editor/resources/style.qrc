@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>NodesStyle.json</file>
+    </qresource>
+</RCC>

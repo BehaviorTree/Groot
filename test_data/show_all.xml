@@ -11,9 +11,9 @@
             </Fallback>
             <SequenceStar name="DoSequenceStar">
                 <RetryUntilSuccesful num_attempts="1">
-                    <BB_Precondition expected="value" key="key">
+                    <BlackboardCheckString expected="value" key="key">
                         <AlwaysSuccess/>
-                    </BB_Precondition>
+                    </BlackboardCheckString>
                 </RetryUntilSuccesful>
             </SequenceStar>
             <Inverter>

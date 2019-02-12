@@ -17,7 +17,8 @@ public:
 
     bool expanded() const { return _expanded; }
 
-    unsigned int  nPorts(PortType portType) const override {
+    unsigned int  nPorts(PortType portType) const override
+    {
         int out_port = _expanded ? 1 : 0;
         return portType == PortType::In ? 1:out_port;
     }
@@ -25,10 +26,6 @@ public:
     virtual const char* className() const final { return Name(); }
 
     static const char* Name() { return "SubTree";  }
-
-    std::pair<QString, QColor> caption() const override;
-
-    virtual QString captionIcon() const override;
 
     QPushButton* expandButton() { return _expand_button; }
 
