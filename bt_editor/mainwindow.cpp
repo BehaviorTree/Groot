@@ -964,8 +964,8 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
                 bool is_expanded_subtree = false;
                 if( node.model.type == NodeType::SUBTREE)
                 {
-                    auto model = node.graphic_node->nodeDataModel();
-                    auto subtree_model = dynamic_cast<SubtreeNodeModel*>( model );
+                    auto graphic_model = node.graphic_node->nodeDataModel();
+                    auto subtree_model = dynamic_cast<SubtreeNodeModel*>( graphic_model );
                     if(subtree_model && subtree_model->expanded())
                     {
                         is_expanded_subtree = true;
@@ -979,9 +979,6 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
                 {
                     subTreeExpand( *container, *new_node, SUBTREE_EXPAND);
                 };
-
-                node.model.registration_ID = new_ID;
-                node.graphic_node = new_node;
             }
         }
     }

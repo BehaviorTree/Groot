@@ -277,13 +277,12 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
 
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
 
+        abs_node.model = bt_model->model();
         abs_node.instance_name     = bt_model->instanceName();
-        abs_node.model.registration_ID = bt_model->registrationName();
         abs_node.pos  = scene->getNodePosition(*node) ;
         abs_node.size = scene->getNodeSize(*node);
         abs_node.graphic_node = node;
         abs_node.ports_mapping = bt_model->getCurrentPortMapping();
-        abs_node.model.type = bt_model->nodeType();
 
         auto added_node = tree.addNode( parent, std::move(abs_node) );
 

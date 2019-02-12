@@ -348,16 +348,19 @@ void EditorTest::modifyCustomModel()
 
     sidepanel_editor->onReplaceModel("PassThroughWindow", jump_model);
 
-    auto pass_window_items = treeWidget->findItems("PassThroughWindow", Qt::MatchExactly | Qt::MatchRecursive);
+    auto pass_window_items = treeWidget->findItems("PassThroughWindow",
+                                                   Qt::MatchExactly | Qt::MatchRecursive);
     QCOMPARE( pass_window_items.empty(), true);
 
-    auto jump_window_items = treeWidget->findItems( jump_model.registration_ID, Qt::MatchExactly | Qt::MatchRecursive);
+    auto jump_window_items = treeWidget->findItems( jump_model.registration_ID,
+                                                    Qt::MatchExactly | Qt::MatchRecursive);
     QCOMPARE( jump_window_items.size(), 1);
 
     auto abs_tree = getAbstractTree();
 
     auto jump_abs_node = abs_tree.findFirstNode( jump_model.registration_ID );
     QVERIFY( jump_abs_node != nullptr);
+    sleepAndRefresh( 500 );
     QCOMPARE( jump_abs_node->model, jump_model );
 
     sleepAndRefresh( 500 );

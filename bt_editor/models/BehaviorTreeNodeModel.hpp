@@ -53,6 +53,8 @@ public:
 
   const QString &registrationName() const;
 
+  const NodeModel &model() const { return _model; }
+
   QString name() const final { return registrationName(); }
 
   const QString& instanceName() const;

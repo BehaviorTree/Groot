@@ -226,7 +226,7 @@ void SidepanelEditor::onReplaceModel(const QString& old_name,
 {
     _tree_nodes_model.erase( old_name );
     _model_registry->unregisterModel( old_name );
-    addNewModel( new_model );
+    emit addNewModel( new_model );
     emit nodeModelEdited(old_name, new_model.registration_ID);
 }
 
