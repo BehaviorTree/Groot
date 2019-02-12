@@ -24,9 +24,7 @@
 #include "editor_flowscene.h"
 
 #include "XML_utilities.hpp"
-#include "models/ActionNodeModel.hpp"
-#include "models/ControlNodeModel.hpp"
-#include "models/DecoratorNodeModel.hpp"
+
 #include "models/RootNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 

@@ -12,7 +12,6 @@
         "icon": ":/icons/svg/subtree.svg"
     },
 
-
     "AlwaysFailure": {
         "icon": ":/icons/svg/letter_A.svg",
         "caption_color":  "#ff2222",

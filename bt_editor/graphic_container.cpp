@@ -2,9 +2,6 @@
 #include "utils.h"
 #include "mainwindow.h"
 
-#include "models/ActionNodeModel.hpp"
-#include "models/DecoratorNodeModel.hpp"
-#include "models/ControlNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 #include "models/RootNodeModel.hpp"
 

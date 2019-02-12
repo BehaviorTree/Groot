@@ -5,9 +5,6 @@
 #include <set>
 #include <QMessageBox>
 #include "nodes/internal/memory.hpp"
-#include "models/ActionNodeModel.hpp"
-#include "models/DecoratorNodeModel.hpp"
-#include "models/ControlNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 #include "models/RootNodeModel.hpp"
 #include <QDomDocument>

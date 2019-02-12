@@ -1,6 +1,6 @@
 #include "custom_node_dialog.h"
 #include "ui_custom_node_dialog.h"
-#include "models/ActionNodeModel.hpp"
+
 #include <QTreeWidgetItem>
 #include <QPushButton>
 #include <QRegExpValidator>

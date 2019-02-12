@@ -195,6 +195,10 @@ const NodeModels &BuiltinNodeModels()
         for( const auto& it: factory.manifests())
         {
             const auto& model_name = it.first;
+            if( model_name == "SubTree")
+            {
+                continue;
+            }
             const auto& bt_model = it.second;
             NodeModel groot_model;
             groot_model = bt_model;

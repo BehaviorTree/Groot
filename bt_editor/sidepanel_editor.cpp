@@ -1,6 +1,8 @@
 #include "sidepanel_editor.h"
 #include "ui_sidepanel_editor.h"
 #include "custom_node_dialog.h"
+#include "utils.h"
+
 #include <QHeaderView>
 #include <QPushButton>
 #include <QSettings>
@@ -10,8 +12,6 @@
 #include <QMessageBox>
 #include <QJsonDocument>
 #include <QJsonArray>
-#include "models/ActionNodeModel.hpp"
-
 
 SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
                                  NodeModels &tree_nodes_model,

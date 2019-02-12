@@ -1,16 +1,12 @@
 #include "XML_utilities.hpp"
 #include "utils.h"
 
-#include "models/ActionNodeModel.hpp"
-#include "models/DecoratorNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 
 #include <QtDebug>
 #include <QLineEdit>
 
-
 using namespace QtNodes;
-
 
 NodeModel buildTreeNodeModelFromXML(const QDomElement& node)
 {
