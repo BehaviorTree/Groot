@@ -65,48 +65,29 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _model_registry = std::make_shared<QtNodes::DataModelRegistry>();
 
     //------------------------------------------------------
-//    VER_3 FIXME
-//    auto addModelToTree = [this](const NodeModel& model)
-//    {
-//        _treenode_models.insert( { model.registration_ID, model } );
-//    };
 
-//    _model_registry->registerModel<RootNodeModel>("Root");
-//    _model_registry->registerModel<SequenceModel>("Control");
-//    _model_registry->registerModel<SequenceStarModel>("Control");
-//    _model_registry->registerModel<FallbackModel>("Control");
-//    _model_registry->registerModel<FallbackStarModel>("Control");
-//    addModelToTree( RootNodeModel::NodeModel() );
-//    addModelToTree( SequenceModel::NodeModel() );
-//    addModelToTree( SequenceStarModel::NodeModel() );
-//    addModelToTree( SequenceStarModel::NodeModel() );
-//    addModelToTree( FallbackModel::NodeModel() );
-//    addModelToTree( FallbackStarModel::NodeModel() );
+    auto registerModel = [this](const QString& ID, const NodeModel& model)
+    {
+        QString category = QString::fromStdString( BT::toStr(model.type) );
+        if( ID == "Root")
+        {
+            category = "Root";
+        }
+        QtNodes::DataModelRegistry::RegistryItemCreator creator;
+        creator = [model]() -> QtNodes::DataModelRegistry::RegistryItemPtr
+        {
+            auto ptr = new BehaviorTreeDataModel( model );
+            return std::unique_ptr<BehaviorTreeDataModel>(ptr);
+        };
+        _model_registry->registerModel( category, creator, ID );
+    };
 
-//    _model_registry->registerModel<InverterNodeModel>("Decorator");
-//    _model_registry->registerModel<RetryNodeModel>("Decorator");
-//    _model_registry->registerModel<RepeatNodeModel>("Decorator");
-//    _model_registry->registerModel<TimeoutModel>("Decorator");
-//    _model_registry->registerModel<BlackboardConditionModel>("Decorator");
-//    _model_registry->registerModel<ForceSuccess>("Decorator");
-//    _model_registry->registerModel<ForceFailure>("Decorator");
-
-//    addModelToTree( InverterNodeModel::NodeModel() );
-//    addModelToTree( RetryNodeModel::NodeModel() );
-//    addModelToTree( RepeatNodeModel::NodeModel() );
-//    addModelToTree( TimeoutModel::NodeModel() );
-//    addModelToTree( BlackboardConditionModel::NodeModel() );
-//    addModelToTree( ForceSuccess::NodeModel() );
-//    addModelToTree( ForceFailure::NodeModel() );
-
-//    _model_registry->registerModel<ActionSuccess>("Action");
-//    _model_registry->registerModel<ActionFailure>("Action");
-//    _model_registry->registerModel<ActionSetBlackboard>("Action");
-//    addModelToTree( ActionSuccess::NodeModel() );
-//    addModelToTree( ActionFailure::NodeModel() );
-//    addModelToTree( ActionSetBlackboard::NodeModel() );
-
-//    BuiltinNodeModel() = _treenode_models;
+    for(const auto& model: BuiltinNodeModels())
+    {
+        registerModel( model.first, model.second );
+        _treenode_models.insert( { model.first, model.second } );
+        qDebug() << "adding model: " << model.first;
+    }
     //------------------------------------------------------
 
     _editor_widget = new SidepanelEditor(_model_registry.get(), _treenode_models, this);
@@ -462,7 +443,7 @@ QString MainWindow::saveToXML() const
         const auto& ID    = tree_it.first;
         const auto& model = tree_it.second;
 
-        if( BuiltinNodeModel().count(ID) != 0 )
+        if( BuiltinNodeModels().count(ID) != 0 )
         {
             continue;
         }
@@ -786,7 +767,7 @@ void MainWindow::onAddToModelRegistry(const NodeModel &model)
     namespace util = QtNodes::detail;
     const auto& ID = model.registration_ID;
 
-    if( BuiltinNodeModel().count(ID) == 1)
+    if( BuiltinNodeModels().count(ID) == 1)
     {
         return;
     }
@@ -1384,7 +1365,7 @@ void MainWindow::onTabSetMainTree(int tab_index)
 
 void MainWindow::clearTreeModels()
 {
-    _treenode_models = BuiltinNodeModel();
+    _treenode_models = BuiltinNodeModels();
 
     std::list<QString> ID_to_delete;
     for(const auto& it: _model_registry->registeredModelCreators() )

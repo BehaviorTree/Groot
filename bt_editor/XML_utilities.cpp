@@ -103,7 +103,7 @@ void RecursivelyCreateXml(const FlowScene &scene, QDomDocument &doc, QDomElement
     QString registration_name = bt_node->registrationName();
     QDomElement element;
 
-    if( BuiltinNodeModel().count(registration_name) != 0)
+    if( BuiltinNodeModels().count(registration_name) != 0)
     {
         element = doc.createElement( registration_name.toStdString().c_str() );
     }

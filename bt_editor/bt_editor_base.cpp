@@ -1,4 +1,5 @@
 #include "bt_editor_base.h"
+#include <behaviortree_cpp/decorators/subtree_node.h>
 #include <QDebug>
 
 void AbsBehaviorTree::clear()
@@ -163,4 +164,52 @@ bool NodeModel::operator ==(const NodeModel &other) const
         other_it++;
     }
     return true;
+}
+
+NodeModel &NodeModel::operator =(const BT::TreeNodeManifest &src)
+{
+    this->type = src.type;
+    this->registration_ID = QString::fromStdString(src.registration_ID);
+    for (const auto& port_it: src.ports)
+    {
+        const auto& port_name = port_it.first;
+        const auto& bt_port = port_it.second;
+        PortModel port_model;
+        port_model = bt_port;
+        this->ports.insert( { QString::fromStdString(port_name), std::move(port_model) } );
+    }
+    return *this;
+}
+
+
+const NodeModels &BuiltinNodeModels()
+{
+    static NodeModels builtin_node_models =
+            []() -> NodeModels
+    {
+        BT::BehaviorTreeFactory factory;
+
+        factory.registerNodeType<BT::DecoratorSubtreeNode>("Root");
+
+        NodeModels out;
+        for( const auto& it: factory.manifests())
+        {
+            const auto& model_name = it.first;
+            const auto& bt_model = it.second;
+            NodeModel groot_model;
+            groot_model = bt_model;
+            out.insert( { QString::fromStdString(model_name), std::move(groot_model) });
+        }
+        return out;
+     }();
+
+    return builtin_node_models;
+}
+
+PortModel &PortModel::operator =(const BT::PortInfo &src)
+{
+    this->direction = src.direction();
+    this->description = QString::fromStdString(src.description());
+    this->type_name = QString::fromStdString(BT::demangle(src.type()));
+    return *this;
 }

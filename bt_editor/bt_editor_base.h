@@ -24,6 +24,8 @@ struct PortModel
     QString type_name;
     PortDirection direction;
     QString description;
+
+    PortModel& operator = (const BT::PortInfo& src);
 };
 
 typedef std::map<QString, PortModel> PortModels;
@@ -39,6 +41,8 @@ struct  NodeModel
     {
         return !( *this == other);
     }
+
+    NodeModel& operator = (const BT::TreeNodeManifest& src);
 };
 
 typedef std::map<QString, NodeModel> NodeModels;
@@ -57,13 +61,7 @@ struct ParameterWidgetCreator{
 
 using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
 
-
-// TOSO VER_3
-inline const NodeModels& BuiltinNodeModel()
-{
-    static NodeModels builtin_node_models;
-    return builtin_node_models;
-}
+const NodeModels& BuiltinNodeModels();
 
 //--------------------------------
 struct AbstractTreeNode

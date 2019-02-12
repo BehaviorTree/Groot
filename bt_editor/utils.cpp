@@ -493,11 +493,11 @@ void CleanPreviousModels(QWidget *parent,
 {
     std::set<const QString *> prev_custom_models;
 
-    if( prev_models.size() > BuiltinNodeModel().size() )
+    if( prev_models.size() > BuiltinNodeModels().size() )
     {
         for(const auto& it: prev_models)
         {
-            if( BuiltinNodeModel().count(it.first) == 0)
+            if( BuiltinNodeModels().count(it.first) == 0)
             {
                 prev_custom_models.insert( &it.first );
             }
@@ -513,7 +513,7 @@ void CleanPreviousModels(QWidget *parent,
                                             QMessageBox::No | QMessageBox::Yes );
             if( ret == QMessageBox::Yes)
             {
-                prev_models = BuiltinNodeModel();
+                prev_models = BuiltinNodeModels();
             }
             break;
         }

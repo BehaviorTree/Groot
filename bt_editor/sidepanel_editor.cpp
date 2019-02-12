@@ -59,16 +59,20 @@ void SidepanelEditor::updateTreeView()
       const auto& ID = it.first;
       const NodeModel& model = it.second;
 
-      const QString& category = toStr(model.type);
+      QString category = toStr(model.type);
+      if( model.registration_ID == "Root")
+      {
+          category = "Root";
+      }
       auto parent = _tree_view_category_items[category];
       auto item = new QTreeWidgetItem(parent, {ID});
       QFont font = item->font(0);
-      font.setItalic( BuiltinNodeModel().count(it.first) == 1 );
+      font.setItalic( BuiltinNodeModels().count(it.first) == 1 );
       font.setPointSize(11);
       item->setFont(0, font);
       item->setData(0, Qt::UserRole, ID);
       const bool is_editable = (!ui->buttonLock->isChecked() &&
-                                BuiltinNodeModel().count( ID ) == 0);
+                                BuiltinNodeModels().count( ID ) == 0);
       item->setTextColor(0, is_editable ? Qt::blue : Qt::black);
     }
 
@@ -182,7 +186,7 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
     QString selected_name = selected_item->text(0);
 
     if( ui->buttonLock->isChecked() ||
-        BuiltinNodeModel().count( selected_name ) != 0 )
+        BuiltinNodeModels().count( selected_name ) != 0 )
     {
         return;
     }
@@ -241,7 +245,7 @@ void SidepanelEditor::on_buttonUpload_clicked()
         const auto& ID    = tree_it.first;
         const auto& model = tree_it.second;
 
-        if( BuiltinNodeModel().count(ID) != 0 )
+        if( BuiltinNodeModels().count(ID) != 0 )
         {
             continue;
         }
