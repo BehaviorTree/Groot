@@ -58,11 +58,6 @@ inline NodeStatus convert(const BT_Serialization::Status& status)
     return NodeStatus::IDLE;
 }
 
-ParameterWidgetCreator buildWidgetCreator(const PortModel& port_model,
-                                          const QString &name,
-                                          const QString &remapping_value);
-
-
 void CleanPreviousModels(QWidget *parent,
                          NodeModels &prev_models,
                          const NodeModels &new_models);

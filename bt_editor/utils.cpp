@@ -451,25 +451,6 @@ getStyleFromStatus(NodeStatus status)
     return {node_style, conn_style};
 }
 
-ParameterWidgetCreator buildWidgetCreator(const PortModel &port_model,
-                                          const QString& name,
-                                          const QString& remapping_value)
-{
-    ParameterWidgetCreator creator;
-    creator.label = name;
-
-    creator.instance_factory = [remapping_value]()
-    {
-        QLineEdit* line = new QLineEdit();
-        line->setAlignment( Qt::AlignHCenter);
-        line->setMaximumWidth(140);
-        line->setText( remapping_value );
-        return line;
-    };
-
-    return creator;
-}
-
 QtNodes::Node *GetParentNode(QtNodes::Node *node)
 {
     using namespace QtNodes;

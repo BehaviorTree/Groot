@@ -54,13 +54,6 @@ GraphicMode getGraphicModeFromString(const QString& str);
 
 const char* toStr(GraphicMode type);
 
-struct ParameterWidgetCreator{
-    QString label;
-    std::function<QWidget*()> instance_factory;
-};
-
-using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
-
 const NodeModels& BuiltinNodeModels();
 
 //--------------------------------

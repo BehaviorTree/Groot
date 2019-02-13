@@ -21,8 +21,6 @@ NodeModel buildTreeNodeModelFromXML(const QDomElement& node)
 
     const auto node_type = BT::convertFromString<BT::NodeType>(tag_name.toStdString());
 
-    ParameterWidgetCreators parameters;
-
     QDomNamedNodeMap attributes = node.attributes ();
     for (int i=0; i< attributes.size(); i++ )
     {
@@ -33,9 +31,6 @@ NodeModel buildTreeNodeModelFromXML(const QDomElement& node)
         {
             PortModel port_model;
             port_model.direction = PortDirection::INOUT;
-
-            auto widget_creator = buildWidgetCreator( port_model, attr_name, attr.value() );
-            parameters.push_back(widget_creator);
             ports_list.insert( { attr_name, std::move(port_model)} );
         }
     }
@@ -202,7 +197,7 @@ bool VerifyXML(QDomDocument &doc,
                     AppendError(node.lineNumber(), "Error at line %d: -> The attribute [ID] is "
                                                     "mandatory");
                 }
-                QString ID = node.attribute("ID");
+                //QString ID = node.attribute("ID");
 
                 for (auto param_node = xml_root.firstChildElement("Parameter");
                      !param_node.isNull();
@@ -214,8 +209,8 @@ bool VerifyXML(QDomDocument &doc,
                                     "The node <Parameter> requires the attributes [type] and "
                                     "[label]");
                     }
-                    QString label = node.attribute("label");
-                    QString type  = node.attribute("type");
+//                    QString label = node.attribute("label");
+//                    QString type  = node.attribute("type");
                 }
             }
         }

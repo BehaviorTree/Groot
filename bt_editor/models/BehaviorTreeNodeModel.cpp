@@ -80,10 +80,16 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const NodeModel &model):
 
     for(const auto& port_it: model.ports )
     {
-        auto param_creator = buildWidgetCreator( port_it.second, port_it.first, {} );
-        const QString& label = param_creator.label;
+        const QString& label = port_it.first;
+        QLineEdit* form_field = new QLineEdit();
+        form_field->setAlignment( Qt::AlignHCenter);
+        form_field->setMaximumWidth(140);
+
         QLabel* form_label  =  new QLabel( label, _params_widget );
-        QWidget* form_field = param_creator.instance_factory();
+        if( port_it.second.description.isEmpty() == false)
+        {
+            form_label->setToolTip( port_it.second.description );
+        }
 
         form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
 
