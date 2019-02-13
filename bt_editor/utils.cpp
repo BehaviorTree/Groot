@@ -1,13 +1,13 @@
 #include "utils.h"
-#include <nodes/Node>
-#include <nodes/DataModelRegistry>
-#include <QDebug>
 #include <set>
+#include <QDebug>
+#include <QDomDocument>
 #include <QMessageBox>
+#include "nodes/Node"
+#include "nodes/DataModelRegistry"
 #include "nodes/internal/memory.hpp"
 #include "models/SubtreeNodeModel.hpp"
 #include "models/RootNodeModel.hpp"
-#include <QDomDocument>
 
 using QtNodes::PortLayout;
 using QtNodes::DataModelRegistry;
@@ -360,7 +360,7 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
 
 
 std::pair<AbsBehaviorTree, std::unordered_map<int, int>>
-BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
+BuildTreeFromFlatbuffers(const Serialization::BehaviorTree *fb_behavior_tree)
 {
     AbsBehaviorTree tree;
     std::unordered_map<int, int> uid_to_index;
@@ -374,7 +374,7 @@ BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
     tree.addNode( nullptr, std::move(abs_root) );
 
     // just copy the vector
-    for( const BT_Serialization::TreeNode* fb_node: *(fb_behavior_tree->nodes()) )
+    for( const Serialization::TreeNode* fb_node: *(fb_behavior_tree->nodes()) )
     {
         AbstractTreeNode abs_node;
         abs_node.instance_name = fb_node->instance_name()->c_str();
@@ -389,7 +389,7 @@ BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
            abs_node.model.type = NodeType::SUBTREE;
         }
 
-        for( const BT_Serialization::KeyValue* pair: *(fb_node->params()) )
+        for( const Serialization::KeyValue* pair: *(fb_node->params()) )
         {
             abs_node.ports_mapping.insert( { QString(pair->key()->c_str()),
                                              QString(pair->value()->c_str()) } );
@@ -402,7 +402,7 @@ BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
 
     for(size_t index = 0; index < fb_behavior_tree->nodes()->size(); index++ )
     {
-        const BT_Serialization::TreeNode* fb_node = fb_behavior_tree->nodes()->Get(index);
+        const Serialization::TreeNode* fb_node = fb_behavior_tree->nodes()->Get(index);
         AbstractTreeNode* abs_node = tree.node( index + 1);
         for( const auto child_uid: *(fb_node->children_uid()) )
         {

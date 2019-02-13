@@ -178,7 +178,7 @@ void SidepanelReplay::loadLog(const QByteArray &content)
 
     size_t bt_header_size = flatbuffers::ReadScalar<uint32_t>(buffer);
 
-    auto fb_behavior_tree = BT_Serialization::GetBehaviorTree( &buffer[4] );
+    auto fb_behavior_tree = Serialization::GetBehaviorTree( &buffer[4] );
 
     auto res_pair = BuildTreeFromFlatbuffers( fb_behavior_tree );
 
@@ -208,8 +208,8 @@ void SidepanelReplay::loadLog(const QByteArray &content)
         transition.timestamp = timestamp;
         const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
         transition.index = uid_to_index.at(uid);
-        transition.prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+10] ));
-        transition.status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+11] ));
+        transition.prev_status = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[offset+10] ));
+        transition.status      = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[offset+11] ));
 
         _transitions.push_back(transition);
     }

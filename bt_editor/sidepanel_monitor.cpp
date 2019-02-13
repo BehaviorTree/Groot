@@ -54,7 +54,7 @@ void SidepanelMonitor::on_timer()
             {
                 uint16_t index = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
                 AbstractTreeNode* node = _loaded_tree.node( index );
-                node->status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+2] ));
+                node->status = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[offset+2] ));
             }
 
             std::vector<std::pair<int, NodeStatus>> node_status;
@@ -69,8 +69,8 @@ void SidepanelMonitor::on_timer()
                 // double timestamp = t_sec + t_usec* 0.000001;
                 const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
                 const uint16_t index = _uid_to_index.at(uid);
-                // NodeStatus prev_status = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index+10] ));
-                NodeStatus status      = convert(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[offset+11] ));
+                // NodeStatus prev_status = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[index+10] ));
+                NodeStatus status      = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[offset+11] ));
 
                 _loaded_tree.node(index)->status = status;
                 node_status.push_back( {index, status} );
@@ -107,7 +107,7 @@ bool SidepanelMonitor::getTreeFromServer()
         }
 
         const char* buffer = reinterpret_cast<const char*>(reply.data());
-        auto fb_behavior_tree = BT_Serialization::GetBehaviorTree( buffer );
+        auto fb_behavior_tree = Serialization::GetBehaviorTree( buffer );
 
         auto res_pair = BuildTreeFromFlatbuffers( fb_behavior_tree );
 
