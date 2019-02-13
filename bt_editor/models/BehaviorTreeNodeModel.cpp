@@ -78,46 +78,78 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const NodeModel &model):
     _form_layout->setVerticalSpacing(2);
     _form_layout->setContentsMargins(0, 0, 0, 0);
 
-    for(const auto& port_it: model.ports )
+    PortDirection preferred_port_types[3] = { PortDirection::INPUT,
+                                              PortDirection::OUTPUT,
+                                              PortDirection::INOUT};
+
+    for(int pref_index=0; pref_index < 3; pref_index++)
     {
-        const QString& label = port_it.first;
-        QLineEdit* form_field = new QLineEdit();
-        form_field->setAlignment( Qt::AlignHCenter);
-        form_field->setMaximumWidth(140);
-
-        QLabel* form_label  =  new QLabel( label, _params_widget );
-        if( port_it.second.description.isEmpty() == false)
+        for(const auto& port_it: model.ports )
         {
-            form_label->setToolTip( port_it.second.description );
+            auto preferred_direction = preferred_port_types[pref_index];
+            if( port_it.second.direction != preferred_direction )
+            {
+                continue;
+            }
+
+            QString description = port_it.second.description;
+            QString label = port_it.first;
+            if( preferred_direction == PortDirection::INPUT)
+            {
+                label.prepend("[IN] ");
+                if( description.isEmpty())
+                {
+                    description="[INPUT]";
+                }
+                else{
+                    description.prepend("[INPUT]: ");
+                }
+            }
+            else if( preferred_direction == PortDirection::OUTPUT){
+                label.prepend("[OUT] ");
+                if( description.isEmpty())
+                {
+                    description="[OUTPUT]";
+                }
+                else{
+                    description.prepend("[OUTPUT]: ");
+                }
+            }
+
+            QLineEdit* form_field = new QLineEdit();
+            form_field->setAlignment( Qt::AlignHCenter);
+            form_field->setMaximumWidth(140);
+
+            QLabel* form_label  =  new QLabel( label, _params_widget );
+            form_label->setToolTip( description );
+
+            form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
+
+            _ports_widgets.insert( std::make_pair( label, form_field) );
+
+            form_field->setStyleSheet(" color: rgb(30,30,30); "
+                                      "background-color: rgb(180,180,180); "
+                                      "border: 0px; "
+                                      "padding: 0px 0px 0px 0px;");
+
+            _form_layout->addRow( form_label, form_field );
+
+            auto paramUpdated = [this,label,form_field]()
+            {
+                this->parameterUpdated(label,form_field);
+            };
+
+            if(auto lineedit = dynamic_cast<QLineEdit*>( form_field ) )
+            {
+                connect( lineedit, &QLineEdit::editingFinished, this, paramUpdated );
+                connect( lineedit, &QLineEdit::editingFinished,
+                         this, &BehaviorTreeDataModel::updateNodeSize);
+            }
+            else if( auto combo = dynamic_cast<QComboBox*>( form_field ) )
+            {
+                connect( combo, &QComboBox::currentTextChanged, this, paramUpdated);
+            }
         }
-
-        form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
-
-        _ports_widgets.insert( std::make_pair( label, form_field) );
-
-        form_field->setStyleSheet(" color: rgb(30,30,30); "
-                                  "background-color: rgb(180,180,180); "
-                                  "border: 0px; "
-                                  "padding: 0px 0px 0px 0px;");
-
-        _form_layout->addRow( form_label, form_field );
-
-        auto paramUpdated = [this,label,form_field]()
-        {
-            this->parameterUpdated(label,form_field);
-        };
-
-        if(auto lineedit = dynamic_cast<QLineEdit*>( form_field ) )
-        {
-            connect( lineedit, &QLineEdit::editingFinished, this, paramUpdated );
-            connect( lineedit, &QLineEdit::editingFinished,
-                     this, &BehaviorTreeDataModel::updateNodeSize);
-        }
-        else if( auto combo = dynamic_cast<QComboBox*>( form_field ) )
-        {
-            connect( combo, &QComboBox::currentTextChanged, this, paramUpdated);
-        }
-
     }
     _params_widget->adjustSize();
 
