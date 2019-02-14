@@ -8,7 +8,6 @@
 #include <QDebug>
 
 #include "utils.h"
-#include "BT_logger_generated.h"
 
 SidepanelMonitor::SidepanelMonitor(QWidget *parent) :
     QFrame(parent),
@@ -54,7 +53,7 @@ void SidepanelMonitor::on_timer()
             {
                 uint16_t index = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
                 AbstractTreeNode* node = _loaded_tree.node( index );
-                node->status = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[offset+2] ));
+                node->status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+2] ));
             }
 
             std::vector<std::pair<int, NodeStatus>> node_status;
@@ -70,7 +69,7 @@ void SidepanelMonitor::on_timer()
                 const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
                 const uint16_t index = _uid_to_index.at(uid);
                 // NodeStatus prev_status = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[index+10] ));
-                NodeStatus status      = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[offset+11] ));
+                NodeStatus status  = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+11] ));
 
                 _loaded_tree.node(index)->status = status;
                 node_status.push_back( {index, status} );

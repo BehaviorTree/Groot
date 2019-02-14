@@ -8,7 +8,7 @@
 
 #include "bt_editor_base.h"
 #include <behaviortree_cpp/loggers/BT_logger_generated.h>
-
+#include <behaviortree_cpp/loggers/bt_flatbuffer_helper.h>
 
 QtNodes::Node* findRoot(const QtNodes::FlowScene &scene);
 
@@ -35,5 +35,13 @@ QtNodes::Node* GetParentNode(QtNodes::Node* node);
 void CleanPreviousModels(QWidget *parent,
                          NodeModels &prev_models,
                          const NodeModels &new_models);
+
+
+BT::NodeType convert( Serialization::NodeType type);
+
+BT::NodeStatus convert(Serialization::NodeStatus type);
+
+BT::PortDirection convert(Serialization::PortDirection direction);
+
 
 #endif // NODE_UTILS_H
