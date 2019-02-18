@@ -277,8 +277,16 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
 
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
 
-        abs_node.model = &bt_model->model();
-        abs_node.instance_name     = bt_model->instanceName();
+        const auto& registration_ID = bt_model->registrationName();
+
+        auto model_it = tree.models().find( registration_ID );
+        if( model_it == tree.models().end() )
+        {
+            model_it = tree.models().insert( { registration_ID, bt_model->model()} ).first;
+        }
+
+        abs_node.model = &model_it->second;
+        abs_node.instance_name = bt_model->instanceName();
         abs_node.pos  = scene->getNodePosition(*node) ;
         abs_node.size = scene->getNodeSize(*node);
         abs_node.graphic_node = node;
@@ -295,6 +303,8 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
     };
 
     pushRecursively( nullptr, root_node );
+
+    tree.debugPrint();
 
     return tree;
 }

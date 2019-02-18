@@ -50,6 +50,13 @@ void EditorTest::loadFile()
 
     QString saved_xml = main_win->saveToXML();
 
+    QFile qFile("crossdoor_EditorTest_loadFile.xml");
+    if (qFile.open(QIODevice::WriteOnly))
+    {
+        QTextStream out(&qFile); out << saved_xml;
+        qFile.close();
+    }
+
     QVERIFY2( file_xml.simplified() == saved_xml.simplified(),
               "Loaded and saved XML are not the same" );
 
@@ -65,7 +72,7 @@ void EditorTest::loadFile()
     auto tree_B1 = getAbstractTree("MainTree");
     auto tree_B2 = getAbstractTree("DoorClosed");
 
-    bool same_maintree   = tree_A1 == tree_B1;
+    bool same_maintree   = (tree_A1 == tree_B1);
     if( !same_maintree )
     {
         tree_A1.debugPrint();

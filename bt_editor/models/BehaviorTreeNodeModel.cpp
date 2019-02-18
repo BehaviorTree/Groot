@@ -125,7 +125,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const NodeModel &model):
 
             form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
 
-            _ports_widgets.insert( std::make_pair( label, form_field) );
+            _ports_widgets.insert( std::make_pair( port_it.first, form_field) );
 
             form_field->setStyleSheet(" color: rgb(30,30,30); "
                                       "background-color: rgb(180,180,180); "

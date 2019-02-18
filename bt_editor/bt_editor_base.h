@@ -60,6 +60,7 @@ const NodeModels& BuiltinNodeModels();
 struct AbstractTreeNode
 {
     AbstractTreeNode() :
+        model(nullptr),
         index(-1),
         status(NodeStatus::IDLE),
         graphic_node(nullptr) {}
@@ -89,6 +90,13 @@ public:
     typedef std::deque<AbstractTreeNode> NodesVector;
 
     AbsBehaviorTree() {}
+
+    AbsBehaviorTree(const AbsBehaviorTree& other)
+    {
+        *this = other;
+    }
+
+    AbsBehaviorTree& operator = (const AbsBehaviorTree&);
 
     ~AbsBehaviorTree();
 

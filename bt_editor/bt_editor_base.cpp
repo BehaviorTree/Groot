@@ -7,6 +7,19 @@ void AbsBehaviorTree::clear()
     _nodes.resize(0);
 }
 
+AbsBehaviorTree &AbsBehaviorTree::operator =(const AbsBehaviorTree &other)
+{
+    _nodes = other._nodes;
+    _models = other._models;
+
+    for (size_t index = 0; index < other._nodes.size(); index++)
+    {
+        const auto& registration_ID = other._nodes[index].model->registration_ID;
+        _nodes[index].model = &(_models.at( registration_ID ));
+    }
+    return *this;
+}
+
 AbsBehaviorTree::~AbsBehaviorTree()
 {
     clear();
@@ -54,7 +67,8 @@ const AbstractTreeNode* AbsBehaviorTree::findFirstNode(const QString &instance_n
 
 
 
-AbstractTreeNode* AbsBehaviorTree::addNode(AbstractTreeNode* parent, AbstractTreeNode && new_node )
+AbstractTreeNode* AbsBehaviorTree::addNode(AbstractTreeNode* parent,
+                                           AbstractTreeNode && new_node )
 {
     int index = _nodes.size();
     new_node.index = index;
