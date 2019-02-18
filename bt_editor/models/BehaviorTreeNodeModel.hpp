@@ -100,7 +100,7 @@ protected:
   QFrame* _caption_logo_right;
 
 private:
-  const NodeModel& _model;
+  const NodeModel _model;
   QString _instance_name;
   QSvgRenderer* _icon_renderer;
 

@@ -546,7 +546,7 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor,
                                          AbstractTreeNode* abs_node,
                                          Node* parent_node, int nest_level)
 {
-    Node& new_node = _scene->createNodeAtPos( abs_node->model->registration_ID,
+    Node& new_node = _scene->createNodeAtPos( abs_node->model.registration_ID,
                                               abs_node->instance_name,
                                               cursor);
     BehaviorTreeDataModel* bt_node = dynamic_cast<BehaviorTreeDataModel*>( new_node.nodeDataModel() );
@@ -564,7 +564,7 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor,
     abs_node->graphic_node = &new_node;
 
     // Special case for node Subtree. Expand if necessary
-    if( abs_node->model->type == NodeType::SUBTREE &&
+    if( abs_node->model.type == NodeType::SUBTREE &&
         abs_node->children_index.size() == 1 )
     {
         if( auto subtree_node = dynamic_cast<SubtreeNodeModel*>( bt_node ) )
@@ -601,7 +601,7 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
 
     auto root_node = abs_tree.rootNode();
 
-    if( root_node->model->registration_ID == "Root" )
+    if( root_node->model.registration_ID == "Root" )
     {
       root_node->graphic_node = &first_qt_node;
       int root_child_index = root_node->children_index.front();
@@ -625,7 +625,7 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
 
     auto root_node = subtree.rootNode();
 
-    if( root_node->model->registration_ID == "Root" &&
+    if( root_node->model.registration_ID == "Root" &&
         root_node->children_index.size() == 1 )
     {
         int root_child_index = root_node->children_index.front();

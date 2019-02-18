@@ -116,10 +116,10 @@ bool SidepanelMonitor::getTreeFromServer()
         // add new models to registry
         for(const auto& tree_node: _loaded_tree.nodes())
         {
-            const auto& registration_ID = tree_node.model->registration_ID;
+            const auto& registration_ID = tree_node.model.registration_ID;
             if( BuiltinNodeModels().count(registration_ID) == 0)
             {
-                addNewModel( *tree_node.model );
+                addNewModel( tree_node.model );
             }
         }
 

@@ -60,12 +60,14 @@ const NodeModels& BuiltinNodeModels();
 struct AbstractTreeNode
 {
     AbstractTreeNode() :
-        model(nullptr),
         index(-1),
         status(NodeStatus::IDLE),
-        graphic_node(nullptr) {}
+        graphic_node(nullptr)
+    {
+        model.type = NodeType::UNDEFINED;
+    }
 
-    const NodeModel* model;
+    NodeModel model;
     PortsMapping ports_mapping;
     int index;
     QString instance_name;
@@ -90,13 +92,6 @@ public:
     typedef std::deque<AbstractTreeNode> NodesVector;
 
     AbsBehaviorTree() {}
-
-    AbsBehaviorTree(const AbsBehaviorTree& other)
-    {
-        *this = other;
-    }
-
-    AbsBehaviorTree& operator = (const AbsBehaviorTree&);
 
     ~AbsBehaviorTree();
 
@@ -132,13 +127,8 @@ public:
 
     void clear();
 
-    NodeModels& models() { return _models; }
-
-    const NodeModels& models() const { return _models; }
-
 private:
     NodesVector _nodes;
-    NodeModels  _models;
 };
 
 static int GetUID()

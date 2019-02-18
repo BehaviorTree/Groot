@@ -187,10 +187,10 @@ void SidepanelReplay::loadLog(const QByteArray &content)
 
     for (const auto& tree_node: _loaded_tree.nodes() )
     {
-        const QString& ID = tree_node.model->registration_ID;
+        const QString& ID = tree_node.model.registration_ID;
         if( BuiltinNodeModels().count( ID ) == 0)
         {
-            emit addNewModel( *tree_node.model );
+            emit addNewModel( tree_node.model );
         }
     }
 
