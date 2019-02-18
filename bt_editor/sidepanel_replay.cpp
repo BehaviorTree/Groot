@@ -14,7 +14,7 @@
 
 #include "bt_editor_base.h"
 #include "utils.h"
-#include "BT_logger_generated.h"
+
 
 SidepanelReplay::SidepanelReplay(QWidget *parent) :
     QFrame(parent),
@@ -187,10 +187,10 @@ void SidepanelReplay::loadLog(const QByteArray &content)
 
     for (const auto& tree_node: _loaded_tree.nodes() )
     {
-        const QString& ID = tree_node.model.registration_ID;
+        const QString& ID = tree_node.model->registration_ID;
         if( BuiltinNodeModels().count( ID ) == 0)
         {
-            emit addNewModel( tree_node.model );
+            emit addNewModel( *tree_node.model );
         }
     }
 
@@ -208,8 +208,8 @@ void SidepanelReplay::loadLog(const QByteArray &content)
         transition.timestamp = timestamp;
         const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
         transition.index = uid_to_index.at(uid);
-        transition.prev_status = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[offset+10] ));
-        transition.status      = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[offset+11] ));
+        transition.prev_status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+10] ));
+        transition.status      = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+11] ));
 
         _transitions.push_back(transition);
     }

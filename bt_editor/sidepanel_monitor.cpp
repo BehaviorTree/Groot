@@ -68,7 +68,7 @@ void SidepanelMonitor::on_timer()
                 // double timestamp = t_sec + t_usec* 0.000001;
                 const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
                 const uint16_t index = _uid_to_index.at(uid);
-                // NodeStatus prev_status = convert(flatbuffers::ReadScalar<Serialization::Status>(&buffer[index+10] ));
+                // NodeStatus prev_status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[index+10] ));
                 NodeStatus status  = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+11] ));
 
                 _loaded_tree.node(index)->status = status;
@@ -116,10 +116,10 @@ bool SidepanelMonitor::getTreeFromServer()
         // add new models to registry
         for(const auto& tree_node: _loaded_tree.nodes())
         {
-            const auto& registration_ID = tree_node.model.registration_ID;
+            const auto& registration_ID = tree_node.model->registration_ID;
             if( BuiltinNodeModels().count(registration_ID) == 0)
             {
-                addNewModel( tree_node.model );
+                addNewModel( *tree_node.model );
             }
         }
 

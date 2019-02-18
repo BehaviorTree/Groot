@@ -85,7 +85,7 @@ void AbsBehaviorTree::debugPrint() const
 
         printf("%s (%s)",
                node->instance_name.toStdString().c_str(),
-               node->model.registration_ID.toStdString().c_str() );
+               node->model->registration_ID.toStdString().c_str() );
         std::cout << std::endl; // force flush
 
         for(int index: node->children_index)
@@ -132,7 +132,7 @@ const char *toStr(GraphicMode type)
 
 bool AbstractTreeNode::operator ==(const AbstractTreeNode &other) const
 {
-    return  model.registration_ID == other.model.registration_ID &&
+    return  model->registration_ID == other.model->registration_ID &&
             status == other.status &&
             size == other.size &&
             pos == other.pos &&

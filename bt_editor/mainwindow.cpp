@@ -303,7 +303,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
              !bt_root.isNull();
              bt_root = bt_root.nextSiblingElement("BehaviorTree"))
         {
-            auto tree = BuildTreeFromXML( bt_root );
+            auto tree = BuildTreeFromXML( bt_root, _treenode_models );
             QString tree_name("BehaviorTree");
 
             if( bt_root.hasAttribute("ID") )
@@ -416,7 +416,7 @@ QString MainWindow::saveToXML() const
         auto abs_tree = BuildTreeFromScene(container->scene());
         auto abs_root = abs_tree.rootNode();
         if( abs_root->children_index.size() == 1 &&
-            abs_root->model.registration_ID == "Root"  )
+            abs_root->model->registration_ID == "Root"  )
         {
             // mofe to the child of ROOT
             abs_root = abs_tree.node( abs_root->children_index.front() );
@@ -959,10 +959,10 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
 
         for(auto& node: abs_tree.nodes())
         {
-            if( node.model.registration_ID == prev_ID )
+            if( node.model->registration_ID == prev_ID )
             {
                 bool is_expanded_subtree = false;
-                if( node.model.type == NodeType::SUBTREE)
+                if( node.model->type == NodeType::SUBTREE)
                 {
                     auto graphic_model = node.graphic_node->nodeDataModel();
                     auto subtree_model = dynamic_cast<SubtreeNodeModel*>( graphic_model );

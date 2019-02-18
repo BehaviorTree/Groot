@@ -361,7 +361,7 @@ void EditorTest::modifyCustomModel()
     auto jump_abs_node = abs_tree.findFirstNode( jump_model.registration_ID );
     QVERIFY( jump_abs_node != nullptr);
     sleepAndRefresh( 500 );
-    QCOMPARE( jump_abs_node->model, jump_model );
+    QCOMPARE( *jump_abs_node->model, jump_model );
 
     sleepAndRefresh( 500 );
 }

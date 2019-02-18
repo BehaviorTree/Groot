@@ -64,7 +64,7 @@ struct AbstractTreeNode
         status(NodeStatus::IDLE),
         graphic_node(nullptr) {}
 
-    NodeModel model;
+    const NodeModel* model;
     PortsMapping ports_mapping;
     int index;
     QString instance_name;
@@ -124,8 +124,13 @@ public:
 
     void clear();
 
+    NodeModels& models() { return _models; }
+
+    const NodeModels& models() const { return _models; }
+
 private:
     NodesVector _nodes;
+    NodeModels  _models;
 };
 
 static int GetUID()

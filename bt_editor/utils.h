@@ -22,7 +22,7 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
 std::pair<AbsBehaviorTree, std::unordered_map<int, int> >
 BuildTreeFromFlatbuffers(const Serialization::BehaviorTree* bt );
 
-AbsBehaviorTree BuildTreeFromXML(const QDomElement &bt_root);
+AbsBehaviorTree BuildTreeFromXML(const QDomElement &bt_root, const NodeModels &models);
 
 void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree &abstract_tree );
 

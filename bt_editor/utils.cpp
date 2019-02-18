@@ -277,7 +277,7 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
 
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
 
-        abs_node.model = bt_model->model();
+        abs_node.model = &bt_model->model();
         abs_node.instance_name     = bt_model->instanceName();
         abs_node.pos  = scene->getNodePosition(*node) ;
         abs_node.size = scene->getNodeSize(*node);
@@ -299,17 +299,18 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
     return tree;
 }
 
-AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
+AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root, const NodeModels& models )
 {
     AbsBehaviorTree tree;
+    tree.models() = models;
 
     if( bt_root.tagName() != "BehaviorTree" )
     {
         throw std::runtime_error( "expecting a node called <BehaviorTree>");
     }
 
+    //-------------------------------------
     std::function<void(AbstractTreeNode* parent, QDomElement)> recursiveStep;
-
     recursiveStep = [&](AbstractTreeNode* parent, QDomElement xml_node)
     {
         // The nodes with a ID used that QString to insert into the registry()
@@ -321,8 +322,16 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root )
 
         AbstractTreeNode tree_node;
 
-        tree_node.model.registration_ID = modelID;
-        tree_node.model.type = BT::convertFromString<BT::NodeType>( xml_node.tagName().toStdString() );
+        auto model_it = tree.models().find(modelID);
+        if( model_it == tree.models().end() )
+        {
+            NodeModel model;
+            model.type = BT::convertFromString<BT::NodeType>( xml_node.tagName().toStdString() );
+            model.registration_ID = modelID;
+            model_it =  tree.models().insert( { modelID, model} ).first;
+        }
+
+        tree_node.model = &(model_it->second);
 
         if( xml_node.hasAttribute("name") )
         {
@@ -367,32 +376,47 @@ BuildTreeFromFlatbuffers(const Serialization::BehaviorTree *fb_behavior_tree)
 
     AbstractTreeNode abs_root;
     abs_root.instance_name = "Root";
-    abs_root.model.registration_ID = "Root";
-    abs_root.model.type = NodeType::UNDEFINED;
+
+    tree.models().insert( {"Root", NodeModel() } );
+    abs_root.model = &(tree.models().at("Root"));
     abs_root.children_index.push_back( 1 );
 
     tree.addNode( nullptr, std::move(abs_root) );
 
-    // just copy the vector
+    //-----------------------------------------
+    for( const Serialization::NodeModel* model_node: *(fb_behavior_tree->node_models()) )
+    {
+        NodeModel model;
+        model.registration_ID = model_node->registration_name()->c_str();
+        model.type = convert( model_node->type() );
+
+        for( const Serialization::PortModel* port: *(model_node->ports()) )
+        {
+            PortModel port_model;
+            QString port_name = port->port_name()->c_str();
+            port_model.direction = convert( port->direction() );
+            port_model.type_name = port->type_info()->c_str();
+            port_model.description = port->description()->c_str();
+
+            model.ports.insert( { port_name, std::move(port_model) } );
+        }
+
+        tree.models().insert( { model.registration_ID, std::move(model)} );
+    }
+
+    //-----------------------------------------
     for( const Serialization::TreeNode* fb_node: *(fb_behavior_tree->nodes()) )
     {
         AbstractTreeNode abs_node;
         abs_node.instance_name = fb_node->instance_name()->c_str();
-        abs_node.model.registration_ID = fb_node->registration_name()->c_str();
-        abs_node.model.type   = convert( fb_node->type() );
+        const char* registration_ID = fb_node->registration_name()->c_str();
         abs_node.status = convert( fb_node->status() );
+        abs_node.model = &(tree.models().at(registration_ID));
 
-        // special case for SubTrees
-        if( abs_node.model.type == NodeType::DECORATOR &&
-            abs_node.model.registration_ID == "SubTree")
+        for( const Serialization::PortConfig* pair: *(fb_node->port_remaps()) )
         {
-           abs_node.model.type = NodeType::SUBTREE;
-        }
-
-        for( const Serialization::KeyValue* pair: *(fb_node->params()) )
-        {
-            abs_node.ports_mapping.insert( { QString(pair->key()->c_str()),
-                                             QString(pair->value()->c_str()) } );
+            abs_node.ports_mapping.insert( { QString(pair->port_name()->c_str()),
+                                             QString(pair->remap()->c_str()) } );
         }
         int index = tree.nodesCount();
         abs_node.index = index;
