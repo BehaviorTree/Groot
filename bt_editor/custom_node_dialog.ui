@@ -39,14 +39,7 @@
     <number>9</number>
    </property>
    <item>
-    <layout class="QFormLayout" name="formLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Name:</string>
-       </property>
-      </widget>
-     </item>
+    <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
       <widget class="QLineEdit" name="lineEdit">
        <property name="styleSheet">
@@ -54,7 +47,21 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Type:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Name:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
       <widget class="QComboBox" name="comboBox">
        <item>
         <property name="text">
@@ -66,13 +73,6 @@
          <string>ConditionNode</string>
         </property>
        </item>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Type:</string>
-       </property>
       </widget>
      </item>
     </layout>
@@ -143,10 +143,10 @@
       <enum>QAbstractItemView::SingleSelection</enum>
      </property>
      <property name="columnCount">
-      <number>3</number>
+      <number>4</number>
      </property>
      <attribute name="horizontalHeaderDefaultSectionSize">
-      <number>200</number>
+      <number>100</number>
      </attribute>
      <attribute name="horizontalHeaderMinimumSectionSize">
       <number>100</number>
@@ -158,15 +158,32 @@
       <property name="text">
        <string>Port Name</string>
       </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
      </column>
      <column>
       <property name="text">
        <string>Direction</string>
       </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
      </column>
      <column>
       <property name="text">
        <string>Default value</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Description</string>
       </property>
      </column>
     </widget>

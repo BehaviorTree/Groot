@@ -1,11 +1,21 @@
 <root>
     <TreeNodesModel>
-        <Action ID="CloseDoor"/>
         <SubTree ID="DoorClosed"/>
         <Condition ID="IsDoorOpen"/>
+        <Action ID="CloseDoor"/>
         <Action ID="OpenDoor"/>
         <Action ID="PassThroughDoor"/>
         <Action ID="PassThroughWindow"/>
+
+        <Action ID="SaySomething">
+            <input_port name="message" type="std::string"/>
+        </Action>/>
+        
+        <Action ID="MoveBase">
+            <input_port name="target"  type="Pose2D">x,y,theta</input_port>
+            <output_port name="result" type="std::string"/>
+        </Action>/>
+        
     </TreeNodesModel>
 </root>
 

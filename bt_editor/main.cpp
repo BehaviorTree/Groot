@@ -39,9 +39,7 @@ main(int argc, char *argv[])
                                    "Start in one of these modes: [editor,monitor,replay]",
                                    "mode");
     parser.addOption(mode_option);
-
     parser.process( app );
-
 
     QFile styleFile( ":/stylesheet.qss" );
     styleFile.open( QFile::ReadOnly );

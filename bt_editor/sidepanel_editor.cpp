@@ -297,8 +297,9 @@ void SidepanelEditor::on_buttonDownload_clicked()
     QString directory_path  = settings.value("SidepanelEditor.lastLoadDirectory",
                                              QDir::homePath() ).toString();
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Load TreenNodeModel from file"), directory_path,
-                                                    tr("BehaviorTree (*.xml); Skills (*.skills.json)" ));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Load TreenNodeModel from file"),
+                                                    directory_path,
+                                                    tr("BehaviorTree (*.xml *.skills.json)" ));
     QFileInfo fileInfo(fileName);
 
     if (!fileInfo.exists(fileName)){
@@ -373,20 +374,20 @@ NodeModels SidepanelEditor::importFromXML(QFile* file)
         return custom_models;
     }
 
-    auto meta_root = xml_root.firstChildElement("TreeNodesModel");
+    auto manifest_root = xml_root.firstChildElement("TreeNodesModel");
 
-    if ( meta_root.isNull() )
+    if ( manifest_root.isNull() )
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "Expecting <TreeNodesModel> under <root>");
         return custom_models;
     }
 
-    for( QDomElement node = meta_root.firstChildElement();
-         !node.isNull();
-         node = node.nextSiblingElement() )
+    for( QDomElement model_element = manifest_root.firstChildElement();
+         !model_element.isNull();
+         model_element = model_element.nextSiblingElement() )
     {
-        auto model = buildTreeNodeModelFromXML(node);
+        auto model = buildTreeNodeModelFromXML(model_element);
         custom_models.insert( { model.registration_ID, model } );
     }
 

@@ -17,12 +17,15 @@ CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
     ui->setupUi(this);
     setWindowTitle("Custom TreeNode Editor");
 
+
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
+
     QSettings settings;
     restoreGeometry(settings.value("CustomNodeDialog/geometry").toByteArray());
-
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
+    ui->tableWidget->horizontalHeader()->restoreState( settings.value("CustomNodeDialog/header").toByteArray() );
 
     if( to_edit.isEmpty() == false)
     {
@@ -52,6 +55,7 @@ CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
 
                 ui->tableWidget->setCellWidget(row,1, combo_direction );
                 ui->tableWidget->setItem(row,2, new QTableWidgetItem(port_it.second.default_value) );
+                ui->tableWidget->setItem(row,3, new QTableWidgetItem(port_it.second.description) );
             }
 
             if( model.type == NodeType::ACTION )
@@ -100,11 +104,11 @@ NodeModel CustomNodeDialog::getTreeNodeModel() const
         const QString key       = ui->tableWidget->item(row,0)->text();
         auto combo = static_cast<QComboBox*>(ui->tableWidget->cellWidget(row,1));
         const QString direction = combo->currentText();
-        const QString value     = ui->tableWidget->item(row,2)->text();
 
         PortModel port_model;
         port_model.direction = BT::convertFromString<PortDirection>(direction.toStdString());
-        port_model.default_value = value;
+        port_model.default_value =  ui->tableWidget->item(row,2)->text();
+        port_model.description   =  ui->tableWidget->item(row,3)->text();
         ports.insert( {key, port_model} );
     }
     return { type, ID, ports };
@@ -123,7 +127,8 @@ void CustomNodeDialog::on_toolButtonAdd_pressed()
     combo_direction->addItem("In/Out");
 
     ui->tableWidget->setCellWidget(row, 1, combo_direction);
-    ui->tableWidget->setItem(row,2, new QTableWidgetItem( ""));
+    ui->tableWidget->setItem(row,2, new QTableWidgetItem());
+    ui->tableWidget->setItem(row,3, new QTableWidgetItem());
 
     checkValid();
 }
@@ -211,10 +216,12 @@ void CustomNodeDialog::closeEvent(QCloseEvent *)
 {
     QSettings settings;
     settings.setValue("CustomNodeDialog/geometry", saveGeometry());
+    settings.setValue("CustomNodeDialog/header", ui->tableWidget->horizontalHeader()->saveState() );
 }
 
 void CustomNodeDialog::on_buttonBox_clicked(QAbstractButton *)
 {
     QSettings settings;
     settings.setValue("CustomNodeDialog/geometry", saveGeometry());
+    settings.setValue("CustomNodeDialog/header", ui->tableWidget->horizontalHeader()->saveState() );
 }

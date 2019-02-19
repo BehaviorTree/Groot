@@ -21,6 +21,12 @@ NodeModel buildTreeNodeModelFromXML(const QDomElement& node)
 
     const auto node_type = BT::convertFromString<BT::NodeType>(tag_name.toStdString());
 
+    if( node_type == BT::NodeType::UNDEFINED )
+    {
+        return {};
+    }
+
+    // this make sense for ports inside the <BehaviorTree> tag
     QDomNamedNodeMap attributes = node.attributes ();
     for (int i=0; i< attributes.size(); i++ )
     {
@@ -32,6 +38,35 @@ NodeModel buildTreeNodeModelFromXML(const QDomElement& node)
             PortModel port_model;
             port_model.direction = PortDirection::INOUT;
             ports_list.insert( { attr_name, std::move(port_model)} );
+        }
+    }
+    // this is used for ports inside the <TreeNodesModel> tag
+    const std::vector<std::pair<QString, PortDirection>> portsTypes = {
+        {"input_port", PortDirection::INPUT},
+        {"output_port", PortDirection::OUTPUT},
+        {"inout_port", PortDirection::INPUT}
+    };
+
+    for(const auto& it: portsTypes)
+    {
+        for( QDomElement port_element = node.firstChildElement( it.first );
+             !port_element.isNull();
+             port_element = port_element.nextSiblingElement( it.first ) )
+        {
+            PortModel port_model;
+            port_model.direction = it.second;
+            port_model.description = port_element.text();
+
+            if( port_element.hasAttribute("type") )
+            {
+                port_model.type_name = port_element.attribute("type");
+            }
+
+            if( port_element.hasAttribute("name") )
+            {
+                auto attr_name = port_element.attribute("name");
+                ports_list.insert( { attr_name, std::move(port_model)} );
+            }
         }
     }
 
