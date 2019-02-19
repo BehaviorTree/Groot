@@ -119,6 +119,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const NodeModel &model):
             QLineEdit* form_field = new QLineEdit();
             form_field->setAlignment( Qt::AlignHCenter);
             form_field->setMaximumWidth(140);
+            form_field->setText( port_it.second.default_value );
 
             QLabel* form_label  =  new QLabel( label, _params_widget );
             form_label->setToolTip( description );

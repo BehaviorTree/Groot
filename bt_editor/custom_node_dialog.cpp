@@ -39,7 +39,19 @@ CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
                 ui->tableWidget->setRowCount(row+1);
 
                 ui->tableWidget->setItem(row,0, new QTableWidgetItem(port_it.first) );
-               // TODO VER_3 ui->tableWidget->setItem(row,1, new QTableWidgetItem( param.value ));
+                QComboBox* combo_direction = new QComboBox;
+                combo_direction->addItem("Input");
+                combo_direction->addItem("Output");
+                combo_direction->addItem("In/Out");
+                switch( port_it.second.direction )
+                {
+                case BT::PortDirection::INPUT : combo_direction->setCurrentIndex(0); break;
+                case BT::PortDirection::OUTPUT: combo_direction->setCurrentIndex(1); break;
+                case BT::PortDirection::INOUT : combo_direction->setCurrentIndex(2); break;
+                }
+
+                ui->tableWidget->setCellWidget(row,1, combo_direction );
+                ui->tableWidget->setItem(row,2, new QTableWidgetItem(port_it.second.default_value) );
             }
 
             if( model.type == NodeType::ACTION )
@@ -86,7 +98,8 @@ NodeModel CustomNodeDialog::getTreeNodeModel() const
     for (int row=0; row < ui->tableWidget->rowCount(); row++ )
     {
         const QString key       = ui->tableWidget->item(row,0)->text();
-        const QString direction = ui->tableWidget->item(row,1)->text();
+        auto combo = static_cast<QComboBox*>(ui->tableWidget->cellWidget(row,1));
+        const QString direction = combo->currentText();
         const QString value     = ui->tableWidget->item(row,2)->text();
 
         PortModel port_model;
