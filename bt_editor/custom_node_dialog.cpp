@@ -17,7 +17,6 @@ CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
     ui->setupUi(this);
     setWindowTitle("Custom TreeNode Editor");
 
-
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);

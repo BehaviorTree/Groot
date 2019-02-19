@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QSettings>
 
 SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
                                  NodeModels &tree_nodes_model,
@@ -28,11 +29,24 @@ SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
     connect( ui->paletteTreeWidget, &QWidget::customContextMenuRequested,
              this, &SidepanelEditor::onContextMenu);
 
-    ui->buttonLock->setChecked(true);
+    auto table_header = ui->portsTableWidget->horizontalHeader();
+
+    table_header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    table_header->setSectionResizeMode(1, QHeaderView::Interactive);
+    table_header->setSectionResizeMode(2, QHeaderView::Stretch);
+
+    ui->buttonLock->setChecked(false);
+
+    QSettings settings;
+    table_header->restoreState( settings.value("SidepanelEditor/header").toByteArray() );
 }
 
 SidepanelEditor::~SidepanelEditor()
 {
+    QSettings settings;
+    settings.setValue("SidepanelEditor/header",
+                      ui->portsTableWidget->horizontalHeader()->saveState() );
+
     delete ui;
 }
 
@@ -99,18 +113,17 @@ void SidepanelEditor::on_paletteTreeWidget_itemSelectionChanged()
 
     const auto& model = _tree_nodes_model.at(item_name);
 
-    ui->parametersTableWidget->setRowCount( model.ports.size() );
+    ui->portsTableWidget->setRowCount( model.ports.size() );
 
     int row = 0;
     for (const auto& port_it: model.ports)
     {
-        ui->parametersTableWidget->setItem(row,0, new QTableWidgetItem( port_it.first ));
-      //TODO VER_3 ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem( param.value ));
-      row++;
+        ui->portsTableWidget->setItem(row,0, new QTableWidgetItem( BT::toStr(port_it.second.direction) ));
+        ui->portsTableWidget->setItem(row,1, new QTableWidgetItem( port_it.first ));
+        ui->portsTableWidget->setItem(row,2, new QTableWidgetItem( port_it.second.description) );
+        row++;
     }
-
-    ui->parametersTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui->parametersTableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->portsTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
   }
 
 }
