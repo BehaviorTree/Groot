@@ -24,6 +24,7 @@ struct PortModel
     QString type_name;
     PortDirection direction;
     QString description;
+    QString default_value;
 
     PortModel& operator = (const BT::PortInfo& src);
 };

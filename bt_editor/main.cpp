@@ -42,10 +42,11 @@ main(int argc, char *argv[])
 
     parser.process( app );
 
-    app.setStyleSheet( "QMenu { background-color: #101020; color:white; }\n"
-                       "QMenu::item { background: transparent; color:white; }\n"
-                       "QMenu::item:selected { background: #404050; color:white; }\n"
-                       "QMenu::item:disabled { background: transparent; color:grey; }\n" );
+
+    QFile styleFile( ":/stylesheet.qss" );
+    styleFile.open( QFile::ReadOnly );
+    QString style( styleFile.readAll() );
+    app.setStyleSheet( style );
 
     if( parser.isSet(test_option) )
     {

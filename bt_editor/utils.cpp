@@ -296,8 +296,6 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
 
     pushRecursively( nullptr, root_node );
 
-    tree.debugPrint();
-
     return tree;
 }
 

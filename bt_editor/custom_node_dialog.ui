@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>570</width>
+    <height>360</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -101,7 +101,7 @@
         </font>
        </property>
        <property name="text">
-        <string>NodeParameters:</string>
+        <string>Ports</string>
        </property>
       </widget>
      </item>
@@ -143,19 +143,30 @@
       <enum>QAbstractItemView::SingleSelection</enum>
      </property>
      <property name="columnCount">
-      <number>2</number>
+      <number>3</number>
      </property>
+     <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>200</number>
+     </attribute>
+     <attribute name="horizontalHeaderMinimumSectionSize">
+      <number>100</number>
+     </attribute>
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
      <column>
       <property name="text">
-       <string>Key Name</string>
+       <string>Port Name</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Default Value</string>
+       <string>Direction</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Default value</string>
       </property>
      </column>
     </widget>

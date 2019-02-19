@@ -4,6 +4,7 @@
 #include "bt_editor_base.h"
 #include <QDialog>
 #include <QValidator>
+#include <QAbstractButton>
 
 namespace Ui {
 class CustomNodeDialog;
@@ -15,7 +16,8 @@ class CustomNodeDialog : public QDialog
 
 public:
     explicit CustomNodeDialog(const NodeModels& models, QString to_edit = QString(), QWidget *parent = nullptr);
-    ~CustomNodeDialog();
+
+    ~CustomNodeDialog() override;
 
     NodeModel getTreeNodeModel() const;
 
@@ -25,6 +27,10 @@ private slots:
     void on_toolButtonRemove_pressed();
 
     void checkValid();
+
+    virtual void closeEvent(QCloseEvent *) override;
+
+    void on_buttonBox_clicked(QAbstractButton *button);
 
 private:
     Ui::CustomNodeDialog *ui;
