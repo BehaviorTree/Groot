@@ -92,7 +92,7 @@ void RecursiveNodeReorder(AbsBehaviorTree& tree, PortLayout layout)
 
     std::vector<QPointF> layer_cursor;
     std::vector< std::vector<AbstractTreeNode*> > nodes_by_level(1);
-    layer_cursor.push_back(QPointF(0,0));
+
     const qreal LEVEL_SPACING = 80;
     const qreal NODE_SPACING  = 40;
 
@@ -203,6 +203,8 @@ void RecursiveNodeReorder(AbsBehaviorTree& tree, PortLayout layout)
     };
 
     auto root_node = tree.rootNode();
+    layer_cursor.push_back(QPointF( -root_node->size.width()*0.5,
+                                    -root_node->size.height()*0.5));
     recursiveStep(0, root_node);
 
     if( layout == PortLayout::Vertical)

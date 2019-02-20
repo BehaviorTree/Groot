@@ -55,7 +55,7 @@ void SidepanelEditor::updateTreeView()
     ui->paletteTreeWidget->clear();
     _tree_view_category_items.clear();
 
-    for (const QString& category : {"Root", "Action", "Condition",
+    for (const QString& category : {"Action", "Condition",
                                     "Control", "Decorator", "SubTree" } )
     {
       auto item = new QTreeWidgetItem(ui->paletteTreeWidget, {category});
@@ -73,11 +73,11 @@ void SidepanelEditor::updateTreeView()
       const auto& ID = it.first;
       const NodeModel& model = it.second;
 
-      QString category = toStr(model.type);
       if( model.registration_ID == "Root")
       {
-          category = "Root";
+          continue;
       }
+      QString category = toStr(model.type);
       auto parent = _tree_view_category_items[category];
       auto item = new QTreeWidgetItem(parent, {ID});
       QFont font = item->font(0);

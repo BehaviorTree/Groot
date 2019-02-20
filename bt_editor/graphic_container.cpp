@@ -74,21 +74,21 @@ void GraphicContainer::lockEditing(bool locked)
     std::vector<QtNodes::Node*> subtrees_expanded;
     for (auto& nodes_it: _scene->nodes() )
     {
+
         QtNodes::Node* node = nodes_it.second.get();
-        node->nodeGraphicsObject().lock( locked );
+        auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() );
+        bool is_root = (bt_model->registrationName() == "Root");
+        bool to_lock = locked || is_root;
+
+        bt_model->lock(to_lock);
+        node->nodeGraphicsObject().lock(to_lock);
 
         if( auto subtree = dynamic_cast<SubtreeNodeModel*>( node->nodeDataModel() ) )
         {
             if( subtree->expanded()) subtrees_expanded.push_back(node);
         }
 
-        auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() );
-        if( bt_model )
-        {
-            bt_model->lock(locked);
-        }
-
-        if( !locked )
+        if( !to_lock )
         {
             node->nodeGraphicsObject().setGeometryChanged();
             QtNodes::NodeStyle style;
@@ -161,7 +161,7 @@ void GraphicContainer::zoomHomeView()
     QRectF rect = _scene->itemsBoundingRect();
     _view->setSceneRect (rect);
     _view->fitInView(rect, Qt::KeepAspectRatio);
-    _view->scaleDown();
+    _view->scale(0.7, 0.7);
 }
 
 bool GraphicContainer::containsValidTree() const
@@ -592,12 +592,14 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor,
 void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
 {
     AbsBehaviorTree abs_tree = tree;
-
-    QPointF cursor(0,0);
-
     _scene->clearScene();
 
-    auto& first_qt_node = _scene->createNodeAtPos( "Root", "Root", cursor );
+    auto& first_qt_node = _scene->createNodeAtPos( "Root", "Root", QPointF(0,0) );
+
+    QPointF cursor( - first_qt_node.nodeGeometry().width()*0.5,
+                    - first_qt_node.nodeGeometry().height()*0.5);
+
+    _scene->setNodePosition( first_qt_node, cursor );
 
     auto root_node = abs_tree.rootNode();
 

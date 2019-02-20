@@ -349,6 +349,7 @@ drawBackground(QPainter* painter, const QRectF& r)
   auto drawGrid =
     [&](double gridStep)
     {
+      gridStep = 1;
       QRect   windowRect = rect();
       QPointF tl = mapToScene(windowRect.topLeft());
       QPointF br = mapToScene(windowRect.bottomRight());
@@ -359,18 +360,20 @@ drawBackground(QPainter* painter, const QRectF& r)
       double top    = std::floor (br.y() / gridStep + 1.0);
 
       // vertical lines
-      for (int xi = int(left); xi <= int(right); ++xi)
+   //   for (int xi = int(left); xi <= int(right); ++xi)
       {
-        QLineF line(xi * gridStep, bottom * gridStep,
-                    xi * gridStep, top * gridStep );
+        int xi = 0;
+        QLineF line(xi * gridStep, bottom  * gridStep,
+                    xi * gridStep, top  * gridStep);
 
         painter->drawLine(line);
       }
 
       // horizontal lines
-      for (int yi = int(bottom); yi <= int(top); ++yi)
+      //for (int yi = int(bottom); yi <= int(top); ++yi)
       {
-        QLineF line(left * gridStep, yi * gridStep,
+        int yi = 0;
+        QLineF line(left  * gridStep, yi * gridStep,
                     right * gridStep, yi * gridStep );
         painter->drawLine(line);
       }
@@ -385,10 +388,10 @@ drawBackground(QPainter* painter, const QRectF& r)
   painter->setPen(pfine);
   drawGrid(20);
 
-//  QPen p(flowViewStyle.CoarseGridColor, 1.0);
+  QPen p(Qt::white, 2.0);
 
-//  painter->setPen(p);
-//  drawGrid(150);
+  painter->setPen(p);
+  //drawGrid(150);
 }
 
 

@@ -150,8 +150,11 @@ void CustomNodeDialog::checkValid()
     auto name = ui->lineEdit->text();
     int pos;
 
-
-    if( name.isEmpty() )
+    if( name.toLower() == "root" )
+    {
+        ui->labelWarning->setText("The name 'root' is forbidden");
+    }
+    else if( name.isEmpty() )
     {
         ui->labelWarning->setText("The name cannot be empty");
     }
@@ -191,11 +194,11 @@ void CustomNodeDialog::checkValid()
         {
             ui->labelWarning->setText("Invalid key: use only letters, digits and underscores");
         }
-        else if( param_names.size() < ui->tableWidget->rowCount() ){
+        else if( param_names.size() < ui->tableWidget->rowCount() )
+        {
            ui->labelWarning->setText("Duplicated NodeParameter key");
         }
-
-        if( param_names.size() == ui->tableWidget->rowCount() )
+        else if( param_names.size() == ui->tableWidget->rowCount() )
         {
             valid = true;
         }

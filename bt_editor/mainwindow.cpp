@@ -111,9 +111,6 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     dynamic_cast<QVBoxLayout*>(ui->leftFrame->layout())->setStretch(1,1);
 
-    createTab("BehaviorTree");
-    onTabSetMainTree(0);
-
     auto arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
 
     connect( arrange_shortcut, &QShortcut::activated,
@@ -121,6 +118,9 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 4);
+
+    createTab("BehaviorTree");
+    onTabSetMainTree(0);
 
     QShortcut* undo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Z), this);
     connect( undo_shortcut, &QShortcut::activated, this, &MainWindow::onUndoInvoked );
@@ -222,7 +222,18 @@ GraphicContainer* MainWindow::createTab(const QString &name)
 
     //--------------------------------
 
-    ti->view()->update();
+    QtNodes::Node& node = ti->scene()->createNodeAtPos( "Root", "Root", QPointF(-30,-30) );
+    auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() );
+    if( bt_model )
+    {
+        bt_model->lock(true);
+        node.nodeGraphicsObject().lock(true);
+    }
+
+    QRectF rect( QPointF(-300, -100), QPointF(300, 300) );
+    ti->view()->setSceneRect (rect);
+    ti->view()->fitInView(rect, Qt::KeepAspectRatio);
+    ti->view()->setTransform(QTransform(1,0,0,1,0,0));
 
     return ti;
 }
