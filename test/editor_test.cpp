@@ -16,6 +16,7 @@ private slots:
     void cleanupTestCase();
     void renameTabs();
     void loadFile();
+    void loadFailed();
     void undoRedo();
     void testSubtree();
     void modifyCustomModel();
@@ -128,6 +129,32 @@ void EditorTest::loadFile()
     sleepAndRefresh( 500 );
 }
 
+void EditorTest::loadFailed()
+{
+    QString file_xml = readFile(":/crossdoor_with_subtree.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    auto tree_A1 = getAbstractTree("MainTree");
+    auto tree_A2 = getAbstractTree("DoorClosed");
+
+    // try to load a bad one
+
+     file_xml = readFile(":/issue_3.xml");
+
+     testMessageBox(400, TEST_LOCATION(), [&]()
+     {
+         // should fail
+         main_win->loadFromXML( file_xml );
+     });
+
+     // nothing should change!
+
+     auto tree_B1 = getAbstractTree("MainTree");
+     auto tree_B2 = getAbstractTree("DoorClosed");
+     QVERIFY2( tree_A1 == tree_B1, "AbsBehaviorTree comparison fails" );
+     QVERIFY2( tree_A2 == tree_B2, "AbsBehaviorTree comparison fails" );
+}
 
 void EditorTest::undoRedo()
 {

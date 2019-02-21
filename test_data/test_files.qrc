@@ -8,5 +8,6 @@
         <file>SystemSkillTest.skills.json</file>
         <file>simple_without_model.xml</file>
         <file>subtree_test_fail.xml</file>
+        <file>issue_3.xml</file>
     </qresource>
 </RCC>
