@@ -226,8 +226,11 @@ GraphicContainer* MainWindow::createTab(const QString &name)
     auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() );
     if( bt_model )
     {
-        bt_model->lock(true);
-        node.nodeGraphicsObject().lock(true);
+        //bt_model->lock(true);
+     //   node.nodeGraphicsObject().lock(true);
+//        node.nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsMovable, false);
+//        node.nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsFocusable, true);
+//        node.nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsSelectable, true);
     }
 
     QRectF rect( QPointF(-300, -100), QPointF(300, 300) );

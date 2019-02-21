@@ -1,6 +1,9 @@
 <root>
     <TreeNodesModel>
-        <SubTree ID="DoorClosed"/>
+        <SubTree ID="DoorClosed">
+            <input_port name="target"/>
+            <output_port name="result"/>
+        </SubTree>
         <Condition ID="IsDoorOpen"/>
         <Action ID="CloseDoor"/>
         <Action ID="OpenDoor"/>

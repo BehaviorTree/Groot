@@ -77,18 +77,24 @@ void GraphicContainer::lockEditing(bool locked)
 
         QtNodes::Node* node = nodes_it.second.get();
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node->nodeDataModel() );
-        bool is_root = (bt_model->registrationName() == "Root");
-        bool to_lock = locked || is_root;
 
-        bt_model->lock(to_lock);
-        node->nodeGraphicsObject().lock(to_lock);
+        if(bt_model->registrationName() == "Root")
+        {
+            node->nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsMovable,  false);
+            node->nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsFocusable, true);
+            node->nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsSelectable, false);
+            continue;
+        }
+
+        bt_model->lock(locked);
+        node->nodeGraphicsObject().lock(locked);
 
         if( auto subtree = dynamic_cast<SubtreeNodeModel*>( node->nodeDataModel() ) )
         {
             if( subtree->expanded()) subtrees_expanded.push_back(node);
         }
 
-        if( !to_lock )
+        if( !locked )
         {
             node->nodeGraphicsObject().setGeometryChanged();
             QtNodes::NodeStyle style;
