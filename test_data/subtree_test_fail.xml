@@ -26,7 +26,7 @@
     <!--  //////////  -->
     <TreeNodesModel>
         
-        <SubTree ID="ThisOne" remap="target;result" />
+        <SubTree ID="ThisOne">
             <input_port  name="target"/>
             <output_port name="result"/>
         </SubTree>

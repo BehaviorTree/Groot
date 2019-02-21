@@ -14,9 +14,12 @@ SubtreeNodeModel::SubtreeNodeModel(const NodeModel &model):
     _main_layout->addWidget(_expand_button);
     _main_layout->setAlignment(_expand_button, Qt::AlignHCenter);
 
-    _expand_button->setStyleSheet("color: black; background-color: white; "
-                                  "border: 0px rgb(115, 210, 22);"
-                                  "padding: 4px; border-radius: 3px; ");
+    _expand_button->setStyleSheet(
+                "QPushButton{"
+                "  color: black; background-color: white; "
+                "  border: 0px rgb(115, 210, 22);"
+                "  padding: 4px; border-radius: 3px;}\n"
+                "QPushButton:disabled { color: #303030; background-color: #a0a0a0; }");
     _expand_button->setFlat(false);
     _expand_button->setFocusPolicy(Qt::NoFocus);
     _expand_button->adjustSize();

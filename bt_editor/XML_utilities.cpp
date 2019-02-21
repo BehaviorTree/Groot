@@ -2,6 +2,7 @@
 #include "utils.h"
 
 #include "models/SubtreeNodeModel.hpp"
+#include <behaviortree_cpp/xml_parsing.h>
 
 #include <QtDebug>
 #include <QLineEdit>
@@ -172,215 +173,22 @@ bool VerifyXML(QDomDocument &doc,
                const std::vector<QString>& registered_ID,
                std::vector<QString>& error_messages)
 {
-    bool is_valid = true;
+    error_messages.clear();
+    try {
+        std::string xml_text = doc.toString().toStdString();
+        std::set<std::string> registered_nodes;
 
-    //-------- Helper functions (lambdas) -----------------
-    auto strEqual = [](const char* str1, const char* str2) -> bool {
-        return strcmp(str1, str2) == 0;
-    };
-
-    auto AppendError = [&](int line_num, const char* text) {
-        char buffer[256];
-        sprintf(buffer, "Error at line %d: -> %s", line_num, text);
-        error_messages.emplace_back(buffer);
-        is_valid = false;
-    };
-
-    auto ChildrenCount = [](const QDomElement& parent_node) {
-        int count = 0;
-        for (auto node = parent_node.firstChildElement();
-             !node.isNull();
-             node = node.nextSiblingElement())
+        for(const auto& str: registered_ID)
         {
-            count++;
+            registered_nodes.insert( str.toStdString() );
         }
-        return count;
-    };
 
-    //-----------------------------
-
-    QDomElement xml_root = doc.documentElement();
-
-    if ( xml_root.isNull() || xml_root.tagName() != "root")
+        BT::VerifyXML(xml_text, registered_nodes); // may throw
+    } catch (std::exception& ex)
     {
-        error_messages.emplace_back("The XML must have a root node called <root>");
-        return false;
+        error_messages.push_back(ex.what());
     }
-    //-------------------------------------------------
-    auto meta_root = xml_root.firstChildElement("TreeNodesModel");
-    bool has_sibling = !meta_root.isNull() && !meta_root.nextSiblingElement("TreeNodesModel").isNull();
-
-    if (has_sibling)
-    {
-        AppendError(meta_root.nextSiblingElement("TreeNodesModel").lineNumber(),
-                    " Only a single node <TreeNodesModel> is supported");
-    }
-    if ( !meta_root.isNull() )
-    {
-        // not having a MetaModel is not an error. But consider that the
-        // Graphical editor needs it.
-        for (auto node = xml_root.firstChildElement();
-             !node.isNull();
-             node = node.nextSiblingElement())
-        {
-            QString name = node.tagName();
-            if ( name == "Action" || name == "Decorator" ||
-                 name == "SubTree" || name == "Condition")
-            {
-                if ( !node.hasAttribute("ID") )
-                {
-                    AppendError(node.lineNumber(), "Error at line %d: -> The attribute [ID] is "
-                                                    "mandatory");
-                }
-                //QString ID = node.attribute("ID");
-
-                for (auto param_node = xml_root.firstChildElement("Parameter");
-                     !param_node.isNull();
-                     param_node = param_node.nextSiblingElement("Parameter"))
-                {
-                    if (! node.hasAttribute("label") || !node.hasAttribute("type") )
-                    {
-                        AppendError(node.lineNumber(),
-                                    "The node <Parameter> requires the attributes [type] and "
-                                    "[label]");
-                    }
-//                    QString label = node.attribute("label");
-//                    QString type  = node.attribute("type");
-                }
-            }
-        }
-    }
-
-    //-------------------------------------------------
-
-    // function to be called recursively
-    std::function<void(const QDomElement&)> recursiveStep;
-
-    recursiveStep = [&](const QDomElement& node) {
-        const int children_count = ChildrenCount(node);
-        QString name = node.tagName();
-        if (name == "Decorator")
-        {
-            if (children_count != 1)
-            {
-                AppendError(node.lineNumber(), "The node <Decorator> must have exactly 1 child");
-            }
-            if (!node.hasAttribute("ID"))
-            {
-                AppendError(node.lineNumber(), "The node <Decorator> must have the attribute "
-                                                "[ID]");
-            }
-        }
-        else if (name == "Action")
-        {
-            if (children_count != 0)
-            {
-                AppendError(node.lineNumber(), "The node <Action> must not have any child");
-            }
-            if (!node.hasAttribute("ID"))
-            {
-                AppendError(node.lineNumber(), "The node <Action> must have the attribute [ID]");
-            }
-        }
-        else if (name == "Condition")
-        {
-            if (children_count != 0)
-            {
-                AppendError(node.lineNumber(), "The node <Condition> must not have any child");
-            }
-            if (!node.hasAttribute("ID"))
-            {
-                AppendError(node.lineNumber(), "The node <Condition> must have the attribute "
-                                                "[ID]");
-            }
-        }
-        else if (name == "Sequence" || name == "SequenceStar" ||
-                 name == "Fallback" || name == "FallbackStar")
-        {
-            if (children_count == 0)
-            {
-                AppendError(node.lineNumber(), "A Control node must have at least 1 child");
-            }
-        }
-        else if (name == "SubTree")
-        {
-            if (children_count > 0)
-            {
-                AppendError(node.lineNumber(), "The <SubTree> node must have no children");
-            }
-            if (!node.hasAttribute("ID"))
-            {
-                AppendError(node.lineNumber(), "The node <SubTree> must have the attribute [ID]");
-            }
-        }
-        else
-        {
-            // Last resort:  MAYBE used ID as element name?
-            bool found = false;
-            for (const auto& ID : registered_ID)
-            {
-                if (ID == name)
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                AppendError(node.lineNumber(), (std::string("Node not recognized: ") + name.toStdString()).c_str() );
-            }
-        }
-        //recursion
-        for (auto child = node.firstChildElement(); !child.isNull();
-             child = child.nextSiblingElement())
-        {
-            recursiveStep(child);
-        }
-    };
-
-    std::vector<std::string> tree_names;
-    int tree_count = 0;
-
-    for (auto bt_root = xml_root.firstChildElement("BehaviorTree");
-         !bt_root.isNull();
-         bt_root = bt_root.nextSiblingElement("BehaviorTree"))
-    {
-        tree_count++;
-        if (bt_root.hasAttribute("ID"))
-        {
-            tree_names.push_back( bt_root.attribute("ID").toStdString() );
-        }
-        if (ChildrenCount(bt_root) != 1)
-        {
-            AppendError(bt_root.lineNumber(), "The node <BehaviorTree> must have exactly 1 child");
-        }
-        else
-        {
-            recursiveStep( bt_root.firstChildElement() );
-        }
-    }
-
-    if ( xml_root.hasAttribute("main_tree_to_execute") )
-    {
-        std::string main_tree = xml_root.attribute("main_tree_to_execute").toStdString();
-        if (std::find(tree_names.begin(), tree_names.end(), main_tree) == tree_names.end())
-        {
-            error_messages.emplace_back("The tree specified in [main_tree_to_execute] "
-                                        "can't be found");
-            is_valid = false;
-        }
-    }
-    else
-    {
-        if (tree_count != 1)
-        {
-            error_messages.emplace_back(
-                        "If you don't specify the attribute [main_tree_to_execute], "
-                        "Your file must contain a single BehaviorTree");
-            is_valid = false;
-        }
-    }
-    return is_valid;
+    return true;
 }
 
 

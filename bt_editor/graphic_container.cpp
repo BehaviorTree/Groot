@@ -140,10 +140,10 @@ void GraphicContainer::lockSubtreeEditing(Node &root_node, bool locked, bool cha
 
         if( locked && change_style )
         {
-          style.GradientColor0.setBlue(120);
-          style.GradientColor1.setBlue(100);
-          style.GradientColor2.setBlue(90);
-          style.GradientColor3.setBlue(90);
+            style.GradientColor0.setBlue(120);
+            style.GradientColor1.setBlue(100);
+            style.GradientColor2.setBlue(90);
+            style.GradientColor3.setBlue(90);
         }
         node->nodeGraphicsObject().setGeometryChanged();
         node->nodeDataModel()->setNodeStyle( style );
@@ -153,7 +153,7 @@ void GraphicContainer::lockSubtreeEditing(Node &root_node, bool locked, bool cha
 
 void GraphicContainer::nodeReorder()
 {
-   {
+    {
         const QSignalBlocker blocker(this);
         auto abstract_tree = BuildTreeFromScene( _scene );
         NodeReorder( *_scene, abstract_tree );
@@ -248,9 +248,9 @@ void GraphicContainer::createSubtree(Node &root_node, QString subtree_name )
     if( subtree_name.isEmpty() )
     {
         subtree_name = QInputDialog::getText (
-                   nullptr, tr ("SubTree Name"),
-                   tr ("Insert the name of the Custom SubTree"),
-                   QLineEdit::Normal, "", &ok);
+                    nullptr, tr ("SubTree Name"),
+                    tr ("Insert the name of the Custom SubTree"),
+                    QLineEdit::Normal, "", &ok);
         if (!ok)
         {
             return;
@@ -260,7 +260,7 @@ void GraphicContainer::createSubtree(Node &root_node, QString subtree_name )
     auto main_win = dynamic_cast<MainWindow*>( parent() );
 
     if( main_win->getTabByName(subtree_name) != nullptr ||
-        _model_registry->registeredModelsByCategory("SubTree").count( subtree_name ))
+            _model_registry->registeredModelsByCategory("SubTree").count( subtree_name ))
     {
         QMessageBox::warning( nullptr, "SubTree already exists",
                               tr("There is already a SubTree called [%1].\n"
@@ -311,11 +311,16 @@ void GraphicContainer::onNodeCreated(Node &node)
 
         if( auto subtree_node = dynamic_cast<SubtreeNodeModel*>( bt_node ) )
         {
-          connect( subtree_node, &SubtreeNodeModel::expandButtonPushed,
-                   &(node), [&node, this]()
-          {
-            emit requestSubTreeExpand( *this, node );
-          });
+            auto main_win = dynamic_cast<MainWindow*>( parent() );
+            if( main_win && main_win->getTabByName( bt_node->registrationName() ) == nullptr  )
+            {
+                subtree_node->expandButton()->setHidden(true);
+            }
+            connect( subtree_node, &SubtreeNodeModel::expandButtonPushed,
+                     &(node), [&node, this]()
+            {
+                emit requestSubTreeExpand( *this, node );
+            });
         }
 
         bt_node->initWidget();
@@ -373,7 +378,7 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *old_node, const QString& n
     _scene->setNodePosition(new_node, new_pos);
 
     if( old_node->nodeDataModel()->nPorts( PortType::In ) == 1 &&
-        new_node.nodeDataModel()->nPorts( PortType::In ) == 1 )
+            new_node.nodeDataModel()->nPorts( PortType::In ) == 1 )
     {
         auto conn_in  = old_node->nodeState().connections(PortType::In, 0);
         for(auto it: conn_in)
@@ -384,7 +389,7 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *old_node, const QString& n
     }
 
     if( old_node->nodeDataModel()->nPorts( PortType::Out ) == 1 &&
-        new_node.nodeDataModel()->nPorts( PortType::Out ) == 1 )
+            new_node.nodeDataModel()->nPorts( PortType::Out ) == 1 )
     {
         auto conn_in  = old_node->nodeState().connections(PortType::Out, 0);
         for(auto it: conn_in)
@@ -571,7 +576,7 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor,
 
     // Special case for node Subtree. Expand if necessary
     if( abs_node->model.type == NodeType::SUBTREE &&
-        abs_node->children_index.size() == 1 )
+            abs_node->children_index.size() == 1 )
     {
         if( auto subtree_node = dynamic_cast<SubtreeNodeModel*>( bt_node ) )
         {
@@ -611,9 +616,9 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
 
     if( root_node->model.registration_ID == "Root" )
     {
-      root_node->graphic_node = &first_qt_node;
-      int root_child_index = root_node->children_index.front();
-      root_node = abs_tree.node(root_child_index);
+        root_node->graphic_node = &first_qt_node;
+        int root_child_index = root_node->children_index.front();
+        root_node = abs_tree.node(root_child_index);
     }
 
     recursiveLoadStep(cursor, abs_tree, root_node, &first_qt_node, 1 );
@@ -634,7 +639,7 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
     auto root_node = subtree.rootNode();
 
     if( root_node->model.registration_ID == "Root" &&
-        root_node->children_index.size() == 1 )
+            root_node->children_index.size() == 1 )
     {
         int root_child_index = root_node->children_index.front();
         root_node = subtree.node(root_child_index);

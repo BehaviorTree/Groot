@@ -222,21 +222,12 @@ GraphicContainer* MainWindow::createTab(const QString &name)
 
     //--------------------------------
 
-    QtNodes::Node& node = ti->scene()->createNodeAtPos( "Root", "Root", QPointF(-30,-30) );
-    auto bt_model = dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() );
-    if( bt_model )
-    {
-        //bt_model->lock(true);
-     //   node.nodeGraphicsObject().lock(true);
-//        node.nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsMovable, false);
-//        node.nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsFocusable, true);
-//        node.nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsSelectable, true);
-    }
+    ti->scene()->createNodeAtPos( "Root", "Root", QPointF(-30,-30) );
 
-    QRectF rect( QPointF(-300, -100), QPointF(300, 300) );
+    QRectF rect( QPointF(-20, -20), QPointF(20, 20) );
     ti->view()->setSceneRect (rect);
     ti->view()->fitInView(rect, Qt::KeepAspectRatio);
-    ti->view()->setTransform(QTransform(1,0,0,1,0,0));
+    ti->view()->setTransform(QTransform(1.5, 0, 0, 1.5, 0, 0));
 
     return ti;
 }
