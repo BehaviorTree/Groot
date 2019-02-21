@@ -57,9 +57,6 @@ void EditorTest::loadFile()
         qFile.close();
     }
 
-    QVERIFY2( file_xml.simplified() == saved_xml.simplified(),
-              "Loaded and saved XML are not the same" );
-
     sleepAndRefresh( 500 );
     //-------------------------------
     // Compare AbsBehaviorTree
@@ -79,6 +76,10 @@ void EditorTest::loadFile()
         tree_B1.debugPrint();
     }
     QVERIFY2( same_maintree, "AbsBehaviorTree comparison fails" );
+
+    QVERIFY2( file_xml.simplified() == saved_xml.simplified(),
+             "Loaded and saved XML are not the same" );
+
 
     bool same_doorclosed = tree_A2 == tree_B2;
     if( !same_doorclosed )
@@ -173,7 +174,7 @@ void EditorTest::undoRedo()
         main_win->onUndoInvoked();
         sleepAndRefresh( 500 );
         auto empty_abs_tree = getAbstractTree();
-        QCOMPARE( empty_abs_tree.nodesCount(), size_t(0) );
+        QCOMPARE( empty_abs_tree.nodesCount(), size_t(1) );
 
         // nothing should happen
         main_win->onUndoInvoked();
@@ -318,7 +319,7 @@ void EditorTest::testSubtree()
     auto new_main_tree   = getAbstractTree("MainTree");
     auto new_closed_tree = getAbstractTree("DoorClosed");
 
-    bool is_same = main_tree == new_main_tree;
+    bool is_same = (main_tree == new_main_tree);
     if( !is_same )
     {
         main_tree.debugPrint();
@@ -425,14 +426,14 @@ void EditorTest::editText()
     for(const auto& line: line_editable)
     {
         QTest::mouseDClick( line, Qt::LeftButton );
-        sleepAndRefresh( 100 );
+        sleepAndRefresh( 50 );
 
         QTest::keyClick(line, Qt::Key_Delete, Qt::NoModifier );
-        sleepAndRefresh( 100 );
+        sleepAndRefresh( 50 );
         QCOMPARE( line->text(), QString() );
 
         QTest::mouseClick( line, Qt::LeftButton );
-        sleepAndRefresh( 100 );
+        sleepAndRefresh( 50 );
         QTest::keyClicks(view->viewport(), "was_here");
         QCOMPARE( line->text(), tr("was_here") );
     }

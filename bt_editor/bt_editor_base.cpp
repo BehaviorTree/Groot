@@ -134,10 +134,11 @@ const char *toStr(GraphicMode type)
 
 bool AbstractTreeNode::operator ==(const AbstractTreeNode &other) const
 {
-    return  model.registration_ID == other.model.registration_ID &&
+    bool same_registration = model.registration_ID == other.model.registration_ID;
+    return  same_registration &&
             status == other.status &&
             size == other.size &&
-            pos == other.pos &&
+          // temporary removed  pos == other.pos &&
             instance_name == other.instance_name;
 }
 

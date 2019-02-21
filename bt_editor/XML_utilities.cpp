@@ -98,7 +98,12 @@ NodeModels ReadTreeNodesModel(const QDomElement &root)
     recursiveStep = [&](QDomElement node)
     {
         auto model = buildTreeNodeModelFromXML(node);
-        models.insert( {model.registration_ID, model} );
+        if( model.type != NodeType::UNDEFINED &&
+            model.registration_ID.isEmpty() == false &&
+            models.count(model.registration_ID) == 0)
+        {
+            models.insert( {model.registration_ID, model} );
+        }
 
         for( QDomElement child = node.firstChildElement();
              !child.isNull();

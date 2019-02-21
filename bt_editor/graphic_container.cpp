@@ -314,7 +314,7 @@ void GraphicContainer::onNodeCreated(Node &node)
             auto main_win = dynamic_cast<MainWindow*>( parent() );
             if( main_win && main_win->getTabByName( bt_node->registrationName() ) == nullptr  )
             {
-                subtree_node->expandButton()->setHidden(true);
+                subtree_node->expandButton()->setEnabled(true);
             }
             connect( subtree_node, &SubtreeNodeModel::expandButtonPushed,
                      &(node), [&node, this]()

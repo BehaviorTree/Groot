@@ -151,7 +151,7 @@ private:
         bool operator !=( const SavedState& other) const { return !( *this == other); }
     };
 
-    void loadSavedStateFromJson(const SavedState &state);
+    void loadSavedStateFromJson(SavedState state);
 
     QtNodes::Node *subTreeExpand(GraphicContainer& container,
                        QtNodes::Node &node,

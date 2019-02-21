@@ -203,6 +203,13 @@ GraphicContainer* MainWindow::createTab(const QString &name)
 
     ui->tabWidget->addTab( ti->view(), name );
 
+    ti->scene()->createNodeAtPos( "Root", "Root", QPointF(-30,-30) );
+
+    QRectF rect( QPointF(-20, -20), QPointF(20, 20) );
+    ti->view()->setSceneRect (rect);
+    ti->view()->fitInView(rect, Qt::KeepAspectRatio);
+    ti->view()->setTransform(QTransform(1.5, 0, 0, 1.5, 0, 0));
+
     //--------------------------------
 
     connect( ti, &GraphicContainer::undoableChange,
@@ -221,13 +228,6 @@ GraphicContainer* MainWindow::createTab(const QString &name)
              this, &MainWindow::onAddToModelRegistry);
 
     //--------------------------------
-
-    ti->scene()->createNodeAtPos( "Root", "Root", QPointF(-30,-30) );
-
-    QRectF rect( QPointF(-20, -20), QPointF(20, 20) );
-    ti->view()->setSceneRect (rect);
-    ti->view()->fitInView(rect, Qt::KeepAspectRatio);
-    ti->view()->setTransform(QTransform(1.5, 0, 0, 1.5, 0, 0));
 
     return ti;
 }
@@ -278,11 +278,9 @@ void MainWindow::loadFromXML(const QString& xml_text)
     bool error = false;
     QString err_message;
     auto saved_state = _current_state;
+    auto prev_tree_model = _treenode_models;
 
     try {
-
-        on_actionClear_triggered();
-
         auto document_root = document.documentElement();
 
         if( document_root.hasAttribute("main_tree_to_execute"))
@@ -291,7 +289,6 @@ void MainWindow::loadFromXML(const QString& xml_text)
         }
 
         auto custom_models = ReadTreeNodesModel( document_root );
-        CleanPreviousModels(this, _treenode_models, custom_models);
 
         for( const auto& model: custom_models)
         {
@@ -319,7 +316,6 @@ void MainWindow::loadFromXML(const QString& xml_text)
                     _main_tree = tree_name;
                 }
             }
-
             onCreateAbsBehaviorTree(tree, tree_name);
         }
 
@@ -345,6 +341,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
         else{
             currentTabInfo()->nodeReorder();
         }
+        CleanPreviousModels(this, _treenode_models, custom_models);
     }
     catch (std::exception& err) {
         error = true;
@@ -353,6 +350,7 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
     if( error )
     {
+        _treenode_models = prev_tree_model;
         loadSavedStateFromJson( saved_state );
         qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
         QMessageBox::warning(this, tr("Exception!"),
@@ -647,7 +645,7 @@ void MainWindow::onPushUndo()
     }
     _current_state = saved;
 
-    // qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+     qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
 
 void MainWindow::onUndoInvoked()
@@ -662,7 +660,7 @@ void MainWindow::onUndoInvoked()
 
         loadSavedStateFromJson(_current_state);
 
-        //qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+        qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
 }
 
@@ -682,7 +680,7 @@ void MainWindow::onRedoInvoked()
     }
 }
 
-void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
+void MainWindow::loadSavedStateFromJson(SavedState saved_state)
 {
     // TODO crash if the name of the container (tab) changed
     for (auto& it: _tab_info)
@@ -695,13 +693,14 @@ void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
 
     _main_tree = saved_state.main_tree;
 
-    for(auto& it: saved_state.json_states)
+    for(const auto& it: saved_state.json_states)
     {
-        _tab_info.insert( {it.first, createTab(it.first)} );
+        QString tab_name = it.first;
+        _tab_info.insert( {tab_name, createTab(tab_name)} );
     }
-    for(auto& it: saved_state.json_states)
+    for(const auto& it: saved_state.json_states)
     {
-        const auto& name = it.first;
+        QString name = it.first;
         auto container = getTabByName(name);
         container->loadFromJson( it.second );
         container->view()->setTransform( saved_state.view_transform );
@@ -770,10 +769,10 @@ void MainWindow::onAddToModelRegistry(const NodeModel &model)
     namespace util = QtNodes::detail;
     const auto& ID = model.registration_ID;
 
-    if( BuiltinNodeModels().count(ID) == 1)
-    {
-        return;
-    }
+//    if( BuiltinNodeModels().count(ID) == 1)
+//    {
+//        return;
+//    }
     DataModelRegistry::RegistryItemCreator node_creator = [model]() -> DataModelRegistry::RegistryItemPtr
     {
         if( model.type == NodeType::SUBTREE)
