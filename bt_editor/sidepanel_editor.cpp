@@ -206,20 +206,15 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
 
     QMenu menu(this);
 
-    const auto& node_type = _tree_nodes_model.at(selected_name).type;
-
-    if( node_type == NodeType::ACTION || node_type == NodeType::ACTION)
-    {
-        QAction* edit   = menu.addAction("Edit");
-        connect( edit, &QAction::triggered, this, [this, selected_name]()
-        {
-            CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
-            if( dialog.exec() == QDialog::Accepted)
+    QAction* edit   = menu.addAction("Edit");
+    connect( edit, &QAction::triggered, this, [this, selected_name]()
             {
-                onReplaceModel( selected_name, dialog.getTreeNodeModel() );
-            }
-        } );
-    }
+                CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
+                if( dialog.exec() == QDialog::Accepted)
+                {
+                    onReplaceModel( selected_name, dialog.getTreeNodeModel() );
+                }
+            } );
 
     QAction* remove = menu.addAction("Remove");
 
