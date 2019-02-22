@@ -10,17 +10,7 @@
             <!--  compact syntax  -->
             <SubTree ID="ThisOne"   target="{goal}" result="{out}" />
             <SubTree ID="TheOther"  target="{goal}" result="{out}" />
-            
-            <!--  veebose syntax  -->
-            <SubTree ID="ThisOne">
-                <remap internal="target" external="{goal}"/>
-                <remap internal="result" external="{out}"/>
-            </SubTree>    
-            <SubTree ID="TheOther">
-                <remap internal="target" external="{goal}"/>
-                <remap internal="result" external="{out}"/>
-            </SubTree> 
-            
+       
         </Sequence>
     </BehaviorTree>
     <!--  //////////  -->

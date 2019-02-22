@@ -29,3 +29,9 @@ QComboBox {
     padding-left: 4px;
     padding-right: 4px;
 }
+
+QComboBox:disabled {
+    color: blue;
+    background-color: grey;
+    selection-background-color: grey;
+}

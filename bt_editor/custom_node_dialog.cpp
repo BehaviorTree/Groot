@@ -69,6 +69,7 @@ CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
             else if( model.type == NodeType::SUBTREE )
             {
                 ui->comboBox->setCurrentIndex(2);
+                ui->comboBox->setEnabled(false);
             }
         }
     }
