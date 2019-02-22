@@ -449,19 +449,25 @@ QString MainWindow::saveToXML() const
             continue;
         }
 
+
         QDomElement node = doc.createElement( toStr(model.type) );
 
         if( !node.isNull() )
         {
             node.setAttribute("ID", ID);
 
-            QDomElement node = doc.createElement( "description" );
-
             for(const auto& port_it: model.ports)
             {
                 const auto& port_name = port_it.first;
                 const auto& port = port_it.second;
-                QDomElement port_element =  doc.createElement( BT::toStr(port.direction) );
+                QDomElement port_element;
+
+                switch(port.direction)
+                {
+                case PortDirection::INPUT:  port_element = doc.createElement( "input_port" );  break;
+                case PortDirection::OUTPUT: port_element = doc.createElement( "output_port" ); break;
+                case PortDirection::INOUT:  port_element = doc.createElement( "inout_port" );  break;
+                }
 
                 port_element.setAttribute("name", port_name );
                 port_element.setAttribute("type", port.type_name );
