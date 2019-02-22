@@ -149,7 +149,7 @@ void SidepanelEditor::on_buttonAddNode_clicked()
     if( dialog.exec() == QDialog::Accepted)
     {
         auto new_model = dialog.getTreeNodeModel();
-        addNewModel( new_model );
+        emit addNewModel( new_model );
     }
     updateTreeView();
 }

@@ -646,11 +646,19 @@ void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
 
     auto root_node = subtree.rootNode();
 
-    if( root_node->model.registration_ID == "Root" &&
-            root_node->children_index.size() == 1 )
+    if( root_node->model.registration_ID == "Root" )
     {
-        int root_child_index = root_node->children_index.front();
-        root_node = subtree.node(root_child_index);
+        if( root_node->children_index.size() == 1)
+        {
+            // first node become the child of Root
+            int root_child_index = root_node->children_index.front();
+            root_node = subtree.node(root_child_index);
+        }
+        else{
+            // Root has no child. Stop
+            //  qDebug() << "Error: can't expand empty subtree";
+            return;
+        }
     }
 
     recursiveLoadStep(cursor, subtree, root_node , &node, 1 );

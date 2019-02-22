@@ -782,10 +782,6 @@ void MainWindow::onAddToModelRegistry(const NodeModel &model)
     namespace util = QtNodes::detail;
     const auto& ID = model.registration_ID;
 
-//    if( BuiltinNodeModels().count(ID) == 1)
-//    {
-//        return;
-//    }
     DataModelRegistry::RegistryItemCreator node_creator = [model]() -> DataModelRegistry::RegistryItemPtr
     {
         if( model.type == NodeType::SUBTREE)
@@ -796,6 +792,11 @@ void MainWindow::onAddToModelRegistry(const NodeModel &model)
     };
 
     _model_registry->registerModel( BT::toStr(model.type), node_creator, ID);
+
+    if( model.type == NodeType::SUBTREE && getTabByName(model.registration_ID) == nullptr)
+    {
+        createTab(model.registration_ID);
+    }
 
     _treenode_models.insert( {ID, model } );
     _editor_widget->updateTreeView();
@@ -870,35 +871,43 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
 
         subtree_model->setExpanded(true);
         node.nodeState().getEntries(PortType::Out).resize(1);
-
         container.appendTreeToNode( node, abs_subtree );
-        container.nodeReorder();
         container.lockSubtreeEditing( node, true, is_editor_mode );
+
+        if( abs_subtree.nodes().size() > 1 )
+        {
+            container.nodeReorder();
+        }
 
         return &node;
     }
 
     if( option == SUBTREE_COLLAPSE && subtree_model->expanded() == true)
     {
+        bool need_reorder = true;
         const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
         QtNodes::Node* child_node = nullptr;
         if(conn_out.size() == 1)
         {
             child_node = conn_out.begin()->second->getNode( PortType::In );
         }
-        else{
-            return nullptr;
-        }
+
         const QSignalBlocker blocker( container );
         if( child_node)
         {
             container.deleteSubTreeRecursively( *child_node );
         }
+        else{
+            need_reorder = false;
+        }
 
         subtree_model->setExpanded(false);
         node.nodeState().getEntries(PortType::Out).resize(0);
         container.lockSubtreeEditing( node, false, is_editor_mode );
-        container.nodeReorder();
+        if( need_reorder )
+        {
+            container.nodeReorder();
+        }
 
         return &node;
     }
@@ -955,6 +964,14 @@ void MainWindow::onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QStr
     const QSignalBlocker blocker( container );
     container->loadSceneFromTree( tree );
     container->nodeReorder();
+
+    for(const auto& node: tree.nodes())
+    {
+        if( node.model.type == NodeType::SUBTREE && getTabByName(node.model.registration_ID) == nullptr)
+        {
+            createTab(node.model.registration_ID);
+        }
+    }
 
     // TODO_ clear or not?
     clearUndoStacks();
@@ -1223,14 +1240,19 @@ void MainWindow::on_actionReplay_mode_triggered()
 
 void MainWindow::on_tabWidget_currentChanged(int index)
 {
+    if( ui->tabWidget->count() == 0 )
+    {
+        return;
+    }
     QString tab_name = ui->tabWidget->tabText(index);
     auto tab = getTabByName(tab_name);
-    if( tab && tab->scene()->nodes().size() > 1)
+    if( tab )
     {
         const QSignalBlocker blocker( tab );
         tab->nodeReorder();
         _current_state.current_tab_name = ui->tabWidget->tabText( index );
         refreshExpandedSubtrees();
+        tab->zoomHomeView();
     }
 }
 
