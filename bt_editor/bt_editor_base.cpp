@@ -218,5 +218,6 @@ PortModel &PortModel::operator =(const BT::PortInfo &src)
     this->direction = src.direction();
     this->description = QString::fromStdString(src.description());
     this->type_name = QString::fromStdString(BT::demangle(src.type()));
+    this->default_value = QString::fromStdString( src.defaultValue());
     return *this;
 }

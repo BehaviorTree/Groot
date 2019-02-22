@@ -62,6 +62,10 @@ NodeModel buildTreeNodeModelFromXML(const QDomElement& node)
             {
                 port_model.type_name = port_element.attribute("type");
             }
+            if( port_element.hasAttribute("default") )
+            {
+                port_model.default_value = port_element.attribute("default");
+            }
 
             if( port_element.hasAttribute("name") )
             {

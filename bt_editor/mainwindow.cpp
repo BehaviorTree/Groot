@@ -38,7 +38,6 @@ using QtNodes::FlowScene;
 using QtNodes::NodeGraphicsObject;
 using QtNodes::NodeState;
 
-
 MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -119,9 +118,6 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 4);
 
-    createTab("BehaviorTree");
-    onTabSetMainTree(0);
-
     QShortcut* undo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Z), this);
     connect( undo_shortcut, &QShortcut::activated, this, &MainWindow::onUndoInvoked );
 
@@ -160,12 +156,22 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
              this, &MainWindow::onCreateAbsBehaviorTree );
 #endif
-    onSceneChanged();
 
     ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect( ui->tabWidget->tabBar(), &QTabBar::customContextMenuRequested,
              this, &MainWindow::onTabCustomContextMenuRequested);
+}
 
+void MainWindow::showEvent( QShowEvent* )
+{
+    init();
+}
+
+void MainWindow::init()
+{
+    createTab("BehaviorTree");
+    onTabSetMainTree(0);
+    onSceneChanged();
     _current_state = saveCurrentState();
 }
 
@@ -204,11 +210,7 @@ GraphicContainer* MainWindow::createTab(const QString &name)
     ui->tabWidget->addTab( ti->view(), name );
 
     ti->scene()->createNodeAtPos( "Root", "Root", QPointF(-30,-30) );
-
-    QRectF rect( QPointF(-20, -20), QPointF(20, 20) );
-    ti->view()->setSceneRect (rect);
-    ti->view()->fitInView(rect, Qt::KeepAspectRatio);
-    ti->view()->setTransform(QTransform(1.5, 0, 0, 1.5, 0, 0));
+    ti->zoomHomeView();
 
     //--------------------------------
 
@@ -226,8 +228,6 @@ GraphicContainer* MainWindow::createTab(const QString &name)
 
     connect( ti, &GraphicContainer::addNewModel,
              this, &MainWindow::onAddToModelRegistry);
-
-    //--------------------------------
 
     return ti;
 }
@@ -470,7 +470,14 @@ QString MainWindow::saveToXML() const
                 }
 
                 port_element.setAttribute("name", port_name );
-                port_element.setAttribute("type", port.type_name );
+                if( port.type_name.isEmpty() == false)
+                {
+                    port_element.setAttribute("type", port.type_name );
+                }
+                if( port.default_value.isEmpty() == false)
+                {
+                    port_element.setAttribute("default", port.default_value );
+                }
 
                 if( !port.description.isEmpty() )
                 {
