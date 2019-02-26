@@ -194,6 +194,9 @@ const NodeModels &BuiltinNodeModels()
 
         factory.registerNodeType<BT::DecoratorSubtreeNode>("Root");
 
+#ifdef USING_ROS
+        factory.registerFromROSPlugins();
+#endif
         NodeModels out;
         for( const auto& it: factory.manifests())
         {
