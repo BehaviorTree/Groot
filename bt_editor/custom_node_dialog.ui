@@ -87,6 +87,11 @@
          <string>SubTree</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>DecoratorNode</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
