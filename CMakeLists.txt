@@ -25,6 +25,7 @@ if(catkin_FOUND)
     CATKIN_DEPENDS behaviortree_cpp
     DEPENDS 
     )
+   add_definitions( -DUSING_ROS )
 endif(catkin_FOUND)
 #############################################################
 
