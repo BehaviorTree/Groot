@@ -460,30 +460,8 @@ QString MainWindow::saveToXML() const
             {
                 const auto& port_name = port_it.first;
                 const auto& port = port_it.second;
-                QDomElement port_element;
-
-                switch(port.direction)
-                {
-                case PortDirection::INPUT:  port_element = doc.createElement( "input_port" );  break;
-                case PortDirection::OUTPUT: port_element = doc.createElement( "output_port" ); break;
-                case PortDirection::INOUT:  port_element = doc.createElement( "inout_port" );  break;
-                }
-
-                port_element.setAttribute("name", port_name );
-                if( port.type_name.isEmpty() == false)
-                {
-                    port_element.setAttribute("type", port.type_name );
-                }
-                if( port.default_value.isEmpty() == false)
-                {
-                    port_element.setAttribute("default", port.default_value );
-                }
-
-                if( !port.description.isEmpty() )
-                {
-                    QDomText description = doc.createTextNode( port.description );
-                    port_element.appendChild( description );
-                }
+                
+                QDomElement port_element = writePortModel(port_name, port, doc);
                 node.appendChild( port_element );
             }
         }

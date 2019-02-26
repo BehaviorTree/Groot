@@ -265,7 +265,7 @@ void SidepanelEditor::on_buttonUpload_clicked()
             node.setAttribute("ID", ID.toStdString().c_str());
             for(const auto& port_it: model.ports)
             {
-                node.setAttribute( port_it.first , ""); //TODO VER_3
+                node.appendChild(writePortModel(port_it.first, port_it.second, doc));
             }
         }
         root_models.appendChild(node);
