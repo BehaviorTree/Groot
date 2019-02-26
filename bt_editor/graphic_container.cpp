@@ -610,6 +610,7 @@ void GraphicContainer::loadSceneFromTree(const AbsBehaviorTree &tree)
     }
 
     recursiveLoadStep(cursor, abs_tree, root_node, &first_qt_node, 1 );
+    NodeReorder( *_scene, abs_tree );
 }
 
 void GraphicContainer::appendTreeToNode(Node &node, AbsBehaviorTree subtree)
