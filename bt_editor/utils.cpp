@@ -58,7 +58,7 @@ std::vector<Node*> getChildren(const QtNodes::FlowScene &scene,
         }
     }
 
-    if( ordered )
+    if( ordered && children.size() > 1)
     {
         if( scene.layout() == PortLayout::Vertical)
         {
@@ -238,6 +238,16 @@ void RecursiveNodeReorder(AbsBehaviorTree& tree, PortLayout layout)
 
 void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 {
+
+    for (const auto& abs_node: tree.nodes())
+    {
+        Node* node =  abs_node.graphic_node;
+        if( node == nullptr )
+        {
+            throw std::runtime_error("one or more nodes haven't been created yet");
+        }
+    }
+
     if( tree.nodesCount() == 0)
     {
         return;
@@ -247,8 +257,8 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 
     for (const auto& abs_node: tree.nodes())
     {
-        Node& node = *( abs_node.graphic_node);
-        scene.setNodePosition( node, abs_node.pos );
+        Node* node =  abs_node.graphic_node;
+        scene.setNodePosition( *node, abs_node.pos );
     }
 }
 

@@ -22,7 +22,7 @@
 #include <nodes/FlowView>
 
 #include "editor_flowscene.h"
-
+#include "utils.h"
 #include "XML_utilities.hpp"
 
 #include "models/RootNodeModel.hpp"
@@ -844,7 +844,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
     if( option == SUBTREE_EXPAND && subtree_model->expanded() == false)
     {
         auto subtree_container = getTabByName(subtree_name);
-        const auto& abs_subtree = BuildTreeFromScene( subtree_container->scene() );
+        auto abs_subtree = BuildTreeFromScene( subtree_container->scene() );
 
         subtree_model->setExpanded(true);
         node.nodeState().getEntries(PortType::Out).resize(1);
@@ -892,7 +892,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
         QtNodes::Node* child_node = conn_out.begin()->second->getNode( PortType::In );
 
         auto subtree_container = getTabByName(subtree_name);
-        const auto& subtree = BuildTreeFromScene( subtree_container->scene() );
+        auto subtree = BuildTreeFromScene( subtree_container->scene() );
 
         container.deleteSubTreeRecursively( *child_node );
         container.appendTreeToNode( node, subtree );
