@@ -165,9 +165,17 @@ void GraphicContainer::nodeReorder()
 void GraphicContainer::zoomHomeView()
 {
     QRectF rect = _scene->itemsBoundingRect();
+    rect.setBottom( rect.top() + rect.height()* 1.2 );
+
+    const int min_height = 300;
+    if( rect.height() < min_height )
+    {
+        rect.setBottom( rect.top() + min_height );
+    }
+
     _view->setSceneRect (rect);
     _view->fitInView(rect, Qt::KeepAspectRatio);
-    _view->scale(0.7, 0.7);
+    _view->scale(0.9, 0.9);
 }
 
 bool GraphicContainer::containsValidTree() const

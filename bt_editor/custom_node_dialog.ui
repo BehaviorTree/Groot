@@ -49,8 +49,17 @@
      </item>
      <item row="0" column="2">
       <widget class="QLabel" name="label_3">
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>Type:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
@@ -73,6 +82,16 @@
          <string>ConditionNode</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>SubTree</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>DecoratorNode</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
@@ -93,19 +112,6 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="label">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Ports</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -119,14 +125,17 @@
       </spacer>
      </item>
      <item>
-      <widget class="QToolButton" name="toolButtonAdd">
+      <widget class="QPushButton" name="pushButtonAdd">
        <property name="text">
-        <string>Add</string>
+        <string>Add port</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="toolButtonRemove">
+      <widget class="QPushButton" name="pushButtonRemove">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Remove</string>
        </property>
@@ -141,6 +150,9 @@
      </property>
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
      </property>
      <property name="columnCount">
       <number>4</number>

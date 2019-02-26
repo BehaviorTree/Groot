@@ -22,15 +22,17 @@ public:
     NodeModel getTreeNodeModel() const;
 
 private slots:
-    void on_toolButtonAdd_pressed();
+    void on_pushButtonAdd_pressed();
 
-    void on_toolButtonRemove_pressed();
+    void on_pushButtonRemove_pressed();
 
     void checkValid();
 
     virtual void closeEvent(QCloseEvent *) override;
 
     void on_buttonBox_clicked(QAbstractButton *button);
+
+    void on_tableWidget_itemSelectionChanged();
 
 private:
     Ui::CustomNodeDialog *ui;

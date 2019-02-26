@@ -23,5 +23,7 @@ bool VerifyXML(QDomDocument& doc,
 
 NodeModel buildTreeNodeModelFromXML(const QDomElement &node);
 
+QDomElement writePortModel(const QString &port_name, const PortModel &port, QDomDocument &doc);
+
 
 #endif // XMLPARSERS_HPP

@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QRegExpValidator>
 #include <QSettings>
+#include <QModelIndexList>
 
 CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
                                    QString to_edit,
@@ -65,6 +66,14 @@ CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
             {
                 ui->comboBox->setCurrentIndex(1);
             }
+            else if( model.type == NodeType::SUBTREE )
+            {
+                ui->comboBox->setCurrentIndex(2);
+            }
+            else if( model.type == NodeType::DECORATOR)
+            {
+                ui->comboBox->setCurrentIndex(3);
+            }
         }
     }
 
@@ -97,6 +106,8 @@ NodeModel CustomNodeDialog::getTreeNodeModel() const
     {
     case 0: type = NodeType::ACTION; break;
     case 1: type = NodeType::CONDITION; break;
+    case 2: type = NodeType::SUBTREE; break;
+    case 3: type = NodeType::DECORATOR; break;
     }
     for (int row=0; row < ui->tableWidget->rowCount(); row++ )
     {
@@ -111,36 +122,6 @@ NodeModel CustomNodeDialog::getTreeNodeModel() const
         ports.insert( {key, port_model} );
     }
     return { type, ID, ports };
-}
-
-void CustomNodeDialog::on_toolButtonAdd_pressed()
-{
-    int row = ui->tableWidget->rowCount();
-    ui->tableWidget->setRowCount(row+1);
-
-    ui->tableWidget->setItem(row,0, new QTableWidgetItem( "key_name" ));
-    QComboBox* combo_direction = new QComboBox;
-
-    combo_direction->addItem("Input");
-    combo_direction->addItem("Output");
-    combo_direction->addItem("In/Out");
-
-    ui->tableWidget->setCellWidget(row, 1, combo_direction);
-    ui->tableWidget->setItem(row,2, new QTableWidgetItem());
-    ui->tableWidget->setItem(row,3, new QTableWidgetItem());
-
-    checkValid();
-}
-
-void CustomNodeDialog::on_toolButtonRemove_pressed()
-{
-    auto selected = ui->tableWidget->selectedItems();
-    if(selected.size() == 1)
-    {
-        int row = selected.first()->row();
-        ui->tableWidget->removeRow(row);
-    }
-    checkValid();
 }
 
 
@@ -226,4 +207,39 @@ void CustomNodeDialog::on_buttonBox_clicked(QAbstractButton *)
     QSettings settings;
     settings.setValue("CustomNodeDialog/geometry", saveGeometry());
     settings.setValue("CustomNodeDialog/header", ui->tableWidget->horizontalHeader()->saveState() );
+}
+
+void CustomNodeDialog::on_tableWidget_itemSelectionChanged()
+{
+    QModelIndexList selected_rows = ui->tableWidget->selectionModel()->selectedRows();
+    ui->pushButtonRemove->setEnabled( selected_rows.count() != 0);
+}
+
+void CustomNodeDialog::on_pushButtonAdd_pressed()
+{
+    int row = ui->tableWidget->rowCount();
+    ui->tableWidget->setRowCount(row+1);
+
+    ui->tableWidget->setItem(row,0, new QTableWidgetItem( "key_name" ));
+    QComboBox* combo_direction = new QComboBox;
+
+    combo_direction->addItem("Input");
+    combo_direction->addItem("Output");
+    combo_direction->addItem("In/Out");
+
+    ui->tableWidget->setCellWidget(row, 1, combo_direction);
+    ui->tableWidget->setItem(row,2, new QTableWidgetItem());
+    ui->tableWidget->setItem(row,3, new QTableWidgetItem());
+
+    checkValid();
+}
+
+void CustomNodeDialog::on_pushButtonRemove_pressed()
+{
+    auto selected = ui->tableWidget->selectionModel()->selectedRows();
+    for( const auto& index: selected)
+    {
+        ui->tableWidget->removeRow( index.row() );
+    }
+    checkValid();
 }

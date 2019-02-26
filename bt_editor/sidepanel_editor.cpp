@@ -206,20 +206,15 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
 
     QMenu menu(this);
 
-    const auto& node_type = _tree_nodes_model.at(selected_name).type;
-
-    if( node_type == NodeType::ACTION || node_type == NodeType::ACTION)
-    {
-        QAction* edit   = menu.addAction("Edit");
-        connect( edit, &QAction::triggered, this, [this, selected_name]()
-        {
-            CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
-            if( dialog.exec() == QDialog::Accepted)
+    QAction* edit   = menu.addAction("Edit");
+    connect( edit, &QAction::triggered, this, [this, selected_name]()
             {
-                onReplaceModel( selected_name, dialog.getTreeNodeModel() );
-            }
-        } );
-    }
+                CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
+                if( dialog.exec() == QDialog::Accepted)
+                {
+                    onReplaceModel( selected_name, dialog.getTreeNodeModel() );
+                }
+            } );
 
     QAction* remove = menu.addAction("Remove");
 
@@ -270,7 +265,7 @@ void SidepanelEditor::on_buttonUpload_clicked()
             node.setAttribute("ID", ID.toStdString().c_str());
             for(const auto& port_it: model.ports)
             {
-                node.setAttribute( port_it.first , ""); //TODO VER_3
+                node.appendChild(writePortModel(port_it.first, port_it.second, doc));
             }
         }
         root_models.appendChild(node);
