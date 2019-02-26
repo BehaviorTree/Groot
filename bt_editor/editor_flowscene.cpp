@@ -25,7 +25,7 @@ QtNodes::Node &EditorFlowScene::createNodeAtPos(const QString &ID, const QString
     if( !node_model )
     {
         char buffer[250];
-        sprintf(buffer, "No registered model with ID: [%s])",
+        sprintf(buffer, "No registered model with ID: [%s]",
                 ID.toStdString().c_str() );
         throw std::runtime_error( buffer );
     }

@@ -307,7 +307,7 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root, const NodeModels& m
 
     if( bt_root.tagName() != "BehaviorTree" )
     {
-        throw std::runtime_error( "expecting a node called <BehaviorTree>");
+        throw std::runtime_error( "Expecting a node called <BehaviorTree>");
     }
 
     //-------------------------------------
@@ -323,11 +323,12 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root, const NodeModels& m
 
         AbstractTreeNode tree_node;
 
-        tree_node.model.type = BT::convertFromString<BT::NodeType>( xml_node.tagName().toStdString() );
-        tree_node.model.registration_ID = modelID;
-
-        //TODO VER_3 FIXME tree_node.model.ports
-
+        auto model_it = models.find(modelID);
+        if( model_it ==  models.end() )
+        {
+             throw std::runtime_error( (QString("This model has not been registered: ") + modelID).toStdString() );
+        }
+        tree_node.model = model_it->second;
 
         if( xml_node.hasAttribute("name") )
         {
