@@ -19,6 +19,7 @@ before_install:
  - sudo apt-get install qt5-default qttools5-dev-tools
  
 before_script:
+  - git submodule update --init --recursive
   - mkdir build
   - cd build
   - cmake ..
