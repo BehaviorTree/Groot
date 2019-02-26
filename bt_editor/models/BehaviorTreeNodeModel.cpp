@@ -331,7 +331,7 @@ void BehaviorTreeDataModel::readStyle()
         qDebug()<<"JSON object is empty.";
         return;
     }
-    QString model_type_name( BT::toStr(_model.type) );
+    QString model_type_name( QString::fromStdString(toStr(_model.type)) );
 
     for (const auto& model_name: { model_type_name, _model.registration_ID} )
     {

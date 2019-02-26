@@ -144,7 +144,7 @@ void RecursivelyCreateXml(const FlowScene &scene, QDomDocument &doc, QDomElement
         element = doc.createElement( registration_name.toStdString().c_str() );
     }
     else{
-        element = doc.createElement( toStr(bt_node->nodeType()) );
+        element = doc.createElement( QString::fromStdString(toStr(bt_node->nodeType())) );
         element.setAttribute("ID", registration_name.toStdString().c_str() );
     }
 

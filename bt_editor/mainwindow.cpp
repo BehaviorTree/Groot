@@ -450,7 +450,7 @@ QString MainWindow::saveToXML() const
         }
 
 
-        QDomElement node = doc.createElement( toStr(model.type) );
+        QDomElement node = doc.createElement( QString::fromStdString(toStr(model.type)) );
 
         if( !node.isNull() )
         {
@@ -773,7 +773,7 @@ void MainWindow::onAddToModelRegistry(const NodeModel &model)
         return util::make_unique<BehaviorTreeDataModel>(model);
     };
 
-    _model_registry->registerModel( BT::toStr(model.type), node_creator, ID);
+    _model_registry->registerModel( QString::fromStdString( toStr(model.type)), node_creator, ID);
 
     _treenode_models.insert( {ID, model } );
     _editor_widget->updateTreeView();

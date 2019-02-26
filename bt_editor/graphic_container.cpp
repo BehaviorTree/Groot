@@ -426,7 +426,7 @@ void GraphicContainer::deleteSubTreeRecursively(Node &root_node)
 void GraphicContainer::createMorphSubMenu(QtNodes::Node &node, QMenu* nodeMenu)
 {
     auto bt_model =  dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() );
-    const QString category ( BT::toStr( bt_model->nodeType() ));
+    const QString category ( QString::fromStdString( toStr( bt_model->nodeType()) ));
 
     auto names_in_category = _model_registry->registeredModelsByCategory( category );
     names_in_category.erase( node.nodeDataModel()->name() );
