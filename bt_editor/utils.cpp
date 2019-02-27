@@ -58,7 +58,7 @@ std::vector<Node*> getChildren(const QtNodes::FlowScene &scene,
         }
     }
 
-    if( ordered )
+    if( ordered && children.size() > 1)
     {
         if( scene.layout() == PortLayout::Vertical)
         {
@@ -238,6 +238,16 @@ void RecursiveNodeReorder(AbsBehaviorTree& tree, PortLayout layout)
 
 void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 {
+
+    for (const auto& abs_node: tree.nodes())
+    {
+        Node* node =  abs_node.graphic_node;
+        if( node == nullptr )
+        {
+            throw std::runtime_error("one or more nodes haven't been created yet");
+        }
+    }
+
     if( tree.nodesCount() == 0)
     {
         return;
@@ -247,8 +257,8 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 
     for (const auto& abs_node: tree.nodes())
     {
-        Node& node = *( abs_node.graphic_node);
-        scene.setNodePosition( node, abs_node.pos );
+        Node* node =  abs_node.graphic_node;
+        scene.setNodePosition( *node, abs_node.pos );
     }
 }
 
@@ -307,7 +317,7 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root, const NodeModels& m
 
     if( bt_root.tagName() != "BehaviorTree" )
     {
-        throw std::runtime_error( "expecting a node called <BehaviorTree>");
+        throw std::runtime_error( "Expecting a node called <BehaviorTree>");
     }
 
     //-------------------------------------
@@ -323,11 +333,12 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root, const NodeModels& m
 
         AbstractTreeNode tree_node;
 
-        tree_node.model.type = BT::convertFromString<BT::NodeType>( xml_node.tagName().toStdString() );
-        tree_node.model.registration_ID = modelID;
-
-        //TODO VER_3 FIXME tree_node.model.ports
-
+        auto model_it = models.find(modelID);
+        if( model_it ==  models.end() )
+        {
+             throw std::runtime_error( (QString("This model has not been registered: ") + modelID).toStdString() );
+        }
+        tree_node.model = model_it->second;
 
         if( xml_node.hasAttribute("name") )
         {

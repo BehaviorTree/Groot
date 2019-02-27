@@ -22,7 +22,7 @@
 #include <nodes/FlowView>
 
 #include "editor_flowscene.h"
-
+#include "utils.h"
 #include "XML_utilities.hpp"
 
 #include "models/RootNodeModel.hpp"
@@ -450,7 +450,7 @@ QString MainWindow::saveToXML() const
         }
 
 
-        QDomElement node = doc.createElement( toStr(model.type) );
+        QDomElement node = doc.createElement( QString::fromStdString(toStr(model.type)) );
 
         if( !node.isNull() )
         {
@@ -460,30 +460,8 @@ QString MainWindow::saveToXML() const
             {
                 const auto& port_name = port_it.first;
                 const auto& port = port_it.second;
-                QDomElement port_element;
-
-                switch(port.direction)
-                {
-                case PortDirection::INPUT:  port_element = doc.createElement( "input_port" );  break;
-                case PortDirection::OUTPUT: port_element = doc.createElement( "output_port" ); break;
-                case PortDirection::INOUT:  port_element = doc.createElement( "inout_port" );  break;
-                }
-
-                port_element.setAttribute("name", port_name );
-                if( port.type_name.isEmpty() == false)
-                {
-                    port_element.setAttribute("type", port.type_name );
-                }
-                if( port.default_value.isEmpty() == false)
-                {
-                    port_element.setAttribute("default", port.default_value );
-                }
-
-                if( !port.description.isEmpty() )
-                {
-                    QDomText description = doc.createTextNode( port.description );
-                    port_element.appendChild( description );
-                }
+                
+                QDomElement port_element = writePortModel(port_name, port, doc);
                 node.appendChild( port_element );
             }
         }
@@ -791,7 +769,7 @@ void MainWindow::onAddToModelRegistry(const NodeModel &model)
         return util::make_unique<BehaviorTreeDataModel>(model);
     };
 
-    _model_registry->registerModel( BT::toStr(model.type), node_creator, ID);
+    _model_registry->registerModel( QString::fromStdString( toStr(model.type)), node_creator, ID);
 
     if( model.type == NodeType::SUBTREE && getTabByName(model.registration_ID) == nullptr)
     {
@@ -867,7 +845,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
     if( option == SUBTREE_EXPAND && subtree_model->expanded() == false)
     {
         auto subtree_container = getTabByName(subtree_name);
-        const auto& abs_subtree = BuildTreeFromScene( subtree_container->scene() );
+        auto abs_subtree = BuildTreeFromScene( subtree_container->scene() );
 
         subtree_model->setExpanded(true);
         node.nodeState().getEntries(PortType::Out).resize(1);
@@ -923,7 +901,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
         QtNodes::Node* child_node = conn_out.begin()->second->getNode( PortType::In );
 
         auto subtree_container = getTabByName(subtree_name);
-        const auto& subtree = BuildTreeFromScene( subtree_container->scene() );
+        auto subtree = BuildTreeFromScene( subtree_container->scene() );
 
         container.deleteSubTreeRecursively( *child_node );
         container.appendTreeToNode( node, subtree );

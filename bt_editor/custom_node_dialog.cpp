@@ -71,6 +71,10 @@ CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
                 ui->comboBox->setCurrentIndex(2);
                 ui->comboBox->setEnabled(false);
             }
+            else if( model.type == NodeType::DECORATOR)
+            {
+                ui->comboBox->setCurrentIndex(3);
+            }
         }
     }
 
@@ -104,6 +108,7 @@ NodeModel CustomNodeDialog::getTreeNodeModel() const
     case 0: type = NodeType::ACTION; break;
     case 1: type = NodeType::CONDITION; break;
     case 2: type = NodeType::SUBTREE; break;
+    case 3: type = NodeType::DECORATOR; break;
     }
     for (int row=0; row < ui->tableWidget->rowCount(); row++ )
     {

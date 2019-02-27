@@ -77,7 +77,7 @@ void SidepanelEditor::updateTreeView()
       {
           continue;
       }
-      QString category = toStr(model.type);
+      QString category = QString::fromStdString(toStr(model.type));
       auto parent = _tree_view_category_items[category];
       auto item = new QTreeWidgetItem(parent, {ID});
       QFont font = item->font(0);
@@ -118,7 +118,7 @@ void SidepanelEditor::on_paletteTreeWidget_itemSelectionChanged()
     int row = 0;
     for (const auto& port_it: model.ports)
     {
-        ui->portsTableWidget->setItem(row,0, new QTableWidgetItem( BT::toStr(port_it.second.direction) ));
+        ui->portsTableWidget->setItem(row,0, new QTableWidgetItem( QString::fromStdString(toStr(port_it.second.direction))));
         ui->portsTableWidget->setItem(row,1, new QTableWidgetItem( port_it.first ));
         ui->portsTableWidget->setItem(row,2, new QTableWidgetItem( port_it.second.description) );
         row++;
@@ -258,14 +258,14 @@ void SidepanelEditor::on_buttonUpload_clicked()
             continue;
         }
 
-        QDomElement node = doc.createElement( toStr(model.type) );
+        QDomElement node = doc.createElement( QString::fromStdString(toStr(model.type)) );
 
         if( !node.isNull() )
         {
             node.setAttribute("ID", ID.toStdString().c_str());
             for(const auto& port_it: model.ports)
             {
-                node.setAttribute( port_it.first , ""); //TODO VER_3
+                node.appendChild(writePortModel(port_it.first, port_it.second, doc));
             }
         }
         root_models.appendChild(node);

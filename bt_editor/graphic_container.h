@@ -42,7 +42,7 @@ public:
 
     void loadSceneFromTree(const AbsBehaviorTree &tree);
 
-    void appendTreeToNode(QtNodes::Node& node, AbsBehaviorTree subtree);
+    void appendTreeToNode(QtNodes::Node& node, AbsBehaviorTree &subtree);
 
     void loadFromJson(const QByteArray& data);
 
