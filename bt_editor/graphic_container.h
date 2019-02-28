@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QWidget>
+#include <QLineEdit>
 
 #include "bt_editor_base.h"
 #include "editor_flowscene.h"
@@ -57,6 +58,8 @@ public:
 public slots:
 
     void onNodeDoubleClicked(QtNodes::Node& root_node);
+
+    void onPortValueDoubleClicked(QLineEdit* edit_value);
 
     void onNodeCreated(QtNodes::Node &node);
 

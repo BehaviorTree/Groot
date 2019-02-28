@@ -27,92 +27,110 @@ class BehaviorTreeDataModel : public NodeDataModel
     Q_OBJECT
 
 public:
-  BehaviorTreeDataModel(const NodeModel &model );
+    BehaviorTreeDataModel(const NodeModel &model );
 
-  ~BehaviorTreeDataModel() override;
-
-public:
-
-  NodeType nodeType() const;
-
-  virtual void setInstanceName(const QString& name);
+    ~BehaviorTreeDataModel() override;
 
 public:
 
-  void initWidget();
+    NodeType nodeType() const;
 
-  virtual unsigned int nPorts(PortType portType) const override;
+    virtual void setInstanceName(const QString& name);
 
-  ConnectionPolicy portOutConnectionPolicy(PortIndex) const final;
+public:
 
-  NodeDataType dataType(PortType , PortIndex ) const final;
+    void initWidget();
 
-  std::shared_ptr<NodeData> outData(PortIndex port) final;
+    virtual unsigned int nPorts(PortType portType) const override;
 
-  void setInData(std::shared_ptr<NodeData>, int) final {}
+    ConnectionPolicy portOutConnectionPolicy(PortIndex) const final;
 
-  const QString &registrationName() const;
+    NodeDataType dataType(PortType , PortIndex ) const final;
 
-  const NodeModel &model() const { return _model; }
+    std::shared_ptr<NodeData> outData(PortIndex port) final;
 
-  QString name() const final { return registrationName(); }
+    void setInData(std::shared_ptr<NodeData>, int) final {}
 
-  const QString& instanceName() const;
+    const QString &registrationName() const;
 
-  PortsMapping getCurrentPortMapping() const;
+    const NodeModel &model() const { return _model; }
 
-  QWidget *embeddedWidget() final { return _main_widget; }
+    QString name() const final { return registrationName(); }
 
-  QWidget *parametersWidget() { return _params_widget; }
+    const QString& instanceName() const;
 
-  QJsonObject save() const override;
+    PortsMapping getCurrentPortMapping() const;
 
-  void restore(QJsonObject const &) override;
+    QWidget *embeddedWidget() final { return _main_widget; }
 
-  void lock(bool locked);
+    QWidget *parametersWidget() { return _params_widget; }
 
-  void setParameterValue(const QString& label, const QString& value);
+    QJsonObject save() const override;
 
-  int UID() const { return _uid; }
+    void restore(QJsonObject const &) override;
 
-  bool eventFilter(QObject *obj, QEvent *event) override;
+    void lock(bool locked);
+
+    void setParameterValue(const QString& label, const QString& value);
+
+    int UID() const { return _uid; }
+
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 
 public slots:
 
-  void updateNodeSize();
+    void updateNodeSize();
 
+    void onHighlightPortValue(QString value);
 
 protected:
 
-  QFrame*  _main_widget;
-  QFrame*  _params_widget;
+    QFrame*  _main_widget;
+    QFrame*  _params_widget;
 
-  QLineEdit* _line_edit_name;
+    QLineEdit* _line_edit_name;
 
-  std::map<QString, QWidget*> _ports_widgets;
-  int16_t _uid;
+    std::map<QString, QWidget*> _ports_widgets;
+    int16_t _uid;
 
-  QFormLayout* _form_layout;
-  QVBoxLayout* _main_layout;
-  QLabel* _caption_label;
-  QFrame* _caption_logo_left;
-  QFrame* _caption_logo_right;
+    QFormLayout* _form_layout;
+    QVBoxLayout* _main_layout;
+    QLabel* _caption_label;
+    QFrame* _caption_logo_left;
+    QFrame* _caption_logo_right;
 
 private:
-  const NodeModel _model;
-  QString _instance_name;
-  QSvgRenderer* _icon_renderer;
+    const NodeModel _model;
+    QString _instance_name;
+    QSvgRenderer* _icon_renderer;
 
-  void readStyle();
-  QString _style_icon;
-  QColor  _style_caption_color;
-  QString  _style_caption_alias;
+    void readStyle();
+    QString _style_icon;
+    QColor  _style_caption_color;
+    QString  _style_caption_alias;
 
 signals:
 
-  void parameterUpdated(QString, QWidget*);
+    void parameterUpdated(QString, QWidget*);
 
-  void instanceNameChanged();
+    void instanceNameChanged();
+
+    void portValueDoubleChicked(QLineEdit* value_port);
 
 };
+
+
+class GrootLineEdit: public QLineEdit
+{
+    Q_OBJECT
+public:
+    GrootLineEdit(QWidget* parent = nullptr): QLineEdit(parent) {}
+
+    void mouseDoubleClickEvent(QMouseEvent *ev) override;
+    void focusOutEvent(QFocusEvent* ev) override;
+signals:
+    void doubleClicked();
+    void lostFocus();
+};
+

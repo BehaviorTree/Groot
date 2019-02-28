@@ -116,10 +116,18 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const NodeModel &model):
                 }
             }
 
-            QLineEdit* form_field = new QLineEdit();
+            GrootLineEdit* form_field = new GrootLineEdit();
             form_field->setAlignment( Qt::AlignHCenter);
             form_field->setMaximumWidth(140);
             form_field->setText( port_it.second.default_value );
+
+            connect(form_field, &GrootLineEdit::doubleClicked,
+                    this, [this,form_field]()
+                    { emit this->portValueDoubleChicked(form_field); });
+
+            connect(form_field, &GrootLineEdit::lostFocus,
+                    this, [this]()
+                    { emit this->portValueDoubleChicked(nullptr); });
 
             QLabel* form_label  =  new QLabel( label, _params_widget );
             form_label->setToolTip( description );
@@ -128,10 +136,9 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const NodeModel &model):
 
             _ports_widgets.insert( std::make_pair( port_it.first, form_field) );
 
-            form_field->setStyleSheet(" color: rgb(30,30,30); "
-                                      "background-color: rgb(180,180,180); "
-                                      "border: 0px; "
-                                      "padding: 0px 0px 0px 0px;");
+            form_field->setStyleSheet("color: rgb(30,30,30); "
+                                      "background-color: rgb(200,200,200); "
+                                      "border: 0px; ");
 
             _form_layout->addRow( form_label, form_field );
 
@@ -488,6 +495,36 @@ void BehaviorTreeDataModel::setInstanceName(const QString &name)
 }
 
 
+void BehaviorTreeDataModel::onHighlightPortValue(QString value)
+{
+    for( const auto& it:  _ports_widgets)
+    {
+        if( auto line_edit = dynamic_cast<QLineEdit*>(it.second) )
+        {
+            QString line_str = line_edit->text();
+            if( !value.isEmpty() && line_str == value )
+            {
+                line_edit->setStyleSheet("color: rgb(30,30,30); "
+                                         "background-color: #ffef0b; "
+                                         "border: 0px; ");
+            }
+            else{
+                line_edit->setStyleSheet("color: rgb(30,30,30); "
+                                         "background-color: rgb(200,200,200); "
+                                         "border: 0px; ");
+            }
+        }
+    }
+}
 
+void GrootLineEdit::mouseDoubleClickEvent(QMouseEvent *ev)
+{
+    //QLineEdit::mouseDoubleClickEvent(ev);
+    emit doubleClicked();
+}
 
-
+void GrootLineEdit::focusOutEvent(QFocusEvent *ev)
+{
+    QLineEdit::focusOutEvent(ev);
+    emit lostFocus();
+}

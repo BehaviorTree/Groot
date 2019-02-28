@@ -308,6 +308,16 @@ void GraphicContainer::onNodeDoubleClicked(Node &root_node)
     }
 }
 
+void GraphicContainer::onPortValueDoubleClicked(QLineEdit *edit_value)
+{
+    for (const auto& it: _scene->nodes())
+    {
+        auto node_model = dynamic_cast<BehaviorTreeDataModel*>( it.second->nodeDataModel() );
+        QString val = edit_value ?  edit_value->text() : QString();
+        node_model->onHighlightPortValue( val );
+    }
+}
+
 void GraphicContainer::onNodeCreated(Node &node)
 {
     if( auto bt_node = dynamic_cast<BehaviorTreeDataModel*>( node.nodeDataModel() ) )
@@ -315,8 +325,11 @@ void GraphicContainer::onNodeCreated(Node &node)
         connect( bt_node, &BehaviorTreeDataModel::parameterUpdated,
                  this, &GraphicContainer::undoableChange );
 
+        connect( bt_node, &BehaviorTreeDataModel::portValueDoubleChicked,
+                 this, &GraphicContainer::onPortValueDoubleClicked );
+
         connect( bt_node, &BehaviorTreeDataModel::instanceNameChanged,
-                 this, &GraphicContainer::undoableChange );
+                this, &GraphicContainer::undoableChange );
 
         if( auto subtree_node = dynamic_cast<SubtreeNodeModel*>( bt_node ) )
         {
