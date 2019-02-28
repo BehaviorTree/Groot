@@ -40,7 +40,7 @@ void ReplyTest::basicLoad()
     QByteArray log = readFile("://crossdoor_trace.fbl");
     sidepanel_replay->loadLog( log );
 
-    QCOMPARE( sidepanel_replay->transitionsCount(), size_t(153) );
+    QCOMPARE( sidepanel_replay->transitionsCount(), size_t(27) );
 }
 
 QTEST_MAIN(ReplyTest)

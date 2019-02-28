@@ -80,6 +80,7 @@ void GraphicContainer::lockEditing(bool locked)
 
         if(bt_model->registrationName() == "Root")
         {
+            bt_model->lock( locked );
             node->nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsMovable,  false);
             node->nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsFocusable, true);
             node->nodeGraphicsObject().setFlag(QGraphicsItem::ItemIsSelectable, false);

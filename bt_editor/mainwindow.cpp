@@ -636,7 +636,7 @@ void MainWindow::onPushUndo()
     }
     _current_state = saved;
 
-     qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+     //qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
 
 void MainWindow::onUndoInvoked()
@@ -651,7 +651,7 @@ void MainWindow::onUndoInvoked()
 
         loadSavedStateFromJson(_current_state);
 
-        qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+       // qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
 }
 

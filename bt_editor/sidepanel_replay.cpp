@@ -11,6 +11,7 @@
 #include <QStandardItem>
 #include <QModelIndex>
 #include <QTimer>
+#include <QMessageBox>
 
 #include "bt_editor_base.h"
 #include "utils.h"
@@ -178,7 +179,21 @@ void SidepanelReplay::loadLog(const QByteArray &content)
 
     size_t bt_header_size = flatbuffers::ReadScalar<uint32_t>(buffer);
 
+    flatbuffers::Verifier verifier( reinterpret_cast<const uint8_t*>(buffer+4),
+                                   size_t(content.data() -4));
+
+    bool valid_tree = Serialization::VerifyBehaviorTreeBuffer(verifier);
+    if( ! valid_tree )
+    {
+        QMessageBox::warning( this, "Flatbuffer verification failed",
+                             "Failed to load this file.\n"
+                             "Its format is not compatible with the current one");
+        return;
+    }
+
+
     auto fb_behavior_tree = Serialization::GetBehaviorTree( &buffer[4] );
+
 
     auto res_pair = BuildTreeFromFlatbuffers( fb_behavior_tree );
 
