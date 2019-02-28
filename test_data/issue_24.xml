@@ -1,0 +1,8 @@
+<root > 
+    <BehaviorTree> 
+        <Sequence> 
+            <Action ID="very_very_long_name_incredibly_long"/> 
+            <Action ID="short"/> 
+        </Sequence> 
+    </BehaviorTree> 
+</root>

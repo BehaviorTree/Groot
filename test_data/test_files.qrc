@@ -9,5 +9,6 @@
         <file>simple_without_model.xml</file>
         <file>subtree_test_fail.xml</file>
         <file>issue_3.xml</file>
+        <file>issue_24.xml</file>
     </qresource>
 </RCC>

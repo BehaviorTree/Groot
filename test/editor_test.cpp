@@ -23,6 +23,7 @@ private slots:
     void multipleSubtrees();
     void editText();
     void loadModelLess();
+    void longNames();
     void clearModels();
     void undoWithSubtreeExpanded();
 };
@@ -480,11 +481,27 @@ void EditorTest::loadModelLess()
 
     const auto& moverobot_model = models.at("moverobot");
 
-    // TODO VER_3
 //    QCOMPARE( moverobot_model.params.size(),  size_t(1) );
 //    QCOMPARE( moverobot_model.params.front().label, tr("location") );
 //    QCOMPARE( moverobot_model.params.front().value, tr("1") );
 
+}
+
+void EditorTest::longNames()
+{
+    QString file_xml = readFile(":/issue_24.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    auto abs_tree = getAbstractTree();
+    QCOMPARE( abs_tree.nodesCount(), size_t(4) );
+    auto sequence = abs_tree.node(1);
+    QCOMPARE( sequence->model.registration_ID, QString("Sequence"));
+
+    // second child on the right side.
+    int short_index = sequence->children_index[1];
+    auto short_node = abs_tree.node(short_index);
+    QCOMPARE( short_node->model.registration_ID, QString("short") );
 }
 
 void EditorTest::clearModels()
