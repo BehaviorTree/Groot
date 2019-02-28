@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/BehaviorTree/Groot.svg?branch=master)](https://travis-ci.org/BehaviorTree/Groot)
 
-# Groot
+# Groot 
 
 **Groot** is a Graphical Editor, written in C++ and Qt, to create [BehaviorTrees](https://en.wikipedia.org/wiki/Behavior_tree).
 
@@ -8,16 +8,12 @@ It is compliant with the the library [BehaviorTree.CPP](https://github.com/Behav
 
 [![Groot Editor](groot-screenshot.png)](https://vimeo.com/275066768)
 
-# Quick Start
 
-You can download and execute Groot easily downloading the latest stable
-[AppImage](https://appimage.org/) .
+In the following video you can see how the C++ library and
+the graphic user interface are used to design and monitor a Behavior Tree.
 
-      wget https://github.com/BehaviorTree/Groot/releases/download/0.4.2/Groot-0.4.2-x86_64.AppImage
-      chmod +x ./Groot-0.4.2-x86_64.AppImage
-      ./Groot-0.4.2-x86_64.AppImage
+[![MOOD2Be](video_MOOD2Be.png)](https://vimeo.com/304651183)
 
-It should work with Ubuntu 16.04 or later.
 
 # Dependencies, Installation, and Usage
 
@@ -29,6 +25,13 @@ To compile the project you need:
 On Ubuntu Xenial or later, you can install the dependencies with:
 
        sudo apt-get install qtbase5-dev qtbase5-dev libqt5svg5-dev
+       
+To compile Groot, you need to get the git submodule:
+
+      git submodule init --update --recursive 
+      
+Some functionalities of the code related to ROS will work __only__ if the
+project is compiled with with _catkin_.
        
 # Licence       
 
