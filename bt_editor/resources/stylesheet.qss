@@ -1,0 +1,37 @@
+QMenu {
+    background-color: #101020;
+    color:white;
+}
+
+QMenu::item {
+    background: transparent;
+    color:white;
+}
+
+QMenu::item:selected {
+    background: #404050;
+    color:white;
+}
+
+QMenu::item:disabled {
+    background: transparent;
+    color:grey;
+}
+
+QComboBox {
+    color: black;
+    background-color: white;
+    selection-background-color:  #b5b5b5;
+    border-radius: 2px;
+    border: 1px solid grey;
+    padding-top: 2px;     /* This fix  #103, #111*/
+    padding-bottom: 2px;  /* This fix  #103, #111*/
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+QComboBox:disabled {
+    color: blue;
+    background-color: grey;
+    selection-background-color: grey;
+}

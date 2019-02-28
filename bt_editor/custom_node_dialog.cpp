@@ -1,11 +1,13 @@
 #include "custom_node_dialog.h"
 #include "ui_custom_node_dialog.h"
-#include "models/ActionNodeModel.hpp"
+
 #include <QTreeWidgetItem>
 #include <QPushButton>
 #include <QRegExpValidator>
+#include <QSettings>
+#include <QModelIndexList>
 
-CustomNodeDialog::CustomNodeDialog(const TreeNodeModels &models,
+CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
                                    QString to_edit,
                                    QWidget *parent):
     QDialog(parent),
@@ -13,31 +15,65 @@ CustomNodeDialog::CustomNodeDialog(const TreeNodeModels &models,
     _models(models),
     _editing(false)
 {
-    setWindowTitle("Custom TreeNode Editor");
     ui->setupUi(this);
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    setWindowTitle("Custom TreeNode Editor");
+
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
+
+    QSettings settings;
+    restoreGeometry(settings.value("CustomNodeDialog/geometry").toByteArray());
+    ui->tableWidget->horizontalHeader()->restoreState( settings.value("CustomNodeDialog/header").toByteArray() );
 
     if( to_edit.isEmpty() == false)
     {
-        auto it = models.find(to_edit);
-        if( it != models.end())
+        auto model_it = models.find(to_edit);
+        if( model_it != models.end())
         {
             _editing =true;
             ui->lineEdit->setText( to_edit );
 
-            for( const auto& param : it->second.params )
+            const auto& model = model_it->second;
+            for( const auto& port_it : model.ports )
             {
                 int row = ui->tableWidget->rowCount();
                 ui->tableWidget->setRowCount(row+1);
 
-                ui->tableWidget->setItem(row,0, new QTableWidgetItem( param.label ));
-                ui->tableWidget->setItem(row,1, new QTableWidgetItem( param.value ));
+                ui->tableWidget->setItem(row,0, new QTableWidgetItem(port_it.first) );
+                QComboBox* combo_direction = new QComboBox;
+                combo_direction->addItem("Input");
+                combo_direction->addItem("Output");
+                combo_direction->addItem("In/Out");
+                switch( port_it.second.direction )
+                {
+                case BT::PortDirection::INPUT : combo_direction->setCurrentIndex(0); break;
+                case BT::PortDirection::OUTPUT: combo_direction->setCurrentIndex(1); break;
+                case BT::PortDirection::INOUT : combo_direction->setCurrentIndex(2); break;
+                }
+
+                ui->tableWidget->setCellWidget(row,1, combo_direction );
+                ui->tableWidget->setItem(row,2, new QTableWidgetItem(port_it.second.default_value) );
+                ui->tableWidget->setItem(row,3, new QTableWidgetItem(port_it.second.description) );
             }
-            switch( it->second.type )
+
+            if( model.type == NodeType::ACTION )
             {
-            case NodeType::ACTION:    ui->comboBox->setCurrentIndex(0); break;
-            case NodeType::CONDITION: ui->comboBox->setCurrentIndex(1); break;
+                ui->comboBox->setCurrentIndex(0);
+            }
+            else if( model.type == NodeType::CONDITION )
+            {
+                ui->comboBox->setCurrentIndex(1);
+            }
+            else if( model.type == NodeType::SUBTREE )
+            {
+                ui->comboBox->setCurrentIndex(2);
+                ui->comboBox->setEnabled(false);
+            }
+            else if( model.type == NodeType::DECORATOR)
+            {
+                ui->comboBox->setCurrentIndex(3);
             }
         }
     }
@@ -60,46 +96,33 @@ CustomNodeDialog::~CustomNodeDialog()
     delete ui;
 }
 
-TreeNodeModel CustomNodeDialog::getTreeNodeModel() const
+
+NodeModel CustomNodeDialog::getTreeNodeModel() const
 {
     QString ID = ui->lineEdit->text();
     NodeType type = NodeType::UNDEFINED;
-    std::vector<TreeNodeModel::Param> params;
+    PortModels ports;
 
     switch( ui->comboBox->currentIndex() )
     {
     case 0: type = NodeType::ACTION; break;
     case 1: type = NodeType::CONDITION; break;
+    case 2: type = NodeType::SUBTREE; break;
+    case 3: type = NodeType::DECORATOR; break;
     }
     for (int row=0; row < ui->tableWidget->rowCount(); row++ )
     {
-        const auto key   = ui->tableWidget->item(row,0)->text();
-        const auto value = ui->tableWidget->item(row,1)->text();
-        params.push_back( {key,value} );
+        const QString key       = ui->tableWidget->item(row,0)->text();
+        auto combo = static_cast<QComboBox*>(ui->tableWidget->cellWidget(row,1));
+        const QString direction = combo->currentText();
+
+        PortModel port_model;
+        port_model.direction = BT::convertFromString<PortDirection>(direction.toStdString());
+        port_model.default_value =  ui->tableWidget->item(row,2)->text();
+        port_model.description   =  ui->tableWidget->item(row,3)->text();
+        ports.insert( {key, port_model} );
     }
-    return { ID, type, std::move(params) };
-}
-
-void CustomNodeDialog::on_toolButtonAdd_pressed()
-{
-    int row = ui->tableWidget->rowCount();
-    ui->tableWidget->setRowCount(row+1);
-
-    ui->tableWidget->setItem(row,0, new QTableWidgetItem( "key_name" ));
-    ui->tableWidget->setItem(row,1, new QTableWidgetItem( "default"));
-
-    checkValid();
-}
-
-void CustomNodeDialog::on_toolButtonRemove_pressed()
-{
-    auto selected = ui->tableWidget->selectedItems();
-    if(selected.size() == 1)
-    {
-        int row = selected.first()->row();
-        ui->tableWidget->removeRow(row);
-    }
-    checkValid();
+    return { type, ID, ports };
 }
 
 
@@ -109,8 +132,11 @@ void CustomNodeDialog::checkValid()
     auto name = ui->lineEdit->text();
     int pos;
 
-
-    if( name.isEmpty() )
+    if( name.toLower() == "root" )
+    {
+        ui->labelWarning->setText("The name 'root' is forbidden");
+    }
+    else if( name.isEmpty() )
     {
         ui->labelWarning->setText("The name cannot be empty");
     }
@@ -150,11 +176,11 @@ void CustomNodeDialog::checkValid()
         {
             ui->labelWarning->setText("Invalid key: use only letters, digits and underscores");
         }
-        else if( param_names.size() < ui->tableWidget->rowCount() ){
+        else if( param_names.size() < ui->tableWidget->rowCount() )
+        {
            ui->labelWarning->setText("Duplicated NodeParameter key");
         }
-
-        if( param_names.size() == ui->tableWidget->rowCount() )
+        else if( param_names.size() == ui->tableWidget->rowCount() )
         {
             valid = true;
         }
@@ -168,4 +194,53 @@ void CustomNodeDialog::checkValid()
         ui->labelWarning->setStyleSheet("color: rgb(204, 0, 0)");
     }
     ui->buttonBox->button( QDialogButtonBox::Ok )->setEnabled( valid );
+}
+
+void CustomNodeDialog::closeEvent(QCloseEvent *)
+{
+    QSettings settings;
+    settings.setValue("CustomNodeDialog/geometry", saveGeometry());
+    settings.setValue("CustomNodeDialog/header", ui->tableWidget->horizontalHeader()->saveState() );
+}
+
+void CustomNodeDialog::on_buttonBox_clicked(QAbstractButton *)
+{
+    QSettings settings;
+    settings.setValue("CustomNodeDialog/geometry", saveGeometry());
+    settings.setValue("CustomNodeDialog/header", ui->tableWidget->horizontalHeader()->saveState() );
+}
+
+void CustomNodeDialog::on_tableWidget_itemSelectionChanged()
+{
+    QModelIndexList selected_rows = ui->tableWidget->selectionModel()->selectedRows();
+    ui->pushButtonRemove->setEnabled( selected_rows.count() != 0);
+}
+
+void CustomNodeDialog::on_pushButtonAdd_pressed()
+{
+    int row = ui->tableWidget->rowCount();
+    ui->tableWidget->setRowCount(row+1);
+
+    ui->tableWidget->setItem(row,0, new QTableWidgetItem( "key_name" ));
+    QComboBox* combo_direction = new QComboBox;
+
+    combo_direction->addItem("Input");
+    combo_direction->addItem("Output");
+    combo_direction->addItem("In/Out");
+
+    ui->tableWidget->setCellWidget(row, 1, combo_direction);
+    ui->tableWidget->setItem(row,2, new QTableWidgetItem());
+    ui->tableWidget->setItem(row,3, new QTableWidgetItem());
+
+    checkValid();
+}
+
+void CustomNodeDialog::on_pushButtonRemove_pressed()
+{
+    auto selected = ui->tableWidget->selectionModel()->selectedRows();
+    for( const auto& index: selected)
+    {
+        ui->tableWidget->removeRow( index.row() );
+    }
+    checkValid();
 }

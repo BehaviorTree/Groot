@@ -8,19 +8,22 @@
 #include <QFile>
 #include <QFont>
 #include <QApplication>
+#include <QJsonDocument>
 
 const int MARGIN = 10;
 const int DEFAULT_LINE_WIDTH  = 100;
 const int DEFAULT_FIELD_WIDTH = 50;
 const int DEFAULT_LABEL_WIDTH = 50;
 
-BehaviorTreeDataModel::BehaviorTreeDataModel(const TreeNodeModel &model):
+BehaviorTreeDataModel::BehaviorTreeDataModel(const NodeModel &model):
     _params_widget(nullptr),
     _uid( GetUID() ),
-    _registration_name(model.registration_ID),
-    _instance_name(model.registration_ID),
-    _icon_renderer(nullptr)
+    _model(model),
+    _icon_renderer(nullptr),
+    _style_caption_color( QtNodes::NodeStyle().FontColor ),
+    _style_caption_alias( model.registration_ID )
 {
+    readStyle();
     _main_widget = new QFrame();
     _line_edit_name = new QLineEdit(_main_widget);
     _params_widget = new QFrame();
@@ -75,40 +78,79 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const TreeNodeModel &model):
     _form_layout->setVerticalSpacing(2);
     _form_layout->setContentsMargins(0, 0, 0, 0);
 
-    for(const auto& param: model.params )
+    PortDirection preferred_port_types[3] = { PortDirection::INPUT,
+                                              PortDirection::OUTPUT,
+                                              PortDirection::INOUT};
+
+    for(int pref_index=0; pref_index < 3; pref_index++)
     {
-        auto param_creator = buildWidgetCreator(param);
-        const QString label = param_creator.label;
-        QLabel* form_label  =  new QLabel( label, _params_widget );
-        QWidget* form_field = param_creator.instance_factory();
-
-        form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
-
-        _params_map.insert( std::make_pair( label, form_field) );
-
-        form_field->setStyleSheet(" color: rgb(30,30,30); "
-                                  "background-color: rgb(180,180,180); "
-                                  "border: 0px; "
-                                  "padding: 0px 0px 0px 0px;");
-
-        _form_layout->addRow( form_label, form_field );
-
-        auto paramUpdated = [this,label,form_field]()
+        for(const auto& port_it: model.ports )
         {
-            this->parameterUpdated(label,form_field);
-        };
+            auto preferred_direction = preferred_port_types[pref_index];
+            if( port_it.second.direction != preferred_direction )
+            {
+                continue;
+            }
 
-        if(auto lineedit = dynamic_cast<QLineEdit*>( form_field ) )
-        {
-            connect( lineedit, &QLineEdit::editingFinished, this, paramUpdated );
-            connect( lineedit, &QLineEdit::editingFinished,
-                     this, &BehaviorTreeDataModel::updateNodeSize);
+            QString description = port_it.second.description;
+            QString label = port_it.first;
+            if( preferred_direction == PortDirection::INPUT)
+            {
+                label.prepend("[IN] ");
+                if( description.isEmpty())
+                {
+                    description="[INPUT]";
+                }
+                else{
+                    description.prepend("[INPUT]: ");
+                }
+            }
+            else if( preferred_direction == PortDirection::OUTPUT){
+                label.prepend("[OUT] ");
+                if( description.isEmpty())
+                {
+                    description="[OUTPUT]";
+                }
+                else{
+                    description.prepend("[OUTPUT]: ");
+                }
+            }
+
+            QLineEdit* form_field = new QLineEdit();
+            form_field->setAlignment( Qt::AlignHCenter);
+            form_field->setMaximumWidth(140);
+            form_field->setText( port_it.second.default_value );
+
+            QLabel* form_label  =  new QLabel( label, _params_widget );
+            form_label->setToolTip( description );
+
+            form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
+
+            _ports_widgets.insert( std::make_pair( port_it.first, form_field) );
+
+            form_field->setStyleSheet(" color: rgb(30,30,30); "
+                                      "background-color: rgb(180,180,180); "
+                                      "border: 0px; "
+                                      "padding: 0px 0px 0px 0px;");
+
+            _form_layout->addRow( form_label, form_field );
+
+            auto paramUpdated = [this,label,form_field]()
+            {
+                this->parameterUpdated(label,form_field);
+            };
+
+            if(auto lineedit = dynamic_cast<QLineEdit*>( form_field ) )
+            {
+                connect( lineedit, &QLineEdit::editingFinished, this, paramUpdated );
+                connect( lineedit, &QLineEdit::editingFinished,
+                         this, &BehaviorTreeDataModel::updateNodeSize);
+            }
+            else if( auto combo = dynamic_cast<QComboBox*>( form_field ) )
+            {
+                connect( combo, &QComboBox::currentTextChanged, this, paramUpdated);
+            }
         }
-        else if( auto combo = dynamic_cast<QComboBox*>( form_field ) )
-        {
-            connect( combo, &QComboBox::currentTextChanged, this, paramUpdated);
-        }
-
     }
     _params_widget->adjustSize();
 
@@ -128,34 +170,37 @@ BehaviorTreeDataModel::~BehaviorTreeDataModel()
 
 }
 
+BT::NodeType BehaviorTreeDataModel::nodeType() const
+{
+    return _model.type;
+}
+
 void BehaviorTreeDataModel::initWidget()
 {
-    const auto resource_file = captionIicon();
-    if( resource_file.isEmpty() == false )
+    if( _style_icon.isEmpty() == false )
     {
-        _caption_logo_left->setFixedWidth( 20);
+        _caption_logo_left->setFixedWidth( 20 );
         _caption_logo_right->setFixedWidth( 1 );
 
-        QFile file(resource_file);
+        QFile file(_style_icon);
         if(!file.open(QIODevice::ReadOnly))
         {
-            qDebug()<<"file not opened: "<< resource_file;
+            qDebug()<<"file not opened: "<< _style_icon;
             file.close();
         }
         else {
             QByteArray ba = file.readAll();
-            QByteArray new_color_fill = QString("fill:%1;").arg(caption().second.name()).toUtf8();
+            QByteArray new_color_fill = QString("fill:%1;").arg( _style_caption_color.name() ).toUtf8();
             ba.replace("fill:#ffffff;", new_color_fill);
             _icon_renderer =  new QSvgRenderer(ba, this);
         }
     }
 
-    auto label_text = caption().first;
-    auto color = caption().second;
-    _caption_label->setText( label_text );
+    _caption_label->setText( _style_caption_alias );
+
     QPalette capt_palette = _caption_label->palette();
     capt_palette.setColor(_caption_label->backgroundRole(), Qt::transparent);
-    capt_palette.setColor(_caption_label->foregroundRole(), color);
+    capt_palette.setColor(_caption_label->foregroundRole(), _style_caption_color);
     _caption_label->setPalette(capt_palette);
 
     _caption_logo_left->adjustSize();
@@ -164,6 +209,31 @@ void BehaviorTreeDataModel::initWidget()
 
     updateNodeSize();
 }
+
+unsigned int BehaviorTreeDataModel::nPorts(QtNodes::PortType portType) const
+{
+    if( portType == QtNodes::PortType::Out)
+    {
+        if( nodeType() == NodeType::ACTION || nodeType() == NodeType::CONDITION )
+        {
+            return 0;
+        }
+        else{
+            return 1;
+        }
+    }
+    else if( portType == QtNodes::PortType::In )
+    {
+        return (_model.registration_ID == "Root") ? 0 : 1;
+    }
+    return 0;
+}
+
+NodeDataModel::ConnectionPolicy BehaviorTreeDataModel::portOutConnectionPolicy(QtNodes::PortIndex) const
+{
+    return ( nodeType() == NodeType::DECORATOR ) ? ConnectionPolicy::One : ConnectionPolicy::Many;
+}
+
 void BehaviorTreeDataModel::updateNodeSize()
 {
     int caption_width = _caption_label->width();
@@ -231,13 +301,62 @@ std::shared_ptr<QtNodes::NodeData> BehaviorTreeDataModel::outData(QtNodes::PortI
     return nullptr;
 }
 
-std::pair<QString, QColor> BehaviorTreeDataModel::caption() const {
-    return {_registration_name, QtNodes::NodeStyle().FontColor };
+void BehaviorTreeDataModel::readStyle()
+{
+    QFile style_file(":/NodesStyle.json");
+
+    if (!style_file.open(QIODevice::ReadOnly))
+    {
+        qWarning("Couldn't open NodesStyle.json");
+        return;
+    }
+
+    QByteArray bytearray =  style_file.readAll();
+    style_file.close();
+    QJsonParseError error;
+    QJsonDocument json_doc( QJsonDocument::fromJson( bytearray, &error ));
+
+    if(json_doc.isNull()){
+        qDebug()<<"Failed to create JSON doc: " << error.errorString();
+        return;
+    }
+    if(!json_doc.isObject()){
+        qDebug()<<"JSON is not an object.";
+        return;
+    }
+
+    QJsonObject toplevel_object = json_doc.object();
+
+    if(toplevel_object.isEmpty()){
+        qDebug()<<"JSON object is empty.";
+        return;
+    }
+    QString model_type_name( QString::fromStdString(toStr(_model.type)) );
+
+    for (const auto& model_name: { model_type_name, _model.registration_ID} )
+    {
+        if( toplevel_object.contains(model_name) )
+        {
+            auto category_style = toplevel_object[ model_name ].toObject() ;
+            if( category_style.contains("icon"))
+            {
+                _style_icon = category_style["icon"].toString();
+            }
+            if( category_style.contains("caption_color"))
+            {
+                _style_caption_color = category_style["caption_color"].toString();
+            }
+            if( category_style.contains("caption_alias"))
+            {
+                _style_caption_alias = category_style["caption_alias"].toString();
+            }
+        }
+    }
 }
 
-const QString &BehaviorTreeDataModel::registrationName() const
+const QString& BehaviorTreeDataModel::registrationName() const
 {
-    return _registration_name;
+    return _model.registration_ID;
 }
 
 const QString &BehaviorTreeDataModel::instanceName() const
@@ -245,22 +364,22 @@ const QString &BehaviorTreeDataModel::instanceName() const
     return _instance_name;
 }
 
-std::vector<TreeNodeModel::Param> BehaviorTreeDataModel::getCurrentParameters() const
+PortsMapping BehaviorTreeDataModel::getCurrentPortMapping() const
 {
-    std::vector<TreeNodeModel::Param> out;
+    PortsMapping out;
 
-    for(const auto& it: _params_map)
+    for(const auto& it: _ports_widgets)
     {
         const auto& label = it.first;
         const auto& value = it.second;
 
         if(auto linedit = dynamic_cast<QLineEdit*>( value ) )
         {
-            out.push_back( { label, linedit->text() } );
+            out.insert( std::make_pair( label, linedit->text() ) );
         }
         else if( auto combo = dynamic_cast<QComboBox*>( value ) )
         {
-            out.push_back( { label, combo->currentText() } );
+            out.insert( std::make_pair( label, combo->currentText() ) );
         }
     }
     return out;
@@ -272,7 +391,7 @@ QJsonObject BehaviorTreeDataModel::save() const
     modelJson["name"]  = registrationName();
     modelJson["alias"] = instanceName();
 
-    for (const auto& it: _params_map)
+    for (const auto& it: _ports_widgets)
     {
         if( auto linedit = dynamic_cast<QLineEdit*>(it.second)){
             modelJson[it.first] = linedit->text();
@@ -287,7 +406,7 @@ QJsonObject BehaviorTreeDataModel::save() const
 
 void BehaviorTreeDataModel::restore(const QJsonObject &modelJson)
 {
-    if( _registration_name != modelJson["name"].toString() )
+    if( registrationName() != modelJson["name"].toString() )
     {
         throw std::runtime_error(" error restoring: different registration_name");
     }
@@ -308,7 +427,7 @@ void BehaviorTreeDataModel::lock(bool locked)
 {
     _line_edit_name->setEnabled( !locked );
 
-    for(const auto& it: _params_map)
+    for(const auto& it: _ports_widgets)
     {
         const auto& field_widget = it.second;
 
@@ -325,8 +444,8 @@ void BehaviorTreeDataModel::lock(bool locked)
 
 void BehaviorTreeDataModel::setParameterValue(const QString &label, const QString &value)
 {
-    auto it = _params_map.find(label);
-    if( it != _params_map.end() )
+    auto it = _ports_widgets.find(label);
+    if( it != _ports_widgets.end() )
     {
         if( auto lineedit = dynamic_cast<QLineEdit*>(it->second) )
         {

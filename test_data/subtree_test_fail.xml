@@ -1,0 +1,27 @@
+<root>
+        <!--  //////////  -->
+    <BehaviorTree ID="DoorClosed">
+        <Sequence name="door_closed_sequence">
+            
+            <!--  no arguments  -->
+            <SubTree ID="ThisOne"/>
+            <SubTree ID="TheOther"/>
+            
+            <!--  compact syntax  -->
+            <SubTree ID="ThisOne"   target="{goal}" result="{out}" />
+            <SubTree ID="TheOther"  target="{goal}" result="{out}" />
+       
+        </Sequence>
+    </BehaviorTree>
+    <!--  //////////  -->
+    <TreeNodesModel>
+        
+        <SubTree ID="ThisOne">
+            <input_port  name="target"/>
+            <output_port name="result"/>
+        </SubTree>
+        
+        <SubTree ID="TheOther"/>   
+    </TreeNodesModel>
+</root>
+

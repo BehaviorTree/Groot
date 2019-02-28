@@ -2,7 +2,7 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 
-SubtreeNodeModel::SubtreeNodeModel(const TreeNodeModel& model):
+SubtreeNodeModel::SubtreeNodeModel(const NodeModel &model):
     BehaviorTreeDataModel ( model ),
     _expanded(false)
 {
@@ -14,9 +14,12 @@ SubtreeNodeModel::SubtreeNodeModel(const TreeNodeModel& model):
     _main_layout->addWidget(_expand_button);
     _main_layout->setAlignment(_expand_button, Qt::AlignHCenter);
 
-    _expand_button->setStyleSheet("color: black; background-color: white; "
-                                  "border: 0px rgb(115, 210, 22);"
-                                  "padding: 4px; border-radius: 3px; ");
+    _expand_button->setStyleSheet(
+                "QPushButton{"
+                "  color: black; background-color: white; "
+                "  border: 0px rgb(115, 210, 22);"
+                "  padding: 4px; border-radius: 3px;}\n"
+                "QPushButton:disabled { color: #303030; background-color: #a0a0a0; }");
     _expand_button->setFlat(false);
     _expand_button->setFocusPolicy(Qt::NoFocus);
     _expand_button->adjustSize();
@@ -38,22 +41,11 @@ void SubtreeNodeModel::setExpanded(bool expand)
     _main_widget->adjustSize();
 }
 
-std::pair<QString, QColor> SubtreeNodeModel::caption() const
-{
-    return { registrationName(),
-             QtNodes::NodeStyle().FontColor };
-}
-
-QString SubtreeNodeModel::captionIicon() const {
-    return(":/icons/svg/subtree.svg");
-}
-
 void SubtreeNodeModel::setInstanceName(const QString &name)
 {
     _line_edit_name->setHidden( name == registrationName() );
     BehaviorTreeDataModel::setInstanceName(name);
 }
-
 
 QJsonObject SubtreeNodeModel::save() const
 {

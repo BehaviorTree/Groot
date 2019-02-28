@@ -1,18 +1,15 @@
 #include <QCommandLineParser>
 #include <QApplication>
+#include <QDialog>
 #include <nodes/NodeStyle>
 #include <nodes/FlowViewStyle>
 #include <nodes/ConnectionStyle>
-#include <QDialog>
-
-#include "models/ControlNodeModel.hpp"
-#include "mainwindow.h"
-#include "models/ActionNodeModel.hpp"
-#include "models/RootNodeModel.hpp"
-
 #include <nodes/DataModelRegistry>
+
+#include "mainwindow.h"
 #include "XML_utilities.hpp"
 #include "startup_dialog.h"
+#include "models/RootNodeModel.hpp"
 
 using QtNodes::DataModelRegistry;
 using QtNodes::FlowViewStyle;
@@ -42,13 +39,12 @@ main(int argc, char *argv[])
                                    "Start in one of these modes: [editor,monitor,replay]",
                                    "mode");
     parser.addOption(mode_option);
-
     parser.process( app );
 
-    app.setStyleSheet( "QMenu { background-color: #101020; color:white; }\n"
-                       "QMenu::item { background: transparent; color:white; }\n"
-                       "QMenu::item:selected { background: #404050; color:white; }\n"
-                       "QMenu::item:disabled { background: transparent; color:grey; }\n" );
+    QFile styleFile( ":/stylesheet.qss" );
+    styleFile.open( QFile::ReadOnly );
+    QString style( styleFile.readAll() );
+    app.setStyleSheet( style );
 
     if( parser.isSet(test_option) )
     {

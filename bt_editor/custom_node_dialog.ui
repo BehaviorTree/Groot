@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>570</width>
+    <height>360</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -39,14 +39,7 @@
     <number>9</number>
    </property>
    <item>
-    <layout class="QFormLayout" name="formLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Name:</string>
-       </property>
-      </widget>
-     </item>
+    <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
       <widget class="QLineEdit" name="lineEdit">
        <property name="styleSheet">
@@ -54,7 +47,30 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_3">
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Type:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Name:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
       <widget class="QComboBox" name="comboBox">
        <item>
         <property name="text">
@@ -66,13 +82,16 @@
          <string>ConditionNode</string>
         </property>
        </item>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Type:</string>
-       </property>
+       <item>
+        <property name="text">
+         <string>SubTree</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>DecoratorNode</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
@@ -93,19 +112,6 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="label">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>NodeParameters:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -119,14 +125,17 @@
       </spacer>
      </item>
      <item>
-      <widget class="QToolButton" name="toolButtonAdd">
+      <widget class="QPushButton" name="pushButtonAdd">
        <property name="text">
-        <string>Add</string>
+        <string>Add port</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="toolButtonRemove">
+      <widget class="QPushButton" name="pushButtonRemove">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Remove</string>
        </property>
@@ -142,20 +151,51 @@
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
      </property>
-     <property name="columnCount">
-      <number>2</number>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
      </property>
+     <property name="columnCount">
+      <number>4</number>
+     </property>
+     <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>100</number>
+     </attribute>
+     <attribute name="horizontalHeaderMinimumSectionSize">
+      <number>100</number>
+     </attribute>
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
      <column>
       <property name="text">
-       <string>Key Name</string>
+       <string>Port Name</string>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Default Value</string>
+       <string>Direction</string>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Default value</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Description</string>
       </property>
      </column>
     </widget>

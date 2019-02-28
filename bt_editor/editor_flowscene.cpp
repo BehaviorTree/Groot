@@ -25,7 +25,7 @@ QtNodes::Node &EditorFlowScene::createNodeAtPos(const QString &ID, const QString
     if( !node_model )
     {
         char buffer[250];
-        sprintf(buffer, "No registered model with ID: [%s])",
+        sprintf(buffer, "No registered model with ID: [%s]",
                 ID.toStdString().c_str() );
         throw std::runtime_error( buffer );
     }
@@ -74,9 +74,12 @@ void EditorFlowScene::keyPressEvent(QKeyEvent *event)
         }
     }
 
+    const QString& registration_ID = _clipboard_node.model.registration_ID;
+
     auto selected_items = selectedItems();
-    if( selected_items.size() == 1 && event->key() == Qt::Key_C &&
-            event->modifiers() == Qt::ControlModifier)
+    if( selected_items.size() == 1 &&
+        event->key() == Qt::Key_C &&
+        event->modifiers() == Qt::ControlModifier)
     {
         auto node_item = dynamic_cast<QtNodes::NodeGraphicsObject*>( selected_items.front() );
         if( !node_item ) return;
@@ -85,22 +88,21 @@ void EditorFlowScene::keyPressEvent(QKeyEvent *event)
         auto node_model = dynamic_cast<BehaviorTreeDataModel*>( selected_node.nodeDataModel() );
         if( !node_model ) return;
 
-        _clipboard_node.model.registration_ID = node_model->registrationName();
+        _clipboard_node.model = node_model->model();
         _clipboard_node.instance_name  = node_model->instanceName();
-        // TODO add parameters?
     }
     else if( event->key() == Qt::Key_V &&
              event->modifiers() == Qt::ControlModifier &&
-             registry().isRegistered( _clipboard_node.model.registration_ID  ) )
+             registry().isRegistered( registration_ID  ) )
     {
         auto views_ = views();
         QGraphicsView* view = views_.front();
         auto mouse_pos = view->viewport()->mapFromGlobal( QCursor::pos() );
         auto scene_pos = view->mapToScene( mouse_pos );
 
-        createNodeAtPos( _clipboard_node.model.registration_ID,
-                         _clipboard_node.instance_name,
-                         scene_pos );
+        createNodeAtPos( registration_ID,
+                        _clipboard_node.instance_name,
+                        scene_pos );
     }
     else{
         QGraphicsScene::keyPressEvent(event);

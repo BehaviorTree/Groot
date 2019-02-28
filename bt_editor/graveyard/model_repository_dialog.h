@@ -13,9 +13,9 @@ class ModelsRepositoryDialog : public QDialog
     Q_OBJECT
 
 public:
-    typedef std::map<QString, TreeNodeModels> ModelsByFile;
+    typedef std::map<QString, TreeNodeModel> ModelsByFile;
 
-    explicit ModelsRepositoryDialog(TreeNodeModels* tree_node_models, QWidget *parent = 0);
+    explicit ModelsRepositoryDialog(TreeNodeModel* tree_node_models, QWidget *parent = 0);
 
     ~ModelsRepositoryDialog();
 
@@ -42,7 +42,7 @@ private:
 
     ModelsByFile _models_by_file;
 
-    TreeNodeModels* _tree_node_models;
+    TreeNodeModel* _tree_node_models;
 };
 
 

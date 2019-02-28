@@ -1,0 +1,25 @@
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action input="42" ID="Action_A"/>
+            <Condition result="69" ID="Condition_B"/>
+            <SubTree ID="LotOfStuff" res="200" param="100"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="Action_A">
+            <input_port default="42" name="input">interesting</input_port>
+        </Action>
+        <Condition ID="Condition_B">
+            <output_port default="69" name="result">Cool</output_port>
+        </Condition>
+        <SubTree ID="LotOfStuff">
+            <input_port name="param"/>
+            <output_port name="res"/>
+        </SubTree>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+

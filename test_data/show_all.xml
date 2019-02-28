@@ -1,35 +1,37 @@
 <root main_tree_to_execute="BehaviorTree">
-    <!--  -----------------------------------  -->
+    <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
             <Fallback>
-                <FallbackStar>
+                <ReactiveFallback>
                     <Repeat num_cycles="1">
                         <AlwaysFailure/>
                     </Repeat>
-                </FallbackStar>
+                </ReactiveFallback>
             </Fallback>
             <SequenceStar name="DoSequenceStar">
                 <RetryUntilSuccesful num_attempts="1">
-                    <BB_Precondition expected="value" key="key">
+                    <BlackboardCheckString value_A="" return_on_mismatch="" value_B="">
                         <AlwaysSuccess/>
-                    </BB_Precondition>
+                    </BlackboardCheckString>
                 </RetryUntilSuccesful>
             </SequenceStar>
             <Inverter>
                 <ForceFailure>
                     <ForceSuccess>
-                        <SetBlackboard key="key" value="value"/>
+                        <SetBlackboard value="value" output_key=""/>
                     </ForceSuccess>
                 </ForceFailure>
             </Inverter>
-            <Action ID="Pippo"/>
+            <ReactiveSequence>
+                <Action ID="Pippo"/>
+            </ReactiveSequence>
         </Sequence>
     </BehaviorTree>
-    <!--  -----------------------------------  -->
+    <!-- ////////// -->
     <TreeNodesModel>
         <Action ID="Pippo"/>
     </TreeNodesModel>
-    <!--  -----------------------------------  -->
+    <!-- ////////// -->
 </root>
 

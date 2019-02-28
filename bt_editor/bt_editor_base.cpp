@@ -1,10 +1,12 @@
 #include "bt_editor_base.h"
+#include <behaviortree_cpp/decorators/subtree_node.h>
 #include <QDebug>
 
 void AbsBehaviorTree::clear()
 {
     _nodes.resize(0);
 }
+
 
 AbsBehaviorTree::~AbsBehaviorTree()
 {
@@ -53,7 +55,8 @@ const AbstractTreeNode* AbsBehaviorTree::findFirstNode(const QString &instance_n
 
 
 
-AbstractTreeNode* AbsBehaviorTree::addNode(AbstractTreeNode* parent, AbstractTreeNode && new_node )
+AbstractTreeNode* AbsBehaviorTree::addNode(AbstractTreeNode* parent,
+                                           AbstractTreeNode && new_node )
 {
     int index = _nodes.size();
     new_node.index = index;
@@ -109,16 +112,7 @@ bool AbsBehaviorTree::operator ==(const AbsBehaviorTree &other) const
     return true;
 }
 
-NodeType getNodeTypeFromString(const QString &str)
-{
-    if( str == "Action")    return NodeType::ACTION;
-    if( str == "Decorator") return NodeType::DECORATOR;
-    if( str == "Condition") return NodeType::CONDITION;
-    if( str == "SubTree")   return NodeType::SUBTREE;
-    if( str == "Control")   return NodeType::CONTROL;
-    if( str == "Root")      return NodeType::ROOT;
-    return NodeType::UNDEFINED;
-}
+
 
 GraphicMode getGraphicModeFromString(const QString &str)
 {
@@ -127,27 +121,6 @@ GraphicMode getGraphicModeFromString(const QString &str)
     else if( str == "MONITOR")
         return GraphicMode::MONITOR;
     return GraphicMode::REPLAY;
-}
-
-const char *toStr(NodeStatus type)
-{
-    if( type == NodeStatus::IDLE )   return "IDLE";
-    if( type == NodeStatus::RUNNING) return "RUNNING";
-    if( type == NodeStatus::SUCCESS) return "SUCCESS";
-    if( type == NodeStatus::FAILURE) return "FAILURE";
-
-    return nullptr;
-}
-
-const char *toStr(NodeType type)
-{
-    if( type == NodeType::ACTION )   return "Action";
-    if( type == NodeType::DECORATOR) return "Decorator";
-    if( type == NodeType::CONDITION) return "Condition";
-    if( type == NodeType::SUBTREE)   return "SubTree";
-    if( type == NodeType::CONTROL)   return "Control";
-    if( type == NodeType::ROOT)      return "Root";
-    return "Undefined";
 }
 
 const char *toStr(GraphicMode type)
@@ -161,24 +134,90 @@ const char *toStr(GraphicMode type)
 
 bool AbstractTreeNode::operator ==(const AbstractTreeNode &other) const
 {
-    return  model == other.model &&
+    bool same_registration = model.registration_ID == other.model.registration_ID;
+    return  same_registration &&
             status == other.status &&
             size == other.size &&
-            pos == other.pos &&
+          // temporary removed  pos == other.pos &&
             instance_name == other.instance_name;
 }
 
-bool TreeNodeModel::operator ==(const TreeNodeModel &other) const
+bool NodeModel::operator ==(const NodeModel &other) const
 {
     bool is_same = ( type == other.type &&
-                     params.size() == other.params.size() &&
-                     registration_ID == other.registration_ID);
+                    ports.size() == other.ports.size() &&
+                    registration_ID == other.registration_ID);
     if( ! is_same ) return false;
 
-    for (size_t index = 0; index < params.size(); index++)
+    auto other_it = other.ports.begin();
+    for (const auto& port_it: ports)
     {
-        if( params[index].label != other.params[index].label ||
-            params[index].value != other.params[index].value ) return false;
+        if( port_it.first  != other_it->first)
+        {
+            return false;
+        }
+        if( port_it.second.direction  != other_it->second.direction )
+        {
+            return false;
+        }
+        if( port_it.second.type_name  != other_it->second.type_name )
+        {
+            return false;
+        }
+        other_it++;
     }
     return true;
+}
+
+NodeModel &NodeModel::operator =(const BT::TreeNodeManifest &src)
+{
+    this->type = src.type;
+    this->registration_ID = QString::fromStdString(src.registration_ID);
+    for (const auto& port_it: src.ports)
+    {
+        const auto& port_name = port_it.first;
+        const auto& bt_port = port_it.second;
+        PortModel port_model;
+        port_model = bt_port;
+        this->ports.insert( { QString::fromStdString(port_name), std::move(port_model) } );
+    }
+    return *this;
+}
+
+
+const NodeModels &BuiltinNodeModels()
+{
+    static NodeModels builtin_node_models =
+            []() -> NodeModels
+    {
+        BT::BehaviorTreeFactory factory;
+
+        factory.registerNodeType<BT::DecoratorSubtreeNode>("Root");
+
+        NodeModels out;
+        for( const auto& it: factory.manifests())
+        {
+            const auto& model_name = it.first;
+            if( model_name == "SubTree")
+            {
+                continue;
+            }
+            const auto& bt_model = it.second;
+            NodeModel groot_model;
+            groot_model = bt_model;
+            out.insert( { QString::fromStdString(model_name), std::move(groot_model) });
+        }
+        return out;
+     }();
+
+    return builtin_node_models;
+}
+
+PortModel &PortModel::operator =(const BT::PortInfo &src)
+{
+    this->direction = src.direction();
+    this->description = QString::fromStdString(src.description());
+    this->type_name = QString::fromStdString(BT::demangle(src.type()));
+    this->default_value = QString::fromStdString( src.defaultValue());
+    return *this;
 }

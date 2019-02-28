@@ -27,17 +27,13 @@ class BehaviorTreeDataModel : public NodeDataModel
     Q_OBJECT
 
 public:
-  BehaviorTreeDataModel(const TreeNodeModel &parameters );
+  BehaviorTreeDataModel(const NodeModel &model );
 
   ~BehaviorTreeDataModel() override;
 
 public:
 
-  virtual NodeType nodeType() const = 0;
-
-  virtual std::pair<QString,QColor> caption() const;
-
-  virtual QString captionIicon() const { return QString(); }
+  NodeType nodeType() const;
 
   virtual void setInstanceName(const QString& name);
 
@@ -45,19 +41,25 @@ public:
 
   void initWidget();
 
+  virtual unsigned int nPorts(PortType portType) const override;
+
+  ConnectionPolicy portOutConnectionPolicy(PortIndex) const final;
+
   NodeDataType dataType(PortType , PortIndex ) const final;
 
   std::shared_ptr<NodeData> outData(PortIndex port) final;
 
   void setInData(std::shared_ptr<NodeData>, int) final {}
 
-  const QString& registrationName() const;
+  const QString &registrationName() const;
+
+  const NodeModel &model() const { return _model; }
 
   QString name() const final { return registrationName(); }
 
   const QString& instanceName() const;
 
-  std::vector<TreeNodeModel::Param> getCurrentParameters() const;
+  PortsMapping getCurrentPortMapping() const;
 
   QWidget *embeddedWidget() final { return _main_widget; }
 
@@ -82,12 +84,13 @@ public slots:
 
 
 protected:
+
   QFrame*  _main_widget;
   QFrame*  _params_widget;
 
   QLineEdit* _line_edit_name;
 
-  std::map<QString, QWidget*> _params_map;
+  std::map<QString, QWidget*> _ports_widgets;
   int16_t _uid;
 
   QFormLayout* _form_layout;
@@ -96,12 +99,15 @@ protected:
   QFrame* _caption_logo_left;
   QFrame* _caption_logo_right;
 
-
 private:
-  const QString _registration_name;
+  const NodeModel _model;
   QString _instance_name;
   QSvgRenderer* _icon_renderer;
 
+  void readStyle();
+  QString _style_icon;
+  QColor  _style_caption_color;
+  QString  _style_caption_alias;
 
 signals:
 

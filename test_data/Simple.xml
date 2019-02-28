@@ -1,5 +1,5 @@
 <root main_tree_to_execute="DoorClosed">
-    <!--  -----------------------------------  -->
+    <!--  //////////  -->
     <BehaviorTree ID="DoorClosed">
         <Sequence name="door_closed_sequence">
             <RetryUntilSuccesful num_attempts="4">
@@ -7,7 +7,7 @@
             </RetryUntilSuccesful>
         </Sequence>
     </BehaviorTree>
-    <!--  -----------------------------------  -->
+    <!--  //////////  -->
     <TreeNodesModel>
         <Action ID="CloseDoor"/>
         <SubTree ID="DoorClosed"/>
@@ -16,6 +16,6 @@
         <Action ID="PassThroughDoor"/>
         <Action ID="PassThroughWindow"/>
     </TreeNodesModel>
-    <!--  -----------------------------------  -->
+    <!--  //////////  -->
 </root>
 

@@ -40,16 +40,22 @@ set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} -Werror=return-type"
 #set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 #set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
-INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./3rdparty ./ )
+INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./depend/BehaviorTree.CPP/3rdparty ./ )
 
 add_subdirectory( QtNodeEditor )
 
+##########################################
+# FIX ME in the future....
+
+set(BUILD_EXAMPLES   OFF CACHE BOOL "")
+set(BUILD_UNIT_TESTS OFF CACHE BOOL "")
+set(BUILD_TOOLS OFF CACHE BOO "")
+add_subdirectory( depend/BehaviorTree.CPP )
+include_directories( depend/BehaviorTree.CPP/include )
+##########################################
+
 set(APP_CPPS
     ./bt_editor/models/BehaviorTreeNodeModel.cpp
-    ./bt_editor/models/ActionNodeModel.cpp
-    ./bt_editor/models/ControlNodeModel.cpp
-    ./bt_editor/models/DecoratorNodeModel.cpp
-    ./bt_editor/models/RootNodeModel.cpp
     ./bt_editor/models/SubtreeNodeModel.cpp
 
     ./bt_editor/mainwindow.cpp
@@ -63,12 +69,12 @@ set(APP_CPPS
     ./bt_editor/sidepanel_replay.cpp
     ./bt_editor/custom_node_dialog.cpp
 
-    ./3rdparty/tinyXML2/tinyxml2.cpp
     ./bt_editor/XML_utilities.cpp
     )
 
 set(RESOURCE_FILES
     ./bt_editor/resources/icons.qrc
+    ./bt_editor/resources/style.qrc
     ./test_data/test_files.qrc
     )
 
@@ -110,7 +116,7 @@ endif()
 
 
 add_executable(Groot ./bt_editor/main.cpp  ${RESOURCE_FILES})
-target_link_libraries(Groot behavior_tree_editor )
+target_link_libraries(Groot behavior_tree_editor behaviortree_cpp )
 
 add_subdirectory(test)
 

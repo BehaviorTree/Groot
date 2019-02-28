@@ -22,11 +22,9 @@
 #include <nodes/FlowView>
 
 #include "editor_flowscene.h"
-
+#include "utils.h"
 #include "XML_utilities.hpp"
-#include "models/ActionNodeModel.hpp"
-#include "models/ControlNodeModel.hpp"
-#include "models/DecoratorNodeModel.hpp"
+
 #include "models/RootNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 
@@ -39,7 +37,6 @@ using QtNodes::FlowView;
 using QtNodes::FlowScene;
 using QtNodes::NodeGraphicsObject;
 using QtNodes::NodeState;
-
 
 MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QMainWindow(parent),
@@ -65,47 +62,29 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     _model_registry = std::make_shared<QtNodes::DataModelRegistry>();
 
     //------------------------------------------------------
-    auto addModelToTree = [this](const TreeNodeModel& model)
+
+    auto registerModel = [this](const QString& ID, const NodeModel& model)
     {
-        _treenode_models.insert( { model.registration_ID, model } );
+        QString category = QString::fromStdString( BT::toStr(model.type) );
+        if( ID == "Root")
+        {
+            category = "Root";
+        }
+        QtNodes::DataModelRegistry::RegistryItemCreator creator;
+        creator = [model]() -> QtNodes::DataModelRegistry::RegistryItemPtr
+        {
+            auto ptr = new BehaviorTreeDataModel( model );
+            return std::unique_ptr<BehaviorTreeDataModel>(ptr);
+        };
+        _model_registry->registerModel( category, creator, ID );
     };
 
-    _model_registry->registerModel<RootNodeModel>("Root");
-    _model_registry->registerModel<SequenceModel>("Control");
-    _model_registry->registerModel<SequenceStarModel>("Control");
-    _model_registry->registerModel<FallbackModel>("Control");
-    _model_registry->registerModel<FallbackStarModel>("Control");
-    addModelToTree( RootNodeModel::NodeModel() );
-    addModelToTree( SequenceModel::NodeModel() );
-    addModelToTree( SequenceStarModel::NodeModel() );
-    addModelToTree( SequenceStarModel::NodeModel() );
-    addModelToTree( FallbackModel::NodeModel() );
-    addModelToTree( FallbackStarModel::NodeModel() );
-
-    _model_registry->registerModel<InverterNodeModel>("Decorator");
-    _model_registry->registerModel<RetryNodeModel>("Decorator");
-    _model_registry->registerModel<RepeatNodeModel>("Decorator");
-    _model_registry->registerModel<TimeoutModel>("Decorator");
-    _model_registry->registerModel<BlackboardConditionModel>("Decorator");
-    _model_registry->registerModel<ForceSuccess>("Decorator");
-    _model_registry->registerModel<ForceFailure>("Decorator");
-
-    addModelToTree( InverterNodeModel::NodeModel() );
-    addModelToTree( RetryNodeModel::NodeModel() );
-    addModelToTree( RepeatNodeModel::NodeModel() );
-    addModelToTree( TimeoutModel::NodeModel() );
-    addModelToTree( BlackboardConditionModel::NodeModel() );
-    addModelToTree( ForceSuccess::NodeModel() );
-    addModelToTree( ForceFailure::NodeModel() );
-
-    _model_registry->registerModel<ActionSuccess>("Action");
-    _model_registry->registerModel<ActionFailure>("Action");
-    _model_registry->registerModel<ActionSetBlackboard>("Action");
-    addModelToTree( ActionSuccess::NodeModel() );
-    addModelToTree( ActionFailure::NodeModel() );
-    addModelToTree( ActionSetBlackboard::NodeModel() );
-
-    BuiltinNodeModels() = _treenode_models;
+    for(const auto& model: BuiltinNodeModels())
+    {
+        registerModel( model.first, model.second );
+        _treenode_models.insert( { model.first, model.second } );
+        qDebug() << "adding model: " << model.first;
+    }
     //------------------------------------------------------
 
     _editor_widget = new SidepanelEditor(_model_registry.get(), _treenode_models, this);
@@ -130,9 +109,6 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     updateCurrentMode();
 
     dynamic_cast<QVBoxLayout*>(ui->leftFrame->layout())->setStretch(1,1);
-
-    createTab("BehaviorTree");
-    onTabSetMainTree(0);
 
     auto arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
 
@@ -180,12 +156,22 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
              this, &MainWindow::onCreateAbsBehaviorTree );
 #endif
-    onSceneChanged();
 
     ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect( ui->tabWidget->tabBar(), &QTabBar::customContextMenuRequested,
              this, &MainWindow::onTabCustomContextMenuRequested);
+}
 
+void MainWindow::showEvent( QShowEvent* )
+{
+    init();
+}
+
+void MainWindow::init()
+{
+    createTab("BehaviorTree");
+    onTabSetMainTree(0);
+    onSceneChanged();
     _current_state = saveCurrentState();
 }
 
@@ -223,6 +209,9 @@ GraphicContainer* MainWindow::createTab(const QString &name)
 
     ui->tabWidget->addTab( ti->view(), name );
 
+    ti->scene()->createNodeAtPos( "Root", "Root", QPointF(-30,-30) );
+    ti->zoomHomeView();
+
     //--------------------------------
 
     connect( ti, &GraphicContainer::undoableChange,
@@ -240,10 +229,6 @@ GraphicContainer* MainWindow::createTab(const QString &name)
     connect( ti, &GraphicContainer::addNewModel,
              this, &MainWindow::onAddToModelRegistry);
 
-    //--------------------------------
-
-    ti->view()->update();
-
     return ti;
 }
 
@@ -254,10 +239,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadFromXML(const QString& xml_text)
 {
-    using namespace tinyxml2;
-    XMLDocument document;
+    QDomDocument document;
     try{
-        document.Parse( xml_text.toStdString().c_str(), xml_text.size() );
+        QString errorMsg;
+        int errorLine;
+        if( ! document.setContent(xml_text, &errorMsg, &errorLine ) )
+        {
+            throw std::runtime_error( tr("Error parsing XML (line %1): %2").arg(errorLine).arg(errorMsg).toStdString() );
+        }
         //---------------
         std::vector<QString> registered_ID;
         for (const auto& it: _treenode_models)
@@ -289,20 +278,17 @@ void MainWindow::loadFromXML(const QString& xml_text)
     bool error = false;
     QString err_message;
     auto saved_state = _current_state;
+    auto prev_tree_model = _treenode_models;
 
     try {
+        auto document_root = document.documentElement();
 
-        on_actionClear_triggered();
-
-        auto document_root = document.RootElement();
-
-        if( document_root->Attribute("main_tree_to_execute"))
+        if( document_root.hasAttribute("main_tree_to_execute"))
         {
-            _main_tree = document_root->Attribute("main_tree_to_execute");
+            _main_tree = document_root.attribute("main_tree_to_execute");
         }
 
         auto custom_models = ReadTreeNodesModel( document_root );
-        CleanPreviousModels(this, _treenode_models, custom_models);
 
         for( const auto& model: custom_models)
         {
@@ -315,21 +301,21 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
         const QSignalBlocker blocker( currentTabInfo() );
 
-        for (auto bt_root = document_root->FirstChildElement("BehaviorTree");
-             bt_root != nullptr;
-             bt_root = bt_root->NextSiblingElement("BehaviorTree"))
+        for (auto bt_root = document_root.firstChildElement("BehaviorTree");
+             !bt_root.isNull();
+             bt_root = bt_root.nextSiblingElement("BehaviorTree"))
         {
-            auto tree = BuildTreeFromXML( bt_root );
+            auto tree = BuildTreeFromXML( bt_root, _treenode_models );
             QString tree_name("BehaviorTree");
-            if( bt_root->Attribute("ID") )
+
+            if( bt_root.hasAttribute("ID") )
             {
-                tree_name = bt_root->Attribute("ID");
+                tree_name = bt_root.attribute("ID");
                 if( _main_tree.isEmpty() )  // valid when there is only one
                 {
                     _main_tree = tree_name;
                 }
             }
-
             onCreateAbsBehaviorTree(tree, tree_name);
         }
 
@@ -355,18 +341,16 @@ void MainWindow::loadFromXML(const QString& xml_text)
         else{
             currentTabInfo()->nodeReorder();
         }
+        CleanPreviousModels(this, _treenode_models, custom_models);
     }
-    catch (std::runtime_error& err) {
-        error = true;
-        err_message = err.what();
-    }
-    catch (std::logic_error& err) {
+    catch (std::exception& err) {
         error = true;
         err_message = err.what();
     }
 
     if( error )
     {
+        _treenode_models = prev_tree_model;
         loadSavedStateFromJson( saved_state );
         qDebug() << "R: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
         QMessageBox::warning(this, tr("Exception!"),
@@ -415,17 +399,16 @@ void MainWindow::on_actionLoad_triggered()
 
 QString MainWindow::saveToXML() const
 {
-    using namespace tinyxml2;
-    XMLDocument doc;
+    QDomDocument doc;
 
     const char* COMMENT_SEPARATOR = " ////////// ";
 
-    XMLElement* root = doc.NewElement( "root" );
-    doc.InsertEndChild( root );
+    QDomElement root = doc.createElement( "root" );
+    doc.appendChild( root );
 
     if( _main_tree.isEmpty() == false)
     {
-        root->SetAttribute("main_tree_to_execute", _main_tree.toStdString().c_str());
+        root.setAttribute("main_tree_to_execute", _main_tree.toStdString().c_str());
     }
 
     for (auto& it: _tab_info)
@@ -436,7 +419,7 @@ QString MainWindow::saveToXML() const
         auto abs_tree = BuildTreeFromScene(container->scene());
         auto abs_root = abs_tree.rootNode();
         if( abs_root->children_index.size() == 1 &&
-            abs_root->model.type == NodeType::ROOT  )
+            abs_root->model.registration_ID == "Root"  )
         {
             // mofe to the child of ROOT
             abs_root = abs_tree.node( abs_root->children_index.front() );
@@ -444,17 +427,17 @@ QString MainWindow::saveToXML() const
 
         QtNodes::Node* root_node = abs_root->graphic_node;
 
-        root->InsertEndChild( doc.NewComment(COMMENT_SEPARATOR) );
-        XMLElement* root_element = doc.NewElement("BehaviorTree");
+        root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
+        QDomElement root_element = doc.createElement("BehaviorTree");
 
-        root_element->SetAttribute("ID", it.first.toStdString().c_str());
-        root->InsertEndChild(root_element);
+        root_element.setAttribute("ID", it.first.toStdString().c_str());
+        root.appendChild(root_element);
 
         RecursivelyCreateXml(*scene, doc, root_element, root_node );
     }
-    root->InsertEndChild( doc.NewComment(COMMENT_SEPARATOR) );
+    root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
 
-    XMLElement* root_models = doc.NewElement("TreeNodesModel");
+    QDomElement root_models = doc.createElement("TreeNodesModel");
 
     for(const auto& tree_it: _treenode_models)
     {
@@ -466,27 +449,28 @@ QString MainWindow::saveToXML() const
             continue;
         }
 
-        XMLElement* node = doc.NewElement( toStr(model.type) );
 
-        if( node )
+        QDomElement node = doc.createElement( QString::fromStdString(toStr(model.type)) );
+
+        if( !node.isNull() )
         {
-            node->SetAttribute("ID", ID.toStdString().c_str());
+            node.setAttribute("ID", ID);
 
-            for(const auto& param: model.params)
+            for(const auto& port_it: model.ports)
             {
-                node->SetAttribute(param.label.toStdString().c_str(),
-                                   param.value.toStdString().c_str() );
+                const auto& port_name = port_it.first;
+                const auto& port = port_it.second;
+                
+                QDomElement port_element = writePortModel(port_name, port, doc);
+                node.appendChild( port_element );
             }
         }
-        root_models->InsertEndChild(node);
+        root_models.appendChild(node);
     }
-    root->InsertEndChild(root_models);
-    root->InsertEndChild( doc.NewComment(COMMENT_SEPARATOR) );
+    root.appendChild(root_models);
+    root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
 
-    XMLPrinter printer;
-    doc.Print( &printer );
-
-    return printer.CStr();
+    return doc.toString(4);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -652,7 +636,7 @@ void MainWindow::onPushUndo()
     }
     _current_state = saved;
 
-    // qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+     //qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
 
 void MainWindow::onUndoInvoked()
@@ -667,7 +651,7 @@ void MainWindow::onUndoInvoked()
 
         loadSavedStateFromJson(_current_state);
 
-        //qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+       // qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
 }
 
@@ -687,7 +671,7 @@ void MainWindow::onRedoInvoked()
     }
 }
 
-void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
+void MainWindow::loadSavedStateFromJson(SavedState saved_state)
 {
     // TODO crash if the name of the container (tab) changed
     for (auto& it: _tab_info)
@@ -700,13 +684,14 @@ void MainWindow::loadSavedStateFromJson(const SavedState& saved_state)
 
     _main_tree = saved_state.main_tree;
 
-    for(auto& it: saved_state.json_states)
+    for(const auto& it: saved_state.json_states)
     {
-        _tab_info.insert( {it.first, createTab(it.first)} );
+        QString tab_name = it.first;
+        _tab_info.insert( {tab_name, createTab(tab_name)} );
     }
-    for(auto& it: saved_state.json_states)
+    for(const auto& it: saved_state.json_states)
     {
-        const auto& name = it.first;
+        QString name = it.first;
         auto container = getTabByName(name);
         container->loadFromJson( it.second );
         container->view()->setTransform( saved_state.view_transform );
@@ -769,47 +754,26 @@ void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
     }
 }
 
-void MainWindow::onAddToModelRegistry(const TreeNodeModel &model)
+
+void MainWindow::onAddToModelRegistry(const NodeModel &model)
 {
     namespace util = QtNodes::detail;
     const auto& ID = model.registration_ID;
 
-    if( BuiltinNodeModels().count(ID) == 1)
+    DataModelRegistry::RegistryItemCreator node_creator = [model]() -> DataModelRegistry::RegistryItemPtr
     {
-        return;
-    }
-
-    if( model.type == NodeType::ACTION )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [model]()
-        {
-            return util::make_unique<ActionNodeModel>(model);
-        };
-        _model_registry->registerModel("Action", node_creator, ID);
-    }
-    else if( model.type == NodeType::CONDITION )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [model]()
-        {
-            return util::make_unique<ConditionNodeModel>(model);
-        };
-        _model_registry->registerModel("Condition", node_creator, ID);
-    }
-    else if( model.type == NodeType::DECORATOR )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [model]()
-        {
-            return util::make_unique<DecoratorNodeModel>(model);
-        };
-        _model_registry->registerModel("Decorator", node_creator, ID);
-    }
-    else if( model.type == NodeType::SUBTREE )
-    {
-        DataModelRegistry::RegistryItemCreator node_creator = [model]()
+        if( model.type == NodeType::SUBTREE)
         {
             return util::make_unique<SubtreeNodeModel>(model);
-        };
-        _model_registry->registerModel("SubTree", node_creator, ID);
+        }
+        return util::make_unique<BehaviorTreeDataModel>(model);
+    };
+
+    _model_registry->registerModel( QString::fromStdString( toStr(model.type)), node_creator, ID);
+
+    if( model.type == NodeType::SUBTREE && getTabByName(model.registration_ID) == nullptr)
+    {
+        createTab(model.registration_ID);
     }
 
     _treenode_models.insert( {ID, model } );
@@ -881,39 +845,47 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
     if( option == SUBTREE_EXPAND && subtree_model->expanded() == false)
     {
         auto subtree_container = getTabByName(subtree_name);
-        const auto& abs_subtree = BuildTreeFromScene( subtree_container->scene() );
+        auto abs_subtree = BuildTreeFromScene( subtree_container->scene() );
 
         subtree_model->setExpanded(true);
         node.nodeState().getEntries(PortType::Out).resize(1);
-
         container.appendTreeToNode( node, abs_subtree );
-        container.nodeReorder();
         container.lockSubtreeEditing( node, true, is_editor_mode );
+
+        if( abs_subtree.nodes().size() > 1 )
+        {
+            container.nodeReorder();
+        }
 
         return &node;
     }
 
     if( option == SUBTREE_COLLAPSE && subtree_model->expanded() == true)
     {
+        bool need_reorder = true;
         const auto& conn_out = node.nodeState().connections(PortType::Out, 0 );
         QtNodes::Node* child_node = nullptr;
         if(conn_out.size() == 1)
         {
             child_node = conn_out.begin()->second->getNode( PortType::In );
         }
-        else{
-            return nullptr;
-        }
+
         const QSignalBlocker blocker( container );
         if( child_node)
         {
             container.deleteSubTreeRecursively( *child_node );
         }
+        else{
+            need_reorder = false;
+        }
 
         subtree_model->setExpanded(false);
         node.nodeState().getEntries(PortType::Out).resize(0);
         container.lockSubtreeEditing( node, false, is_editor_mode );
-        container.nodeReorder();
+        if( need_reorder )
+        {
+            container.nodeReorder();
+        }
 
         return &node;
     }
@@ -929,7 +901,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
         QtNodes::Node* child_node = conn_out.begin()->second->getNode( PortType::In );
 
         auto subtree_container = getTabByName(subtree_name);
-        const auto& subtree = BuildTreeFromScene( subtree_container->scene() );
+        auto subtree = BuildTreeFromScene( subtree_container->scene() );
 
         container.deleteSubTreeRecursively( *child_node );
         container.appendTreeToNode( node, subtree );
@@ -971,6 +943,14 @@ void MainWindow::onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QStr
     container->loadSceneFromTree( tree );
     container->nodeReorder();
 
+    for(const auto& node: tree.nodes())
+    {
+        if( node.model.type == NodeType::SUBTREE && getTabByName(node.model.registration_ID) == nullptr)
+        {
+            createTab(node.model.registration_ID);
+        }
+    }
+
     // TODO_ clear or not?
     clearUndoStacks();
 }
@@ -996,8 +976,8 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
                 bool is_expanded_subtree = false;
                 if( node.model.type == NodeType::SUBTREE)
                 {
-                    auto model = node.graphic_node->nodeDataModel();
-                    auto subtree_model = dynamic_cast<SubtreeNodeModel*>( model );
+                    auto graphic_model = node.graphic_node->nodeDataModel();
+                    auto subtree_model = dynamic_cast<SubtreeNodeModel*>( graphic_model );
                     if(subtree_model && subtree_model->expanded())
                     {
                         is_expanded_subtree = true;
@@ -1011,9 +991,6 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
                 {
                     subTreeExpand( *container, *new_node, SUBTREE_EXPAND);
                 };
-
-                node.model.registration_ID = new_ID;
-                node.graphic_node = new_node;
             }
         }
     }
@@ -1241,14 +1218,19 @@ void MainWindow::on_actionReplay_mode_triggered()
 
 void MainWindow::on_tabWidget_currentChanged(int index)
 {
+    if( ui->tabWidget->count() == 0 )
+    {
+        return;
+    }
     QString tab_name = ui->tabWidget->tabText(index);
     auto tab = getTabByName(tab_name);
-    if( tab && tab->scene()->nodes().size() > 1)
+    if( tab )
     {
         const QSignalBlocker blocker( tab );
         tab->nodeReorder();
         _current_state.current_tab_name = ui->tabWidget->tabText( index );
         refreshExpandedSubtrees();
+        tab->zoomHomeView();
     }
 }
 
@@ -1370,7 +1352,7 @@ void MainWindow::onTabRenameRequested(int tab_index, QString new_name)
     {
          _model_registry->unregisterModel(old_name);
          _treenode_models.erase(old_name);
-         TreeNodeModel model = { new_name, NodeType::SUBTREE,{}};
+         NodeModel model = { NodeType::SUBTREE, new_name, {}};
          onAddToModelRegistry( model );
          _treenode_models.insert( { new_name, model} );
          _editor_widget->updateTreeView();
@@ -1418,7 +1400,7 @@ void MainWindow::clearTreeModels()
     _editor_widget->updateTreeView();
 }
 
-const TreeNodeModels &MainWindow::registeredModels() const
+const NodeModels &MainWindow::registeredModels() const
 {
     return _treenode_models;
 }
@@ -1426,15 +1408,15 @@ const TreeNodeModels &MainWindow::registeredModels() const
 void MainWindow::on_actionAbout_triggered()
 {
     auto ui = new Ui_Dialog;
-    QDialog dialog(this);
-    ui->setupUi(&dialog);
+    QDialog* dialog = new QDialog(this);
+    ui->setupUi(dialog);
 
     auto svg_widget = new QSvgWidget( tr(":/icons/svg/logo_splashscreen.svg") );
     ui->frame->layout()->addWidget(svg_widget);
-    dialog.setWindowFlags( Qt::SplashScreen );
-   // dialog.setFixedSize( dialog.minimumSizeHint() );
-    dialog.exec();
+    dialog->setWindowFlags( Qt::SplashScreen );
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
 
+    dialog->show();
 }
 
 void MainWindow::on_actionReportIssue_triggered()

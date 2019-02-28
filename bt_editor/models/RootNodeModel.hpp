@@ -8,7 +8,7 @@
 #include <memory>
 #include "BehaviorTreeNodeModel.hpp"
 
-
+/*
 class RootNodeModel : public BehaviorTreeDataModel
 {
 
@@ -37,4 +37,4 @@ public:
 
   virtual NodeType nodeType() const final { return NodeType::ROOT; }
 };
-
+*/

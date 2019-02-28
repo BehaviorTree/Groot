@@ -9,13 +9,13 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="11mm"
-   height="11mm"
-   viewBox="0 0 11 11"
+   width="22mm"
+   height="22mm"
+   viewBox="0 0 22 22"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (33fec40, 2019-01-16)"
-   sodipodi:docname="letter_C.svg">
+   sodipodi:docname="letter_o.svg">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -25,18 +25,19 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="7.9195959"
-     inkscape:cx="9.8568803"
-     inkscape:cy="7.1112664"
+     inkscape:zoom="2.8"
+     inkscape:cx="-8.1851697"
+     inkscape:cy="116.07983"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:pagecheckerboard="true"
+     showguides="false"
      inkscape:window-width="1855"
      inkscape:window-height="1056"
      inkscape:window-x="1985"
      inkscape:window-y="24"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="true" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -45,7 +46,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -53,17 +54,18 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-286)">
+     transform="translate(0,-275)">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.065;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-       x="-0.14174083"
-       y="295.27615"
-       id="text4520"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.91336918px;line-height:1.25;font-family:'Nimbus Sans L';-inkscape-font-specification:'Nimbus Sans L';letter-spacing:0px;word-spacing:0px;fill:#f6f6f6;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       x="2.6582472"
+       y="290.64017"
+       id="text817"
+       transform="scale(0.98838391,1.0117526)"><tspan
          sodipodi:role="line"
-         id="tspan4518"
-         x="-0.14174083"
-         y="295.27615"
-         style="fill:#ffffff;fill-opacity:1;stroke-width:0.065;stroke:#000000;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none">C:</tspan></text>
+         id="tspan815"
+         x="2.6582472"
+         y="290.64017"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.23829079px;line-height:2.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;stroke-width:0.1;fill:#f6f6f6;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none">O</tspan></text>
   </g>
 </svg>

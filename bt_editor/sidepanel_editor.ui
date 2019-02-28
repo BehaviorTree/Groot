@@ -396,12 +396,12 @@
          </font>
         </property>
         <property name="text">
-         <string>Parameters Properties</string>
+         <string>Port Properties</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QTableWidget" name="parametersTableWidget">
+       <widget class="QTableWidget" name="portsTableWidget">
         <property name="editTriggers">
          <set>QAbstractItemView::NoEditTriggers</set>
         </property>
@@ -412,16 +412,16 @@
          <enum>QAbstractItemView::SelectRows</enum>
         </property>
         <property name="columnCount">
-         <number>2</number>
+         <number>3</number>
         </property>
         <attribute name="horizontalHeaderDefaultSectionSize">
          <number>80</number>
         </attribute>
         <attribute name="horizontalHeaderMinimumSectionSize">
-         <number>50</number>
+         <number>80</number>
         </attribute>
         <attribute name="horizontalHeaderStretchLastSection">
-         <bool>false</bool>
+         <bool>true</bool>
         </attribute>
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
@@ -434,12 +434,35 @@
         </attribute>
         <column>
          <property name="text">
-          <string>Name</string>
+          <string>Direction</string>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
          </property>
         </column>
         <column>
          <property name="text">
-          <string>Default</string>
+          <string>Port ID</string>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Description</string>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
          </property>
         </column>
        </widget>

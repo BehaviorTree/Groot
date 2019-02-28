@@ -42,7 +42,7 @@ public:
 
     void loadSceneFromTree(const AbsBehaviorTree &tree);
 
-    void appendTreeToNode(QtNodes::Node& node, AbsBehaviorTree subtree);
+    void appendTreeToNode(QtNodes::Node& node, AbsBehaviorTree &subtree);
 
     void loadFromJson(const QByteArray& data);
 
@@ -68,7 +68,7 @@ public slots:
 
 signals:
 
-    void addNewModel( const TreeNodeModel &new_model );
+    void addNewModel( const NodeModel &new_model );
 
     void undoableChange();
 

@@ -55,7 +55,7 @@ public:
 
     void clearTreeModels();
 
-    const TreeNodeModels& registeredModels() const;
+    const NodeModels &registeredModels() const;
 
 public slots:
 
@@ -74,7 +74,7 @@ public slots:
     void onRequestSubTreeExpand(GraphicContainer& container,
                                 QtNodes::Node& node);
 
-    void onAddToModelRegistry(const TreeNodeModel& model);
+    void onAddToModelRegistry(const NodeModel& model);
 
     void onDestroySubTree(const QString &ID);
 
@@ -126,6 +126,10 @@ private slots:
 
 private:
 
+    void showEvent(QShowEvent*) override;
+
+    void init();
+
     void updateCurrentMode();
 
     void lockEditing(const bool locked);
@@ -151,7 +155,7 @@ private:
         bool operator !=( const SavedState& other) const { return !( *this == other); }
     };
 
-    void loadSavedStateFromJson(const SavedState &state);
+    void loadSavedStateFromJson(SavedState state);
 
     QtNodes::Node *subTreeExpand(GraphicContainer& container,
                        QtNodes::Node &node,
@@ -172,7 +176,7 @@ private:
     SavedState _current_state;
     QtNodes::PortLayout _current_layout;
 
-    TreeNodeModels _treenode_models;
+    NodeModels _treenode_models;
 
     QString _main_tree;
 

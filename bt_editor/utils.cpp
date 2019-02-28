@@ -1,16 +1,13 @@
 #include "utils.h"
-#include <nodes/Node>
-#include <nodes/DataModelRegistry>
-#include <QDebug>
 #include <set>
+#include <QDebug>
+#include <QDomDocument>
 #include <QMessageBox>
+#include "nodes/Node"
+#include "nodes/DataModelRegistry"
 #include "nodes/internal/memory.hpp"
-#include "models/ActionNodeModel.hpp"
-#include "models/DecoratorNodeModel.hpp"
-#include "models/ControlNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
 #include "models/RootNodeModel.hpp"
-#include "tinyXML2/tinyxml2.h"
 
 using QtNodes::PortLayout;
 using QtNodes::DataModelRegistry;
@@ -61,7 +58,7 @@ std::vector<Node*> getChildren(const QtNodes::FlowScene &scene,
         }
     }
 
-    if( ordered )
+    if( ordered && children.size() > 1)
     {
         if( scene.layout() == PortLayout::Vertical)
         {
@@ -95,7 +92,7 @@ void RecursiveNodeReorder(AbsBehaviorTree& tree, PortLayout layout)
 
     std::vector<QPointF> layer_cursor;
     std::vector< std::vector<AbstractTreeNode*> > nodes_by_level(1);
-    layer_cursor.push_back(QPointF(0,0));
+
     const qreal LEVEL_SPACING = 80;
     const qreal NODE_SPACING  = 40;
 
@@ -206,6 +203,8 @@ void RecursiveNodeReorder(AbsBehaviorTree& tree, PortLayout layout)
     };
 
     auto root_node = tree.rootNode();
+    layer_cursor.push_back(QPointF( -root_node->size.width()*0.5,
+                                    -root_node->size.height()*0.5));
     recursiveStep(0, root_node);
 
     if( layout == PortLayout::Vertical)
@@ -239,6 +238,16 @@ void RecursiveNodeReorder(AbsBehaviorTree& tree, PortLayout layout)
 
 void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 {
+
+    for (const auto& abs_node: tree.nodes())
+    {
+        Node* node =  abs_node.graphic_node;
+        if( node == nullptr )
+        {
+            throw std::runtime_error("one or more nodes haven't been created yet");
+        }
+    }
+
     if( tree.nodesCount() == 0)
     {
         return;
@@ -248,8 +257,8 @@ void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree & tree)
 
     for (const auto& abs_node: tree.nodes())
     {
-        Node& node = *( abs_node.graphic_node);
-        scene.setNodePosition( node, abs_node.pos );
+        Node* node =  abs_node.graphic_node;
+        scene.setNodePosition( *node, abs_node.pos );
     }
 }
 
@@ -280,13 +289,12 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
 
         auto bt_model = dynamic_cast<BehaviorTreeDataModel*>(node->nodeDataModel());
 
-        abs_node.instance_name     = bt_model->instanceName();
-        abs_node.model.registration_ID = bt_model->registrationName();
+        abs_node.model = bt_model->model();
+        abs_node.instance_name = bt_model->instanceName();
         abs_node.pos  = scene->getNodePosition(*node) ;
         abs_node.size = scene->getNodeSize(*node);
         abs_node.graphic_node = node;
-        abs_node.model.params = bt_model->getCurrentParameters();
-        abs_node.model.type = bt_model->nodeType();
+        abs_node.ports_mapping = bt_model->getCurrentPortMapping();
 
         auto added_node = tree.addNode( parent, std::move(abs_node) );
 
@@ -303,98 +311,72 @@ AbsBehaviorTree BuildTreeFromScene(const QtNodes::FlowScene *scene,
     return tree;
 }
 
-
-QString getCategory(const NodeDataModel *dataModel)
+AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root, const NodeModels& models )
 {
-    QString category;
-    if( dynamic_cast<const ActionNodeModel*>(dataModel) )
-    {
-        category = "Action";
-    }
-    else if( dynamic_cast<const DecoratorNodeModel*>(dataModel) )
-    {
-        category = "Decorator";
-    }
-    else if( dynamic_cast<const ControlNodeModel*>(dataModel) )
-    {
-        category = "Control";
-    }
-    else if( dynamic_cast<const RootNodeModel*>(dataModel) )
-    {
-        category = "Root";
-    }
-    else if( dynamic_cast<const SubtreeNodeModel*>(dataModel) )
-    {
-        category = "SubTree";
-    }
-    return category;
-}
-
-
-AbsBehaviorTree BuildTreeFromXML(const tinyxml2::XMLElement* bt_root )
-{
-    using namespace tinyxml2;
     AbsBehaviorTree tree;
 
-    if( strcmp( bt_root->Name(), "BehaviorTree" ) != 0)
+    if( bt_root.tagName() != "BehaviorTree" )
     {
-        throw std::runtime_error( "expecting a node called <BehaviorTree>");
+        throw std::runtime_error( "Expecting a node called <BehaviorTree>");
     }
 
-    std::function<void(AbstractTreeNode* parent, const XMLElement*)> recursiveStep;
-
-    recursiveStep = [&](AbstractTreeNode* parent, const XMLElement* xml_node)
+    //-------------------------------------
+    std::function<void(AbstractTreeNode* parent, QDomElement)> recursiveStep;
+    recursiveStep = [&](AbstractTreeNode* parent, QDomElement xml_node)
     {
         // The nodes with a ID used that QString to insert into the registry()
-        QString modelID = xml_node->Name();
-        if( xml_node->Attribute("ID") )
+        QString modelID = xml_node.tagName();
+        if( xml_node.hasAttribute("ID") )
         {
-            modelID = xml_node->Attribute("ID");
+            modelID = xml_node.attribute("ID");
         }
 
         AbstractTreeNode tree_node;
 
-        tree_node.model.registration_ID = modelID;
-        tree_node.model.type = getNodeTypeFromString( xml_node->Name() );
-
-        if( xml_node->Attribute("name") )
+        auto model_it = models.find(modelID);
+        if( model_it ==  models.end() )
         {
-            tree_node.instance_name = ( xml_node->Attribute("name") );
+             throw std::runtime_error( (QString("This model has not been registered: ") + modelID).toStdString() );
+        }
+        tree_node.model = model_it->second;
+
+        if( xml_node.hasAttribute("name") )
+        {
+            tree_node.instance_name = ( xml_node.attribute("name") );
         }
         else{
             tree_node.instance_name = modelID;
         }
 
-        for( const XMLAttribute* attribute= xml_node->FirstAttribute();
-             attribute != nullptr;
-             attribute = attribute->Next() )
+        auto attributes = xml_node.attributes();
+        for( int attr=0; attr < attributes.size(); attr++ )
         {
-            const QString attr_name( attribute->Name() );
-            if( attr_name!= "ID" && attr_name != "name")
+            auto attribute = attributes.item(attr).toAttr();
+            if( attribute.name() != "ID" && attribute.name() != "name")
             {
-                tree_node.model.params.push_back( { attr_name, attribute->Value() } );
+                tree_node.ports_mapping.insert( { attribute.name(), attribute.value() } );
             }
         }
 
         auto added_node = tree.addNode(parent, std::move(tree_node));
 
-        for (const XMLElement*  child = xml_node->FirstChildElement( )  ;
-             child != nullptr;
-             child = child->NextSiblingElement( ) )
+        for (QDomElement  child = xml_node.firstChildElement( )  ;
+             !child.isNull();
+             child = child.nextSiblingElement( ) )
         {
             recursiveStep( added_node, child );
         }
     };
 
     // start recursion
-    recursiveStep( nullptr, bt_root->FirstChildElement() );
+    recursiveStep( nullptr, bt_root.firstChildElement() );
 
     return tree;
 }
 
 
 std::pair<AbsBehaviorTree, std::unordered_map<int, int>>
-BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
+BuildTreeFromFlatbuffers(const Serialization::BehaviorTree *fb_behavior_tree)
 {
     AbsBehaviorTree tree;
     std::unordered_map<int, int> uid_to_index;
@@ -402,31 +384,47 @@ BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
     AbstractTreeNode abs_root;
     abs_root.instance_name = "Root";
     abs_root.model.registration_ID = "Root";
-    abs_root.model.type = NodeType::ROOT;
+    abs_root.model.registration_ID = "Root";
     abs_root.children_index.push_back( 1 );
 
     tree.addNode( nullptr, std::move(abs_root) );
 
-    // just copy the vector
-    for( const BT_Serialization::TreeNode* fb_node: *(fb_behavior_tree->nodes()) )
+    //-----------------------------------------
+    NodeModels models;
+
+    for( const Serialization::NodeModel* model_node: *(fb_behavior_tree->node_models()) )
+    {
+        NodeModel model;
+        model.registration_ID = model_node->registration_name()->c_str();
+        model.type = convert( model_node->type() );
+
+        for( const Serialization::PortModel* port: *(model_node->ports()) )
+        {
+            PortModel port_model;
+            QString port_name = port->port_name()->c_str();
+            port_model.direction = convert( port->direction() );
+            port_model.type_name = port->type_info()->c_str();
+            port_model.description = port->description()->c_str();
+
+            model.ports.insert( { port_name, std::move(port_model) } );
+        }
+
+        models.insert( { model.registration_ID, std::move(model)} );
+    }
+
+    //-----------------------------------------
+    for( const Serialization::TreeNode* fb_node: *(fb_behavior_tree->nodes()) )
     {
         AbstractTreeNode abs_node;
         abs_node.instance_name = fb_node->instance_name()->c_str();
-        abs_node.model.registration_ID = fb_node->registration_name()->c_str();
-        abs_node.model.type   = convert( fb_node->type() );
+        const char* registration_ID = fb_node->registration_name()->c_str();
         abs_node.status = convert( fb_node->status() );
+        abs_node.model = (models.at(registration_ID));
 
-        // special case for SubTrees
-        if( abs_node.model.type == NodeType::DECORATOR &&
-            abs_node.model.registration_ID == "SubTree")
+        for( const Serialization::PortConfig* pair: *(fb_node->port_remaps()) )
         {
-           abs_node.model.type = NodeType::SUBTREE;
-        }
-
-        for( const BT_Serialization::KeyValue* pair: *(fb_node->params()) )
-        {
-            abs_node.model.params.push_back( { QString(pair->key()->c_str()),
-                                             QString(pair->value()->c_str()) } );
+            abs_node.ports_mapping.insert( { QString(pair->port_name()->c_str()),
+                                             QString(pair->remap()->c_str()) } );
         }
         int index = tree.nodesCount();
         abs_node.index = index;
@@ -436,7 +434,7 @@ BuildTreeFromFlatbuffers(const BT_Serialization::BehaviorTree *fb_behavior_tree)
 
     for(size_t index = 0; index < fb_behavior_tree->nodes()->size(); index++ )
     {
-        const BT_Serialization::TreeNode* fb_node = fb_behavior_tree->nodes()->Get(index);
+        const Serialization::TreeNode* fb_node = fb_behavior_tree->nodes()->Get(index);
         AbstractTreeNode* abs_node = tree.node( index + 1);
         for( const auto child_uid: *(fb_node->children_uid()) )
         {
@@ -485,23 +483,6 @@ getStyleFromStatus(NodeStatus status)
     return {node_style, conn_style};
 }
 
-ParameterWidgetCreator buildWidgetCreator(const TreeNodeModel::Param& param)
-{
-    ParameterWidgetCreator creator;
-    creator.label = param.label;
-
-    creator.instance_factory = [param]()
-    {
-        QLineEdit* line = new QLineEdit();
-        line->setAlignment( Qt::AlignHCenter);
-        line->setMaximumWidth(140);
-        line->setText( param.value );
-        return line;
-    };
-
-    return creator;
-}
-
 QtNodes::Node *GetParentNode(QtNodes::Node *node)
 {
     using namespace QtNodes;
@@ -516,8 +497,8 @@ QtNodes::Node *GetParentNode(QtNodes::Node *node)
 }
 
 void CleanPreviousModels(QWidget *parent,
-                         TreeNodeModels &prev_models,
-                         const TreeNodeModels &new_models)
+                         NodeModels &prev_models,
+                         const NodeModels &new_models)
 {
     std::set<const QString *> prev_custom_models;
 
@@ -537,7 +518,7 @@ void CleanPreviousModels(QWidget *parent,
         if( new_models.count( *name ) == 0)
         {
             int ret = QMessageBox::question(parent, "Clear Palette?",
-                                            "Do yoy want to remove the previously loaded custom nodes?",
+                                            "Do you want to remove the previously loaded custom nodes?",
                                             QMessageBox::No | QMessageBox::Yes );
             if( ret == QMessageBox::Yes)
             {
@@ -546,4 +527,54 @@ void CleanPreviousModels(QWidget *parent,
             break;
         }
     }
+}
+
+BT::NodeType convert(Serialization::NodeType type)
+{
+    switch (type)
+    {
+    case Serialization::NodeType::ACTION:
+        return BT::NodeType::ACTION;
+    case Serialization::NodeType::DECORATOR:
+        return BT::NodeType::DECORATOR;
+    case Serialization::NodeType::CONTROL:
+        return BT::NodeType::CONTROL;
+    case Serialization::NodeType::CONDITION:
+        return BT::NodeType::CONDITION;
+    case Serialization::NodeType::SUBTREE:
+        return BT::NodeType::SUBTREE;
+    case Serialization::NodeType::UNDEFINED:
+        return BT::NodeType::UNDEFINED;
+    }
+    return BT::NodeType::UNDEFINED;
+}
+
+BT::NodeStatus convert(Serialization::NodeStatus type)
+{
+    switch (type)
+    {
+    case Serialization::NodeStatus::IDLE:
+        return BT::NodeStatus::IDLE;
+    case Serialization::NodeStatus::SUCCESS:
+        return BT::NodeStatus::SUCCESS;
+    case Serialization::NodeStatus::RUNNING:
+        return BT::NodeStatus::RUNNING;
+    case Serialization::NodeStatus::FAILURE:
+        return BT::NodeStatus::FAILURE;
+    }
+    return BT::NodeStatus::IDLE;
+}
+
+BT::PortDirection convert(Serialization::PortDirection direction)
+{
+    switch (direction)
+    {
+    case Serialization::PortDirection::INPUT :
+        return BT::PortDirection::INPUT;
+    case Serialization::PortDirection::OUTPUT:
+        return BT::PortDirection::OUTPUT;
+    case Serialization::PortDirection::INOUT:
+        return BT::PortDirection::INOUT;
+    }
+    return BT::PortDirection::INOUT;
 }

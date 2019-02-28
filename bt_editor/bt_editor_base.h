@@ -8,79 +8,71 @@
 #include <unordered_map>
 #include <nodes/Node>
 #include <deque>
+#include <behaviortree_cpp/bt_factory.h>
 
-enum class NodeType   { ACTION, DECORATOR, CONTROL, CONDITION, SUBTREE, ROOT, UNDEFINED };
-enum class NodeStatus { IDLE, RUNNING, SUCCESS, FAILURE };
+using BT::NodeStatus;
+using BT::NodeType;
+using BT::PortDirection;
+
+typedef std::map<QString, QString> PortsMapping;
+
+// alternative type, similar to BT::PortInfo
+struct PortModel
+{
+    PortModel(): direction(PortDirection::INOUT) {}
+
+    QString type_name;
+    PortDirection direction;
+    QString description;
+    QString default_value;
+
+    PortModel& operator = (const BT::PortInfo& src);
+};
+
+typedef std::map<QString, PortModel> PortModels;
+
+struct  NodeModel
+{
+    NodeType type;
+    QString  registration_ID;
+    PortModels ports;
+
+    bool operator == (const NodeModel& other) const;
+    bool operator != (const NodeModel& other) const
+    {
+        return !( *this == other);
+    }
+
+    NodeModel& operator = (const BT::TreeNodeManifest& src);
+};
+
+typedef std::map<QString, NodeModel> NodeModels;
+
+
 enum class GraphicMode { EDITOR, MONITOR, REPLAY };
-
-
-NodeType getNodeTypeFromString(const QString& str);
 
 GraphicMode getGraphicModeFromString(const QString& str);
 
-const char* toStr(NodeStatus type);
-
-const char* toStr(NodeType type);
-
 const char* toStr(GraphicMode type);
 
-struct ParameterWidgetCreator{
-    QString label;
-    std::function<QWidget*()> instance_factory;
-};
-
-using ParameterWidgetCreators = std::vector<ParameterWidgetCreator>;
-
-
-struct TreeNodeModel
-{
-    NodeType type;
-    struct Param
-    {
-        QString label;
-        QString value;
-    };
-
-    QString registration_ID;
-    typedef std::vector<Param> Parameters;
-    Parameters params;
-
-    TreeNodeModel(QString reg_name, NodeType type, const std::vector<Param>& parameters ):
-        type(type),
-        registration_ID( std::move(reg_name) ),
-        params(parameters)
-    {}
-
-    bool operator ==(const TreeNodeModel& other) const;
-
-    bool operator !=(const TreeNodeModel& other) const
-    {
-        return !(*this == other);
-    }
-};
-
-
-typedef std::map<QString, TreeNodeModel> TreeNodeModels;
-
-inline TreeNodeModels& BuiltinNodeModels()
-{
-    static TreeNodeModels builtin_node_models;
-    return builtin_node_models;
-}
+const NodeModels& BuiltinNodeModels();
 
 //--------------------------------
 struct AbstractTreeNode
 {
     AbstractTreeNode() :
-        model( { "", NodeType::UNDEFINED, {} }),
         index(-1),
         status(NodeStatus::IDLE),
-        graphic_node(nullptr) {}
+        graphic_node(nullptr)
+    {
+        model.type = NodeType::UNDEFINED;
+    }
 
-    TreeNodeModel model;
+    NodeModel model;
+    PortsMapping ports_mapping;
     int index;
     QString instance_name;
-    NodeStatus status;
+    BT::NodeStatus status;
     QSizeF size;
     QPointF pos; // top left corner
     std::vector<int> children_index;

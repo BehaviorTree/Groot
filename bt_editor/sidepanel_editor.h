@@ -2,6 +2,7 @@
 #define SIDE_PANEL_EDITOR_H
 
 #include <QFrame>
+#include <QFile>
 #include <QTreeWidgetItem>
 #include <QTableWidgetItem>
 #include "XML_utilities.hpp"
@@ -16,7 +17,7 @@ class SidepanelEditor : public QFrame
 
 public:
     explicit SidepanelEditor(QtNodes::DataModelRegistry* registry,
-                             TreeNodeModels& tree_nodes_model,
+                             NodeModels& tree_nodes_model,
                              QWidget *parent = nullptr);
     ~SidepanelEditor();
 
@@ -27,7 +28,7 @@ public:
 public slots:
     void onRemoveModel(QString selected_name, bool ask_confirmation);
 
-    void onReplaceModel(const QString &old_name, const TreeNodeModel &new_model);
+    void onReplaceModel(const QString &old_name, const NodeModel &new_model);
 
 
 private slots:
@@ -48,7 +49,7 @@ private slots:
 
 signals:
 
-    void addNewModel(const TreeNodeModel &new_model);
+    void addNewModel(const NodeModel &new_model);
 
     void nodeModelEdited(QString prev_ID, QString new_ID);
 
@@ -56,13 +57,13 @@ signals:
 
 private:
     Ui::SidepanelEditor *ui;
-    TreeNodeModels &_tree_nodes_model;
+    NodeModels &_tree_nodes_model;
     QtNodes::DataModelRegistry* _model_registry;
     std::map<QString, QTreeWidgetItem*> _tree_view_category_items;
 
-    TreeNodeModels importFromXML(const QString& filename);
+    NodeModels importFromXML(QFile *file);
 
-    TreeNodeModels importFromSkills(const QString& filename);
+    NodeModels importFromSkills(const QString& filename);
 
 };
 

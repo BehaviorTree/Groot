@@ -1,6 +1,8 @@
 #include "sidepanel_editor.h"
 #include "ui_sidepanel_editor.h"
 #include "custom_node_dialog.h"
+#include "utils.h"
+
 #include <QHeaderView>
 #include <QPushButton>
 #include <QSettings>
@@ -10,11 +12,10 @@
 #include <QMessageBox>
 #include <QJsonDocument>
 #include <QJsonArray>
-#include "models/ActionNodeModel.hpp"
-
+#include <QSettings>
 
 SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
-                                 TreeNodeModels &tree_nodes_model,
+                                 NodeModels &tree_nodes_model,
                                  QWidget *parent) :
     QFrame(parent),
     ui(new Ui::SidepanelEditor),
@@ -28,11 +29,24 @@ SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
     connect( ui->paletteTreeWidget, &QWidget::customContextMenuRequested,
              this, &SidepanelEditor::onContextMenu);
 
-    ui->buttonLock->setChecked(true);
+    auto table_header = ui->portsTableWidget->horizontalHeader();
+
+    table_header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    table_header->setSectionResizeMode(1, QHeaderView::Interactive);
+    table_header->setSectionResizeMode(2, QHeaderView::Stretch);
+
+    ui->buttonLock->setChecked(false);
+
+    QSettings settings;
+    table_header->restoreState( settings.value("SidepanelEditor/header").toByteArray() );
 }
 
 SidepanelEditor::~SidepanelEditor()
 {
+    QSettings settings;
+    settings.setValue("SidepanelEditor/header",
+                      ui->portsTableWidget->horizontalHeader()->saveState() );
+
     delete ui;
 }
 
@@ -41,7 +55,7 @@ void SidepanelEditor::updateTreeView()
     ui->paletteTreeWidget->clear();
     _tree_view_category_items.clear();
 
-    for (const QString& category : {"Root", "Action", "Condition",
+    for (const QString& category : {"Action", "Condition",
                                     "Control", "Decorator", "SubTree" } )
     {
       auto item = new QTreeWidgetItem(ui->paletteTreeWidget, {category});
@@ -56,14 +70,18 @@ void SidepanelEditor::updateTreeView()
 
     for (const auto &it : _tree_nodes_model)
     {
-      const QString& ID = it.first;
-      const TreeNodeModel& model = it.second;
+      const auto& ID = it.first;
+      const NodeModel& model = it.second;
 
-      const QString& category = toStr(model.type);
+      if( model.registration_ID == "Root")
+      {
+          continue;
+      }
+      QString category = QString::fromStdString(toStr(model.type));
       auto parent = _tree_view_category_items[category];
       auto item = new QTreeWidgetItem(parent, {ID});
       QFont font = item->font(0);
-      font.setItalic( BuiltinNodeModels().count(ID) == 1 );
+      font.setItalic( BuiltinNodeModels().count(it.first) == 1 );
       font.setPointSize(11);
       item->setFont(0, font);
       item->setData(0, Qt::UserRole, ID);
@@ -94,19 +112,18 @@ void SidepanelEditor::on_paletteTreeWidget_itemSelectionChanged()
     ui->label->setText( item_name + QString(" Parameters"));
 
     const auto& model = _tree_nodes_model.at(item_name);
+
+    ui->portsTableWidget->setRowCount( model.ports.size() );
+
     int row = 0;
-
-    ui->parametersTableWidget->setRowCount(model.params.size());
-
-    for (const auto& param: model.params)
+    for (const auto& port_it: model.ports)
     {
-      ui->parametersTableWidget->setItem(row,0, new QTableWidgetItem( param.label ));
-      ui->parametersTableWidget->setItem(row,1, new QTableWidgetItem( param.value ));
-      row++;
+        ui->portsTableWidget->setItem(row,0, new QTableWidgetItem( QString::fromStdString(toStr(port_it.second.direction))));
+        ui->portsTableWidget->setItem(row,1, new QTableWidgetItem( port_it.first ));
+        ui->portsTableWidget->setItem(row,2, new QTableWidgetItem( port_it.second.description) );
+        row++;
     }
-
-    ui->parametersTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui->parametersTableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->portsTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
   }
 
 }
@@ -132,7 +149,7 @@ void SidepanelEditor::on_buttonAddNode_clicked()
     if( dialog.exec() == QDialog::Accepted)
     {
         auto new_model = dialog.getTreeNodeModel();
-        addNewModel( new_model );
+        emit addNewModel( new_model );
     }
     updateTreeView();
 }
@@ -189,20 +206,15 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
 
     QMenu menu(this);
 
-    const auto& node_type = _tree_nodes_model.at(selected_name).type;
-
-    if( node_type == NodeType::ACTION || node_type == NodeType::ACTION)
-    {
-        QAction* edit   = menu.addAction("Edit");
-        connect( edit, &QAction::triggered, this, [this, selected_name]()
-        {
-            CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
-            if( dialog.exec() == QDialog::Accepted)
+    QAction* edit   = menu.addAction("Edit");
+    connect( edit, &QAction::triggered, this, [this, selected_name]()
             {
-                onReplaceModel( selected_name, dialog.getTreeNodeModel() );
-            }
-        } );
-    }
+                CustomNodeDialog dialog(_tree_nodes_model, selected_name, this);
+                if( dialog.exec() == QDialog::Accepted)
+                {
+                    onReplaceModel( selected_name, dialog.getTreeNodeModel() );
+                }
+            } );
 
     QAction* remove = menu.addAction("Remove");
 
@@ -218,24 +230,23 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
 }
 
 void SidepanelEditor::onReplaceModel(const QString& old_name,
-                                     const TreeNodeModel &new_model)
+                                     const NodeModel &new_model)
 {
     _tree_nodes_model.erase( old_name );
     _model_registry->unregisterModel( old_name );
-    addNewModel( new_model );
+    emit addNewModel( new_model );
     emit nodeModelEdited(old_name, new_model.registration_ID);
 }
 
 
 void SidepanelEditor::on_buttonUpload_clicked()
 {
-    using namespace tinyxml2;
-    XMLDocument doc;
+    QDomDocument doc;
 
-    XMLElement* root = doc.NewElement( "root" );
-    doc.InsertEndChild( root );
+    QDomElement root = doc.createElement( "root" );
+    doc.appendChild( root );
 
-    XMLElement* root_models = doc.NewElement("TreeNodesModel");
+    QDomElement root_models = doc.createElement("TreeNodesModel");
 
     for(const auto& tree_it: _tree_nodes_model)
     {
@@ -247,20 +258,19 @@ void SidepanelEditor::on_buttonUpload_clicked()
             continue;
         }
 
-        XMLElement* node = doc.NewElement( toStr(model.type) );
+        QDomElement node = doc.createElement( QString::fromStdString(toStr(model.type)) );
 
-        if( node )
+        if( !node.isNull() )
         {
-            node->SetAttribute("ID", ID.toStdString().c_str());
-            for(const auto& param: model.params)
+            node.setAttribute("ID", ID.toStdString().c_str());
+            for(const auto& port_it: model.ports)
             {
-                node->SetAttribute(param.label.toStdString().c_str(),
-                                   param.value.toStdString().c_str() );
+                node.appendChild(writePortModel(port_it.first, port_it.second, doc));
             }
         }
-        root_models->InsertEndChild(node);
+        root_models.appendChild(node);
     }
-    root->InsertEndChild(root_models);
+    root.appendChild(root_models);
 
     //-------------------------------------
     QSettings settings;
@@ -277,13 +287,11 @@ void SidepanelEditor::on_buttonUpload_clicked()
         fileName += ".xml";
     }
 
-    XMLPrinter printer;
-    doc.Print( &printer );
 
     QFile file(fileName);
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
-        stream << printer.CStr() << endl;
+        stream << doc.toString(4) << endl;
     }
 
     directory_path = QFileInfo(fileName).absolutePath();
@@ -297,8 +305,9 @@ void SidepanelEditor::on_buttonDownload_clicked()
     QString directory_path  = settings.value("SidepanelEditor.lastLoadDirectory",
                                              QDir::homePath() ).toString();
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Load TreenNodeModel from file"), directory_path,
-                                                    tr("BehaviorTree (*.xml); Skills (*.skills.json)" ));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Load TreenNodeModel from file"),
+                                                    directory_path,
+                                                    tr("BehaviorTree (*.xml *.skills.json)" ));
     QFileInfo fileInfo(fileName);
 
     if (!fileInfo.exists(fileName)){
@@ -316,10 +325,11 @@ void SidepanelEditor::on_buttonDownload_clicked()
     settings.sync();
 
     //--------------------------------
-    TreeNodeModels imported_models;
+    NodeModels imported_models;
     if( fileInfo.suffix() == "xml" )
     {
-        imported_models = importFromXML( fileName );
+        QFile file(fileName);
+        imported_models = importFromXML( &file );
     }
     else if( fileInfo.completeSuffix() == "skills.json" )
     {
@@ -339,56 +349,62 @@ void SidepanelEditor::on_buttonDownload_clicked()
     }
 }
 
-TreeNodeModels SidepanelEditor::importFromXML(const QString &fileName)
+NodeModels SidepanelEditor::importFromXML(QFile* file)
 {
-    using namespace tinyxml2;
-    XMLDocument doc;
-    doc.LoadFile( fileName.toStdString().c_str() );
+    QDomDocument doc;
 
-    TreeNodeModels custom_models;
 
-    if (doc.Error())
+    if (!file->open(QIODevice::ReadOnly))
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "The XML was not correctly loaded");
-        return custom_models;
+        return {};
     }
 
-    auto strEqual = [](const char* str1, const char* str2) -> bool {
-        return strcmp(str1, str2) == 0;
-    };
+    QString errorMsg;
+    int errorLine;
+    if( ! doc.setContent(file, &errorMsg, &errorLine ) )
+    {
+        auto error = tr("Error parsing XML (line %1): %2").arg(errorLine).arg(errorMsg);
+        QMessageBox::warning(this,"Error loading TreeNodeModel form file", error);
+        file->close();
+        return {};
+    }
+    file->close();
 
-    const tinyxml2::XMLElement* xml_root = doc.RootElement();
-    if (!xml_root || !strEqual(xml_root->Name(), "root"))
+    NodeModels custom_models;
+
+    QDomElement xml_root = doc.documentElement();
+    if ( xml_root.isNull() || xml_root.tagName() != "root")
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "The XML must have a root node called <root>");
         return custom_models;
     }
 
-    auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
+    auto manifest_root = xml_root.firstChildElement("TreeNodesModel");
 
-    if (!meta_root)
+    if ( manifest_root.isNull() )
     {
         QMessageBox::warning(this,"Error loading TreeNodeModel form file",
                              "Expecting <TreeNodesModel> under <root>");
         return custom_models;
     }
 
-    for( const XMLElement* node = meta_root->FirstChildElement();
-         node != nullptr;
-         node = node->NextSiblingElement() )
+    for( QDomElement model_element = manifest_root.firstChildElement();
+         !model_element.isNull();
+         model_element = model_element.nextSiblingElement() )
     {
-        auto model = buildTreeNodeModel(node);
+        auto model = buildTreeNodeModelFromXML(model_element);
         custom_models.insert( { model.registration_ID, model } );
     }
 
     return custom_models;
 }
 
-TreeNodeModels SidepanelEditor::importFromSkills(const QString &fileName)
+NodeModels SidepanelEditor::importFromSkills(const QString &fileName)
 {
-    TreeNodeModels custom_models;
+    NodeModels custom_models;
 
     QFile loadFile(fileName);
 
@@ -399,30 +415,30 @@ TreeNodeModels SidepanelEditor::importFromSkills(const QString &fileName)
         return custom_models;
     }
 
-     QJsonDocument loadDoc =  QJsonDocument::fromJson( loadFile.readAll() ) ;
+    // TODO VER_3
+//     QJsonDocument loadDoc =  QJsonDocument::fromJson( loadFile.readAll() ) ;
 
-     QJsonArray root_array = loadDoc.array();
+//     QJsonArray root_array = loadDoc.array();
 
-     for (QJsonValueRef skill_node : root_array)
-     {
+//     for (QJsonValueRef skill_node : root_array)
+//     {
 
-         auto skill = skill_node.toObject()["skill"].toObject();
-         auto name = skill["name"].toString();
-         qDebug() << name;
+//         auto skill = skill_node.toObject()["skill"].toObject();
+//         auto name = skill["name"].toString();
+//         qDebug() << name;
 
-         auto attributes = skill["in-attribute"].toObject();
-         auto params_keys = attributes.keys();
+//         auto attributes = skill["in-attribute"].toObject();
+//         auto params_keys = attributes.keys();
 
-         TreeNodeModel::Parameters model_params;
-         model_params.reserve( params_keys.size() );
-         for (const auto& key: params_keys)
-         {
-             model_params.push_back(
-             {key, attributes[key].toString()} );
-         }
-         TreeNodeModel model(name, NodeType::ACTION, model_params);
-         custom_models.insert( {name, model} );
-     }
+//         PortModels ports_models;
+
+//         for (const auto& key: params_keys)
+//         {
+//             ports_models.insert(  {key, attributes[key].toString()} );
+//         }
+//         NodeModel model = { NodeType::ACTION, name, ports_mapping };
+//         custom_models.insert( {name, model} );
+//     }
 
     return custom_models;
 }

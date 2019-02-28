@@ -1,116 +1,151 @@
 #include "XML_utilities.hpp"
 #include "utils.h"
 
-#include "models/ActionNodeModel.hpp"
-#include "models/DecoratorNodeModel.hpp"
 #include "models/SubtreeNodeModel.hpp"
+#include <behaviortree_cpp/xml_parsing.h>
 
 #include <QtDebug>
 #include <QLineEdit>
 
-using namespace tinyxml2;
 using namespace QtNodes;
 
-
-TreeNodeModel
-buildTreeNodeModel(const tinyxml2::XMLElement* node)
+NodeModel buildTreeNodeModelFromXML(const QDomElement& node)
 {
-    std::vector<TreeNodeModel::Param> model_params;
+    PortModels ports_list;
 
-    QString node_name (node->Name());
-    QString ID = node_name;
-    if(  node->Attribute("ID") )
+    QString tag_name = node.tagName();
+    QString ID = tag_name;
+    if(  node.hasAttribute("ID") )
     {
-        ID = QString(node->Attribute("ID"));
+        ID = QString(node.attribute("ID"));
     }
 
-    const auto node_type = getNodeTypeFromString(node_name);
+    const auto node_type = BT::convertFromString<BT::NodeType>(tag_name.toStdString());
 
-    ParameterWidgetCreators parameters;
-
-    for (const XMLAttribute* attr = node->FirstAttribute();
-         attr != nullptr;
-         attr = attr->Next() )
+    if( node_type == BT::NodeType::UNDEFINED )
     {
-        QString attr_name( attr->Name() );
+        return {};
+    }
+
+    // this make sense for ports inside the <BehaviorTree> tag
+    QDomNamedNodeMap attributes = node.attributes ();
+    for (int i=0; i< attributes.size(); i++ )
+    {
+        QDomAttr attr = attributes.item(i).toAttr();
+
+        QString attr_name( attr.name() );
         if(attr_name != "ID" && attr_name != "name")
         {
-            TreeNodeModel::Param model_param;
-            model_param.label = attr_name;
-            model_param.value = attr->Value();
+            PortModel port_model;
+            port_model.direction = PortDirection::INOUT;
+            ports_list.insert( { attr_name, std::move(port_model)} );
+        }
+    }
+    // this is used for ports inside the <TreeNodesModel> tag
+    const std::vector<std::pair<QString, PortDirection>> portsTypes = {
+        {"input_port", PortDirection::INPUT},
+        {"output_port", PortDirection::OUTPUT},
+        {"inout_port", PortDirection::INPUT}
+    };
 
-            auto widget_creator = buildWidgetCreator( model_param );
-            parameters.push_back(widget_creator);
-            model_params.push_back( std::move(model_param) );
+    for(const auto& it: portsTypes)
+    {
+        for( QDomElement port_element = node.firstChildElement( it.first );
+             !port_element.isNull();
+             port_element = port_element.nextSiblingElement( it.first ) )
+        {
+            PortModel port_model;
+            port_model.direction = it.second;
+            port_model.description = port_element.text();
+
+            if( port_element.hasAttribute("type") )
+            {
+                port_model.type_name = port_element.attribute("type");
+            }
+            if( port_element.hasAttribute("default") )
+            {
+                port_model.default_value = port_element.attribute("default");
+            }
+
+            if( port_element.hasAttribute("name") )
+            {
+                auto attr_name = port_element.attribute("name");
+                ports_list.insert( { attr_name, std::move(port_model)} );
+            }
         }
     }
 
-    return { ID, node_type, model_params };
+    return { node_type, ID, ports_list };
 }
 
 //------------------------------------------------------------------
 
-TreeNodeModels ReadTreeNodesModel(const tinyxml2::XMLElement* root)
+NodeModels ReadTreeNodesModel(const QDomElement &root)
 {
-    TreeNodeModels models;
+    NodeModels models;
     using QtNodes::DataModelRegistry;
 
-    auto model_root = root->FirstChildElement("TreeNodesModel");
+    auto model_root = root.firstChildElement("TreeNodesModel");
 
-    if( model_root )
+    if( !model_root.isNull() )
     {
-        for( const XMLElement* node = model_root->FirstChildElement();
-             node != nullptr;
-             node = node->NextSiblingElement() )
+        for( QDomElement node = model_root.firstChildElement();
+             !node.isNull();
+             node = node.nextSiblingElement() )
         {
-            auto model = buildTreeNodeModel(node);
+            auto model = buildTreeNodeModelFromXML(node);
             models.insert( {model.registration_ID, model} );
         }
     }
 
-    std::function<void(const XMLElement*)> recursiveStep;
-    recursiveStep = [&](const XMLElement* node)
+    std::function<void(QDomElement)> recursiveStep;
+    recursiveStep = [&](QDomElement node)
     {
-        auto model = buildTreeNodeModel(node);
-        models.insert( {model.registration_ID, model} );
+        auto model = buildTreeNodeModelFromXML(node);
+        if( model.type != NodeType::UNDEFINED &&
+            model.registration_ID.isEmpty() == false &&
+            models.count(model.registration_ID) == 0)
+        {
+            models.insert( {model.registration_ID, model} );
+        }
 
-        for( const XMLElement* child = node->FirstChildElement();
-             child != nullptr;
-             child = child->NextSiblingElement() )
+        for( QDomElement child = node.firstChildElement();
+             !child.isNull();
+             child = child.nextSiblingElement() )
         {
             recursiveStep(child);
         }
     };
 
-    for( const XMLElement* bt_root = root->FirstChildElement("BehaviorTree");
-         bt_root != nullptr;
-         bt_root = bt_root->NextSiblingElement("BehaviorTree") )
+    for( QDomElement bt_root = root.firstChildElement("BehaviorTree");
+         !bt_root.isNull();
+         bt_root = bt_root.nextSiblingElement("BehaviorTree") )
     {
-        recursiveStep( bt_root->FirstChildElement() );
+        recursiveStep( bt_root.firstChildElement() );
     }
     return models;
 }
 
 
 
-void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *parent_element, const Node *node)
+void RecursivelyCreateXml(const FlowScene &scene, QDomDocument &doc, QDomElement& parent_element, const Node *node)
 {
-    using namespace tinyxml2;
+
     const QtNodes::NodeDataModel* node_model = node->nodeDataModel();
     const std::string model_name = node_model->name().toStdString();
 
     const auto* bt_node = dynamic_cast<const BehaviorTreeDataModel*>(node_model);
 
     QString registration_name = bt_node->registrationName();
-    XMLElement* element = nullptr;
+    QDomElement element;
 
     if( BuiltinNodeModels().count(registration_name) != 0)
     {
-        element = doc.NewElement( registration_name.toStdString().c_str() );
+        element = doc.createElement( registration_name.toStdString().c_str() );
     }
     else{
-        element = doc.NewElement( toStr(bt_node->nodeType()) );
-        element->SetAttribute("ID", registration_name.toStdString().c_str() );
+        element = doc.createElement( QString::fromStdString(toStr(bt_node->nodeType())) );
+        element.setAttribute("ID", registration_name.toStdString().c_str() );
     }
 
 
@@ -122,17 +157,16 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
 
     if( bt_node->instanceName() != registration_name )
     {
-        element->SetAttribute("name", bt_node->instanceName().toStdString().c_str() );
+        element.setAttribute("name", bt_node->instanceName().toStdString().c_str() );
     }
 
-    auto parameters = bt_node->getCurrentParameters();
-    for(const auto& param: parameters)
+    auto port_mapping = bt_node->getCurrentPortMapping();
+    for(const auto& port_it: port_mapping)
     {
-        element->SetAttribute( param.label.toStdString().c_str(),
-                               param.value.toStdString().c_str() );
+        element.setAttribute( port_it.first, port_it.second );
     }
 
-    parent_element->InsertEndChild( element );
+    parent_element.appendChild( element );
 
     if( !is_subtree_expanded )
     {
@@ -144,236 +178,60 @@ void RecursivelyCreateXml(const FlowScene &scene, XMLDocument &doc, XMLElement *
     }
 }
 
-bool VerifyXML(XMLDocument &doc,
+bool VerifyXML(QDomDocument &doc,
                const std::vector<QString>& registered_ID,
                std::vector<QString>& error_messages)
 {
-    if (doc.Error())
+    error_messages.clear();
+    try {
+        std::string xml_text = doc.toString().toStdString();
+        std::set<std::string> registered_nodes;
+
+        for(const auto& str: registered_ID)
+        {
+            registered_nodes.insert( str.toStdString() );
+        }
+
+        BT::VerifyXML(xml_text, registered_nodes); // may throw
+    } catch (std::exception& ex)
     {
-        error_messages.emplace_back("The XML was not correctly loaded");
-        return false;
+        error_messages.push_back(ex.what());
     }
-    bool is_valid = true;
-
-    //-------- Helper functions (lambdas) -----------------
-    auto strEqual = [](const char* str1, const char* str2) -> bool {
-        return strcmp(str1, str2) == 0;
-    };
-
-    auto AppendError = [&](int line_num, const char* text) {
-        char buffer[256];
-        sprintf(buffer, "Error at line %d: -> %s", line_num, text);
-        error_messages.emplace_back(buffer);
-        is_valid = false;
-    };
-
-    auto ChildrenCount = [](const tinyxml2::XMLElement* parent_node) {
-        int count = 0;
-        for (auto node = parent_node->FirstChildElement(); node != nullptr;
-             node = node->NextSiblingElement())
-        {
-            count++;
-        }
-        return count;
-    };
-
-    //-----------------------------
-
-    const tinyxml2::XMLElement* xml_root = doc.RootElement();
-
-    if (!xml_root || !strEqual(xml_root->Name(), "root"))
-    {
-        error_messages.emplace_back("The XML must have a root node called <root>");
-        return false;
-    }
-    //-------------------------------------------------
-    auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
-    auto meta_sibling = meta_root ? meta_root->NextSiblingElement("TreeNodesModel") : nullptr;
-
-    if (meta_sibling)
-    {
-        AppendError(meta_sibling->GetLineNum(), " Only a single node <TreeNodesModel> is supported");
-    }
-    if (meta_root)
-    {
-        // not having a MetaModel is not an error. But consider that the
-        // Graphical editor needs it.
-        for (auto node = xml_root->FirstChildElement(); node != nullptr;
-             node = node->NextSiblingElement())
-        {
-            const char* name = node->Name();
-            if (strEqual(name, "Action") || strEqual(name, "Decorator") ||
-                    strEqual(name, "SubTree") || strEqual(name, "Condition"))
-            {
-                const char* ID = node->Attribute("ID");
-                if (!ID)
-                {
-                    AppendError(node->GetLineNum(), "Error at line %d: -> The attribute [ID] is "
-                                                    "mandatory");
-                }
-                for (auto param_node = xml_root->FirstChildElement("Parameter");
-                     param_node != nullptr;
-                     param_node = param_node->NextSiblingElement("Parameter"))
-                {
-                    const char* label = node->Attribute("label");
-                    const char* type = node->Attribute("type");
-                    if (!label || !type)
-                    {
-                        AppendError(node->GetLineNum(),
-                                    "The node <Parameter> requires the attributes [type] and "
-                                    "[label]");
-                    }
-                }
-            }
-        }
-    }
-
-    //-------------------------------------------------
-
-    // function to be called recursively
-    std::function<void(const tinyxml2::XMLElement*)> recursiveStep;
-
-    recursiveStep = [&](const tinyxml2::XMLElement* node) {
-        const int children_count = ChildrenCount(node);
-        const char* name = node->Name();
-        if (strEqual(name, "Decorator"))
-        {
-            if (children_count != 1)
-            {
-                AppendError(node->GetLineNum(), "The node <Decorator> must have exactly 1 child");
-            }
-            if (!node->Attribute("ID"))
-            {
-                AppendError(node->GetLineNum(), "The node <Decorator> must have the attribute "
-                                                "[ID]");
-            }
-        }
-        else if (strEqual(name, "Action"))
-        {
-            if (children_count != 0)
-            {
-                AppendError(node->GetLineNum(), "The node <Action> must not have any child");
-            }
-            if (!node->Attribute("ID"))
-            {
-                AppendError(node->GetLineNum(), "The node <Action> must have the attribute [ID]");
-            }
-        }
-        else if (strEqual(name, "Condition"))
-        {
-            if (children_count != 0)
-            {
-                AppendError(node->GetLineNum(), "The node <Condition> must not have any child");
-            }
-            if (!node->Attribute("ID"))
-            {
-                AppendError(node->GetLineNum(), "The node <Condition> must have the attribute "
-                                                "[ID]");
-            }
-        }
-        else if (strEqual(name, "Sequence") || strEqual(name, "SequenceStar") ||
-                 strEqual(name, "Fallback") || strEqual(name, "FallbackStar"))
-        {
-            if (children_count == 0)
-            {
-                AppendError(node->GetLineNum(), "A Control node must have at least 1 child");
-            }
-        }
-        else if (strEqual(name, "SubTree"))
-        {
-            if (children_count > 0)
-            {
-                AppendError(node->GetLineNum(), "The <SubTree> node must have no children");
-            }
-            if (!node->Attribute("ID"))
-            {
-                AppendError(node->GetLineNum(), "The node <SubTree> must have the attribute [ID]");
-            }
-        }
-        else
-        {
-            // Last resort:  MAYBE used ID as element name?
-            bool found = false;
-            for (const auto& ID : registered_ID)
-            {
-                if (ID == name)
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                AppendError(node->GetLineNum(), (std::string("Node not recognized: ") + name).c_str() );
-            }
-        }
-        //recursion
-        for (auto child = node->FirstChildElement(); child != nullptr;
-             child = child->NextSiblingElement())
-        {
-            recursiveStep(child);
-        }
-    };
-
-    std::vector<std::string> tree_names;
-    int tree_count = 0;
-
-    for (auto bt_root = xml_root->FirstChildElement("BehaviorTree"); bt_root != nullptr;
-         bt_root = bt_root->NextSiblingElement("BehaviorTree"))
-    {
-        tree_count++;
-        if (bt_root->Attribute("ID"))
-        {
-            tree_names.push_back(bt_root->Attribute("ID"));
-        }
-        if (ChildrenCount(bt_root) != 1)
-        {
-            AppendError(bt_root->GetLineNum(), "The node <BehaviorTree> must have exactly 1 child");
-        }
-        else
-        {
-            recursiveStep(bt_root->FirstChildElement());
-        }
-    }
-
-    if (xml_root->Attribute("main_tree_to_execute"))
-    {
-        std::string main_tree = xml_root->Attribute("main_tree_to_execute");
-        if (std::find(tree_names.begin(), tree_names.end(), main_tree) == tree_names.end())
-        {
-            error_messages.emplace_back("The tree specified in [main_tree_to_execute] "
-                                        "can't be found");
-            is_valid = false;
-        }
-    }
-    else
-    {
-        if (tree_count != 1)
-        {
-            error_messages.emplace_back(
-                        "If you don't specify the attribute [main_tree_to_execute], "
-                        "Your file must contain a single BehaviorTree");
-            is_valid = false;
-        }
-    }
-    return is_valid;
+    return true;
 }
 
-std::set<const QString *> NotBuiltInNodes(const TreeNodeModels &models)
+
+
+QDomElement writePortModel(const QString& port_name, const PortModel& port, QDomDocument& doc)
 {
-    std::set<const QString *> custom_models;
+  QDomElement port_element;
+  switch (port.direction)
+  {
+    case PortDirection::INPUT:
+      port_element = doc.createElement("input_port");
+      break;
+    case PortDirection::OUTPUT:
+      port_element = doc.createElement("output_port");
+      break;
+    case PortDirection::INOUT:
+      port_element = doc.createElement("inout_port");
+      break;
+  }
 
-    if( models.size() > BuiltinNodeModels().size() )
-    {
-        for(const auto& it: models)
-        {
-            if( BuiltinNodeModels().count(it.first) == 0)
-            {
-                custom_models.insert( &it.first );
-            }
-        }
-    }
-    return custom_models;
+  port_element.setAttribute("name", port_name);
+  if (port.type_name.isEmpty() == false)
+  {
+    port_element.setAttribute("type", port.type_name);
+  }
+  if (port.default_value.isEmpty() == false)
+  {
+    port_element.setAttribute("default", port.default_value);
+  }
+
+  if (!port.description.isEmpty())
+  {
+    QDomText description = doc.createTextNode(port.description);
+    port_element.appendChild(description);
+  }
+  return port_element;
 }
-
-

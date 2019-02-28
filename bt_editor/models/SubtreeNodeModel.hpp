@@ -9,7 +9,7 @@ class SubtreeNodeModel : public BehaviorTreeDataModel
     Q_OBJECT
 public:
 
-    SubtreeNodeModel(const TreeNodeModel& model);
+    SubtreeNodeModel(const NodeModel& model);
 
     ~SubtreeNodeModel() override = default;
 
@@ -17,7 +17,8 @@ public:
 
     bool expanded() const { return _expanded; }
 
-    unsigned int  nPorts(PortType portType) const override {
+    unsigned int  nPorts(PortType portType) const override
+    {
         int out_port = _expanded ? 1 : 0;
         return portType == PortType::In ? 1:out_port;
     }
@@ -25,12 +26,6 @@ public:
     virtual const char* className() const final { return Name(); }
 
     static const char* Name() { return "SubTree";  }
-
-    std::pair<QString, QColor> caption() const override;
-
-    NodeType nodeType() const final { return NodeType::SUBTREE; }
-
-    virtual QString captionIicon() const override;
 
     QPushButton* expandButton() { return _expand_button; }
 

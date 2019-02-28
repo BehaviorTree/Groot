@@ -10,35 +10,35 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="11mm"
-   height="11mm"
-   viewBox="0 0 11 11"
+   width="22mm"
+   height="22mm"
+   viewBox="0 0 22 22"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (33fec40, 2019-01-16)"
-   sodipodi:docname="letter_A.svg">
+   sodipodi:docname="asterix.svg">
   <defs
      id="defs2">
     <linearGradient
        inkscape:collect="always"
-       id="linearGradient2404">
+       id="linearGradient2637">
       <stop
          style="stop-color:#000000;stop-opacity:1;"
          offset="0"
-         id="stop2400" />
+         id="stop2633" />
       <stop
          style="stop-color:#000000;stop-opacity:0;"
          offset="1"
-         id="stop2402" />
+         id="stop2635" />
     </linearGradient>
     <linearGradient
        inkscape:collect="always"
-       xlink:href="#linearGradient2404"
-       id="linearGradient2406"
-       x1="0.50790576"
-       y1="291.44146"
-       x2="9.8044955"
-       y2="291.44146"
+       xlink:href="#linearGradient2637"
+       id="linearGradient2639"
+       x1="4.6257707"
+       y1="295.44059"
+       x2="17.200361"
+       y2="295.44059"
        gradientUnits="userSpaceOnUse" />
   </defs>
   <sodipodi:namedview
@@ -48,16 +48,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="5.6"
-     inkscape:cx="0.49453714"
-     inkscape:cy="43.891794"
+     inkscape:zoom="2.8"
+     inkscape:cx="52.529116"
+     inkscape:cy="116.07983"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:pagecheckerboard="true"
+     showguides="false"
      inkscape:window-width="1855"
-     inkscape:window-height="1056"
-     inkscape:window-x="1985"
+     inkscape:window-height="972"
+     inkscape:window-x="65"
      inkscape:window-y="24"
      inkscape:window-maximized="1" />
   <metadata
@@ -76,17 +76,18 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-286)">
+     transform="translate(0,-275)">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.05;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       x="0.42522347"
-       y="295.2991"
-       id="text4520"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.66035271px;line-height:1.25;font-family:'Nimbus Sans L';-inkscape-font-specification:'Nimbus Sans L';letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.3;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       x="3.1061621"
+       y="308.13022"
+       id="text817"
+       transform="scale(1.0330664,0.96799199)"><tspan
          sodipodi:role="line"
-         id="tspan4518"
-         x="0.42522347"
-         y="295.2991"
-         style="fill:#ffffff;fill-opacity:1;stroke-width:0.05;stroke:#000000;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">A:</tspan></text>
+         id="tspan815"
+         x="3.1061621"
+         y="308.13022"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:34.83266068px;line-height:2.25;font-family:NanumBarunGothic;-inkscape-font-specification:NanumBarunGothic;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.3;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none">*</tspan></text>
   </g>
 </svg>
