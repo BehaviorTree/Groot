@@ -26,17 +26,18 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="52.529116"
-     inkscape:cy="116.07983"
+     inkscape:cx="123.95769"
+     inkscape:cy="-42.848741"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      showguides="false"
      inkscape:window-width="1855"
-     inkscape:window-height="972"
-     inkscape:window-x="65"
+     inkscape:window-height="1056"
+     inkscape:window-x="1985"
      inkscape:window-y="24"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="true" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -45,7 +46,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -56,7 +57,7 @@
      transform="translate(0,-275)">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.99105453px;line-height:1.25;font-family:'Nimbus Sans L';-inkscape-font-specification:'Nimbus Sans L';letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.30000001;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.99105453px;line-height:1.25;font-family:'Nimbus Sans L';-inkscape-font-specification:'Nimbus Sans L';letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
        x="5.9603772"
        y="318.87442"
        id="text817"
@@ -65,6 +66,6 @@
          id="tspan815"
          x="5.9603772"
          y="318.87442"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:24.24996948px;line-height:2.25;font-family:Loma;-inkscape-font-specification:Loma;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.30000001;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none">I</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:24.24996948px;line-height:2.25;font-family:Loma;-inkscape-font-specification:Loma;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none">I</tspan></text>
   </g>
 </svg>

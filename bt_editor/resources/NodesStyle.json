@@ -8,6 +8,10 @@
         "caption_color":  "#44bb44"
     },
 
+    "Decorator": {
+        "caption_color":  "#ffee77"
+    },
+
     "SubTree": {
         "icon": ":/icons/svg/subtree.svg"
     },
@@ -59,18 +63,23 @@
         "caption_color":  "#ff99bb"
     },
 
+    "SequenceStar": {
+        "icon": ":/icons/svg/sequence_star.svg",
+        "caption_color":  "#ffaacc"
+    },
+
+    "ReactiveSequence": {
+        "icon": ":/icons/svg/sequence_reactive.svg",
+        "caption_color":  "#ff77aa"
+    },
+
     "Fallback": {
         "icon": ":/icons/svg/fallback.svg",
         "caption_color":  "#77ccff"
     },
 
-    "SequenceStar": {
-        "icon": ":/icons/svg/sequence_star.svg",
-        "caption_color":  "#ff5af3"
-    },
-
-    "FallbackStar": {
-        "icon": ":/icons/svg/fallback_star.svg",
+    "ReactiveFallback": {
+        "icon": ":/icons/svg/fallback_reactive.svg",
         "caption_color":  "#44aadd"
     }
 }

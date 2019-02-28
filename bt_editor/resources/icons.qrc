@@ -57,6 +57,8 @@
         <file>svg/asterix.svg</file>
         <file>svg/letter_i.svg</file>
         <file>svg/letter_o.svg</file>
+        <file>svg/fallback_reactive.svg</file>
+        <file>svg/sequence_reactive.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>
