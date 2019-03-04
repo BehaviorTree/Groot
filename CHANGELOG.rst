@@ -2,8 +2,8 @@
 Changelog for package Groot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2019-03-04)
+------------------
 * Updated to V3 of BehaviorTree.CPP
 * Contributors: Davide Faconti, Victor Lopez
 
