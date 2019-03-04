@@ -78,6 +78,8 @@ public slots:
 
     void onDestroySubTree(const QString &ID);
 
+    void onModelRemoveRequested(QString ID);
+
     virtual void closeEvent(QCloseEvent *event) override;
 
     void on_actionLoad_triggered();

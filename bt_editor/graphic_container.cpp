@@ -393,6 +393,28 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *old_node, const QString& n
 
     auto& new_node = scene()->createNodeAtPos( new_node_ID, new_node_ID, prev_pos);
 
+    auto bt_old_node = dynamic_cast<BehaviorTreeDataModel*>( old_node->nodeDataModel());
+    auto bt_new_node = dynamic_cast<BehaviorTreeDataModel*>( new_node.nodeDataModel());
+
+    if( bt_old_node && bt_new_node)
+    {
+        // if the old one contains an edited instance name, use it in new_node
+        if( bt_old_node->instanceName() != bt_old_node->registrationName() &&
+            bt_new_node->model().type != NodeType::SUBTREE )
+        {
+            bt_new_node->setInstanceName( bt_old_node->instanceName() );
+        }
+        // if the old one contains an editedport remapping, use it in new_node
+        for(const auto& old_it:  bt_old_node->getCurrentPortMapping() )
+        {
+            auto new_mapping = bt_new_node->getCurrentPortMapping();
+            if( old_it.second.isEmpty() == false && new_mapping.count( old_it.first ) )
+            {
+                bt_new_node->setPortMapping( old_it.first, old_it.second );
+            }
+        }
+    }
+
     QPointF new_pos = prev_pos;
     double new_width = new_node.nodeGeometry().width();
 
@@ -400,7 +422,7 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *old_node, const QString& n
     _scene->setNodePosition(new_node, new_pos);
 
     if( old_node->nodeDataModel()->nPorts( PortType::In ) == 1 &&
-            new_node.nodeDataModel()->nPorts( PortType::In ) == 1 )
+        new_node.nodeDataModel()->nPorts( PortType::In ) == 1 )
     {
         auto conn_in  = old_node->nodeState().connections(PortType::In, 0);
         for(auto it: conn_in)
@@ -411,7 +433,7 @@ QtNodes::Node* GraphicContainer::substituteNode(Node *old_node, const QString& n
     }
 
     if( old_node->nodeDataModel()->nPorts( PortType::Out ) == 1 &&
-            new_node.nodeDataModel()->nPorts( PortType::Out ) == 1 )
+        new_node.nodeDataModel()->nPorts( PortType::Out ) == 1 )
     {
         auto conn_in  = old_node->nodeState().connections(PortType::Out, 0);
         for(auto it: conn_in)
@@ -586,7 +608,7 @@ void GraphicContainer::recursiveLoadStep(QPointF& cursor,
 
     for (auto& port_it: abs_node->ports_mapping)
     {
-        bt_node->setParameterValue( port_it.first, port_it.second );
+        bt_node->setPortMapping( port_it.first, port_it.second );
     }
     bt_node->initWidget();
 

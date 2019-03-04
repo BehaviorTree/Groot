@@ -424,7 +424,7 @@ void BehaviorTreeDataModel::restore(const QJsonObject &modelJson)
     {
         if( it.key() != "alias" && it.key() != "name")
         {
-            setParameterValue( it.key(), it.value().toString() );
+            setPortMapping( it.key(), it.value().toString() );
         }
     }
 
@@ -449,9 +449,9 @@ void BehaviorTreeDataModel::lock(bool locked)
     }
 }
 
-void BehaviorTreeDataModel::setParameterValue(const QString &label, const QString &value)
+void BehaviorTreeDataModel::setPortMapping(const QString &port_name, const QString &value)
 {
-    auto it = _ports_widgets.find(label);
+    auto it = _ports_widgets.find(port_name);
     if( it != _ports_widgets.end() )
     {
         if( auto lineedit = dynamic_cast<QLineEdit*>(it->second) )
@@ -470,7 +470,7 @@ void BehaviorTreeDataModel::setParameterValue(const QString &label, const QStrin
         }
     }
     else{
-        qDebug() << "error, label "<< label << " not found in the model";
+        qDebug() << "error, label "<< port_name << " not found in the model";
     }
 }
 

@@ -320,7 +320,7 @@ void EditorTest::testSubtree()
     sleepAndRefresh( 500 );
 
     auto sidepanel_editor = main_win->findChild<SidepanelEditor*>("SidepanelEditor");
-    sidepanel_editor->onRemoveModel("DoorClosed", false);
+    sidepanel_editor->onRemoveModel("DoorClosed");
     sleepAndRefresh( 500 );
 
     auto tree_after_remove = getAbstractTree("MainTree");
@@ -454,6 +454,7 @@ void EditorTest::editText()
     for(const auto& line: line_editable)
     {
         QTest::mouseDClick( line, Qt::LeftButton );
+        line->selectAll();
         sleepAndRefresh( 50 );
 
         QTest::keyClick(line, Qt::Key_Delete, Qt::NoModifier );

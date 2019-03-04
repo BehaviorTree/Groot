@@ -26,7 +26,7 @@ public:
     void clear();
 
 public slots:
-    void onRemoveModel(QString selected_name, bool ask_confirmation);
+    void onRemoveModel(QString selected_name);
 
     void onReplaceModel(const QString &old_name, const NodeModel &new_model);
 
@@ -50,6 +50,8 @@ private slots:
 signals:
 
     void addNewModel(const NodeModel &new_model);
+
+    void modelRemoveRequested(QString ID);
 
     void nodeModelEdited(QString prev_ID, QString new_ID);
 

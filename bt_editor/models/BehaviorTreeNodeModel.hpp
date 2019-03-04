@@ -71,7 +71,7 @@ public:
 
     void lock(bool locked);
 
-    void setParameterValue(const QString& label, const QString& value);
+    void setPortMapping(const QString& port_name, const QString& value);
 
     int UID() const { return _uid; }
 

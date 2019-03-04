@@ -39,10 +39,10 @@ using QtNodes::NodeGraphicsObject;
 using QtNodes::NodeState;
 
 MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    _current_mode(initial_mode),
-    _current_layout(QtNodes::PortLayout::Vertical)
+                                                                    QMainWindow(parent),
+                                                                    ui(new Ui::MainWindow),
+                                                                    _current_mode(initial_mode),
+                                                                    _current_layout(QtNodes::PortLayout::Vertical)
 {
     ui->setupUi(this);
 
@@ -98,10 +98,10 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     ui->leftFrame->layout()->addWidget( _monitor_widget );
 
     connect( ui->toolButtonConnect, &QToolButton::clicked,
-             _monitor_widget, &SidepanelMonitor::on_Connect );
+            _monitor_widget, &SidepanelMonitor::on_Connect );
 
     connect( _monitor_widget, &SidepanelMonitor::connectionUpdate,
-             this, &MainWindow::onConnectionUpdate );
+            this, &MainWindow::onConnectionUpdate );
 #else
     ui->actionMonitor_mode->setVisible(false);
 #endif
@@ -113,7 +113,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     auto arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
 
     connect( arrange_shortcut, &QShortcut::activated,
-             this,   &MainWindow::onAutoArrange  );
+            this,   &MainWindow::onAutoArrange  );
 
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 4);
@@ -125,41 +125,44 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
     connect( _editor_widget, &SidepanelEditor::nodeModelEdited,
-             this, &MainWindow::onTreeNodeEdited);
+            this, &MainWindow::onTreeNodeEdited);
 
     connect( _editor_widget, &SidepanelEditor::addNewModel,
-             this, &MainWindow::onAddToModelRegistry);
+            this, &MainWindow::onAddToModelRegistry);
 
     connect( _editor_widget, &SidepanelEditor::destroySubtree,
-             this, &MainWindow::onDestroySubTree);
+            this, &MainWindow::onDestroySubTree);
+
+    connect( _editor_widget, &SidepanelEditor::modelRemoveRequested,
+            this, &MainWindow::onModelRemoveRequested);
 
     connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
-             this, &MainWindow::onCreateAbsBehaviorTree );
+            this, &MainWindow::onCreateAbsBehaviorTree );
 
     connect( _replay_widget, &SidepanelReplay::addNewModel,
-             this, &MainWindow::onAddToModelRegistry);
+            this, &MainWindow::onAddToModelRegistry);
 
     connect( ui->toolButtonSaveFile, &QToolButton::clicked,
-             this, &MainWindow::on_actionSave_triggered );
+            this, &MainWindow::on_actionSave_triggered );
 
     connect( _replay_widget, &SidepanelReplay::changeNodeStyle,
-             this, &MainWindow::onChangeNodesStatus);
+            this, &MainWindow::onChangeNodesStatus);
 
 #ifdef ZMQ_FOUND
 
     connect( _monitor_widget, &SidepanelMonitor::addNewModel,
-             this, &MainWindow::onAddToModelRegistry);
+            this, &MainWindow::onAddToModelRegistry);
 
     connect( _monitor_widget, &SidepanelMonitor::changeNodeStyle,
-             this, &MainWindow::onChangeNodesStatus);
+            this, &MainWindow::onChangeNodesStatus);
 
     connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
-             this, &MainWindow::onCreateAbsBehaviorTree );
+            this, &MainWindow::onCreateAbsBehaviorTree );
 #endif
 
     ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect( ui->tabWidget->tabBar(), &QTabBar::customContextMenuRequested,
-             this, &MainWindow::onTabCustomContextMenuRequested);
+            this, &MainWindow::onTabCustomContextMenuRequested);
 }
 
 void MainWindow::showEvent( QShowEvent* )
@@ -215,19 +218,19 @@ GraphicContainer* MainWindow::createTab(const QString &name)
     //--------------------------------
 
     connect( ti, &GraphicContainer::undoableChange,
-             this, &MainWindow::onPushUndo );
+            this, &MainWindow::onPushUndo );
 
     connect( ti, &GraphicContainer::undoableChange,
-             this, &MainWindow::onSceneChanged );
+            this, &MainWindow::onSceneChanged );
 
     connect( ti, &GraphicContainer::requestSubTreeExpand,
-             this, &MainWindow::onRequestSubTreeExpand );
+            this, &MainWindow::onRequestSubTreeExpand );
 
     connect( ti, &GraphicContainer::requestSubTreeCreate,
-             this, &MainWindow::onCreateAbsBehaviorTree);
+            this, &MainWindow::onCreateAbsBehaviorTree);
 
     connect( ti, &GraphicContainer::addNewModel,
-             this, &MainWindow::onAddToModelRegistry);
+            this, &MainWindow::onAddToModelRegistry);
 
     return ti;
 }
@@ -368,7 +371,7 @@ void MainWindow::on_actionLoad_triggered()
 {
     QSettings settings;
     QString directory_path  = settings.value("MainWindow.lastLoadDirectory",
-                                             QDir::homePath() ).toString();
+                                            QDir::homePath() ).toString();
 
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Load BehaviorTree from file"), directory_path,
@@ -460,7 +463,7 @@ QString MainWindow::saveToXML() const
             {
                 const auto& port_name = port_it.first;
                 const auto& port = port_it.second;
-                
+
                 QDomElement port_element = writePortModel(port_name, port, doc);
                 node.appendChild( port_element );
             }
@@ -494,7 +497,7 @@ void MainWindow::on_actionSave_triggered()
 
     QSettings settings;
     QString directory_path  = settings.value("MainWindow.lastSaveDirectory",
-                                             QDir::currentPath() ).toString();
+                                            QDir::currentPath() ).toString();
 
     auto fileName = QFileDialog::getSaveFileName(this, "Save BehaviorTree to file",
                                                  directory_path, "BehaviorTree files (*.xml)");
@@ -636,7 +639,7 @@ void MainWindow::onPushUndo()
     }
     _current_state = saved;
 
-     //qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+    //qDebug() << "P: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
 }
 
 void MainWindow::onUndoInvoked()
@@ -651,7 +654,7 @@ void MainWindow::onUndoInvoked()
 
         loadSavedStateFromJson(_current_state);
 
-       // qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
+        // qDebug() << "U: Undo size: " << _undo_stack.size() << " Redo size: " << _redo_stack.size();
     }
 }
 
@@ -726,10 +729,10 @@ void MainWindow::onConnectionUpdate(bool connected)
     }
     else{
         ui->toolButtonConnect->setStyleSheet(
-                    "QToolButton {color:white; }"
-                    "QToolButton:hover{ background-color: rgb(110, 110, 110); }"
-                    "QToolButton:pressed{ background-color: rgb(50, 150, 0) }"
-                    "QToolButton:disabled{color:gray; background-color: rgb(50, 50, 50) }");
+            "QToolButton {color:white; }"
+            "QToolButton:hover{ background-color: rgb(110, 110, 110); }"
+            "QToolButton:pressed{ background-color: rgb(50, 150, 0) }"
+            "QToolButton:disabled{color:gray; background-color: rgb(50, 50, 50) }");
         ui->toolButtonConnect->setText("Connect");
     }
 }
@@ -803,7 +806,7 @@ void MainWindow::onDestroySubTree(const QString &ID)
                 if( subtree_model && subtree_model->expanded() == false )
                 {
                     new_node = subTreeExpand( *container, *qt_node,
-                                              SubtreeExpandOption::SUBTREE_EXPAND );
+                                             SubtreeExpandOption::SUBTREE_EXPAND );
                 }
                 container->lockSubtreeEditing(*new_node, false, false);
                 container->onSmartRemove( new_node );
@@ -833,6 +836,69 @@ void MainWindow::onDestroySubTree(const QString &ID)
     clearUndoStacks();
 }
 
+void MainWindow::onModelRemoveRequested(QString ID)
+{
+    BehaviorTreeDataModel* node_found = nullptr;
+    QString tab_containing_node;
+
+    for (auto& it: _tab_info)
+    {
+        auto container = it.second;
+        for(const auto& node_it: container->scene()->nodes() )
+        {
+            QtNodes::Node* graphic_node = node_it.second.get();
+            auto bt_node = dynamic_cast<BehaviorTreeDataModel*>( graphic_node->nodeDataModel() );
+
+            if( bt_node->model().registration_ID == ID )
+            {
+                node_found = bt_node;
+                tab_containing_node = it.first;
+                break;
+            }
+        }
+        if( node_found != nullptr )
+        {
+            break;
+        }
+    }
+
+    NodeType node_type = _treenode_models.at(ID).type;
+
+    if( node_found && node_type != NodeType::SUBTREE )
+    {
+        QMessageBox::warning(this, "Can't remove this Model",
+                             QString( "You are using this model in the Tree called [%1].\n"
+                                     "You can't delete this model unless you "
+                                     "remove all the instances of [%2].").arg(tab_containing_node, ID ),
+                             QMessageBox::Ok );
+    }
+    else
+    {
+        int ret = QMessageBox::Cancel;
+        if( node_found->model().type != NodeType::SUBTREE )
+        {
+            ret = QMessageBox::warning(this,"Delete TreeNode Model?",
+                                       "Are you sure? This action can't be undone.",
+                                       QMessageBox::Cancel | QMessageBox::Yes,
+                                       QMessageBox::Cancel);
+        }
+        else{
+            ret = QMessageBox::warning(this,"Delete Subtree?",
+                                       "The Model of the Subtrees will be removed."
+                                       "An expanded version will be added to parent trees.\n"
+                                       "Are you sure? This action can't be undone.",
+                                       QMessageBox::Cancel | QMessageBox::Yes,
+                                       QMessageBox::Cancel);
+        }
+
+        if(ret == QMessageBox::Yes )
+        {
+            _editor_widget->onRemoveModel(ID);
+            clearUndoStacks();
+        }
+    }
+}
+
 QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
                                          QtNodes::Node &node,
                                          MainWindow::SubtreeExpandOption option)
@@ -840,7 +906,7 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
     bool is_editor_mode = (_current_mode == GraphicMode::EDITOR);
     const QSignalBlocker blocker( this );
     auto subtree_model = dynamic_cast<SubtreeNodeModel*>(node.nodeDataModel());
-    const QString& subtree_name = subtree_model->instanceName();
+    const QString& subtree_name = subtree_model->registrationName();
 
     if( option == SUBTREE_EXPAND && subtree_model->expanded() == false)
     {
@@ -937,7 +1003,7 @@ void MainWindow::onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QStr
     auto container = getTabByName(bt_name);
     if( !container )
     {
-       container = createTab(bt_name);
+        container = createTab(bt_name);
     }
     const QSignalBlocker blocker( container );
     container->loadSceneFromTree( tree );
@@ -967,34 +1033,50 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
     for (auto& it: _tab_info)
     {
         auto container = it.second;
-        auto abs_tree = BuildTreeFromScene( container->scene() );
+        std::vector<QtNodes::Node*> nodes_to_rename;
 
-        for(auto& node: abs_tree.nodes())
+        for(const auto& node_it: container->scene()->nodes() )
         {
-            if( node.model.registration_ID == prev_ID )
-            {
-                bool is_expanded_subtree = false;
-                if( node.model.type == NodeType::SUBTREE)
-                {
-                    auto graphic_model = node.graphic_node->nodeDataModel();
-                    auto subtree_model = dynamic_cast<SubtreeNodeModel*>( graphic_model );
-                    if(subtree_model && subtree_model->expanded())
-                    {
-                        is_expanded_subtree = true;
-                        subTreeExpand( *container, *node.graphic_node, SUBTREE_COLLAPSE);
-                    }
-                }
-
-                auto new_node = container->substituteNode(node.graphic_node, new_ID);
-
-                if( is_expanded_subtree )
-                {
-                    subTreeExpand( *container, *new_node, SUBTREE_EXPAND);
-                };
+            QtNodes::Node* graphic_node = node_it.second.get();
+            if( !graphic_node )  {
+                continue;
             }
+            auto bt_node = dynamic_cast<BehaviorTreeDataModel*>( graphic_node->nodeDataModel() );
+            if( !bt_node ) {
+                continue;
+            }
+
+            if( bt_node->model().registration_ID == prev_ID )
+            {
+                nodes_to_rename.push_back( graphic_node );
+            }
+        }
+
+        for(auto& graphic_node: nodes_to_rename )
+        {
+            auto bt_node = dynamic_cast<BehaviorTreeDataModel*>( graphic_node->nodeDataModel() );
+            bool is_expanded_subtree = false;
+
+            if( bt_node->model().type == NodeType::SUBTREE)
+            {
+                auto subtree_model = dynamic_cast<SubtreeNodeModel*>( bt_node );
+                if(subtree_model && subtree_model->expanded())
+                {
+                    is_expanded_subtree = true;
+                    subTreeExpand( *container, *graphic_node, SUBTREE_COLLAPSE);
+                }
+            }
+
+            auto new_node = container->substituteNode( graphic_node, new_ID);
+
+            if( is_expanded_subtree )
+            {
+                subTreeExpand( *container, *new_node, SUBTREE_EXPAND);
+            };
         }
     }
 }
+
 
 
 void MainWindow::onActionClearTriggered(bool create_new)
@@ -1051,16 +1133,16 @@ void MainWindow::updateCurrentMode()
     if( _current_mode == GraphicMode::EDITOR )
     {
         connect( ui->toolButtonLoadFile, &QToolButton::clicked,
-                 this, &MainWindow::on_actionLoad_triggered );
+                this, &MainWindow::on_actionLoad_triggered );
         disconnect( ui->toolButtonLoadFile, &QToolButton::clicked,
-                    _replay_widget, &SidepanelReplay::on_LoadLog );
+                   _replay_widget, &SidepanelReplay::on_LoadLog );
     }
     else if( _current_mode == GraphicMode::REPLAY )
     {
         disconnect( ui->toolButtonLoadFile, &QToolButton::clicked,
-                    this, &MainWindow::on_actionLoad_triggered );
+                   this, &MainWindow::on_actionLoad_triggered );
         connect( ui->toolButtonLoadFile, &QToolButton::clicked,
-                 _replay_widget, &SidepanelReplay::on_LoadLog );
+                _replay_widget, &SidepanelReplay::on_LoadLog );
     }
     lockEditing( NOT_EDITOR );
 
@@ -1081,8 +1163,8 @@ void MainWindow::refreshNodesLayout(QtNodes::PortLayout new_layout)
     if( new_layout != _current_layout)
     {
         QString icon_name = ( new_layout == QtNodes::PortLayout::Horizontal ) ?
-                    ":/icons/BT-horizontal.png" :
-                    ":/icons/BT-vertical.png";
+                                                                            ":/icons/BT-horizontal.png" :
+                                                                            ":/icons/BT-vertical.png";
         QIcon icon;
         icon.addFile(icon_name, QSize(), QIcon::Normal, QIcon::Off);
         ui->toolButtonLayout->setIcon(icon);
@@ -1259,7 +1341,7 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
 }
 
 void MainWindow::onChangeNodesStatus(const QString& bt_name,
-                                    const std::vector<std::pair<int, NodeStatus> > &node_status)
+                                     const std::vector<std::pair<int, NodeStatus> > &node_status)
 {
     auto tree = BuildTreeFromScene( getTabByName(bt_name)->scene() );
 
@@ -1292,16 +1374,16 @@ void MainWindow::onTabCustomContextMenuRequested(const QPoint &pos)
     QAction* rename   = menu.addAction("Rename");
 
     connect( rename, &QAction::triggered, this, [this, tab_index]()
-    {
-        onTabRenameRequested(tab_index);
-    } );
+            {
+                onTabRenameRequested(tab_index);
+            } );
 
     QAction* set_main   = menu.addAction("Set as main tree");
 
     connect( set_main, &QAction::triggered, this, [this, tab_index]()
-    {
-        onTabSetMainTree(tab_index);
-    } );
+            {
+                onTabSetMainTree(tab_index);
+            } );
 
     QPoint globalPos = ui->tabWidget->tabBar()->mapToGlobal(pos);
     menu.exec(globalPos);
@@ -1315,9 +1397,9 @@ void MainWindow::onTabRenameRequested(int tab_index, QString new_name)
     {
         bool ok = false;
         new_name = QInputDialog::getText (
-                    this, tr ("Change name"),
-                    tr ("Insert the new name of this BehaviorTree"),
-                    QLineEdit::Normal, old_name, &ok);
+            this, tr ("Change name"),
+            tr ("Insert the new name of this BehaviorTree"),
+            QLineEdit::Normal, old_name, &ok);
         if (!ok)
         {
             return;
@@ -1331,9 +1413,9 @@ void MainWindow::onTabRenameRequested(int tab_index, QString new_name)
     if( getTabByName(new_name) )
     {
         QMessageBox::warning( this, "Tab name already is use",
-                              tr("There is already a BehaviorTree called [%1].\n"
-                                 "Use another name.").arg(new_name),
-                              QMessageBox::Ok);
+                             tr("There is already a BehaviorTree called [%1].\n"
+                                "Use another name.").arg(new_name),
+                             QMessageBox::Ok);
         return;
     }
 
@@ -1350,13 +1432,13 @@ void MainWindow::onTabRenameRequested(int tab_index, QString new_name)
     // if a subtree SUBTREE already
     if( _model_registry->registeredModelsByCategory("SubTree").count( old_name ) != 0 )
     {
-         _model_registry->unregisterModel(old_name);
-         _treenode_models.erase(old_name);
-         NodeModel model = { NodeType::SUBTREE, new_name, {}};
-         onAddToModelRegistry( model );
-         _treenode_models.insert( { new_name, model} );
-         _editor_widget->updateTreeView();
-         this->onTreeNodeEdited(old_name, new_name);
+        _model_registry->unregisterModel(old_name);
+        _treenode_models.erase(old_name);
+        NodeModel model = { NodeType::SUBTREE, new_name, {}};
+        onAddToModelRegistry( model );
+        _treenode_models.insert( { new_name, model} );
+        _editor_widget->updateTreeView();
+        this->onTreeNodeEdited(old_name, new_name);
     }
 
     // TODO: this is a work around until we find a better solution
@@ -1423,9 +1505,9 @@ void MainWindow::on_actionReportIssue_triggered()
 {
     const char* url = "https://github.com/BehaviorTree/Groot/issues";
     QMessageBox::warning( this, "Issue Reporting",
-                          tr("Reporting an issue you allow us to make this software better and better. Thanks!\n"
-                             "You will be redirected to our Github Page:\n\n"
-                             "%1").arg(url),
-                          QMessageBox::Ok);
-   QDesktopServices::openUrl(QUrl(url));
+                         tr("Reporting an issue you allow us to make this software better and better. Thanks!\n"
+                            "You will be redirected to our Github Page:\n\n"
+                            "%1").arg(url),
+                         QMessageBox::Ok);
+    QDesktopServices::openUrl(QUrl(url));
 }
