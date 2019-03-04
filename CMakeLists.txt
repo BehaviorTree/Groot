@@ -13,7 +13,7 @@ if( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
 endif()
 
 if(catkin_FOUND)
-  find_package(catkin REQUIRED COMPONENTS behaviortree_cpp rosbag rosbag_storage roscpp)
+  find_package(catkin REQUIRED COMPONENTS behaviortree_cpp_v3 rosbag rosbag_storage roscpp)
 
   message(STATUS "------------------------------------------------")
   message(STATUS "BehaviourTreeEditor is being built using CATKIN.")
@@ -22,7 +22,7 @@ if(catkin_FOUND)
   catkin_package(
     INCLUDE_DIRS 
     LIBRARIES qt_node_editor
-    CATKIN_DEPENDS behaviortree_cpp
+    CATKIN_DEPENDS behaviortree_cpp_v3
     DEPENDS 
     )
 endif(catkin_FOUND)
@@ -50,8 +50,13 @@ add_subdirectory( QtNodeEditor )
 set(BUILD_EXAMPLES   OFF CACHE BOOL "")
 set(BUILD_UNIT_TESTS OFF CACHE BOOL "")
 set(BUILD_TOOLS OFF CACHE BOO "")
-add_subdirectory( depend/BehaviorTree.CPP )
-include_directories( depend/BehaviorTree.CPP/include )
+
+if(NOT catkin_FOUND)
+    # use git submodule only if you are not compiling with catkin
+    add_subdirectory( depend/BehaviorTree.CPP )
+    include_directories( depend/BehaviorTree.CPP/include )
+endif()
+
 ##########################################
 
 set(APP_CPPS
@@ -109,9 +114,9 @@ add_library(behavior_tree_editor
 )
 
 if( ZMQ_FOUND )
-    target_link_libraries(behavior_tree_editor QtNodeEditor zmq )
+    target_link_libraries(behavior_tree_editor QtNodeEditor zmq ${catkin_LIBRARIES})
 else()
-    target_link_libraries(behavior_tree_editor QtNodeEditor )
+    target_link_libraries(behavior_tree_editor QtNodeEditor ${catkin_LIBRARIES} )
 endif()
 
 

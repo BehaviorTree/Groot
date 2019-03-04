@@ -7,8 +7,8 @@
 #include <nodes/NodeStyle>
 
 #include "bt_editor_base.h"
-#include <behaviortree_cpp/loggers/BT_logger_generated.h>
-#include <behaviortree_cpp/loggers/bt_flatbuffer_helper.h>
+#include <behaviortree_cpp/flatbuffers/BT_logger_generated.h>
+#include <behaviortree_cpp/flatbuffers/bt_flatbuffer_helper.h>
 
 QtNodes::Node* findRoot(const QtNodes::FlowScene &scene);
 
