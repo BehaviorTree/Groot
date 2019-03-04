@@ -2,6 +2,11 @@
 Changelog for package Groot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updated to V3 of BehaviorTree.CPP
+* Contributors: Davide Faconti, Victor Lopez
+
 0.4.2 (2018-11-26)
 ------------------
 * CRITICAL BUG fixed: QLineEdit where not editble in the embeddedWidget
