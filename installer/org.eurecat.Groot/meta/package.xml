@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Groot</DisplayName>
+    <Description>The fancy BehaviorTree editor</Description>
+    <Version>1.0.0</Version>
+    <ReleaseDate>2019-03-4</ReleaseDate>
+    <Licenses>
+        <License name="MIT" file="license.txt" />
+    </Licenses>
+    <Default>script</Default>
+    <Script>installscript.qs</Script>
+</Package>
+

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Groot</Name>
+    <Version>1.0.0</Version>
+    <Title>Groot installer</Title>
+    <Publisher>Davide Faconti</Publisher>
+    <StartMenuDir>Applications</StartMenuDir>
+    <TargetDir>@ApplicationsDir@/PlotJuggler</TargetDir>
+</Installer>
+
