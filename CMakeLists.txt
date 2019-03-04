@@ -40,7 +40,7 @@ set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} -Werror=return-type"
 #set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 #set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
-INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./depend/BehaviorTree.CPP/3rdparty ./ )
+INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./  )
 
 add_subdirectory( QtNodeEditor )
 
@@ -113,11 +113,19 @@ add_library(behavior_tree_editor
     ${FORMS_HEADERS}
 )
 
-if( ZMQ_FOUND )
-    target_link_libraries(behavior_tree_editor QtNodeEditor zmq ${catkin_LIBRARIES})
+SET(GROOT_DEPENDENCIES QtNodeEditor )
+
+if( catkin_FOUND )
+    SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} ${catkin_LIBRARIES} )
 else()
-    target_link_libraries(behavior_tree_editor QtNodeEditor ${catkin_LIBRARIES} )
+    SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} behaviortree_cpp_v3 )
 endif()
+
+if( ZMQ_FOUND )
+    SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} zmq)
+endif()
+
+target_link_libraries(behavior_tree_editor ${GROOT_DEPENDENCIES} )
 
 
 add_executable(Groot ./bt_editor/main.cpp  ${RESOURCE_FILES})

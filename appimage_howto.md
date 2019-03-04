@@ -29,7 +29,7 @@ In the root folder of Groot:
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install ..
     make -j$(nproc) install
 
-    export VERSION=$(git describe --abbrev=0 --tags)
+    export VERSION=$(git describe --abbrev=0 --tags); echo $VERSION
     unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
     ~/linuxdeployq.AppImage ./install/share/applications/Groot.desktop  -appimage
 
