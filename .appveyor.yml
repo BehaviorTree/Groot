@@ -1,0 +1,40 @@
+clone_depth: 5
+
+environment:
+  matrix:
+    - GENERATOR : "MinGW Makefiles"
+      QTDIR: C:\Qt\5.9.7\mingw53_32
+      PLATFORM: x86
+    - GENERATOR : "Visual Studio 15 2017 Win64"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      QTDIR: C:\Qt\5.9.7\msvc2017_64
+      PLATFORM: x64
+ #    - GENERATOR : "Visual Studio 14 2015 Win64"
+ #      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#       QTDIR: C:\Qt\5.9.7\msvc2015_64  
+#     - GENERATOR : "Visual Studio 14 2015"
+#       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#       QTDIR: C:\Qt\5.9.7\msvc2015
+#       PLATFORM: Win32
+
+      
+configuration:
+  - Release
+
+install:
+  - set PATH=%QTDIR%\bin;%PATH%
+  - set Qt5_DIR=%QTDIR%\lib\cmake\Qt5
+  - set PATH=C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
+  - set PATH=C:\Qt\Tools\mingw530_32;%PATH%
+  - set PATH=%PATH:C:\Program Files\Git\usr\bin=% # trick to remove sh.exe
+
+
+before_build:
+  - git submodule update --init --recursive
+  - mkdir build
+  - cd build
+  - set PATH=%QTDIR%\bin;%PATH%
+  - cmake "-G%GENERATOR%" "-DCMAKE_PREFIX_PATH=%QTDIR%" ..
+
+build_script:
+- cmake --build .
