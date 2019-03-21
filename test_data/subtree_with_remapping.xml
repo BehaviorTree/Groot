@@ -1,0 +1,26 @@
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <SetBlackboard value="hello" output_key="myMsg"/>
+            <SubTree ID="MySubtree" message="myMsg"/>
+            <SetBlackboard value="world" output_key="myMsg"/>
+            <SubTree ID="MySubtree" message="myMsg"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="MySubtree">
+        <Action msg="{message}" ID="SaySomething"/>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <SubTree ID="MySubtree">
+            <input_port name="message"/>
+        </SubTree>
+        <Action ID="SaySomething">
+            <input_port name="msg"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+
