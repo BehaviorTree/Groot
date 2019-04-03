@@ -368,8 +368,18 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement& bt_root, const NodeModels& m
         }
     };
 
+    auto first_child = bt_root.firstChildElement();
+    if( first_child.tagName() == "Root")
+    {
+        QMessageBox::question(nullptr,
+                              "Fix your file!",
+                              "Please remove the node <Root> from your <BehaviorTree>",
+                              QMessageBox::Ok );
+        first_child = first_child.firstChildElement();
+    }
+
     // start recursion
-    recursiveStep( nullptr, bt_root.firstChildElement() );
+    recursiveStep( nullptr, first_child );
 
     return tree;
 }

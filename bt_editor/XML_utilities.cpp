@@ -3,7 +3,7 @@
 
 #include "models/SubtreeNodeModel.hpp"
 #include <behaviortree_cpp/xml_parsing.h>
-
+#include <QMessageBox>
 #include <QtDebug>
 #include <QLineEdit>
 
@@ -121,6 +121,11 @@ NodeModels ReadTreeNodesModel(const QDomElement &root)
          !bt_root.isNull();
          bt_root = bt_root.nextSiblingElement("BehaviorTree") )
     {
+        auto first_child = bt_root.firstChildElement();
+        if( first_child.tagName() == "Root")
+        {
+            first_child = first_child.firstChildElement();
+        }
         recursiveStep( bt_root.firstChildElement() );
     }
     return models;
