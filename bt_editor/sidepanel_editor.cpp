@@ -151,6 +151,10 @@ void SidepanelEditor::on_buttonAddNode_clicked()
     if( dialog.exec() == QDialog::Accepted)
     {
         auto new_model = dialog.getTreeNodeModel();
+        if( new_model.type == NodeType::SUBTREE )
+        {
+            emit addSubtree( new_model.registration_ID );
+        }
         emit addNewModel( new_model );
     }
     updateTreeView();
@@ -217,6 +221,12 @@ void SidepanelEditor::onReplaceModel(const QString& old_name,
     _tree_nodes_model.erase( old_name );
     _model_registry->unregisterModel( old_name );
     emit addNewModel( new_model );
+
+    if( new_model.type == NodeType::SUBTREE )
+    {
+       emit renameSubtree(old_name, new_model.registration_ID);
+    }
+
     emit nodeModelEdited(old_name, new_model.registration_ID);
 }
 

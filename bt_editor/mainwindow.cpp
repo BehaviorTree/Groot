@@ -136,6 +136,27 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     connect( _editor_widget, &SidepanelEditor::modelRemoveRequested,
             this, &MainWindow::onModelRemoveRequested);
 
+    connect( _editor_widget, &SidepanelEditor::addSubtree,
+             this, [this](QString ID)
+    {
+        this->createTab(ID);
+    });
+
+    connect( _editor_widget, &SidepanelEditor::renameSubtree,
+             this, [this](QString prev_ID, QString new_ID)
+    {
+        for (int index = 0; index < ui->tabWidget->count(); index++)
+        {
+            if( ui->tabWidget->tabText(index) == prev_ID)
+            {
+                ui->tabWidget->setTabText(index, new_ID);
+                _tab_info.insert( {new_ID, _tab_info.at(prev_ID)}  );
+                _tab_info.erase( prev_ID );
+                break;
+            }
+        }
+    });
+
     connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
             this, &MainWindow::onCreateAbsBehaviorTree );
 
@@ -774,11 +795,6 @@ void MainWindow::onAddToModelRegistry(const NodeModel &model)
 
     _model_registry->registerModel( QString::fromStdString( toStr(model.type)), node_creator, ID);
 
-    if( model.type == NodeType::SUBTREE && getTabByName(model.registration_ID) == nullptr)
-    {
-        createTab(model.registration_ID);
-    }
-
     _treenode_models.insert( {ID, model } );
     _editor_widget->updateTreeView();
 }
@@ -860,6 +876,12 @@ void MainWindow::onModelRemoveRequested(QString ID)
         {
             break;
         }
+    }
+
+    if( !node_found )
+    {
+        _editor_widget->onRemoveModel(ID);
+        return;
     }
 
     NodeType node_type = _treenode_models.at(ID).type;

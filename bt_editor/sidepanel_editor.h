@@ -55,6 +55,10 @@ signals:
 
     void nodeModelEdited(QString prev_ID, QString new_ID);
 
+    void addSubtree(QString ID);
+
+    void renameSubtree(QString prev_ID, QString new_ID);
+
     void destroySubtree(QString ID);
 
 private:
