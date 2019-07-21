@@ -184,20 +184,13 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect( ui->tabWidget->tabBar(), &QTabBar::customContextMenuRequested,
             this, &MainWindow::onTabCustomContextMenuRequested);
-}
 
-void MainWindow::showEvent( QShowEvent* )
-{
-    init();
-}
-
-void MainWindow::init()
-{
     createTab("BehaviorTree");
     onTabSetMainTree(0);
     onSceneChanged();
     _current_state = saveCurrentState();
 }
+
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {

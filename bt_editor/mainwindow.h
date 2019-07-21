@@ -128,10 +128,6 @@ private slots:
 
 private:
 
-    void showEvent(QShowEvent*) override;
-
-    void init();
-
     void updateCurrentMode();
 
     void lockEditing(const bool locked);
