@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QTextStream>
 #include <QList>
+#include <QMap>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QMenu>
@@ -14,6 +15,7 @@
 #include <QSvgWidget>
 #include <QShortcut>
 #include <QTabBar>
+#include <QXmlStreamWriter>
 #include <QDesktopServices>
 #include <QInputDialog>
 #include <nodes/Node>
@@ -466,7 +468,6 @@ QString MainWindow::saveToXML() const
             continue;
         }
 
-
         QDomElement node = doc.createElement( QString::fromStdString(toStr(model.type)) );
 
         if( !node.isNull() )
@@ -487,7 +488,105 @@ QString MainWindow::saveToXML() const
     root.appendChild(root_models);
     root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
 
-    return doc.toString(4);
+    return xmlDocumentToString(doc);
+}
+
+QString MainWindow::xmlDocumentToString(const QDomDocument &document) const
+{
+  QString output_string;
+
+  QXmlStreamWriter stream(&output_string);
+
+  stream.setAutoFormatting(true);
+  stream.setAutoFormattingIndent(4);
+
+  stream.writeStartDocument();
+
+  auto root_element = document.documentElement();
+
+  stream.writeStartElement(root_element.tagName());
+
+  streamElementAttributes(stream, root_element);
+
+  auto next_node = root_element.firstChild();
+
+  while ( !next_node.isNull() )
+  {
+    recursivelySaveNodeCanonically(stream, next_node);
+
+    if ( stream.hasError() )
+    {
+        break;
+    }
+    next_node = next_node.nextSibling();
+  }
+
+  stream.writeEndElement();
+  stream.writeEndDocument();
+
+  return output_string;
+}
+
+void MainWindow::streamElementAttributes(QXmlStreamWriter &stream, const QDomElement &element) const
+{
+    if (element.hasAttributes())
+    {
+        QMap<QString, QString> attributes;
+        const QDomNamedNodeMap attributes_map = element.attributes();
+
+        for (int i = 0; i < attributes_map.count(); ++i)
+        {
+           auto attribute = attributes_map.item(i);
+            attributes.insert(attribute.nodeName(), attribute.nodeValue());
+        }
+
+        auto i = attributes.constBegin();
+        while (i != attributes.constEnd())
+        {
+            stream.writeAttribute(i.key(), i.value());
+            ++i;
+        }
+    }
+}
+
+void MainWindow::recursivelySaveNodeCanonically(QXmlStreamWriter &stream, const QDomNode &parent_node) const
+{
+  if ( stream.hasError() )
+  {
+    return;
+  }
+
+  if ( parent_node.isElement() )
+  {
+    const QDomElement parent_element = parent_node.toElement();
+
+    if ( !parent_element.isNull() )
+    {
+        stream.writeStartElement(parent_element.tagName());
+
+        streamElementAttributes(stream, parent_element);
+
+        if (parent_element.hasChildNodes())
+        {
+            auto child = parent_element.firstChild();
+            while ( !child.isNull() )
+            {
+                recursivelySaveNodeCanonically(stream, child);
+                child = child.nextSibling();
+            }
+        }
+
+        stream.writeEndElement();
+    }
+  }
+  else if (parent_node.isComment())
+  {
+    stream.writeComment(parent_node.nodeValue());
+  }
+  else if (parent_node.isText())
+  {
+    stream.writeCharacters(parent_node.nodeValue());
+  }
 }
 
 void MainWindow::on_actionSave_triggered()

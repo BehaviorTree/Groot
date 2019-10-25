@@ -17,6 +17,7 @@ private slots:
     void renameTabs();
     void loadFile();
     void loadFailed();
+    void savedFileSameAsOriginal();
     void undoRedo();
     void testSubtree();
     void modifyCustomModel();
@@ -128,6 +129,68 @@ void EditorTest::loadFile()
     }
 
     sleepAndRefresh( 500 );
+}
+
+void EditorTest::savedFileSameAsOriginal()
+{
+    QString file_xml = readFile(":/test_xml_key_reordering_issue.xml");
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+
+    QString saved_xml = main_win->saveToXML();
+
+    QFile qFile("crossdoor_EditorTest_savedFileSameAsOriginal.xml");
+    if (qFile.open(QIODevice::WriteOnly))
+    {
+        QTextStream out(&qFile);
+        out << saved_xml;
+        qFile.close();
+    }
+
+    sleepAndRefresh( 500 );
+    //-------------------------------
+    // Compare AbsBehaviorTree
+
+    main_win->on_actionClear_triggered();
+    main_win->loadFromXML( file_xml );
+    auto tree_A1 = getAbstractTree("BehaviorTree");
+    auto tree_A2 = getAbstractTree("RunPlannerSubtree");
+    auto tree_A3 = getAbstractTree("ExecutePath");
+
+    main_win->loadFromXML( saved_xml );
+    auto tree_B1 = getAbstractTree("BehaviorTree");
+    auto tree_B2 = getAbstractTree("RunPlannerSubtree");
+    auto tree_B3 = getAbstractTree("ExecutePath");
+
+    bool same_maintree = (tree_A1 == tree_B1);
+    if( !same_maintree )
+    {
+        tree_A1.debugPrint();
+        tree_B1.debugPrint();
+    }
+    QVERIFY2( same_maintree, "AbsBehaviorTree comparison fails" );
+
+    bool same_runplanner = tree_A2 == tree_B2;
+    if( !same_runplanner )
+    {
+        tree_A2.debugPrint();
+        tree_B2.debugPrint();
+    }
+    QVERIFY2( same_runplanner, "AbsBehaviorTree comparison fails" );
+
+    bool same_executepath = tree_A2 == tree_B2;
+    if( !same_executepath )
+    {
+        tree_A3.debugPrint();
+        tree_B3.debugPrint();
+    }
+    QVERIFY2( same_executepath, "AbsBehaviorTree comparison fails" );
+
+    //-------------------------------
+    // Compare original and save file contents
+
+    QVERIFY2( file_xml.simplified() == saved_xml.simplified(),
+             "Loaded and saved XML are not the same" );
 }
 
 void EditorTest::loadFailed()
