@@ -24,8 +24,7 @@ To compile the project you need:
 
 On Ubuntu Xenial or later, you can install the dependencies with:
 
-       sudo apt-get install qtbase5-dev libqt5svg5-dev
-       sudo apt install libdw-dev
+       sudo apt install qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
       
 Some functionalities of the code related to ROS will work __only__ if the
 project is compiled with with _catkin_.
