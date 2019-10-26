@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="ReceiveTargetPose" target_pose="{target_pose}"/>
+            <Action ID="LoadConstraints" constrain_a="{constraint_a}" constraint_b="{constraint_b}" constraint_c="{constraint_c}" file="&quot;configuration.yaml&quot;"/>
+            <SubTree ID="RunPlannerSubtree" constraint_a="constraint_a" constraint_b="constraint_b" constraint_c="constraint_c" path="path" target_pose="target_pose"/>
+            <SubTree ID="ExecutePath" path="path"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="ExecutePath">
+        <Fallback>
+            <Sequence>
+                <Condition ID="OnAir"/>
+                <Action ID="Fly" path="{path}"/>
+            </Sequence>
+            <Sequence>
+                <Condition ID="OnGround"/>
+                <Action ID="Roll" path="{path}"/>
+            </Sequence>
+            <Sequence>
+                <Condition ID="OnWater"/>
+                <Action ID="Swim" path="{path}"/>
+            </Sequence>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="RunPlannerSubtree">
+        <Fallback>
+            <Action ID="RunPlannerA" constraint_a="{constraint_a}" constraint_b="{constraint_b}" contratint_c="{constraint_c}" path="{path}" target_pose="{target_pose}"/>
+            <Action ID="RunPlannerB" constraint_a="{constraint_a}" constraint_b="{constraint_b}" constraint_c="{constraint_c}" path="{path}" target_pose="{target_pose}"/>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <SubTree ID="ExecutePath">
+            <input_port name="path"/>
+        </SubTree>
+        <Action ID="Fly">
+            <input_port name="path"/>
+        </Action>
+        <Action ID="LoadConstraints">
+            <output_port name="constrain_a"/>
+            <output_port name="constraint_b"/>
+            <output_port name="constraint_c"/>
+            <input_port name="file"/>
+        </Action>
+        <Condition ID="OnAir"/>
+        <Condition ID="OnGround"/>
+        <Condition ID="OnWater"/>
+        <Action ID="ReceiveTargetPose">
+            <output_port name="target_pose"/>
+        </Action>
+        <Action ID="Roll">
+            <input_port name="path"/>
+        </Action>
+        <Action ID="RunPlannerA">
+            <input_port name="constraint_a"/>
+            <input_port name="constraint_b"/>
+            <input_port name="contratint_c"/>
+            <output_port name="path"/>
+            <input_port name="target_pose"/>
+        </Action>
+        <Action ID="RunPlannerB">
+            <input_port name="constraint_a"/>
+            <input_port name="constraint_b"/>
+            <input_port name="constraint_c"/>
+            <output_port name="path"/>
+            <input_port name="target_pose"/>
+        </Action>
+        <SubTree ID="RunPlannerSubtree">
+            <input_port name="constraint_a"/>
+            <input_port name="constraint_b"/>
+            <input_port name="constraint_c"/>
+            <output_port name="path"/>
+            <input_port name="target_pose"/>
+        </SubTree>
+        <Action ID="Swim">
+            <input_port name="path"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+

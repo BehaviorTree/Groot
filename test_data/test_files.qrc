@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>crossdoor_with_subtree.xml</file>
+        <file>test_xml_key_reordering_issue.xml</file>
         <file>crossdoor_palette.xml</file>
         <file>show_all.xml</file>
         <file>crossdoor_trace.fbl</file>
