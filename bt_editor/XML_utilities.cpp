@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #include "models/SubtreeNodeModel.hpp"
-#include <behaviortree_cpp/xml_parsing.h>
+#include <behaviortree_cpp_v3/xml_parsing.h>
 #include <QMessageBox>
 #include <QtDebug>
 #include <QLineEdit>

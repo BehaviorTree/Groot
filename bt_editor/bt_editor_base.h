@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <nodes/Node>
 #include <deque>
-#include <behaviortree_cpp/bt_factory.h>
+#include <behaviortree_cpp_v3/bt_factory.h>
 
 using BT::NodeStatus;
 using BT::NodeType;

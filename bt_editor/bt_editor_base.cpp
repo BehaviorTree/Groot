@@ -1,5 +1,5 @@
 #include "bt_editor_base.h"
-#include <behaviortree_cpp/decorators/subtree_node.h>
+#include <behaviortree_cpp_v3/decorators/subtree_node.h>
 #include <QDebug>
 
 void AbsBehaviorTree::clear()
