@@ -136,7 +136,7 @@ target_link_libraries(behavior_tree_editor ${GROOT_DEPENDENCIES} )
 
 
 add_executable(Groot ./bt_editor/main.cpp  ${RESOURCE_FILES})
-target_link_libraries(Groot behavior_tree_editor behaviortree_cpp_v3 )
+target_link_libraries(Groot behavior_tree_editor )
 
 add_subdirectory(test)
 

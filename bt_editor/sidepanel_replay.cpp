@@ -176,11 +176,11 @@ void SidepanelReplay::on_LoadLog()
 void SidepanelReplay::loadLog(const QByteArray &content)
 {
     const char* buffer = reinterpret_cast<const char*>(content.data());
-
+    
     size_t bt_header_size = flatbuffers::ReadScalar<uint32_t>(buffer);
 
     flatbuffers::Verifier verifier( reinterpret_cast<const uint8_t*>(buffer+4),
-                                   size_t(content.data() -4));
+                                   size_t(content.size() -4));
 
     bool valid_tree = Serialization::VerifyBehaviorTreeBuffer(verifier);
     if( ! valid_tree )
