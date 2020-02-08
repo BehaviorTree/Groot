@@ -147,6 +147,9 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     connect( _editor_widget, &SidepanelEditor::renameSubtree,
              this, [this](QString prev_ID, QString new_ID)
     {
+        if (prev_ID == new_ID)
+            return;
+            
         for (int index = 0; index < ui->tabWidget->count(); index++)
         {
             if( ui->tabWidget->tabText(index) == prev_ID)
