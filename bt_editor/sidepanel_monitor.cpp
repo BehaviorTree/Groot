@@ -51,7 +51,8 @@ void SidepanelMonitor::on_timer()
 
             for(size_t offset = 4; offset < header_size +4; offset +=3 )
             {
-                uint16_t index = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
+                uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
+                const uint16_t index = _uid_to_index.at(uid);
                 AbstractTreeNode* node = _loaded_tree.node( index );
                 node->status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+2] ));
             }
