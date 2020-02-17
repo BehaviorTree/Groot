@@ -45,13 +45,38 @@ void SidepanelMonitor::on_timer()
             ui->labelCount->setText( QString("Messages received: %1").arg(_msg_count) );
 
             const char* buffer = reinterpret_cast<const char*>(msg.data());
-
             const uint32_t header_size = flatbuffers::ReadScalar<uint32_t>( buffer );
             const uint32_t num_transitions = flatbuffers::ReadScalar<uint32_t>( &buffer[4+header_size] );
 
+	    // check uid in the index, if failed load tree from server
+	    try {
+		for(size_t offset = 4; offset < header_size +4; offset +=3 )
+		{
+		    const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
+		    _uid_to_index.at(uid);
+		}
+	    
+		for(size_t t=0; t < num_transitions; t++)
+		{
+		    size_t offset = 8 + header_size + 12*t;
+		    const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
+		    _uid_to_index.at(uid);
+		}
+	    }
+	    catch( std::out_of_range& err) {
+		qDebug() << "Reload tree from server";
+		if( !getTreeFromServer() ) {
+		    _connected = false;
+		    ui->lineEdit->setDisabled(false);
+		    _timer->stop();
+		    connectionUpdate(false);
+		}
+	    }
+
             for(size_t offset = 4; offset < header_size +4; offset +=3 )
             {
-                uint16_t index = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
+                const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
+                const uint16_t index = _uid_to_index.at(uid);
                 AbstractTreeNode* node = _loaded_tree.node( index );
                 node->status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+2] ));
             }
