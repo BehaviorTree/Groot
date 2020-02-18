@@ -57,6 +57,8 @@ public:
 
     const NodeModels &registeredModels() const;
 
+    void resetTreeStyle(AbsBehaviorTree &tree);
+
 public slots:
 
     void onAutoArrange();
