@@ -69,6 +69,8 @@ private:
         double timestamp;
         NodeStatus prev_status;
         NodeStatus status;
+        bool is_tree_restart;
+        int nearest_restart_transition_index;
     };
     std::vector<Transition> _transitions;
     std::vector< std::pair<double,int>> _timepoint;
