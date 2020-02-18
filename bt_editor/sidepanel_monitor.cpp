@@ -45,6 +45,7 @@ void SidepanelMonitor::on_timer()
             ui->labelCount->setText( QString("Messages received: %1").arg(_msg_count) );
 
             const char* buffer = reinterpret_cast<const char*>(msg.data());
+	    
             const uint32_t header_size = flatbuffers::ReadScalar<uint32_t>( buffer );
             const uint32_t num_transitions = flatbuffers::ReadScalar<uint32_t>( &buffer[4+header_size] );
 
@@ -70,6 +71,7 @@ void SidepanelMonitor::on_timer()
 		    ui->lineEdit->setDisabled(false);
 		    _timer->stop();
 		    connectionUpdate(false);
+		    return;
 		}
 	    }
 
