@@ -56,7 +56,7 @@ add_subdirectory( QtNodeEditor )
 
 set(BUILD_EXAMPLES   OFF CACHE BOOL "")
 set(BUILD_UNIT_TESTS OFF CACHE BOOL "")
-set(BUILD_TOOLS OFF CACHE BOO "")
+set(BUILD_TOOLS OFF CACHE BOOL "")
 
 if(NOT catkin_FOUND)
     # use git submodule only if you are not compiling with catkin
