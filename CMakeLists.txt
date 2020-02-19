@@ -61,9 +61,13 @@ set(BUILD_TESTING OFF CACHE BOOL "")
 set(CATKIN_ENABLE_TESTING OFF CACHE BOOL "")
 
 if(NOT catkin_FOUND)
-    # use git submodule only if you are not compiling with catkin
-    add_subdirectory( depend/BehaviorTree.CPP )
-    include_directories( depend/BehaviorTree.CPP/include )
+    # look for BehaviorTree.CPP on the system
+    find_package(BehaviorTree)
+    if (NOT BehaviorTree_FOUND)
+        # use git submodule only if you are not compiling with catkin
+        add_subdirectory( depend/BehaviorTree.CPP )
+        include_directories( depend/BehaviorTree.CPP/include )
+    endif()
 endif()
 
 ##########################################
