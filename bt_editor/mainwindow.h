@@ -45,7 +45,7 @@ public:
     explicit MainWindow(GraphicMode initial_mode, QWidget *parent = nullptr);
     ~MainWindow() override;
 
-    void loadFromXML(const QString &xml_text);
+    void loadFromXML(const QString &xml_text, bool main = true);
 
     QString saveToXML() const ;
 

@@ -18,6 +18,7 @@
 #include <QXmlStreamWriter>
 #include <QDesktopServices>
 #include <QInputDialog>
+
 #include <nodes/Node>
 #include <nodes/NodeData>
 #include <nodes/NodeStyle>
@@ -259,17 +260,33 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::loadFromXML(const QString& xml_text)
+void MainWindow::loadFromXML(const QString& fileName, bool main)
 {
+    QFile file(fileName);
+
+    auto directory_path = QFileInfo(fileName).absolutePath();
+
+    if (!file.open(QIODevice::ReadOnly)){
+        return;
+    }
+
+    QString xml_text;
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        xml_text += in.readLine();
+    }
+
     QDomDocument document;
     try{
         QString errorMsg;
         int errorLine;
         if( ! document.setContent(xml_text, &errorMsg, &errorLine ) )
         {
-            throw std::runtime_error( tr("Error parsing XML (line %1): %2").arg(errorLine).arg(errorMsg).toStdString() );
+            throw std::runtime_error( tr("Error parsing XML (line %1): %2").
+                arg(errorLine).arg(errorMsg).toStdString() );
         }
-        //---------------
+
         std::vector<QString> registered_ID;
         for (const auto& it: _treenode_models)
         {
@@ -319,7 +336,8 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
         _editor_widget->updateTreeView();
 
-        onActionClearTriggered(false);
+        if (main)
+            onActionClearTriggered(false);
 
         const QSignalBlocker blocker( currentTabInfo() );
 
@@ -363,7 +381,21 @@ void MainWindow::loadFromXML(const QString& xml_text)
         else{
             currentTabInfo()->nodeReorder();
         }
-        CleanPreviousModels(this, _treenode_models, custom_models);
+        if (main)
+            CleanPreviousModels(this, _treenode_models, custom_models);
+        
+        QDomElement include_node = document_root.firstChildElement("include");
+        for (; !include_node.isNull() ;
+            include_node = include_node.nextSiblingElement("include"))
+        {
+            QString file_path;
+            if (QFileInfo(include_node.attribute("path")).isRelative())
+                file_path = directory_path + QString("/") +
+                    include_node.attribute("path");
+            else
+                file_path = include_node.attribute("path");
+            loadFromXML(file_path, false);
+        }
     }
     catch (std::exception& err) {
         error = true;
@@ -395,28 +427,12 @@ void MainWindow::on_actionLoad_triggered()
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Load BehaviorTree from file"), directory_path,
                                                     tr("BehaviorTree files (*.xml)"));
-    if (!QFileInfo::exists(fileName)){
-        return;
-    }
-
-    QFile file(fileName);
-
-    if (!file.open(QIODevice::ReadOnly)){
-        return;
-    }
 
     directory_path = QFileInfo(fileName).absolutePath();
     settings.setValue("MainWindow.lastLoadDirectory", directory_path);
     settings.sync();
 
-    QString xml_text;
-
-    QTextStream in(&file);
-    while (!in.atEnd()) {
-        xml_text += in.readLine();
-    }
-
-    loadFromXML(xml_text);
+    loadFromXML(fileName);
 }
 
 QString MainWindow::saveToXML() const
