@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+ <include path = "variant2.xml"/>
+ <BehaviorTree ID="Variant1" >
+    <Sequence>
+       <Action ID="DisplayMessage" name="show_msg" message="{greetings}" output ="{answer}"/>
+       <SubTree ID = "Variant2"/> 
+    </Sequence>
+ </BehaviorTree>
+</root>
