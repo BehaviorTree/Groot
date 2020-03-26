@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root main_tree_to_execute = "MainTree" >
+	<!-- The include paths need to be adapted to the ones required by the interpreter -->
+	<include path = "variant1.xml"/>
+	<BehaviorTree ID="MainTree">
+		<Sequence name="root_sequence">
+			<SetBlackboard output_key = "vp_velocity" value = "3"/>
+			<Action ID="SaySomething"   name="action_hello" message="Hello"/>
+			<Sequence>
+				<SubTree ID = "Variant1"/>
+				<SubTree ID = "Variant2"/> 
+				<AlwaysSuccess/> 
+			</Sequence >			
+			<Action ID="OpenGripper"    name="open_gripper"/>
+			<Action ID="ApproachObject" name="approach_object" velocity="{vp_velocity}"/>
+			<Action ID="CloseGripper"   name="close_gripper"/>
+			<Action ID="SaySomething"   name="action_bye" message="Bye"/>
+        </Sequence>
+     </BehaviorTree>
+</root >
