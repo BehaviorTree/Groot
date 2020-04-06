@@ -130,6 +130,7 @@ BehaviorTreeDataModel::BehaviorTreeDataModel(const NodeModel &model):
                     { emit this->portValueDoubleChicked(nullptr); });
 
             QLabel* form_label  =  new QLabel( label, _params_widget );
+            form_label->setStyleSheet("QToolTip {color: black;}");
             form_label->setToolTip( description );
 
             form_field->setMinimumWidth(DEFAULT_FIELD_WIDTH);
