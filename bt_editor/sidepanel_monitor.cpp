@@ -163,11 +163,26 @@ void SidepanelMonitor::on_Connect()
             address = ui->lineEdit->placeholderText();
             ui->lineEdit->setText(address);
         }
+
+        QString publisher_port = ui->lineEdit_publisher->text();
+        if( publisher_port.isEmpty() )
+        {
+            publisher_port = ui->lineEdit_publisher->placeholderText();
+            ui->lineEdit_publisher->setText(publisher_port);
+        }
+
+        QString server_port = ui->lineEdit_server->text();
+        if( server_port.isEmpty() )
+        {
+            server_port = ui->lineEdit_server->placeholderText();
+            ui->lineEdit_server->setText(server_port);
+        }
+
         bool failed = false;
         if( !address.isEmpty() )
         {
-            _connection_address_pub = "tcp://" + address.toStdString() + std::string(":1666");
-            _connection_address_req = "tcp://" + address.toStdString() + std::string(":1667");
+            _connection_address_pub = "tcp://" + address.toStdString() + ":" + publisher_port.toStdString();
+            _connection_address_req = "tcp://" + address.toStdString() + ":" + server_port.toStdString();
             try{
                 _zmq_subscriber.connect( _connection_address_pub.c_str() );
 
@@ -194,6 +209,8 @@ void SidepanelMonitor::on_Connect()
         {
             _connected = true;
             ui->lineEdit->setDisabled(true);
+            ui->lineEdit_publisher->setDisabled(true);
+            ui->lineEdit_server->setDisabled(true);
             _timer->start(20);
             connectionUpdate(true);
         }
@@ -207,6 +224,8 @@ void SidepanelMonitor::on_Connect()
     else{
         _connected = false;
         ui->lineEdit->setDisabled(false);
+        ui->lineEdit_publisher->setDisabled(false);
+        ui->lineEdit_server->setDisabled(false);
         _timer->stop();
 
         connectionUpdate(false);
