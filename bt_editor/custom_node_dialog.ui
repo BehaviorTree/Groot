@@ -84,6 +84,11 @@
        </item>
        <item>
         <property name="text">
+         <string>ControlNode</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>SubTree</string>
         </property>
        </item>
@@ -157,10 +162,10 @@
      <property name="columnCount">
       <number>4</number>
      </property>
-     <attribute name="horizontalHeaderDefaultSectionSize">
+     <attribute name="horizontalHeaderMinimumSectionSize">
       <number>100</number>
      </attribute>
-     <attribute name="horizontalHeaderMinimumSectionSize">
+     <attribute name="horizontalHeaderDefaultSectionSize">
       <number>100</number>
      </attribute>
      <attribute name="verticalHeaderVisible">
