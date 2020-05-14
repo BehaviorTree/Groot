@@ -117,11 +117,14 @@ NodeModel CustomNodeDialog::getTreeNodeModel() const
     }
     for (int row=0; row < ui->tableWidget->rowCount(); row++ )
     {
-        const QString key       = ui->tableWidget->item(row,0)->text();
-        auto combo = static_cast<QComboBox*>(ui->tableWidget->cellWidget(row,1));
-        const QString direction = combo->currentText();
-
         PortModel port_model;
+        const QString key       = ui->tableWidget->item(row,0)->text();
+
+        auto combo = static_cast<QComboBox*>(ui->tableWidget->cellWidget(row,1));
+
+        const QString direction = (combo) ? combo->currentText() :
+                                            ui->tableWidget->item(row,1)->text();
+
         port_model.direction = BT::convertFromString<PortDirection>(direction.toStdString());
         port_model.default_value =  ui->tableWidget->item(row,2)->text();
         port_model.description   =  ui->tableWidget->item(row,3)->text();
@@ -246,6 +249,43 @@ void CustomNodeDialog::on_pushButtonRemove_pressed()
     for( const auto& index: selected)
     {
         ui->tableWidget->removeRow( index.row() );
+    }
+    checkValid();
+}
+
+void CustomNodeDialog::on_comboBox_currentIndexChanged(const QString &node_type)
+{
+    auto shared_items = ui->tableWidget->findItems("__shared_blackboard", Qt::MatchExactly);
+    if ( node_type == "SubTree")
+    {
+        if( shared_items.empty() )
+        {
+            int row = ui->tableWidget->rowCount();
+            ui->tableWidget->setRowCount(row+1);
+
+            auto key_item = new QTableWidgetItem ("__shared_blackboard");
+            key_item->setFlags(key_item->flags() & ~Qt::ItemIsEditable );
+
+            auto direction_item = new QTableWidgetItem ("Input");
+            direction_item->setFlags(direction_item->flags() & ~Qt::ItemIsEditable );
+
+            auto value_item = new QTableWidgetItem ("false");
+
+            auto description_item = new QTableWidgetItem ("If false (default), the Subtree has an isolated blackboard and needs port remapping");
+            description_item->setFlags(description_item->flags() & ~Qt::ItemIsEditable );
+
+            ui->tableWidget->setItem(row, 0, key_item);
+            ui->tableWidget->setItem(row, 1, direction_item);
+            ui->tableWidget->setItem(row, 2, value_item);
+            ui->tableWidget->setItem(row, 3, description_item);
+        }
+    }
+    else
+    {
+        for( const auto& item: shared_items)
+        {
+            ui->tableWidget->removeRow( item->row() );
+        }
     }
     checkValid();
 }

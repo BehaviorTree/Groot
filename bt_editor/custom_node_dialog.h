@@ -34,7 +34,9 @@ private slots:
 
     void on_tableWidget_itemSelectionChanged();
 
-private:
+    void on_comboBox_currentIndexChanged(const QString &node_type);
+
+  private:
     Ui::CustomNodeDialog *ui;
     const NodeModels &_models;
     QValidator *_validator;
