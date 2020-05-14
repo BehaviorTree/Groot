@@ -506,37 +506,36 @@ QtNodes::Node *GetParentNode(QtNodes::Node *node)
     }
 }
 
-void CleanPreviousModels(QWidget *parent,
-                         NodeModels &prev_models,
-                         const NodeModels &new_models)
+std::set<QString> GetModelsToRemove(QWidget* parent,
+                                    NodeModels& prev_models,
+                                    const NodeModels& new_models)
 {
-    std::set<const QString *> prev_custom_models;
+    std::set<QString> prev_custom_models;
 
     if( prev_models.size() > BuiltinNodeModels().size() )
     {
         for(const auto& it: prev_models)
         {
-            if( BuiltinNodeModels().count(it.first) == 0)
+            const QString& model_name = it.first;
+            if( BuiltinNodeModels().count(model_name) == 0 &&
+                new_models.count(model_name) == 0)
             {
-                prev_custom_models.insert( &it.first );
+                prev_custom_models.insert( model_name );
             }
         }
     }
 
-    for( const auto& name: prev_custom_models)
+    if( prev_custom_models.size() > 0 )
     {
-        if( new_models.count( *name ) == 0)
+        int ret = QMessageBox::question(parent, "Clear Palette?",
+                                        "Do you want to remove the previously loaded custom nodes?",
+                                        QMessageBox::No | QMessageBox::Yes );
+        if( ret == QMessageBox::No)
         {
-            int ret = QMessageBox::question(parent, "Clear Palette?",
-                                            "Do you want to remove the previously loaded custom nodes?",
-                                            QMessageBox::No | QMessageBox::Yes );
-            if( ret == QMessageBox::Yes)
-            {
-                prev_models = BuiltinNodeModels();
-            }
-            break;
+            prev_custom_models.clear();
         }
     }
+    return prev_custom_models;
 }
 
 BT::NodeType convert(Serialization::NodeType type)

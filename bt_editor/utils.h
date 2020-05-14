@@ -31,11 +31,9 @@ std::pair<QtNodes::NodeStyle, QtNodes::ConnectionStyle>
 
 QtNodes::Node* GetParentNode(QtNodes::Node* node);
 
-
-void CleanPreviousModels(QWidget *parent,
-                         NodeModels &prev_models,
-                         const NodeModels &new_models);
-
+std::set<QString> GetModelsToRemove(QWidget* parent,
+                                    NodeModels& prev_models,
+                                    const NodeModels& new_models);
 
 BT::NodeType convert( Serialization::NodeType type);
 

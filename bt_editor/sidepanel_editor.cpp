@@ -333,11 +333,16 @@ void SidepanelEditor::on_buttonDownload_clicked()
         return;
     }
 
-    CleanPreviousModels(this, _tree_nodes_model, imported_models );
+    auto models_to_remove = GetModelsToRemove(this, _tree_nodes_model, imported_models );
+
+    for(QString model_name: models_to_remove)
+    {
+        emit modelRemoveRequested(model_name);
+    }
 
     for(auto& it: imported_models)
     {
-        addNewModel( it.second );
+        emit addNewModel( it.second );
     }
 }
 
