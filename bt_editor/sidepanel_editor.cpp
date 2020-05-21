@@ -190,6 +190,16 @@ void SidepanelEditor::onContextMenu(const QPoint& pos)
         return;
     }
 
+    // Loop through the category items and prevent the right click
+    // menu from showing for any of the items
+    for (const auto& it : _tree_view_category_items)
+    {
+        const auto category_item = it.second;
+        if( category_item == selected_item ) {
+            return;
+        }
+    }
+
     QMenu menu(this);
 
     QAction* edit   = menu.addAction("Edit");
