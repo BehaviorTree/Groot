@@ -45,62 +45,62 @@ void SidepanelMonitor::on_timer()
             ui->labelCount->setText( QString("Messages received: %1").arg(_msg_count) );
 
             const char* buffer = reinterpret_cast<const char*>(msg.data());
-	    
+
             const uint32_t header_size = flatbuffers::ReadScalar<uint32_t>( buffer );
             const uint32_t num_transitions = flatbuffers::ReadScalar<uint32_t>( &buffer[4+header_size] );
 
+	    // check uid in the index, if failed load tree from server
+	    try {
+		for(size_t offset = 4; offset < header_size +4; offset +=3 )
+		{
+		    const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
+		    _uid_to_index.at(uid);
+		}
+	    
+		for(size_t t=0; t < num_transitions; t++)
+		{
+		    size_t offset = 8 + header_size + 12*t;
+		    const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
+		    _uid_to_index.at(uid);
+		}
+	    }
+	    catch( std::out_of_range& err) {
+		qDebug() << "Reload tree from server";
+		if( !getTreeFromServer() ) {
+		    _connected = false;
+		    ui->lineEdit->setDisabled(false);
+		    _timer->stop();
+		    connectionUpdate(false);
+		    return;
+		}
+	    }
+
+            for(size_t offset = 4; offset < header_size +4; offset +=3 )
+            {
+                const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
+                const uint16_t index = _uid_to_index.at(uid);
+                AbstractTreeNode* node = _loaded_tree.node( index );
+                node->status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+2] ));
+            }
+
             std::vector<std::pair<int, NodeStatus>> node_status;
 
-	    // check uid in the index, if failed load tree from server
-            try {
-                for(size_t offset = 4; offset < header_size +4; offset +=3 )
-                {
-                    const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
-                    _uid_to_index.at(uid);
-                }
-                
-                for(size_t t=0; t < num_transitions; t++)
-                {
-                    size_t offset = 8 + header_size + 12*t;
-                    const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
-                    _uid_to_index.at(uid);
-                }
-                for(size_t offset = 4; offset < header_size +4; offset +=3 )
-                {
-                    const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
-                    const uint16_t index = _uid_to_index.at(uid);
-                    AbstractTreeNode* node = _loaded_tree.node( index );
-                    node->status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+2] ));
-                }
-                
+            //qDebug() << "--------";
+            for(size_t t=0; t < num_transitions; t++)
+            {
+                size_t offset = 8 + header_size + 12*t;
 
-                //qDebug() << "--------";
-                for(size_t t=0; t < num_transitions; t++)
-                {
-                    size_t offset = 8 + header_size + 12*t;
+                // const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[offset] );
+                // const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[offset+4] );
+                // double timestamp = t_sec + t_usec* 0.000001;
+                const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
+                const uint16_t index = _uid_to_index.at(uid);
+                // NodeStatus prev_status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[index+10] ));
+                NodeStatus status  = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+11] ));
 
-                    // const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[offset] );
-                    // const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[offset+4] );
-                    // double timestamp = t_sec + t_usec* 0.000001;
-                    const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
-                    const uint16_t index = _uid_to_index.at(uid);
-                    // NodeStatus prev_status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[index+10] ));
-                    NodeStatus status  = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+11] ));
+                _loaded_tree.node(index)->status = status;
+                node_status.push_back( {index, status} );
 
-                    _loaded_tree.node(index)->status = status;
-                    node_status.push_back( {index, status} );
-
-                }
-            }
-            catch( std::out_of_range& err) {
-                qDebug() << "Reload tree from server";
-                if( !getTreeFromServer() ) {
-                    _connected = false;
-                    ui->lineEdit->setDisabled(false);
-                    _timer->stop();
-                    connectionUpdate(false);
-                    return;
-                }
             }
             // update the graphic part
             emit changeNodeStyle( "BehaviorTree", node_status );
@@ -189,11 +189,27 @@ void SidepanelMonitor::on_Connect()
             address = ui->lineEdit->placeholderText();
             ui->lineEdit->setText(address);
         }
+
+        QString publisher_port = ui->lineEdit_publisher->text();
+        if( publisher_port.isEmpty() )
+        {
+            publisher_port = ui->lineEdit_publisher->placeholderText();
+            ui->lineEdit_publisher->setText(publisher_port);
+        }
+
+        QString server_port = ui->lineEdit_server->text();
+        if( server_port.isEmpty() )
+        {
+          publisher_port = ui->lineEdit_server->placeholderText();
+          ui->lineEdit_server->setText(publisher_port);
+        }
+
         bool failed = false;
         if( !address.isEmpty() )
         {
-            _connection_address_pub = "tcp://" + address.toStdString() + std::string(":1666");
-            _connection_address_req = "tcp://" + address.toStdString() + std::string(":1667");
+            _connection_address_pub = "tcp://" + address.toStdString() + ":" + publisher_port.toStdString();
+            _connection_address_req = "tcp://" + address.toStdString() + ":" + server_port.toStdString();
+
             try{
                 _zmq_subscriber.connect( _connection_address_pub.c_str() );
 
@@ -220,6 +236,7 @@ void SidepanelMonitor::on_Connect()
         {
             _connected = true;
             ui->lineEdit->setDisabled(true);
+            ui->lineEdit_publisher->setDisabled(true);
             _timer->start(20);
             connectionUpdate(true);
         }
@@ -233,6 +250,7 @@ void SidepanelMonitor::on_Connect()
     else{
         _connected = false;
         ui->lineEdit->setDisabled(false);
+        ui->lineEdit_publisher->setDisabled(false);
         _timer->stop();
 
         connectionUpdate(false);
