@@ -1461,10 +1461,35 @@ bool MainWindow::SavedState::operator ==(const MainWindow::SavedState &other) co
     return true;
 }
 
+void MainWindow::resetTreeStyle(AbsBehaviorTree &tree){
+    //printf("resetTreeStyle\n");
+    QtNodes::NodeStyle  node_style;
+    QtNodes::ConnectionStyle conn_style;
+
+    for(auto abs_node: tree.nodes()){
+        auto gui_node = abs_node.graphic_node;
+
+        gui_node->nodeDataModel()->setNodeStyle( node_style );
+        gui_node->nodeGraphicsObject().update();
+
+        const auto& conn_in = gui_node->nodeState().connections(PortType::In, 0 );
+        if(conn_in.size() == 1)
+        {
+            auto conn = conn_in.begin()->second;
+            conn->setStyle( conn_style );
+            conn->connectionGraphicsObject().update();
+        }
+    }
+}
+
 void MainWindow::onChangeNodesStatus(const QString& bt_name,
                                      const std::vector<std::pair<int, NodeStatus> > &node_status)
 {
     auto tree = BuildTreeFromScene( getTabByName(bt_name)->scene() );
+
+    std::vector<NodeStatus> vec_last_status(tree.nodesCount());
+
+    // printf("---\n");
 
     for (auto& it: node_status)
     {
@@ -1472,10 +1497,17 @@ void MainWindow::onChangeNodesStatus(const QString& bt_name,
         const NodeStatus status = it.second;
         auto& abs_node = tree.nodes().at(index);
 
+        // printf("%3d: %d, %s\n", index, (int)it.second, abs_node.instance_name.toStdString().c_str());
+
+        if(index == 1 && it.second == NodeStatus::RUNNING)
+            resetTreeStyle(tree);
+
         auto gui_node = abs_node.graphic_node;
-        auto style = getStyleFromStatus( status );
+        auto style = getStyleFromStatus( status, vec_last_status[index] );
         gui_node->nodeDataModel()->setNodeStyle( style.first );
         gui_node->nodeGraphicsObject().update();
+
+        vec_last_status[index] = status;
 
         const auto& conn_in = gui_node->nodeState().connections(PortType::In, 0 );
         if(conn_in.size() == 1)

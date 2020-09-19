@@ -27,7 +27,7 @@ AbsBehaviorTree BuildTreeFromXML(const QDomElement &bt_root, const NodeModels &m
 void NodeReorder(QtNodes::FlowScene &scene, AbsBehaviorTree &abstract_tree );
 
 std::pair<QtNodes::NodeStyle, QtNodes::ConnectionStyle>
- getStyleFromStatus(NodeStatus status);
+getStyleFromStatus(NodeStatus status, NodeStatus prev_status);
 
 QtNodes::Node* GetParentNode(QtNodes::Node* node);
 

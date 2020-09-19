@@ -456,25 +456,54 @@ BuildTreeFromFlatbuffers(const Serialization::BehaviorTree *fb_behavior_tree)
 }
 
 std::pair<QtNodes::NodeStyle, QtNodes::ConnectionStyle>
-getStyleFromStatus(NodeStatus status)
+getStyleFromStatus(NodeStatus status, NodeStatus prev_status)
 {
     QtNodes::NodeStyle  node_style;
     QtNodes::ConnectionStyle conn_style;
 
+    float penWidth = 3.0;
+
     conn_style.HoveredColor = Qt::transparent;
+
+    //printf("status=%d, old=%d\n", status, prev_status);
 
     if( status == NodeStatus::IDLE )
     {
+        if(prev_status != NodeStatus::IDLE){
+            node_style.PenWidth *= penWidth;
+            node_style.HoveredPenWidth = node_style.PenWidth;
+
+            if( prev_status == NodeStatus::SUCCESS )
+            {
+                node_style.NormalBoundaryColor =
+                        node_style.ShadowColor = QColor(100, 150, 100);
+                conn_style.NormalColor = node_style.NormalBoundaryColor;
+            }
+            else if( prev_status == NodeStatus::RUNNING )
+            {
+                node_style.NormalBoundaryColor =
+                        node_style.ShadowColor =  QColor(150, 130, 40);
+                conn_style.NormalColor = node_style.NormalBoundaryColor;
+            }
+            else if( prev_status == NodeStatus::FAILURE )
+            {
+                node_style.NormalBoundaryColor =
+                        node_style.ShadowColor = QColor(150, 80, 80);
+                conn_style.NormalColor = node_style.NormalBoundaryColor;
+            }
+        }
+
         return {node_style, conn_style};
     }
 
-    node_style.PenWidth *= 3.0;
+    node_style.PenWidth *= penWidth;
     node_style.HoveredPenWidth = node_style.PenWidth;
 
     if( status == NodeStatus::SUCCESS )
     {
         node_style.NormalBoundaryColor =
                 node_style.ShadowColor = QColor(51, 200, 51);
+                node_style.ShadowColor = QColor(51, 250, 51);
         conn_style.NormalColor = node_style.NormalBoundaryColor;
     }
     else if( status == NodeStatus::RUNNING )
