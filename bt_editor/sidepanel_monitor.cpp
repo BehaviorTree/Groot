@@ -49,6 +49,7 @@ void SidepanelMonitor::on_timer()
             const uint32_t header_size = flatbuffers::ReadScalar<uint32_t>( buffer );
             const uint32_t num_transitions = flatbuffers::ReadScalar<uint32_t>( &buffer[4+header_size] );
             
+            std::vector<std::pair<int, NodeStatus>> node_status;
             // check uid in the index, if failed load tree from server
             try{
                 for(size_t offset = 4; offset < header_size +4; offset +=3 )
@@ -83,7 +84,7 @@ void SidepanelMonitor::on_timer()
                 node->status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+2] ));
             }
 
-            std::vector<std::pair<int, NodeStatus>> node_status;
+            
 
             //qDebug() << "--------";
             for(size_t t=0; t < num_transitions; t++)
