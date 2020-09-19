@@ -65,15 +65,15 @@ void SidepanelMonitor::on_timer()
                 }
             }
             catch( std::out_of_range& err) {
-            qDebug() << "Reload tree from server";
-            if( !getTreeFromServer() ) {
-                _connected = false;
-                ui->lineEdit->setDisabled(false);
-                _timer->stop();
-                connectionUpdate(false);
-                return;
+                qDebug() << "Reload tree from server";
+                if( !getTreeFromServer() ) {
+                    _connected = false;
+                    ui->lineEdit->setDisabled(false);
+                    _timer->stop();
+                    connectionUpdate(false);
+                    return;
+                }
             }
-	    }
 
             for(size_t offset = 4; offset < header_size +4; offset +=3 )
             {
