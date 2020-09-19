@@ -64,6 +64,32 @@ void SidepanelMonitor::on_timer()
                     const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
                     _uid_to_index.at(uid);
                 }
+
+                for(size_t offset = 4; offset < header_size +4; offset +=3 )
+                {
+                    const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
+                    const uint16_t index = _uid_to_index.at(uid);
+                    AbstractTreeNode* node = _loaded_tree.node( index );
+                    node->status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+2] ));
+                }
+
+                //qDebug() << "--------";
+                for(size_t t=0; t < num_transitions; t++)
+                {
+                    size_t offset = 8 + header_size + 12*t;
+
+                    // const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[offset] );
+                    // const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[offset+4] );
+                    // double timestamp = t_sec + t_usec* 0.000001;
+                    const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
+                    const uint16_t index = _uid_to_index.at(uid);
+                    // NodeStatus prev_status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[index+10] ));
+                    NodeStatus status  = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+11] ));
+
+                    _loaded_tree.node(index)->status = status;
+                    node_status.push_back( {index, status} );
+
+                }
             }
             catch( std::out_of_range& err) {
                 qDebug() << "Reload tree from server";
@@ -76,33 +102,6 @@ void SidepanelMonitor::on_timer()
                 }
             }
 
-            for(size_t offset = 4; offset < header_size +4; offset +=3 )
-            {
-                const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
-                const uint16_t index = _uid_to_index.at(uid);
-                AbstractTreeNode* node = _loaded_tree.node( index );
-                node->status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+2] ));
-            }
-
-            
-
-            //qDebug() << "--------";
-            for(size_t t=0; t < num_transitions; t++)
-            {
-                size_t offset = 8 + header_size + 12*t;
-
-                // const double t_sec  = flatbuffers::ReadScalar<uint32_t>( &buffer[offset] );
-                // const double t_usec = flatbuffers::ReadScalar<uint32_t>( &buffer[offset+4] );
-                // double timestamp = t_sec + t_usec* 0.000001;
-                const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset+8]);
-                const uint16_t index = _uid_to_index.at(uid);
-                // NodeStatus prev_status = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[index+10] ));
-                NodeStatus status  = convert(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[offset+11] ));
-
-                _loaded_tree.node(index)->status = status;
-                node_status.push_back( {index, status} );
-
-            }
             // update the graphic part
             emit changeNodeStyle( "BehaviorTree", node_status );
         }
