@@ -176,8 +176,28 @@ void SidepanelReplay::on_LoadLog()
 void SidepanelReplay::loadLog(const QByteArray &content)
 {
     const char* buffer = reinterpret_cast<const char*>(content.data());
+
+    // how many bytes did we read off the disk (uoffset_t aka uint32_t)
+    const auto read_bytes = content.size();
+
+    // we need at least 4 bytes to read the bt_header_size
+    if( read_bytes < 4 ) {
+        QMessageBox::warning( this, "Log file is empty",
+                             "Failed to load this file.\n"
+                             "This Log file is empty");
+        return;
+    }
     
-    size_t bt_header_size = flatbuffers::ReadScalar<uint32_t>(buffer);
+    // read the length of the header section from the file
+    const size_t bt_header_size = flatbuffers::ReadScalar<uint32_t>(buffer);
+
+    // if the length of the header goes past the end of the file, it is invalid
+    if( (bt_header_size == 0) || (bt_header_size > read_bytes) ) {
+        QMessageBox::warning( this, "Log file is corrupt",
+                             "Failed to load this file.\n"
+                             "This Log file corrupted or truncated");
+        return;
+    }
 
     flatbuffers::Verifier verifier( reinterpret_cast<const uint8_t*>(buffer+4),
                                    size_t(content.size() -4));

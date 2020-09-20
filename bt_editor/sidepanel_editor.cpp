@@ -363,7 +363,7 @@ NodeModels SidepanelEditor::importFromXML(QFile* file)
 
     if (!file->open(QIODevice::ReadOnly))
     {
-        QMessageBox::warning(this,"Error loading TreeNodeModel form file",
+        QMessageBox::warning(this,"Error loading TreeNodeModel from file",
                              "The XML was not correctly loaded");
         return {};
     }
