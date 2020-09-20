@@ -162,8 +162,13 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
         }
     });
 
+    auto createSingleTabBehaviorTree = [this](const AbsBehaviorTree &tree, const QString &bt_name)
+    {
+      onCreateAbsBehaviorTree(tree, bt_name, false);
+    };
+
     connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
-            this, &MainWindow::onCreateAbsBehaviorTree );
+            this, createSingleTabBehaviorTree);
 
     connect( _replay_widget, &SidepanelReplay::addNewModel,
             this, &MainWindow::onAddToModelRegistry);
@@ -183,7 +188,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
             this, &MainWindow::onChangeNodesStatus);
 
     connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
-            this, &MainWindow::onCreateAbsBehaviorTree );
+            this, createSingleTabBehaviorTree );
 #endif
 
     ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -246,7 +251,10 @@ GraphicContainer* MainWindow::createTab(const QString &name)
             this, &MainWindow::onRequestSubTreeExpand );
 
     connect( ti, &GraphicContainer::requestSubTreeCreate,
-            this, &MainWindow::onCreateAbsBehaviorTree);
+            this, [this](const AbsBehaviorTree &tree, const QString &bt_name)
+    {
+      onCreateAbsBehaviorTree(tree, bt_name, false);
+    });
 
     connect( ti, &GraphicContainer::addNewModel,
             this, &MainWindow::onAddToModelRegistry);
@@ -1120,7 +1128,9 @@ void MainWindow::clearUndoStacks()
     onPushUndo();
 }
 
-void MainWindow::onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name)
+void MainWindow::onCreateAbsBehaviorTree(const AbsBehaviorTree &tree,
+                                         const QString &bt_name,
+                                         bool secondary_tabs)
 {
     auto container = getTabByName(bt_name);
     if( !container )
@@ -1131,15 +1141,16 @@ void MainWindow::onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QStr
     container->loadSceneFromTree( tree );
     container->nodeReorder();
 
-    for(const auto& node: tree.nodes())
-    {
+    if( secondary_tabs ){
+      for(const auto& node: tree.nodes())
+      {
         if( node.model.type == NodeType::SUBTREE && getTabByName(node.model.registration_ID) == nullptr)
         {
-            createTab(node.model.registration_ID);
+          createTab(node.model.registration_ID);
         }
+      }
     }
 
-    // TODO_ clear or not?
     clearUndoStacks();
 }
 

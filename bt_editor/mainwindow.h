@@ -94,7 +94,9 @@ public slots:
 
     void on_toolButtonCenterView_pressed();
 
-    void onCreateAbsBehaviorTree(const AbsBehaviorTree &tree, const QString &bt_name);
+    void onCreateAbsBehaviorTree(const AbsBehaviorTree &tree,
+                                 const QString &bt_name,
+                                 bool secondary_tabs = true);
 
     void onChangeNodesStatus(const QString& bt_name, const std::vector<std::pair<int, NodeStatus>>& node_status);
 
