@@ -27,6 +27,9 @@ CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
     restoreGeometry(settings.value("CustomNodeDialog/geometry").toByteArray());
     ui->tableWidget->horizontalHeader()->restoreState( settings.value("CustomNodeDialog/header").toByteArray() );
 
+    QRegExp rx("\\w+");
+    _validator = new QRegExpValidator(rx, this);
+
     if( to_edit.isEmpty() == false)
     {
         auto model_it = models.find(to_edit);
@@ -87,10 +90,6 @@ CustomNodeDialog::CustomNodeDialog(const NodeModels &models,
 
     connect( ui->lineEdit, &QLineEdit::textChanged,
              this, &CustomNodeDialog::checkValid );
-
-    QRegExp rx("\\w+");
-    _validator = new QRegExpValidator(rx, this);
-
 
     checkValid();
 }
