@@ -1675,3 +1675,9 @@ void MainWindow::on_actionReportIssue_triggered()
                          QMessageBox::Ok);
     QDesktopServices::openUrl(QUrl(url));
 }
+
+// returns the current graphic mode
+GraphicMode MainWindow::getGraphicMode(void) const
+{
+    return _current_mode;
+}

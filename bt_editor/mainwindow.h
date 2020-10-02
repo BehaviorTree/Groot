@@ -59,6 +59,8 @@ public:
 
     void resetTreeStyle(AbsBehaviorTree &tree);
 
+    GraphicMode getGraphicMode(void) const;
+
 public slots:
 
     void onAutoArrange();
