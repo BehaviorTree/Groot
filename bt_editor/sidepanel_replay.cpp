@@ -14,13 +14,15 @@
 #include <QMessageBox>
 
 #include "bt_editor_base.h"
+#include "mainwindow.h"
 #include "utils.h"
 
 
 SidepanelReplay::SidepanelReplay(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::SidepanelReplay),
-    _prev_row(-1)
+    _prev_row(-1),
+    _parent(parent)
 {
     ui->setupUi(this);
 
@@ -271,6 +273,11 @@ void SidepanelReplay::loadLog(const QByteArray &content)
     _timepoint.clear();
     _prev_row = -1;
     updateTableModel(_loaded_tree);
+
+
+    // We need to lock the nodes after they are loaded
+    auto main_win = dynamic_cast<MainWindow*>( _parent );
+    main_win->lockEditing(true);
 }
 
 

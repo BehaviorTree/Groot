@@ -132,11 +132,13 @@ private slots:
 
     void on_actionReportIssue_triggered();
 
+public:
+
+    void lockEditing(const bool locked);
+
 private:
 
     void updateCurrentMode();
-
-    void lockEditing(const bool locked);
 
     bool eventFilter(QObject *obj, QEvent *event) override;
 

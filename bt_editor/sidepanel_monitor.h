@@ -54,6 +54,8 @@ private:
 
     bool getTreeFromServer();
 
+    QWidget *_parent;
+
 };
 
 #endif // SIDEPANEL_MONITOR_H

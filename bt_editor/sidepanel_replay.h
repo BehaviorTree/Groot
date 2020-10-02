@@ -89,6 +89,8 @@ private:
     AbsBehaviorTree _loaded_tree;
 
     void updateTableModel(const AbsBehaviorTree &tree);
+
+    QWidget *_parent;
 };
 
 #endif // SIDEPANEL_REPLAY_H
