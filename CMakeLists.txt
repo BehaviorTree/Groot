@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.2)
 
+# Update the policy setting to avoid an error when loading the ament_cmake package
+# at the current cmake version level
+if(POLICY CMP0057)
+    cmake_policy(SET CMP0057 NEW)
+endif()
+
 project(groot)
 
 find_package(Qt5 COMPONENTS  Core Widgets Gui OpenGL Xml Svg)
@@ -13,14 +19,23 @@ else()
 endif()
 
 #############################################################
-# http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
-if( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
-   set(catkin_FOUND 1)
-  # add_definitions( -DUSING_ROS )
-endif()
+find_package(ament_cmake QUIET)
+if(ament_cmake_FOUND)
+  find_package(behaviortree_cpp_v3 REQUIRED)
 
-if(catkin_FOUND)
-  find_package(catkin REQUIRED COMPONENTS behaviortree_cpp_v3 rosbag rosbag_storage roscpp)
+  set(dependencies
+    behaviortree_cpp_v3
+  )
+
+  message(STATUS "------------------------------------------------")
+  message(STATUS "BehaviourTreeEditor is being built using AMENT.")
+  message(STATUS "------------------------------------------------")
+elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
+# http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
+  set(catkin_FOUND 1)
+  # add_definitions( -DUSING_ROS )
+
+  find_package(catkin REQUIRED COMPONENTS behaviortree_cpp_v3)
 
   message(STATUS "------------------------------------------------")
   message(STATUS "BehaviourTreeEditor is being built using CATKIN.")
@@ -32,7 +47,7 @@ if(catkin_FOUND)
     CATKIN_DEPENDS behaviortree_cpp_v3
     DEPENDS 
     )
-endif(catkin_FOUND)
+endif()
 #############################################################
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -47,7 +62,11 @@ set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 #set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 #set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
-INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./  )
+if(ament_cmake_FOUND)
+  INCLUDE_DIRECTORIES(include ./QtNodeEditor/include ./)
+else()
+  INCLUDE_DIRECTORIES(${catkin_INCLUDE_DIRS} ./QtNodeEditor/include ./  )
+endif()
 
 add_subdirectory( QtNodeEditor )
 
@@ -60,7 +79,7 @@ set(BUILD_TOOLS OFF CACHE BOOL "")
 set(BUILD_TESTING OFF CACHE BOOL "")
 set(CATKIN_ENABLE_TESTING OFF CACHE BOOL "")
 
-if(NOT catkin_FOUND)
+if(NOT catkin_FOUND AND NOT ament_cmake_FOUND)
     # look for BehaviorTree.CPP on the system
     find_package(BehaviorTree)
     if (NOT BehaviorTree_FOUND)
@@ -121,14 +140,16 @@ endif()
 
 QT5_WRAP_UI(FORMS_HEADERS ${FORMS_UI})
 
-add_library(behavior_tree_editor
+add_library(behavior_tree_editor SHARED
     ${APP_CPPS}
     ${FORMS_HEADERS}
 )
 
 SET(GROOT_DEPENDENCIES QtNodeEditor )
 
-if( catkin_FOUND )
+if(ament_cmake_FOUND)
+    ament_target_dependencies(behavior_tree_editor ${dependencies})
+elseif( catkin_FOUND )
     SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} ${catkin_LIBRARIES} )
 else()
     SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} behaviortree_cpp_v3 )
@@ -148,7 +169,11 @@ add_subdirectory(test)
 
 ######################################################
 # INSTALL
-if(catkin_FOUND)
+if(ament_cmake_FOUND)
+    set( GROOT_LIB_DESTINATION   lib )
+    set( GROOT_INC_DESTINATION   include )
+    set( GROOT_BIN_DESTINATION   lib/${PROJECT_NAME} )
+elseif(catkin_FOUND)
     set( GROOT_LIB_DESTINATION   ${CATKIN_PACKAGE_LIB_DESTINATION} )
     set( GROOT_INC_DESTINATION   ${CATKIN_PACKAGE_INCLUDE_DESTINATION} )
     set( GROOT_BIN_DESTINATION   ${CATKIN_PACKAGE_BIN_DESTINATION} )
@@ -168,6 +193,9 @@ endif()
 INSTALL(TARGETS behavior_tree_editor LIBRARY DESTINATION ${GROOT_LIB_DESTINATION} )
 INSTALL(TARGETS Groot RUNTIME DESTINATION ${GROOT_BIN_DESTINATION} )
 
-
-
-
+if(ament_cmake_FOUND)
+  ament_export_include_directories(include)
+  ament_export_dependencies(${GROOT_DEPENDENCIES} ${dependencies})
+  ament_export_libraries(behavior_tree_editor)
+  ament_package()
+endif()
