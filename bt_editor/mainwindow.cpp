@@ -1041,6 +1041,16 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
     if( option == SUBTREE_EXPAND && subtree_model->expanded() == false)
     {
         auto subtree_container = getTabByName(subtree_name);
+
+        // Prevent expansion of invalid subtree
+        if( !subtree_container->containsValidTree() )
+        {
+            QMessageBox::warning(this, tr("Oops!"),
+                                 tr("Invalid SubTree. Can not expand SubTree."),
+                                 QMessageBox::Cancel);
+            return &node;
+        }
+
         auto abs_subtree = BuildTreeFromScene( subtree_container->scene() );
 
         subtree_model->setExpanded(true);
@@ -1361,6 +1371,16 @@ void MainWindow::refreshExpandedSubtrees()
 
     for (auto subtree_node: subtree_nodes)
     {
+        // expanded subtrees may have become invalid
+        // collapse invalid subtrees before refreshing them
+        auto subtree_model = dynamic_cast<SubtreeNodeModel*>(subtree_node->nodeDataModel());
+        const QString& subtree_name = subtree_model->registrationName();
+        auto subtree_container = getTabByName(subtree_name);
+        if ( subtree_model->expanded() && !subtree_container->containsValidTree() )
+        {
+            subTreeExpand( *container, *subtree_node, SUBTREE_COLLAPSE );
+        }
+
         subTreeExpand( *container, *subtree_node, SUBTREE_REFRESH );
     }
 }
