@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<package>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>groot</name>
   <version>1.0.0</version>
   <description>Graphical editor to create behaviour trees</description>
@@ -10,26 +11,26 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <license>MIT</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>cmake_modules</build_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <build_depend condition="$ROS_VERSION == 1">cmake_modules</build_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
 
-  <build_depend>pluginlib</build_depend>
-  <build_depend>roscpp</build_depend>
   <build_depend>behaviortree_cpp_v3</build_depend>
   <build_depend>qtbase5-dev</build_depend>
+  <build_depend>libqt5-core</build_depend>
+  <build_depend>libqt5-gui</build_depend>
   <build_depend>libqt5-svg-dev</build_depend>
   <build_depend>libqt5-opengl-dev</build_depend>
+  <build_depend>libqt5-widgets</build_depend>
+  <build_depend>libqt5-xml</build_depend>
   <build_depend>qttools5-dev-tools</build_depend>
   <build_depend>libdw-dev</build_depend>
   <build_depend>libzmq3-dev</build_depend>
 
-  <run_depend>pluginlib</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>behaviortree_cpp_v3</run_depend>
+  <exec_depend>behaviortree_cpp_v3</exec_depend>
 
-  <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- Other tools can request additional information be placed here -->
-
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
   </export>
 </package>
