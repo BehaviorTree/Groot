@@ -352,6 +352,13 @@ void GraphicContainer::onNodeCreated(Node &node)
 
 void GraphicContainer::onNodeContextMenu(Node &node, const QPointF &)
 {
+    // only allow context menu in editor mode
+    auto main_win = dynamic_cast<MainWindow*>( parent() );
+    if( main_win->getGraphicMode() != GraphicMode::EDITOR )
+    {
+        return;
+    }
+
     QMenu* node_menu = new QMenu(_view);
     //--------------------------------
     createMorphSubMenu(node, node_menu);
@@ -566,6 +573,13 @@ void GraphicContainer::insertNodeInConnection(Connection &connection, QString no
 
 void GraphicContainer::onConnectionContextMenu(QtNodes::Connection &connection, const QPointF&)
 {
+    // only allow connection context menu in editor mode
+    auto main_win = dynamic_cast<MainWindow*>( parent() );
+    if( main_win->getGraphicMode() != GraphicMode::EDITOR )
+    {
+        return;
+    }
+
     QMenu* conn_menu = new QMenu(_view);
 
     auto categories = {"Control", "Decorator"};

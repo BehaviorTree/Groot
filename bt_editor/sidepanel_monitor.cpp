@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QDebug>
 
+#include "mainwindow.h"
 #include "utils.h"
 
 SidepanelMonitor::SidepanelMonitor(QWidget *parent) :
@@ -15,7 +16,8 @@ SidepanelMonitor::SidepanelMonitor(QWidget *parent) :
     _zmq_context(1),
     _zmq_subscriber(_zmq_context, ZMQ_SUB),
     _connected(false),
-    _msg_count(0)
+    _msg_count(0),
+    _parent(parent)
 {
     ui->setupUi(this);
     _timer = new QTimer(this);
@@ -104,6 +106,10 @@ void SidepanelMonitor::on_timer()
 
             // update the graphic part
             emit changeNodeStyle( "BehaviorTree", node_status );
+
+            // lock editing of nodes
+            auto main_win = dynamic_cast<MainWindow*>( _parent );
+            main_win->lockEditing(true);
         }
     }
     catch( zmq::error_t& err)
