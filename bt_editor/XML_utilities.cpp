@@ -45,8 +45,7 @@ NodeModel buildTreeNodeModelFromXML(const QDomElement& node)
     const std::vector<std::pair<QString, PortDirection>> portsTypes = {
         {"input_port", PortDirection::INPUT},
         {"output_port", PortDirection::OUTPUT},
-        {"inout_port", PortDirection::INPUT}
-    };
+        {"inout_port", PortDirection::INOUT}};
 
     for(const auto& it: portsTypes)
     {
