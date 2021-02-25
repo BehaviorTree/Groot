@@ -46,6 +46,7 @@ project is compiled with with _catkin_.
        cd catkin_ws/src
        git clone https://github.com/BehaviorTree/Groot.git
        cd ..
+       rosdep install --from-paths src --ignore-src
        catkin_make  
 
 # Licence       
