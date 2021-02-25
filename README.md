@@ -38,7 +38,15 @@ project is compiled with with _catkin_.
        cmake ..
        make
        
- Note compiling "in-source" is not allowed.      
+ Note compiling "in-source" is not allowed.   
+ 
+ # Compilation instructions (ROS)
+
+       mkdir -p catkin_ws/src
+       cd catkin_ws/src
+       git clone https://github.com/BehaviorTree/Groot.git
+       cd ..
+       catkin_make  
 
 # Licence       
 
