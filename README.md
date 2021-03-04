@@ -39,8 +39,8 @@ project is compiled with with _catkin_.
        make
        
  Note compiling "in-source" is not allowed.   
- 
- # Compilation instructions (ROS)
+
+# Compilation instructions (ROS)
 
        mkdir -p catkin_ws/src
        cd catkin_ws/src
@@ -48,6 +48,18 @@ project is compiled with with _catkin_.
        cd ..
        rosdep install --from-paths src --ignore-src
        catkin_make  
+
+# Compilation instructions (ROS2)
+
+       mkdir -p colcon_ws/src
+       cd colcon_ws/src
+       git clone https://github.com/BehaviorTree/Groot.git
+       cd ..
+       rosdep install --from-paths src --ignore-src
+       colcon build
+
+  For a more in-depth tutorial on creating ROS2 workspaces:
+    https://docs.ros.org/en/foxy/Tutorials/Workspace/Creating-A-Workspace.html
 
 # Licence       
 
