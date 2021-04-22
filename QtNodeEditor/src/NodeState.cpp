@@ -48,7 +48,7 @@ NodeState::
 connections(PortType portType, PortIndex portIndex) const
 {
   auto const &connections = getEntries(portType);
-  if( portIndex < 0 || portIndex >= connections.size() )
+  if( portIndex < 0 || static_cast<unsigned long>(portIndex) >= connections.size() )
   {
     return NodeState::ConnectionPtrSet();
   }
@@ -139,4 +139,3 @@ resizing() const
 {
   return _resizing;
 }
-
