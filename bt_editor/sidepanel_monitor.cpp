@@ -133,7 +133,7 @@ bool SidepanelMonitor::getTreeFromServer()
         zmq_client.send(request, zmq::send_flags::none);
 
         auto bytes_received  = zmq_client.recv(reply, zmq::recv_flags::none);
-        if( *bytes_received == 0 )
+        if( !bytes_received || *bytes_received == 0 )
         {
             return false;
         }
