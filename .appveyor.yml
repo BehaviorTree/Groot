@@ -11,7 +11,7 @@ environment:
       PLATFORM: x64
  #    - GENERATOR : "Visual Studio 14 2015 Win64"
  #      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-#       QTDIR: C:\Qt\5.9.7\msvc2015_64  
+#       QTDIR: C:\Qt\5.9.7\msvc2015_64
 #     - GENERATOR : "Visual Studio 14 2015"
 #       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 #       QTDIR: C:\Qt\5.9.7\msvc2015
@@ -23,8 +23,8 @@ configuration:
 
 install:
   - set PATH=%QTDIR%\bin;%PATH%
-  - set Qt5_DIR=%QTDIR%\lib\cmake\Qt5
-  - set PATH=C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
+  - set CMAKE_PREFIX_PATH=%QTDIR%;%CMAKE_PREFIX_PATH%
+  - set PATH=C:\MinGW\bin;C:\MinGW\msys\1.0
   - set PATH=C:\Qt\Tools\mingw530_32;%PATH%
   - set PATH=%PATH:C:\Program Files\Git\usr\bin=% # trick to remove sh.exe
 
