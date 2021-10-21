@@ -15,13 +15,6 @@ the graphic user interface are used to design and monitor a Behavior Tree.
 [![MOOD2Be](video_MOOD2Be.png)](https://vimeo.com/304651183)
 
 
-# Does your company use BehaviorTree.CPP and Groot?
-
-No company, institution or public/private funding is currently supporting the development of BehaviorTree.CPP and Groot. As a consequence, my time to support **BehaviorTree.CPP** is very limited and I decided that I won't spend any time at all supporting **Groot**.
-Pull Requests are welcome and will be reviewed, even if with some delay.
-
-If your company use this software, consider becoming a **sponsor** to support bug fixing and development of new features. You can find contact details in [package.xml](package.xml).
-
 # Dependencies, Installation, and Usage
 
 To compile the project you need:
