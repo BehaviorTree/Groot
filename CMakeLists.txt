@@ -144,6 +144,12 @@ add_library(behavior_tree_editor SHARED
     ${APP_CPPS}
     ${FORMS_HEADERS}
 )
+set_target_properties(behavior_tree_editor PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+include(GenerateExportHeader)
+generate_export_header(behavior_tree_editor)
+target_include_directories(behavior_tree_editor PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+)
 
 SET(GROOT_DEPENDENCIES QtNodeEditor )
 

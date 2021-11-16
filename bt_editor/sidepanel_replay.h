@@ -7,12 +7,14 @@
 #include <QStandardItemModel>
 #include "bt_editor_base.h"
 
+#include "behavior_tree_editor_export.h"
+
 
 namespace Ui {
 class SidepanelReplay;
 }
 
-class SidepanelReplay : public QFrame
+class BEHAVIOR_TREE_EDITOR_EXPORT SidepanelReplay : public QFrame
 {
     Q_OBJECT
 
