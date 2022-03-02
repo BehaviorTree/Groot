@@ -181,6 +181,8 @@ private:
 
     std::map<QString, GraphicContainer*> _tab_info;
 
+    std::vector<std::string> _includes;
+
     std::mutex _mutex;
 
     std::deque<SavedState> _undo_stack;

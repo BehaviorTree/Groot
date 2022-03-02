@@ -335,6 +335,20 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
         const QSignalBlocker blocker( currentTabInfo() );
 
+        for (auto include_path = document_root.firstChildElement("include");
+             !include_path.isNull();
+             include_path = include_path.nextSiblingElement("include"))
+        {
+            if(include_path.hasAttribute("path"))
+            {
+                auto path = include_path.attribute("path");
+                if(!path.isNull()){
+                    _includes.push_back(path.toStdString().c_str());
+                }
+            }
+
+        }
+
         for (auto bt_root = document_root.firstChildElement("BehaviorTree");
              !bt_root.isNull();
              bt_root = bt_root.nextSiblingElement("BehaviorTree"))
@@ -450,10 +464,34 @@ QString MainWindow::saveToXML() const
         root.setAttribute("main_tree_to_execute", _main_tree.toStdString().c_str());
     }
 
+    if(!_includes.empty())
+    {
+    root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
+    }
+    
+    for (std::string path : _includes)
+    {
+        QDomElement include_element = doc.createElement("include");
+        include_element.setAttribute("path", path.c_str());
+        root.appendChild(include_element);
+    }
+
     for (auto& it: _tab_info)
     {
         auto& container = it.second;
         auto  scene = container->scene();
+
+        //if only one node, and it's a subtree don't save
+        if(container->scene()->nodes().size() == 1)
+        {
+            auto node = container->scene()->nodes().begin();
+            auto model = dynamic_cast<BehaviorTreeDataModel*>(node->second->nodeDataModel());
+            auto type = model->nodeType();
+            if(type == NodeType::SUBTREE)
+            {
+                continue;
+            }
+        }
 
         auto abs_tree = BuildTreeFromScene(container->scene());
         auto abs_root = abs_tree.rootNode();
@@ -616,10 +654,24 @@ void MainWindow::on_actionSave_triggered()
         auto& container = it.second;
         if( !container->containsValidTree() )
         {
-            QMessageBox::warning(this, tr("Oops!"),
-                                 tr("Malformed behavior tree. File can not be saved"),
-                                 QMessageBox::Cancel);
-            return;
+            // get first node type
+            auto node = container->scene()->nodes().begin();
+            auto model = dynamic_cast<BehaviorTreeDataModel*>(node->second->nodeDataModel());
+            auto type = model->nodeType();
+            // if only one node, and it's a subtree continue saving
+            if(container->scene()->nodes().size() == 1 && type == NodeType::SUBTREE)
+            {
+                QMessageBox::warning(this, tr("Oops!"),
+                                tr("A subtree is empty. Make sure it's included!"),
+                                QMessageBox::Cancel);         
+            }
+            else
+            {
+                QMessageBox::warning(this, tr("Oops!"),
+                                tr("Malformed behavior tree. File can not be saved"),
+                                QMessageBox::Cancel);
+                return;
+            }
         }
     }
 
@@ -1227,6 +1279,8 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
 
 void MainWindow::onActionClearTriggered(bool create_new)
 {
+    _includes.clear();
+
     for (auto& it: _tab_info)
     {
         it.second->clearScene();
