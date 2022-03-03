@@ -600,15 +600,9 @@ void MainWindow::streamElementAttributes(QXmlStreamWriter &stream, const QDomEle
 
         for (int i = 0; i < attributes_map.count(); ++i)
         {
-           auto attribute = attributes_map.item(i);
-            attributes.insert(attribute.nodeName(), attribute.nodeValue());
-        }
-
-        auto i = attributes.constBegin();
-        while (i != attributes.constEnd())
-        {
-            stream.writeAttribute(i.key(), i.value());
-            ++i;
+            QString name = attributes_map.item(i).nodeName();
+            QString value = attributes_map.item(i).nodeValue();
+            stream.writeAttribute(name, value);
         }
     }
 }
