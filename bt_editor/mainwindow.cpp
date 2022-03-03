@@ -339,14 +339,16 @@ void MainWindow::loadFromXML(const QString& xml_text)
              !include_path.isNull();
              include_path = include_path.nextSiblingElement("include"))
         {
+            std::array<std::string, 2> pkg_path;
+            if(include_path.hasAttribute("ros_pkg"))
+            {
+                pkg_path[0] = include_path.attribute("ros_pkg").toStdString().c_str();
+            }
             if(include_path.hasAttribute("path"))
             {
-                auto path = include_path.attribute("path");
-                if(!path.isNull()){
-                    _includes.push_back(path.toStdString().c_str());
-                }
+                pkg_path[1] = include_path.attribute("path").toStdString().c_str();
             }
-
+                _includes.push_back(pkg_path);
         }
 
         for (auto bt_root = document_root.firstChildElement("BehaviorTree");
@@ -468,11 +470,15 @@ QString MainWindow::saveToXML() const
     {
     root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
     }
-    
-    for (std::string path : _includes)
+
+    for (std::array<std::string, 2>  pkg_path : _includes)
     {
         QDomElement include_element = doc.createElement("include");
-        include_element.setAttribute("path", path.c_str());
+        if(!pkg_path[0].empty())
+        {
+            include_element.setAttribute("ros_pkg", pkg_path[0].c_str());
+        }
+        include_element.setAttribute("path", pkg_path[1].c_str());
         root.appendChild(include_element);
     }
 
@@ -662,8 +668,9 @@ void MainWindow::on_actionSave_triggered()
             if(container->scene()->nodes().size() == 1 && type == NodeType::SUBTREE)
             {
                 QMessageBox::warning(this, tr("Oops!"),
-                                tr("A subtree is empty. Make sure it's included!"),
-                                QMessageBox::Cancel);         
+                                tr("A subtree is empty. Save anyways? \n"
+                                "Sub-trees imported with <include> are allowed to be empty"),
+                                QMessageBox::Ok);         
             }
             else
             {
@@ -700,6 +707,7 @@ void MainWindow::on_actionSave_triggered()
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
         stream << xml_text << endl;
+        file.close();
     }
 
     directory_path = QFileInfo(fileName).absolutePath();

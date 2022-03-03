@@ -181,7 +181,8 @@ private:
 
     std::map<QString, GraphicContainer*> _tab_info;
 
-    std::vector<std::string> _includes;
+    // 1st string is ros_pkg (empty if ros isn't used), 2nd is path
+    std::vector<std::array<std::string, 2>> _includes;
 
     std::mutex _mutex;
 
