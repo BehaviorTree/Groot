@@ -112,13 +112,31 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     dynamic_cast<QVBoxLayout*>(ui->leftFrame->layout())->setStretch(1,1);
 
-    auto arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
-
-    connect( arrange_shortcut, &QShortcut::activated,
-            this,   &MainWindow::onAutoArrange  );
-
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 4);
+
+    // Shortcuts
+    QShortcut* rearrange_shortcut = new QShortcut(QKeySequence(Qt::Key_R), this);
+    QShortcut* centerview_shortcut = new QShortcut(QKeySequence(Qt::Key_C), this);
+    QShortcut* layout_shortcut = new QShortcut(QKeySequence(Qt::Key_L), this);
+    QShortcut* newnode_shortcut = new QShortcut(QKeySequence(Qt::Key_N), this);
+
+    connect( rearrange_shortcut, &QShortcut::activated,
+             this, &MainWindow::on_toolButtonReorder_pressed );
+    connect( centerview_shortcut, &QShortcut::activated,
+             this, &MainWindow::on_toolButtonCenterView_pressed );
+    connect( layout_shortcut, &QShortcut::activated,
+             this, &MainWindow::on_toolButtonLayout_clicked );
+    connect( newnode_shortcut, &QShortcut::activated,
+             _editor_widget, &SidepanelEditor::addNode );
+
+    QShortcut* zoomin_shortcut = new QShortcut(QKeySequence(Qt::Key_Plus), this);
+    QShortcut* zoomout_shortcut = new QShortcut(QKeySequence(Qt::Key_Minus), this);
+
+    connect( zoomin_shortcut, &QShortcut::activated,
+             this, [this] () { currentTabInfo()->zoomIn(); } );
+    connect( zoomout_shortcut, &QShortcut::activated,
+             this, [this] () { currentTabInfo()->zoomOut(); } );
 
     QShortcut* undo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Z), this);
     connect( undo_shortcut, &QShortcut::activated, this, &MainWindow::onUndoInvoked );
@@ -127,7 +145,12 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
     QShortcut* save_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
+    connect( save_shortcut, &QShortcut::activated, this, &MainWindow::on_actionSave_triggered );
 
+    QShortcut* load_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this);
+    connect( load_shortcut, &QShortcut::activated, this, &MainWindow::on_actionLoad_triggered );
+
+    // Other connections
     connect( _editor_widget, &SidepanelEditor::nodeModelEdited,
             this, &MainWindow::onTreeNodeEdited);
 
@@ -177,8 +200,6 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     connect( ui->toolButtonSaveFile, &QToolButton::clicked,
             this, &MainWindow::on_actionSave_triggered );
-
-    connect( save_shortcut, &QShortcut::activated, this, &MainWindow::on_actionSave_triggered );
 
     connect( _replay_widget, &SidepanelReplay::changeNodeStyle,
             this, &MainWindow::onChangeNodesStatus);

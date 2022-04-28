@@ -56,6 +56,20 @@ project is compiled with with _catkin_.
        rosdep install --from-paths src --ignore-src
        catkin_make  
 
+# Shortcuts
+| Key | Action |
+| :-: | :-: |
+| CTRL-S | Save Tree |
+| CTRL-L | Load Tree |
+| CTRL-Z | Undo |
+| CTRL-SHIFT-Z | Redo |
+| C | Center View |
+| L | Toggle Layout |
+| R | Reorder Nodes |
+| N | New Node |
+| + | Zoom In |
+| - | Zoom Out |
+
 # Licence       
 
 Copyright (c) 2018-2019 FUNDACIO EURECAT 

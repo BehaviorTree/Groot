@@ -103,6 +103,21 @@ void SidepanelEditor::clear()
 
 }
 
+void SidepanelEditor::addNode()
+{
+    CustomNodeDialog dialog(_tree_nodes_model, QString(), this);
+    if( dialog.exec() == QDialog::Accepted)
+    {
+        auto new_model = dialog.getTreeNodeModel();
+        if( new_model.type == NodeType::SUBTREE )
+        {
+            emit addSubtree( new_model.registration_ID );
+        }
+        emit addNewModel( new_model );
+    }
+    updateTreeView();
+}
+
 void SidepanelEditor::on_paletteTreeWidget_itemSelectionChanged()
 {
   auto selected_items = ui->paletteTreeWidget->selectedItems();
@@ -150,17 +165,7 @@ void SidepanelEditor::on_lineEditFilter_textChanged(const QString &text)
 
 void SidepanelEditor::on_buttonAddNode_clicked()
 {
-    CustomNodeDialog dialog(_tree_nodes_model, QString(), this);
-    if( dialog.exec() == QDialog::Accepted)
-    {
-        auto new_model = dialog.getTreeNodeModel();
-        if( new_model.type == NodeType::SUBTREE )
-        {
-            emit addSubtree( new_model.registration_ID );
-        }
-        emit addNewModel( new_model );
-    }
-    updateTreeView();
+    addNode();
 }
 
 void SidepanelEditor::onRemoveModel(QString selected_name)

@@ -178,6 +178,16 @@ void GraphicContainer::zoomHomeView()
     _view->scale(0.9, 0.9);
 }
 
+void GraphicContainer::zoomIn()
+{
+    _view->scale(1.1, 1.1);
+}
+
+void GraphicContainer::zoomOut()
+{
+    _view->scale(0.9, 0.9);
+}
+
 bool GraphicContainer::containsValidTree() const
 {
     if( _scene->nodes().empty())

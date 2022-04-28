@@ -35,6 +35,10 @@ public:
 
     void zoomHomeView();
 
+    void zoomIn();
+
+    void zoomOut();
+
     bool containsValidTree() const;
 
     void clearScene();
