@@ -22,7 +22,7 @@ SidepanelEditor::SidepanelEditor(QtNodes::DataModelRegistry *registry,
     _tree_nodes_model(tree_nodes_model),
     _model_registry(registry)
 {
-    ui->setupUi(this);   
+    ui->setupUi(this);
     ui->paramsFrame->setHidden(true);
     ui->paletteTreeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -121,8 +121,16 @@ void SidepanelEditor::on_paletteTreeWidget_itemSelectionChanged()
     for (const auto& port_it: model.ports)
     {
         ui->portsTableWidget->setItem(row,0, new QTableWidgetItem( QString::fromStdString(toStr(port_it.second.direction))));
-        ui->portsTableWidget->setItem(row,1, new QTableWidgetItem( port_it.first ));
-        ui->portsTableWidget->setItem(row,2, new QTableWidgetItem( port_it.second.description) );
+        QTableWidgetItem *port_id = new QTableWidgetItem( port_it.first );
+#ifndef QT_NO_TOOLTIP
+        port_id->setToolTip("<p style='white-space:pre'>" + port_id->text().toHtmlEscaped() + "</p>");
+#endif
+        ui->portsTableWidget->setItem(row,1, port_id);
+        QTableWidgetItem *description = new QTableWidgetItem( port_it.second.description);
+#ifndef QT_NO_TOOLTIP
+        description->setToolTip("<p style='white-space:pre'>" + description->text().toHtmlEscaped() + "</p>");
+#endif
+        ui->portsTableWidget->setItem(row,2,  description);
         row++;
     }
     ui->portsTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
