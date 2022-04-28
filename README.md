@@ -61,7 +61,9 @@ project is compiled with with _catkin_.
 | :-: | :-: |
 | CTRL-S | Save Tree |
 | CTRL-L | Load Tree |
+| CTRL-O | Load Tree |
 | CTRL-Z | Undo |
+| CTRL-Y | Redo |
 | CTRL-SHIFT-Z | Redo |
 | C | Center View |
 | L | Toggle Layout |

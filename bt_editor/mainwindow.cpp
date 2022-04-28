@@ -158,6 +158,13 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
                  _replay_widget, &SidepanelReplay::on_LoadLog);
     }
 
+    QShortcut* load_shortcut_option = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_O), this);
+    connect(load_shortcut_option, &QShortcut::activated, _load_shortcut, &QShortcut::activated);
+
+    QShortcut* redo_shortcut_option = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Y), this);
+    connect(redo_shortcut_option, &QShortcut::activated, redo_shortcut, &QShortcut::activated);
+
+
     // Other connections
     connect( _editor_widget, &SidepanelEditor::nodeModelEdited,
             this, &MainWindow::onTreeNodeEdited);
