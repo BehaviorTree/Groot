@@ -147,8 +147,16 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QShortcut* save_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
     connect( save_shortcut, &QShortcut::activated, this, &MainWindow::on_actionSave_triggered );
 
-    QShortcut* load_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this);
-    connect( load_shortcut, &QShortcut::activated, this, &MainWindow::on_actionLoad_triggered );
+
+    _load_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this);
+    if ( _current_mode == GraphicMode::EDITOR ) {
+        connect( _load_shortcut, &QShortcut::activated,
+                 this, &MainWindow::on_actionLoad_triggered );
+    }
+    if ( _current_mode == GraphicMode::REPLAY ) {
+        connect( _load_shortcut, &QShortcut::activated,
+                 _replay_widget, &SidepanelReplay::on_LoadLog);
+    }
 
     // Other connections
     connect( _editor_widget, &SidepanelEditor::nodeModelEdited,
@@ -1299,18 +1307,39 @@ void MainWindow::updateCurrentMode()
 
     if( _current_mode == GraphicMode::EDITOR )
     {
+        // Load Button
         connect( ui->toolButtonLoadFile, &QToolButton::clicked,
                 this, &MainWindow::on_actionLoad_triggered );
         disconnect( ui->toolButtonLoadFile, &QToolButton::clicked,
                    _replay_widget, &SidepanelReplay::on_LoadLog );
+        // Load Shortcut
+        disconnect( _load_shortcut, &QShortcut::activated,
+                    _replay_widget, &SidepanelReplay::on_LoadLog);
+        connect( _load_shortcut, &QShortcut::activated,
+                 this, &MainWindow::on_actionLoad_triggered );
     }
     else if( _current_mode == GraphicMode::REPLAY )
     {
+        // Load Button
         disconnect( ui->toolButtonLoadFile, &QToolButton::clicked,
                    this, &MainWindow::on_actionLoad_triggered );
         connect( ui->toolButtonLoadFile, &QToolButton::clicked,
                 _replay_widget, &SidepanelReplay::on_LoadLog );
+        // Load Shortcut
+        disconnect( _load_shortcut, &QShortcut::activated,
+                    this, &MainWindow::on_actionLoad_triggered );
+        connect( _load_shortcut, &QShortcut::activated,
+                 _replay_widget, &SidepanelReplay::on_LoadLog);
     }
+    else if( _current_mode == GraphicMode::MONITOR )
+    {
+        // Load Shortcut
+        disconnect( _load_shortcut, &QShortcut::activated,
+                    this, &MainWindow::on_actionLoad_triggered );
+        disconnect( _load_shortcut, &QShortcut::activated,
+                    _replay_widget, &SidepanelReplay::on_LoadLog);
+    }
+
     lockEditing( NOT_EDITOR );
 
     if( _current_mode == GraphicMode::EDITOR)
