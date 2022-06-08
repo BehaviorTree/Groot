@@ -91,7 +91,7 @@ void SidepanelEditor::updateTreeView()
 
       if (is_editable)
       {
-        item->setForeground(0, QBrush(Qt::blue));
+        item->setForeground(0, QBrush(QColor(70, 110, 154)));
       }
     }
 
