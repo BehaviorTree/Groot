@@ -89,7 +89,10 @@ void SidepanelEditor::updateTreeView()
       item->setFont(0, font);
       item->setData(0, Qt::UserRole, ID);
 
-      item->setTextColor(0, is_editable ? Qt::blue : Qt::black);
+      if (is_editable)
+      {
+        item->setForeground(0, QBrush(Qt::blue));
+      }
     }
 
     ui->paletteTreeWidget->expandAll();
