@@ -20,6 +20,8 @@ endif()
 
 #############################################################
 find_package(ament_cmake QUIET)
+find_package(ament_index_cpp REQUIRED)
+
 if(ament_cmake_FOUND)
   find_package(behaviortree_cpp_v3 REQUIRED)
 
