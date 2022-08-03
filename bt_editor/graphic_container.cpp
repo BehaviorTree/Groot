@@ -137,17 +137,16 @@ void GraphicContainer::lockSubtreeEditing(Node &root_node, bool locked, bool cha
             }
         }
         //--------------------------------
-        QtNodes::NodeStyle style;
-
         if( locked && change_style )
         {
+            QtNodes::NodeStyle style;
             style.GradientColor0.setBlue(120);
             style.GradientColor1.setBlue(100);
             style.GradientColor2.setBlue(90);
             style.GradientColor3.setBlue(90);
+            node->nodeDataModel()->setNodeStyle( style );
         }
         node->nodeGraphicsObject().setGeometryChanged();
-        node->nodeDataModel()->setNodeStyle( style );
         node->nodeGraphicsObject().update();
     }
 }
