@@ -151,7 +151,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     {
         if (prev_ID == new_ID)
             return;
-            
+
         for (int index = 0; index < ui->tabWidget->count(); index++)
         {
             if( ui->tabWidget->tabText(index) == prev_ID)
@@ -647,7 +647,7 @@ void MainWindow::on_actionSave_triggered()
     QFile file(fileName);
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
-        stream << xml_text << endl;
+        stream << xml_text;
     }
 
     directory_path = QFileInfo(fileName).absolutePath();
