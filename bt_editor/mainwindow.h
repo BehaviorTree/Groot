@@ -181,6 +181,9 @@ private:
 
     std::map<QString, GraphicContainer*> _tab_info;
 
+    // 1st string is ros_pkg (empty if ros isn't used), 2nd is path
+    std::vector<std::array<std::string, 2>> _includes;
+
     std::mutex _mutex;
 
     std::deque<SavedState> _undo_stack;

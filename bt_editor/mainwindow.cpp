@@ -335,6 +335,22 @@ void MainWindow::loadFromXML(const QString& xml_text)
 
         const QSignalBlocker blocker( currentTabInfo() );
 
+        for (auto include_path = document_root.firstChildElement("include");
+             !include_path.isNull();
+             include_path = include_path.nextSiblingElement("include"))
+        {
+            std::array<std::string, 2> pkg_path;
+            if(include_path.hasAttribute("ros_pkg"))
+            {
+                pkg_path[0] = include_path.attribute("ros_pkg").toStdString().c_str();
+            }
+            if(include_path.hasAttribute("path"))
+            {
+                pkg_path[1] = include_path.attribute("path").toStdString().c_str();
+            }
+                _includes.push_back(pkg_path);
+        }
+
         for (auto bt_root = document_root.firstChildElement("BehaviorTree");
              !bt_root.isNull();
              bt_root = bt_root.nextSiblingElement("BehaviorTree"))
@@ -450,10 +466,38 @@ QString MainWindow::saveToXML() const
         root.setAttribute("main_tree_to_execute", _main_tree.toStdString().c_str());
     }
 
+    if(!_includes.empty())
+    {
+    root.appendChild( doc.createComment(COMMENT_SEPARATOR) );
+    }
+
+    for (std::array<std::string, 2>  pkg_path : _includes)
+    {
+        QDomElement include_element = doc.createElement("include");
+        if(!pkg_path[0].empty())
+        {
+            include_element.setAttribute("ros_pkg", pkg_path[0].c_str());
+        }
+        include_element.setAttribute("path", pkg_path[1].c_str());
+        root.appendChild(include_element);
+    }
+
     for (auto& it: _tab_info)
     {
         auto& container = it.second;
         auto  scene = container->scene();
+
+        //if only one node, and it's a subtree don't save
+        if(container->scene()->nodes().size() == 1)
+        {
+            auto node = container->scene()->nodes().begin();
+            auto model = dynamic_cast<BehaviorTreeDataModel*>(node->second->nodeDataModel());
+            auto type = model->nodeType();
+            if(type == NodeType::SUBTREE)
+            {
+                continue;
+            }
+        }
 
         auto abs_tree = BuildTreeFromScene(container->scene());
         auto abs_root = abs_tree.rootNode();
@@ -556,15 +600,9 @@ void MainWindow::streamElementAttributes(QXmlStreamWriter &stream, const QDomEle
 
         for (int i = 0; i < attributes_map.count(); ++i)
         {
-           auto attribute = attributes_map.item(i);
-            attributes.insert(attribute.nodeName(), attribute.nodeValue());
-        }
-
-        auto i = attributes.constBegin();
-        while (i != attributes.constEnd())
-        {
-            stream.writeAttribute(i.key(), i.value());
-            ++i;
+            QString name = attributes_map.item(i).nodeName();
+            QString value = attributes_map.item(i).nodeValue();
+            stream.writeAttribute(name, value);
         }
     }
 }
@@ -616,10 +654,25 @@ void MainWindow::on_actionSave_triggered()
         auto& container = it.second;
         if( !container->containsValidTree() )
         {
-            QMessageBox::warning(this, tr("Oops!"),
-                                 tr("Malformed behavior tree. File can not be saved"),
-                                 QMessageBox::Cancel);
-            return;
+            // get first node type
+            auto node = container->scene()->nodes().begin();
+            auto model = dynamic_cast<BehaviorTreeDataModel*>(node->second->nodeDataModel());
+            auto type = model->nodeType();
+            // if only one node, and it's a subtree continue saving
+            if(container->scene()->nodes().size() == 1 && type == NodeType::SUBTREE)
+            {
+                QMessageBox::warning(this, tr("Oops!"),
+                                tr("A subtree is empty. Save anyways? \n"
+                                "Sub-trees imported with <include> are allowed to be empty"),
+                                QMessageBox::Ok);         
+            }
+            else
+            {
+                QMessageBox::warning(this, tr("Oops!"),
+                                tr("Malformed behavior tree. File can not be saved"),
+                                QMessageBox::Cancel);
+                return;
+            }
         }
     }
 
@@ -648,6 +701,7 @@ void MainWindow::on_actionSave_triggered()
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
         stream << xml_text << endl;
+        file.close();
     }
 
     directory_path = QFileInfo(fileName).absolutePath();
@@ -1227,6 +1281,8 @@ void MainWindow::onTreeNodeEdited(QString prev_ID, QString new_ID)
 
 void MainWindow::onActionClearTriggered(bool create_new)
 {
+    _includes.clear();
+
     for (auto& it: _tab_info)
     {
         it.second->clearScene();
