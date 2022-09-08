@@ -83,8 +83,8 @@ set(CATKIN_ENABLE_TESTING OFF CACHE BOOL "")
 
 if(NOT catkin_FOUND AND NOT ament_cmake_FOUND)
     # look for BehaviorTree.CPP on the system
-    find_package(BehaviorTreeV3)
-    if (NOT BehaviorTree_FOUND)
+    find_package(behaviortree_cpp_v3)
+    if (NOT behaviortree_cpp_v3_FOUND)
         # use git submodule only if you are not compiling with catkin
         add_subdirectory( depend/BehaviorTree.CPP )
         include_directories( depend/BehaviorTree.CPP/include )
