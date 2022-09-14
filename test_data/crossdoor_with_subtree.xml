@@ -6,9 +6,9 @@
             <Inverter>
                 <Condition ID="IsDoorOpen"/>
             </Inverter>
-            <RetryUntilSuccesful num_attempts="4">
+            <RetryUntilSuccessful num_attempts="4">
                 <Action ID="OpenDoor"/>
-            </RetryUntilSuccesful>
+            </RetryUntilSuccessful>
             <Action ID="PassThroughDoor"/>
             <Action ID="CloseDoor"/>
         </Sequence>
