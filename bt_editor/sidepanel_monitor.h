@@ -15,7 +15,9 @@ class SidepanelMonitor : public QFrame
     Q_OBJECT
 
 public:
-    explicit SidepanelMonitor(QWidget *parent = nullptr);
+    explicit SidepanelMonitor(QWidget *parent = nullptr,
+                              const QString &publisher_port = "",
+                              const QString &server_port = "");
     ~SidepanelMonitor();
 
     void clear();

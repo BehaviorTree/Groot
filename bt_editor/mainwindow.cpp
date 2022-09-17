@@ -40,11 +40,18 @@ using QtNodes::FlowScene;
 using QtNodes::NodeGraphicsObject;
 using QtNodes::NodeState;
 
-MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
-                                                                    QMainWindow(parent),
-                                                                    ui(new Ui::MainWindow),
-                                                                    _current_mode(initial_mode),
-                                                                    _current_layout(QtNodes::PortLayout::Vertical)
+MainWindow::MainWindow(GraphicMode initial_mode,
+                       const QString& monitor_pub_port,
+                       const QString& monitor_srv_port,
+                       const bool monitor_autoconnect,
+                       QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow),
+    _current_mode(initial_mode),
+    _current_layout(QtNodes::PortLayout::Vertical),
+    _monitor_publisher_port(monitor_pub_port),
+    _monitor_server_port(monitor_srv_port),
+    _monitor_autoconnect(monitor_autoconnect)
 {
     ui->setupUi(this);
 
@@ -96,7 +103,8 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     ui->leftFrame->layout()->addWidget( _replay_widget );
 
 #ifdef ZMQ_FOUND
-    _monitor_widget = new SidepanelMonitor(this);
+    _monitor_widget = new SidepanelMonitor(
+        this, _monitor_publisher_port, _monitor_server_port);
     ui->leftFrame->layout()->addWidget( _monitor_widget );
 
     connect( ui->toolButtonConnect, &QToolButton::clicked,
@@ -104,6 +112,11 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     connect( _monitor_widget, &SidepanelMonitor::connectionUpdate,
             this, &MainWindow::onConnectionUpdate );
+
+    if (monitor_autoconnect) {
+        usleep(1e6);  // Add a slight delay
+        ui->toolButtonConnect->animateClick();
+    }
 #else
     ui->actionMonitor_mode->setVisible(false);
 #endif

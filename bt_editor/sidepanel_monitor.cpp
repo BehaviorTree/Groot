@@ -10,7 +10,9 @@
 #include "mainwindow.h"
 #include "utils.h"
 
-SidepanelMonitor::SidepanelMonitor(QWidget *parent) :
+SidepanelMonitor::SidepanelMonitor(QWidget *parent,
+                                   const QString &publisher_port,
+                                   const QString &server_port) :
     QFrame(parent),
     ui(new Ui::SidepanelMonitor),
     _zmq_context(1),
@@ -20,8 +22,15 @@ SidepanelMonitor::SidepanelMonitor(QWidget *parent) :
     _parent(parent)
 {
     ui->setupUi(this);
-    _timer = new QTimer(this);
 
+    if (!publisher_port.isEmpty()) {
+        ui->lineEdit_publisher->setText(publisher_port);
+    }
+    if (!server_port.isEmpty()) {
+        ui->lineEdit_server->setText(server_port);
+    }
+
+    _timer = new QTimer(this);
     connect( _timer, &QTimer::timeout, this, &SidepanelMonitor::on_timer );
 }
 
@@ -187,7 +196,7 @@ bool SidepanelMonitor::getTreeFromServer()
 
 void SidepanelMonitor::on_Connect()
 {
-    if( !_connected)
+    if( !_connected )
     {
         QString address = ui->lineEdit->text();
         if( address.isEmpty() )
