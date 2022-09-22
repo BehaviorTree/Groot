@@ -189,11 +189,11 @@ bool VerifyXML(QDomDocument &doc,
     error_messages.clear();
     try {
         std::string xml_text = doc.toString().toStdString();
-        std::set<std::string> registered_nodes;
+        std::unordered_map<std::string, BT::NodeType> registered_nodes;
 
         for(const auto& str: registered_ID)
         {
-            registered_nodes.insert( str.toStdString() );
+            registered_nodes[ str.toStdString() ] = BT::NodeType::UNDEFINED;
         }
 
         BT::VerifyXML(xml_text, registered_nodes); // may throw
