@@ -22,6 +22,7 @@ SidepanelMonitor::SidepanelMonitor(QWidget *parent,
     _parent(parent)
 {
     ui->setupUi(this);
+    this->set_load_tree_timeout_ms(_load_tree_default_timeout_ms);
 
     if (!publisher_port.isEmpty()) {
         ui->lineEdit_publisher->setText(publisher_port);
@@ -136,8 +137,7 @@ bool SidepanelMonitor::getTreeFromServer()
         zmq::socket_t  zmq_client( _zmq_context, ZMQ_REQ );
         zmq_client.connect( _connection_address_req.c_str() );
 
-        int timeout_ms = 1000;
-        zmq_client.setsockopt(ZMQ_RCVTIMEO,&timeout_ms, sizeof(int) );
+        zmq_client.setsockopt(ZMQ_RCVTIMEO, &_load_tree_timeout_ms, sizeof(int) );
 
         zmq_client.send(request, zmq::send_flags::none);
 
@@ -230,13 +230,16 @@ void SidepanelMonitor::on_Connect()
 
                 int timeout_ms = 1;
                 _zmq_subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-                _zmq_subscriber.setsockopt(ZMQ_RCVTIMEO,&timeout_ms, sizeof(int) );
+                _zmq_subscriber.setsockopt(ZMQ_RCVTIMEO, &timeout_ms, sizeof(int) );
 
                 if( !getTreeFromServer() )
                 {
                     failed = true;
                     _connected = false;
                 }
+                // After we try get a tree on connect, reset to the default timeout.
+                // This is done so that we only use the increased autoconnect timeout once.
+                this->set_load_tree_timeout_ms(_load_tree_default_timeout_ms);
             }
             catch(zmq::error_t& err)
             {
@@ -252,7 +255,7 @@ void SidepanelMonitor::on_Connect()
             _connected = true;
             ui->lineEdit->setDisabled(true);
             ui->lineEdit_publisher->setDisabled(true);
-            _timer->start(20);
+            _timer->start(_timer_period_ms);
             connectionUpdate(true);
         }
         else{

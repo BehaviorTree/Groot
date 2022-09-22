@@ -114,7 +114,11 @@ MainWindow::MainWindow(GraphicMode initial_mode,
             this, &MainWindow::onConnectionUpdate );
 
     if (monitor_autoconnect) {
-        usleep(1e6);  // Add a slight delay
+        // If autoconnecting, increase the timeout to get the behavior tree to a
+        // larger value. This only lasts for one "connect" before returning to
+        // its default value.
+        _monitor_widget->set_load_tree_timeout_ms(
+            _monitor_widget->_load_tree_autoconnect_timeout_ms);
         ui->toolButtonConnect->animateClick();
     }
 #else
