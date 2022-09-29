@@ -34,7 +34,7 @@ On Ubuntu Xenial or later, you can install the dependencies with:
        sudo apt install qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
       
 Some functionalities of the code related to ROS will work __only__ if the
-project is compiled with with _catkin_.
+project is compiled with _catkin_.
 
 # Compilation instructions (Linux)
 
