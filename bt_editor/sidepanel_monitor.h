@@ -23,13 +23,15 @@ public:
     static constexpr int _load_tree_autoconnect_timeout_ms = 10000;
 
     explicit SidepanelMonitor(QWidget *parent = nullptr,
+                              const QString &address = "",
                               const QString &publisher_port = "",
                               const QString &server_port = "");
     ~SidepanelMonitor();
 
     void clear();
 
-    void set_load_tree_timeout_ms(const int timeout_ms) {
+    void set_load_tree_timeout_ms(const int timeout_ms)
+    {
         _load_tree_timeout_ms = timeout_ms;
     };
 

@@ -43,10 +43,11 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(GraphicMode initial_mode,
-                       const QString& monitor_pub_port = "",
-                       const QString& monitor_srv_port = "",
-                       const bool monitor_autoconnect = false,
-                       QWidget *parent = nullptr);
+                        const QString& monitor_address = "",
+                        const QString& monitor_pub_port = "",
+                        const QString& monitor_srv_port = "",
+                        const bool monitor_autoconnect = false,
+                        QWidget *parent = nullptr);
     ~MainWindow() override;
 
     void loadFromXML(const QString &xml_text);
@@ -202,6 +203,7 @@ private:
     SidepanelMonitor* _monitor_widget;
 #endif
 
+    QString _monitor_address;
     QString _monitor_publisher_port;
     QString _monitor_server_port;
     bool _monitor_autoconnect;

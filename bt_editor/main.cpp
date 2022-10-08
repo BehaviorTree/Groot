@@ -40,6 +40,10 @@ main(int argc, char *argv[])
                                    "mode");
     parser.addOption(mode_option);
 
+    QCommandLineOption address_option(QStringList() << "address",
+                                      "Address to connect to (defaults to localhost)",
+                                      "address");
+    parser.addOption(address_option);
     QCommandLineOption pub_port_option(QStringList() << "publisher_port",
                                        "Publisher port number (defaults to 1666)",
                                        "publisher_port");
@@ -102,13 +106,14 @@ main(int argc, char *argv[])
         }
 
         // Get the monitor options.
+        const QString monitor_address = parser.value(address_option);
         const QString monitor_pub_port = parser.value(pub_port_option);
         const QString monitor_srv_port = parser.value(srv_port_option);
         const bool monitor_autoconnect = parser.isSet(autoconnect_option);
 
         // Start the main application.
-        MainWindow win( mode, monitor_pub_port, monitor_srv_port,
-                        monitor_autoconnect );
+        MainWindow win( mode, monitor_address, monitor_pub_port,
+                        monitor_srv_port, monitor_autoconnect );
         win.show();
         return app.exec();
     }

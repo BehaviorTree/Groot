@@ -11,6 +11,7 @@
 #include "utils.h"
 
 SidepanelMonitor::SidepanelMonitor(QWidget *parent,
+                                   const QString &address,
                                    const QString &publisher_port,
                                    const QString &server_port) :
     QFrame(parent),
@@ -24,10 +25,16 @@ SidepanelMonitor::SidepanelMonitor(QWidget *parent,
     ui->setupUi(this);
     this->set_load_tree_timeout_ms(_load_tree_default_timeout_ms);
 
-    if (!publisher_port.isEmpty()) {
+    if ( !address.isEmpty() )
+    {
+        ui->lineEdit_address->setText(address);
+    }
+    if ( !publisher_port.isEmpty() )
+    {
         ui->lineEdit_publisher->setText(publisher_port);
     }
-    if (!server_port.isEmpty()) {
+    if ( !server_port.isEmpty() )
+    {
         ui->lineEdit_server->setText(server_port);
     }
 
@@ -107,7 +114,7 @@ void SidepanelMonitor::on_timer()
                 qDebug() << "Reload tree from server";
                 if( !getTreeFromServer() ) {
                     _connected = false;
-                    ui->lineEdit->setDisabled(false);
+                    ui->lineEdit_address->setDisabled(false);
                     _timer->stop();
                     connectionUpdate(false);
                     return;
@@ -198,11 +205,11 @@ void SidepanelMonitor::on_Connect()
 {
     if( !_connected )
     {
-        QString address = ui->lineEdit->text();
+        QString address = ui->lineEdit_address->text();
         if( address.isEmpty() )
         {
-            address = ui->lineEdit->placeholderText();
-            ui->lineEdit->setText(address);
+            address = ui->lineEdit_address->placeholderText();
+            ui->lineEdit_address->setText(address);
         }
 
         QString publisher_port = ui->lineEdit_publisher->text();
@@ -253,7 +260,7 @@ void SidepanelMonitor::on_Connect()
         if( !failed )
         {
             _connected = true;
-            ui->lineEdit->setDisabled(true);
+            ui->lineEdit_address->setDisabled(true);
             ui->lineEdit_publisher->setDisabled(true);
             _timer->start(_timer_period_ms);
             connectionUpdate(true);
@@ -267,7 +274,7 @@ void SidepanelMonitor::on_Connect()
     }
     else{
         _connected = false;
-        ui->lineEdit->setDisabled(false);
+        ui->lineEdit_address->setDisabled(false);
         ui->lineEdit_publisher->setDisabled(false);
         _timer->stop();
 
