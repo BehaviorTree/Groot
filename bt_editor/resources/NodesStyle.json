@@ -42,7 +42,7 @@
         "icon": ":/icons/svg/edit_list.svg"
     },
 
-    "RetryUntilSuccesful": {
+    "RetryUntilSuccessful": {
         "icon": ":/icons/svg/retry.svg"
     },
 

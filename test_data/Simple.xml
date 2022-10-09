@@ -2,9 +2,9 @@
     <!--  //////////  -->
     <BehaviorTree ID="DoorClosed">
         <Sequence name="door_closed_sequence">
-            <RetryUntilSuccesful num_attempts="4">
+            <RetryUntilSuccessful num_attempts="4">
                 <Action ID="OpenDoor"/>
-            </RetryUntilSuccesful>
+            </RetryUntilSuccessful>
         </Sequence>
     </BehaviorTree>
     <!--  //////////  -->
