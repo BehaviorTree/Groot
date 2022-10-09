@@ -1045,6 +1045,12 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
     if( option == SUBTREE_EXPAND && subtree_model->expanded() == false)
     {
         auto subtree_container = getTabByName(subtree_name);
+        if (!subtree_container) {
+            QMessageBox::warning(this, tr("Oops!"),
+                                 tr("Couldn't get SubTree name from tabs and therefore can't expand."),
+                                 QMessageBox::Cancel);
+            return &node;
+        }
 
         // Prevent expansion of invalid subtree
         if( !subtree_container->containsValidTree() )
