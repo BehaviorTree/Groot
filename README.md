@@ -1,5 +1,14 @@
 [![Build Status](https://travis-ci.org/BehaviorTree/Groot.svg?branch=master)](https://travis-ci.org/BehaviorTree/Groot)
 
+# DEPRECATION notice
+
+Groot is being rewritten from the ground up (**new software COMING SOON**). This repository will be in "maintenance mode" and won't receive any
+significant update. 
+Issues will **not** be addressed by the main author but, occasionally, Pull Requests might be checked and merged.
+
+**If you use Groot at your company** and you want to know how we are redesigning it to be more flexible, reliable, fast and scalable,
+then get in touch with the main author: dfaconti@aurynrobotics.com.
+
 # Groot 
 
 **Groot** is a Graphical Editor, written in C++ and Qt, to create [BehaviorTrees](https://en.wikipedia.org/wiki/Behavior_tree).
