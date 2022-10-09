@@ -108,6 +108,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     ui->actionMonitor_mode->setVisible(false);
 #endif
 
+    _load_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this);
     updateCurrentMode();
 
     dynamic_cast<QVBoxLayout*>(ui->leftFrame->layout())->setStretch(1,1);
@@ -149,17 +150,6 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     QShortcut* save_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
     connect( save_shortcut, &QShortcut::activated, this, &MainWindow::on_actionSave_triggered );
-
-
-    _load_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this);
-    if ( _current_mode == GraphicMode::EDITOR ) {
-        connect( _load_shortcut, &QShortcut::activated,
-                 this, &MainWindow::on_actionLoad_triggered );
-    }
-    if ( _current_mode == GraphicMode::REPLAY ) {
-        connect( _load_shortcut, &QShortcut::activated,
-                 _replay_widget, &SidepanelReplay::on_LoadLog);
-    }
 
     QShortcut* load_shortcut_option = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_O), this);
     connect(load_shortcut_option, &QShortcut::activated, _load_shortcut, &QShortcut::activated);
