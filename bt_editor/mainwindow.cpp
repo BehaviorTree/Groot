@@ -116,13 +116,16 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     ui->splitter->setStretchFactor(1, 4);
 
     // Shortcuts
+    QShortcut* arrange_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
     QShortcut* rearrange_shortcut = new QShortcut(QKeySequence(Qt::Key_R), this);
     QShortcut* centerview_shortcut = new QShortcut(QKeySequence(Qt::Key_C), this);
     QShortcut* layout_shortcut = new QShortcut(QKeySequence(Qt::Key_L), this);
     QShortcut* newnode_shortcut = new QShortcut(QKeySequence(Qt::Key_N), this);
 
+    connect( arrange_shortcut, &QShortcut::activated,
+             this,   &MainWindow::onAutoArrange  );
     connect( rearrange_shortcut, &QShortcut::activated,
-             this, &MainWindow::on_toolButtonReorder_pressed );
+             this, &MainWindow::onAutoArrange );
     connect( centerview_shortcut, &QShortcut::activated,
              this, &MainWindow::on_toolButtonCenterView_pressed );
     connect( layout_shortcut, &QShortcut::activated,
