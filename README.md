@@ -2,12 +2,17 @@
 
 # DEPRECATION notice
 
-Groot is being rewritten from the ground up (**new software COMING SOON**). This repository will be in "maintenance mode" and won't receive any
-significant update. 
+Groot is being rewritten from the ground up (**new software COMING SOON**). 
+This repository will be in "maintenance mode" and won't receive any significant update. 
 Issues will **not** be addressed by the main author but, occasionally, Pull Requests might be checked and merged.
 
-**If you use Groot at your company** and you want to know how we are redesigning it to be more flexible, reliable, fast and scalable,
-then get in touch with the main author: dfaconti@aurynrobotics.com.
+**Groot 1.0 is compatble only with BehaviorTree.CPP 3.8.x**, and it is not expected to 
+work correctly with BehaviorTree.CPP 4.x.
+
+We are working on Groot 2.0, that will introduce new functionalities and compatibility with BT.CPP 4.0.
+
+**If you use Groot at work** and you want to know how we are redesigning it to be more flexible, 
+reliable, fast and scalable, get in touch with the main author: dfaconti@aurynrobotics.com.
 
 # Groot 
 
