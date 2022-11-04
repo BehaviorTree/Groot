@@ -45,25 +45,31 @@ On Ubuntu Xenial or later, you can install the dependencies with:
 Some functionalities of the code related to ROS will work __only__ if the
 project is compiled with with _catkin_.
 
-# Compilation instructions (Linux)
+## Compilation instructions (Linux)
 
-       git clone https://github.com/BehaviorTree/Groot.git
-       cd Groot
-       git submodule update --init --recursive
-       mkdir build; cd build
-       cmake ..
-       make
+```
+git clone https://github.com/BehaviorTree/Groot.git
+cd Groot
+git submodule update --init --recursive
+mkdir build; cd build
+cmake ..
+make
+```
        
  Note compiling "in-source" is not allowed.   
  
- # Compilation instructions (ROS)
+ ## Compilation instructions (ROS/ROS2)
 
-       mkdir -p catkin_ws/src
-       cd catkin_ws/src
-       git clone https://github.com/BehaviorTree/Groot.git
-       cd ..
-       rosdep install --from-paths src --ignore-src
-       catkin_make  
+**Discouraged**
+
+If you want to compile using `catkin build`(ROS) or `colcon_build` (ROS2)
+then you must be sure that version 3.8.x is used (branch V3.8).
+
+You may probably want to compile BehaviorTree.CPP in the same workspace.
+
+```
+git clone --branch v3.8 https://github.com/BehaviorTree/BehaviorTree.CPP.git
+```
 
 # Licence       
 
