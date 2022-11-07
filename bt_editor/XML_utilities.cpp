@@ -2,10 +2,12 @@
 #include "utils.h"
 
 #include "models/SubtreeNodeModel.hpp"
+#include <behaviortree_cpp_v3/basic_types.h>
 #include <behaviortree_cpp_v3/xml_parsing.h>
 #include <QMessageBox>
 #include <QtDebug>
 #include <QLineEdit>
+#include <unordered_map>
 
 using namespace QtNodes;
 
@@ -189,11 +191,13 @@ bool VerifyXML(QDomDocument &doc,
     error_messages.clear();
     try {
         std::string xml_text = doc.toString().toStdString();
-        std::set<std::string> registered_nodes;
-
+        std::unordered_map<std::string, BT::NodeType> registered_nodes;
+        
+        BT::NodeType node_type; 
         for(const auto& str: registered_ID)
         {
-            registered_nodes.insert( str.toStdString() );
+            node_type = BT::convertFromString<BT::NodeType>(str.toStdString());
+            registered_nodes.insert( {str.toStdString(),  node_type});
         }
 
         BT::VerifyXML(xml_text, registered_nodes); // may throw
