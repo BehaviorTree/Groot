@@ -20,6 +20,7 @@ endif()
 
 #############################################################
 find_package(ament_cmake QUIET)
+find_package(catkin QUIET)
 
 if(ament_cmake_FOUND)
   find_package(ament_index_cpp REQUIRED)
@@ -32,7 +33,7 @@ if(ament_cmake_FOUND)
   message(STATUS "---------------------")
   message(STATUS "Compiling with AMENT.")
   message(STATUS "---------------------")
-elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
+elseif(catkin_FOUND OR CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
   set(catkin_FOUND 1)
   # add_definitions( -DUSING_ROS )
