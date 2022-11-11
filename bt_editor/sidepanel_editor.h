@@ -47,6 +47,8 @@ private slots:
 
     void on_buttonLock_toggled(bool checked);
 
+    void onDoubleClick(QTreeWidgetItem *item, int column);
+
 signals:
 
     void addNewModel(const NodeModel &new_model);
@@ -60,6 +62,8 @@ signals:
     void renameSubtree(QString prev_ID, QString new_ID);
 
     void destroySubtree(QString ID);
+
+    void setTabScope(const QString& subtreeName);
 
 private:
     Ui::SidepanelEditor *ui;

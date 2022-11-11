@@ -146,6 +146,9 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
         this->createTab(ID);
     });
 
+    connect(_editor_widget, &SidepanelEditor::setTabScope,
+            this, &MainWindow::onSubtreeSelected);
+
     connect( _editor_widget, &SidepanelEditor::renameSubtree,
              this, [this](QString prev_ID, QString new_ID)
     {
@@ -1718,4 +1721,16 @@ void MainWindow::on_actionReportIssue_triggered()
 GraphicMode MainWindow::getGraphicMode(void) const
 {
     return _current_mode;
+}
+
+void MainWindow::onSubtreeSelected(const QString& subtreeName)
+{
+    for (int i = 0; i < ui->tabWidget->tabBar()->count(); ++i)
+    {
+        if (ui->tabWidget->tabBar()->tabText(i) == subtreeName)
+        {
+            ui->tabWidget->tabBar()->setCurrentIndex(i);
+            return;
+        }
+    }
 }

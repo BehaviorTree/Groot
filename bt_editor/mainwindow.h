@@ -91,6 +91,8 @@ public slots:
 
     void on_actionSave_triggered();
 
+    void onSubtreeSelected(const QString& subtreeName);
+
     void on_splitter_splitterMoved(int pos = 0, int index = 0);
 
     void on_toolButtonReorder_pressed();
