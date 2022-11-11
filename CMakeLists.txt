@@ -169,7 +169,12 @@ else()
 endif()
 
 if( ZMQ_FOUND )
-    SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} zmq)
+    if (APPLE)
+        find_package(cppzmq)
+        SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} cppzmq)
+    else()
+        SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} zmq)
+    endif()
 endif()
 
 target_link_libraries(behavior_tree_editor ${GROOT_DEPENDENCIES} )
