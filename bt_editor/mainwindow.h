@@ -6,6 +6,7 @@
 #include <nodes/Node>
 #include <QTreeWidgetItem>
 #include <QShortcut>
+#include <QShowEvent>
 #include <QTimer>
 #include <deque>
 #include <thread>
@@ -141,6 +142,8 @@ private:
     void updateCurrentMode();
 
     bool eventFilter(QObject *obj, QEvent *event) override;
+
+    void showEvent(QShowEvent *event) override;
 
     void resizeEvent(QResizeEvent *) override;
 

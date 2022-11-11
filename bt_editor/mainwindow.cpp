@@ -723,6 +723,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 }
 
+void MainWindow::showEvent(QShowEvent *event)
+{
+    if (!event->spontaneous()) {
+        currentTabInfo()->zoomHomeView();
+        ui->centralwidget->setFocus();
+    }
+}
+
 void MainWindow::resizeEvent(QResizeEvent *)
 {
     on_splitter_splitterMoved();
