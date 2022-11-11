@@ -41,7 +41,7 @@ void SidepanelMonitor::on_timer()
 
     zmq::message_t msg;
     try{
-        while(  _zmq_subscriber.recv(&msg) )
+        while(  _zmq_subscriber.recv(msg) )
         {
             _msg_count++;
             ui->labelCount->setText( QString("Messages received: %1").arg(_msg_count) );
@@ -50,7 +50,7 @@ void SidepanelMonitor::on_timer()
 
             const uint32_t header_size = flatbuffers::ReadScalar<uint32_t>( buffer );
             const uint32_t num_transitions = flatbuffers::ReadScalar<uint32_t>( &buffer[4+header_size] );
-            
+
             std::vector<std::pair<int, NodeStatus>> node_status;
             // check uid in the index, if failed load tree from server
             try{
@@ -59,7 +59,7 @@ void SidepanelMonitor::on_timer()
                     const uint16_t uid = flatbuffers::ReadScalar<uint16_t>(&buffer[offset]);
                     _uid_to_index.at(uid);
                 }
-                
+
                 for(size_t t=0; t < num_transitions; t++)
                 {
                     size_t offset = 8 + header_size + 12*t;
@@ -130,10 +130,10 @@ bool SidepanelMonitor::getTreeFromServer()
         int timeout_ms = 1000;
         zmq_client.setsockopt(ZMQ_RCVTIMEO,&timeout_ms, sizeof(int) );
 
-        zmq_client.send(request);
+        zmq_client.send(request, zmq::send_flags::none);
 
-        bool received = zmq_client.recv(&reply);
-        if( ! received )
+        auto bytes_received  = zmq_client.recv(reply, zmq::recv_flags::none);
+        if( !bytes_received || *bytes_received == 0 )
         {
             return false;
         }

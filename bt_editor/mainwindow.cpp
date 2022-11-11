@@ -126,6 +126,8 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     QShortcut* redo_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this);
     connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
+    QShortcut* save_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
+
     connect( _editor_widget, &SidepanelEditor::nodeModelEdited,
             this, &MainWindow::onTreeNodeEdited);
 
@@ -149,7 +151,7 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     {
         if (prev_ID == new_ID)
             return;
-            
+
         for (int index = 0; index < ui->tabWidget->count(); index++)
         {
             if( ui->tabWidget->tabText(index) == prev_ID)
@@ -175,6 +177,8 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
 
     connect( ui->toolButtonSaveFile, &QToolButton::clicked,
             this, &MainWindow::on_actionSave_triggered );
+
+    connect( save_shortcut, &QShortcut::activated, this, &MainWindow::on_actionSave_triggered );
 
     connect( _replay_widget, &SidepanelReplay::changeNodeStyle,
             this, &MainWindow::onChangeNodesStatus);
@@ -643,7 +647,7 @@ void MainWindow::on_actionSave_triggered()
     QFile file(fileName);
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
-        stream << xml_text << endl;
+        stream << xml_text;
     }
 
     directory_path = QFileInfo(fileName).absolutePath();
@@ -1041,6 +1045,12 @@ QtNodes::Node* MainWindow::subTreeExpand(GraphicContainer &container,
     if( option == SUBTREE_EXPAND && subtree_model->expanded() == false)
     {
         auto subtree_container = getTabByName(subtree_name);
+        if (!subtree_container) {
+            QMessageBox::warning(this, tr("Oops!"),
+                                 tr("Couldn't get SubTree name from tabs and therefore can't expand."),
+                                 QMessageBox::Cancel);
+            return &node;
+        }
 
         // Prevent expansion of invalid subtree
         if( !subtree_container->containsValidTree() )

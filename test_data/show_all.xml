@@ -10,11 +10,11 @@
                 </ReactiveFallback>
             </Fallback>
             <SequenceStar name="DoSequenceStar">
-                <RetryUntilSuccesful num_attempts="1">
+                <RetryUntilSuccessful num_attempts="1">
                     <BlackboardCheckString value_A="" return_on_mismatch="" value_B="">
                         <AlwaysSuccess/>
                     </BlackboardCheckString>
-                </RetryUntilSuccesful>
+                </RetryUntilSuccessful>
             </SequenceStar>
             <Inverter>
                 <ForceFailure>
