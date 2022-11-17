@@ -14,6 +14,7 @@
   <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
   <build_depend condition="$ROS_VERSION == 1">cmake_modules</build_depend>
   <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_index_cpp</buildtool_depend>
 
   <build_depend>behaviortree_cpp_v3</build_depend>
   <build_depend>qtbase5-dev</build_depend>
