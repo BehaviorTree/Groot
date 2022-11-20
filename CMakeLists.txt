@@ -20,6 +20,7 @@ endif()
 
 #############################################################
 find_package(ament_cmake QUIET)
+find_package(catkin QUIET)
 
 if(ament_cmake_FOUND)
   find_package(ament_index_cpp REQUIRED)
@@ -29,19 +30,19 @@ if(ament_cmake_FOUND)
     behaviortree_cpp_v3
   )
 
-  message(STATUS "------------------------------------------------")
-  message(STATUS "BehaviourTreeEditor is being built using AMENT.")
-  message(STATUS "------------------------------------------------")
-elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
+  message(STATUS "---------------------")
+  message(STATUS "Compiling with AMENT.")
+  message(STATUS "---------------------")
+elseif(catkin_FOUND OR CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
   set(catkin_FOUND 1)
   # add_definitions( -DUSING_ROS )
 
   find_package(catkin REQUIRED COMPONENTS behaviortree_cpp_v3)
 
-  message(STATUS "------------------------------------------------")
-  message(STATUS "BehaviourTreeEditor is being built using CATKIN.")
-  message(STATUS "------------------------------------------------")
+  message(STATUS "----------------------")
+  message(STATUS "Compiling with CATKIN.")
+  message(STATUS "----------------------")
 
   catkin_package(
     INCLUDE_DIRS 
@@ -82,13 +83,24 @@ set(BUILD_TESTING OFF CACHE BOOL "")
 set(CATKIN_ENABLE_TESTING OFF CACHE BOOL "")
 
 if(NOT catkin_FOUND AND NOT ament_cmake_FOUND)
-    # look for BehaviorTree.CPP on the system
-    find_package(behaviortree_cpp_v3)
-    if (NOT behaviortree_cpp_v3_FOUND)
-        # use git submodule only if you are not compiling with catkin
-        add_subdirectory( depend/BehaviorTree.CPP )
-        include_directories( depend/BehaviorTree.CPP/include )
+
+    if(NOT EXISTS depend/BehaviorTree.CPP)
+      message("Can't find the submodule BehaviorTree.CPP")
+      message("Run [git submodule update --init --recursive]")
     endif()
+
+    SET(BUILD_EXAMPLES OFF CACHE BOOL "Build tutorials and examples" FORCE)
+    SET(BUILD_UNIT_TESTS OFF CACHE BOOL "Build the unit tests" FORCE)
+    SET(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
+
+    # look for BehaviorTree.CPP as submodule
+    # use git submodule only if you are not compiling with catkin
+    add_subdirectory( depend/BehaviorTree.CPP )
+    include_directories( depend/BehaviorTree.CPP/include )
+
+    message(STATUS "----------------------------------")
+    message(STATUS "BehaviourTree.CPP submodule found.")
+    message(STATUS "----------------------------------")
 endif()
 
 ##########################################
@@ -147,7 +159,7 @@ add_library(behavior_tree_editor SHARED
     ${FORMS_HEADERS}
 )
 
-SET(GROOT_DEPENDENCIES QtNodeEditor )
+SET(GROOT_DEPENDENCIES QtNodeEditor curses ncursesw tinfo )
 
 if(ament_cmake_FOUND)
     ament_target_dependencies(behavior_tree_editor ${dependencies})
@@ -158,7 +170,12 @@ else()
 endif()
 
 if( ZMQ_FOUND )
-    SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} zmq)
+    if (APPLE)
+        find_package(cppzmq)
+        SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} cppzmq)
+    else()
+        SET(GROOT_DEPENDENCIES ${GROOT_DEPENDENCIES} zmq)
+    endif()
 endif()
 
 target_link_libraries(behavior_tree_editor ${GROOT_DEPENDENCIES} )

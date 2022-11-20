@@ -15,7 +15,7 @@ ENABLE_TESTING()
 function(CompileTest name)
     add_executable(${name} ${name}.cpp groot_test_base.cpp ${RESOURCE_FILES} )
     target_link_libraries(${name} PRIVATE Qt5::Gui Qt5::Test behavior_tree_editor)
-    add_test(${name} COMMAND ${name})
+    add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
 set(RESOURCE_FILES
@@ -27,4 +27,3 @@ set(RESOURCE_FILES
 
 CompileTest( editor_test )
 CompileTest( replay_test )
-

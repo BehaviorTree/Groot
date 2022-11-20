@@ -167,6 +167,9 @@ MainWindow::MainWindow(GraphicMode initial_mode,
         this->createTab(ID);
     });
 
+    connect(_editor_widget, &SidepanelEditor::setTabScope,
+            this, &MainWindow::onSubtreeSelected);
+
     connect( _editor_widget, &SidepanelEditor::renameSubtree,
              this, [this](QString prev_ID, QString new_ID)
     {
@@ -741,6 +744,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     {
         qDebug() << "B " << event->type();
         return QMainWindow::eventFilter(obj,event);
+    }
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    if (!event->spontaneous()) {
+        currentTabInfo()->zoomHomeView();
+        ui->centralwidget->setFocus();
     }
 }
 
@@ -1731,4 +1742,16 @@ void MainWindow::on_actionReportIssue_triggered()
 GraphicMode MainWindow::getGraphicMode(void) const
 {
     return _current_mode;
+}
+
+void MainWindow::onSubtreeSelected(const QString& subtreeName)
+{
+    for (int i = 0; i < ui->tabWidget->tabBar()->count(); ++i)
+    {
+        if (ui->tabWidget->tabBar()->tabText(i) == subtreeName)
+        {
+            ui->tabWidget->tabBar()->setCurrentIndex(i);
+            return;
+        }
+    }
 }
