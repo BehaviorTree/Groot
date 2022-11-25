@@ -25,6 +25,8 @@ public:
 
     void clear();
 
+    void addNode();
+
 public slots:
     void onRemoveModel(QString selected_name);
 
