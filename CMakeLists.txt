@@ -18,6 +18,10 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
+if (WIN32)
+    add_definitions("/EHsc")
+endif()
+
 #############################################################
 find_package(ament_cmake QUIET)
 find_package(catkin QUIET)
@@ -159,7 +163,14 @@ add_library(behavior_tree_editor SHARED
     ${FORMS_HEADERS}
 )
 
-SET(GROOT_DEPENDENCIES QtNodeEditor curses ncursesw tinfo )
+set_target_properties(behavior_tree_editor PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+include(GenerateExportHeader)
+generate_export_header(behavior_tree_editor)
+target_include_directories(behavior_tree_editor PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+)
+
+SET(GROOT_DEPENDENCIES QtNodeEditor )
 
 if(ament_cmake_FOUND)
     ament_target_dependencies(behavior_tree_editor ${dependencies})
@@ -180,8 +191,12 @@ endif()
 
 target_link_libraries(behavior_tree_editor ${GROOT_DEPENDENCIES} )
 
+if (WIN32)
+    add_executable(Groot WIN32 ./bt_editor/main.cpp  ${RESOURCE_FILES})
+else()
+    add_executable(Groot ./bt_editor/main.cpp  ${RESOURCE_FILES})
+endif()
 
-add_executable(Groot ./bt_editor/main.cpp  ${RESOURCE_FILES})
 target_link_libraries(Groot behavior_tree_editor )
 
 add_subdirectory(test)
@@ -209,8 +224,8 @@ else()
     
 endif()
 
-INSTALL(TARGETS behavior_tree_editor LIBRARY DESTINATION ${GROOT_LIB_DESTINATION} )
-INSTALL(TARGETS Groot RUNTIME DESTINATION ${GROOT_BIN_DESTINATION} )
+INSTALL(TARGETS behavior_tree_editor CONFIGURATIONS Release LIBRARY DESTINATION ${GROOT_LIB_DESTINATION} )
+INSTALL(TARGETS Groot CONFIGURATIONS Release RUNTIME DESTINATION ${GROOT_BIN_DESTINATION} )
 
 if(ament_cmake_FOUND)
   ament_export_include_directories(include)
