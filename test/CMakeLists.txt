@@ -26,4 +26,3 @@ set(RESOURCE_FILES
     )
 
 CompileTest( editor_test )
-CompileTest( replay_test )

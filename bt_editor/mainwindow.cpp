@@ -90,23 +90,8 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
     //------------------------------------------------------
 
     _editor_widget = new SidepanelEditor(_model_registry.get(), _treenode_models, this);
-    _replay_widget = new SidepanelReplay(this);
 
     ui->leftFrame->layout()->addWidget( _editor_widget );
-    ui->leftFrame->layout()->addWidget( _replay_widget );
-
-#ifdef ZMQ_FOUND
-    _monitor_widget = new SidepanelMonitor(this);
-    ui->leftFrame->layout()->addWidget( _monitor_widget );
-
-    connect( ui->toolButtonConnect, &QToolButton::clicked,
-            _monitor_widget, &SidepanelMonitor::on_Connect );
-
-    connect( _monitor_widget, &SidepanelMonitor::connectionUpdate,
-            this, &MainWindow::onConnectionUpdate );
-#else
-    ui->actionMonitor_mode->setVisible(false);
-#endif
 
     updateCurrentMode();
 
@@ -172,31 +157,10 @@ MainWindow::MainWindow(GraphicMode initial_mode, QWidget *parent) :
       onCreateAbsBehaviorTree(tree, bt_name, false);
     };
 
-    connect( _replay_widget, &SidepanelReplay::loadBehaviorTree,
-            this, createSingleTabBehaviorTree);
-
-    connect( _replay_widget, &SidepanelReplay::addNewModel,
-            this, &MainWindow::onAddToModelRegistry);
-
     connect( ui->toolButtonSaveFile, &QToolButton::clicked,
             this, &MainWindow::on_actionSave_triggered );
 
     connect( save_shortcut, &QShortcut::activated, this, &MainWindow::on_actionSave_triggered );
-
-    connect( _replay_widget, &SidepanelReplay::changeNodeStyle,
-            this, &MainWindow::onChangeNodesStatus);
-
-#ifdef ZMQ_FOUND
-
-    connect( _monitor_widget, &SidepanelMonitor::addNewModel,
-            this, &MainWindow::onAddToModelRegistry);
-
-    connect( _monitor_widget, &SidepanelMonitor::changeNodeStyle,
-            this, &MainWindow::onChangeNodesStatus);
-
-    connect( _monitor_widget, &SidepanelMonitor::loadBehaviorTree,
-            this, createSingleTabBehaviorTree );
-#endif
 
     ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect( ui->tabWidget->tabBar(), &QTabBar::customContextMenuRequested,
@@ -223,8 +187,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     case QtNodes::PortLayout::Vertical:  settings.setValue("MainWindow/layout", "VERTICAL");
         break;
     }
-
-    settings.setValue("StartupDialog.Mode", toStr( _current_mode ) );
 
     QMainWindow::closeEvent(event);
 }
@@ -864,22 +826,22 @@ void MainWindow::loadSavedStateFromJson(SavedState saved_state)
     onSceneChanged();
 }
 
-void MainWindow::onConnectionUpdate(bool connected)
-{
-    if(connected)
-    {
-        ui->toolButtonConnect->setStyleSheet("background-color: rgb(50, 150, 0); color:white");
-        ui->toolButtonConnect->setText("Disconnect");
-    }
-    else{
-        ui->toolButtonConnect->setStyleSheet(
-            "QToolButton {color:white; }"
-            "QToolButton:hover{ background-color: rgb(110, 110, 110); }"
-            "QToolButton:pressed{ background-color: rgb(50, 150, 0) }"
-            "QToolButton:disabled{color:gray; background-color: rgb(50, 50, 50) }");
-        ui->toolButtonConnect->setText("Connect");
-    }
-}
+//void MainWindow::onConnectionUpdate(bool connected)
+//{
+//    if(connected)
+//    {
+//        ui->toolButtonConnect->setStyleSheet("background-color: rgb(50, 150, 0); color:white");
+//        ui->toolButtonConnect->setText("Disconnect");
+//    }
+//    else{
+//        ui->toolButtonConnect->setStyleSheet(
+//            "QToolButton {color:white; }"
+//            "QToolButton:hover{ background-color: rgb(110, 110, 110); }"
+//            "QToolButton:pressed{ background-color: rgb(50, 150, 0) }"
+//            "QToolButton:disabled{color:gray; background-color: rgb(50, 50, 50) }");
+//        ui->toolButtonConnect->setText("Connect");
+//    }
+//}
 
 void MainWindow::onRequestSubTreeExpand(GraphicContainer& container,
                                         QtNodes::Node& node)
@@ -1258,10 +1220,10 @@ void MainWindow::onActionClearTriggered(bool create_new)
     }
 
     _editor_widget->clear();
-    _replay_widget->clear();
-#ifdef ZMQ_FOUND
-    _monitor_widget->clear();
-#endif
+//    _replay_widget->clear();
+//#ifdef ZMQ_FOUND
+//    _monitor_widget->clear();
+//#endif
 
 }
 
@@ -1271,21 +1233,10 @@ void MainWindow::updateCurrentMode()
     const bool NOT_EDITOR = _current_mode != GraphicMode::EDITOR;
 
     _editor_widget->setHidden( NOT_EDITOR );
-    _replay_widget->setHidden( _current_mode != GraphicMode::REPLAY );
-#ifdef ZMQ_FOUND
-    _monitor_widget->setHidden( _current_mode != GraphicMode::MONITOR );
-#endif
-
-    ui->toolButtonLoadFile->setHidden( _current_mode == GraphicMode::MONITOR );
-    ui->toolButtonConnect->setHidden( _current_mode != GraphicMode::MONITOR );
 
     if( _current_mode == GraphicMode::EDITOR )
     {
         ui->toolButtonLoadFile->setText("Load Tree");
-    }
-    else if( _current_mode == GraphicMode::REPLAY )
-    {
-        ui->toolButtonLoadFile->setText("Load Log");
     }
 
     ui->toolButtonLoadRemote->setHidden( true );
@@ -1297,15 +1248,6 @@ void MainWindow::updateCurrentMode()
     {
         connect( ui->toolButtonLoadFile, &QToolButton::clicked,
                 this, &MainWindow::on_actionLoad_triggered );
-        disconnect( ui->toolButtonLoadFile, &QToolButton::clicked,
-                   _replay_widget, &SidepanelReplay::on_LoadLog );
-    }
-    else if( _current_mode == GraphicMode::REPLAY )
-    {
-        disconnect( ui->toolButtonLoadFile, &QToolButton::clicked,
-                   this, &MainWindow::on_actionLoad_triggered );
-        connect( ui->toolButtonLoadFile, &QToolButton::clicked,
-                _replay_widget, &SidepanelReplay::on_LoadLog );
     }
     lockEditing( NOT_EDITOR );
 
@@ -1314,10 +1256,6 @@ void MainWindow::updateCurrentMode()
         _editor_widget->updateTreeView();
     }
     ui->actionEditor_mode->setEnabled( _current_mode != GraphicMode::EDITOR);
-#ifdef ZMQ_FOUND
-    ui->actionMonitor_mode->setEnabled( _current_mode != GraphicMode::MONITOR);
-#endif
-    ui->actionReplay_mode->setEnabled( _current_mode != GraphicMode::REPLAY);
 }
 
 
@@ -1421,54 +1359,6 @@ void MainWindow::on_actionEditor_mode_triggered()
 {
     _current_mode = GraphicMode::EDITOR;
     updateCurrentMode();
-
-#ifdef ZMQ_FOUND
-    _monitor_widget->clear();
-#endif
-
-    _replay_widget->clear();
-}
-
-void MainWindow::on_actionMonitor_mode_triggered()
-{
-#ifdef ZMQ_FOUND
-    QMessageBox::StandardButton res = QMessageBox::Ok;
-
-    if( currentTabInfo()->scene()->nodes().size() > 0)
-    {
-        res = QMessageBox::warning(this, tr("Carefull!"),
-                                   tr("If you switch to Monitor Mode, "
-                                      "the current BehaviorTree in the Scene will be deleted"),
-                                   QMessageBox::Cancel | QMessageBox::Ok, QMessageBox::Cancel);
-    }
-    if( res == QMessageBox::Ok)
-    {
-        currentTabInfo()->clearScene();
-        _monitor_widget->clear();
-        _current_mode = GraphicMode::MONITOR;
-        updateCurrentMode();
-    }
-#endif
-}
-
-void MainWindow::on_actionReplay_mode_triggered()
-{
-    QMessageBox::StandardButton res = QMessageBox::Ok;
-
-    if( currentTabInfo()->scene()->nodes().size() > 0)
-    {
-        res = QMessageBox::warning(this, tr("Carefull!"),
-                                   tr("If you switch to Log Replay Mode, "
-                                      "the current BehaviorTree in the Scene will be deleted"),
-                                   QMessageBox::Cancel | QMessageBox::Ok, QMessageBox::Cancel);
-    }
-    if( res == QMessageBox::Ok)
-    {
-        onActionClearTriggered(true);
-        _replay_widget->clear();
-        _current_mode = GraphicMode::REPLAY;
-        updateCurrentMode();
-    }
 }
 
 void MainWindow::on_tabWidget_currentChanged(int index)

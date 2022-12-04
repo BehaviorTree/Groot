@@ -112,26 +112,6 @@ bool AbsBehaviorTree::operator ==(const AbsBehaviorTree &other) const
     return true;
 }
 
-
-
-GraphicMode getGraphicModeFromString(const QString &str)
-{
-    if( str == "EDITOR")
-        return GraphicMode::EDITOR;
-    else if( str == "MONITOR")
-        return GraphicMode::MONITOR;
-    return GraphicMode::REPLAY;
-}
-
-const char *toStr(GraphicMode type)
-{
-    if( type == GraphicMode::EDITOR)   return "EDITOR";
-    if( type == GraphicMode::MONITOR ) return "MONITOR";
-    if( type == GraphicMode::REPLAY)   return "REPLAY";
-    return nullptr;
-}
-
-
 bool AbstractTreeNode::operator ==(const AbstractTreeNode &other) const
 {
     bool same_registration = model.registration_ID == other.model.registration_ID;

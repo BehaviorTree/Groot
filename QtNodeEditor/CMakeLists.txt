@@ -103,5 +103,3 @@ qt5_wrap_cpp(nodes_moc
 )
 
 target_sources(QtNodeEditor PRIVATE ${nodes_moc})
-
-
