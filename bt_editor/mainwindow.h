@@ -71,6 +71,8 @@ public slots:
 
     void onAutoArrange();
 
+    void onSaveSvg();
+
     void onSceneChanged();
 
     void onPushUndo();
@@ -101,6 +103,8 @@ public slots:
     void on_splitter_splitterMoved(int pos = 0, int index = 0);
 
     void on_toolButtonReorder_pressed();
+
+    void on_toolButtonSaveSvg_pressed();
 
     void on_toolButtonCenterView_pressed();
 

@@ -683,13 +683,30 @@ void MainWindow::onAutoArrange()
     currentTabInfo()->nodeReorder();
 }
 
+void MainWindow::onSaveSvg()
+{
+    QSettings settings;
+    QString last_load_path  = settings.value("MainWindow.lastLoadDirectory",
+                                            QDir::homePath() ).toString();
+    QString directory_path  = settings.value("MainWindow.lastSaveSvgDirectory",
+                                            last_load_path ).toString();
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Save BehaviorTree to svg"), directory_path,
+                                                    tr("SVG files (*.svg)"));
+    currentTabInfo()->saveSvgFile(fileName);
+
+    directory_path = QFileInfo(fileName).absolutePath();
+    settings.setValue("SidepanelEditor.lastSaveSvgDirectory", directory_path);
+}
+
 void MainWindow::onSceneChanged()
 {
     const bool valid_BT = currentTabInfo()->containsValidTree();
 
     ui->toolButtonLayout->setEnabled(valid_BT);
     ui->toolButtonReorder->setEnabled(valid_BT);
-    ui->toolButtonReorder->setEnabled(valid_BT);
+    ui->toolButtonSaveSvg->setEnabled(valid_BT);
 
     ui->actionSave->setEnabled(valid_BT);
     QPixmap pix;
@@ -1167,6 +1184,11 @@ void MainWindow::on_toolButtonReorder_pressed()
     onAutoArrange();
 }
 
+void MainWindow::on_toolButtonSaveSvg_pressed()
+{
+    onSaveSvg();
+}
+
 void MainWindow::on_toolButtonCenterView_pressed()
 {
     currentTabInfo()->zoomHomeView();
@@ -1313,6 +1335,7 @@ void MainWindow::updateCurrentMode()
 
     ui->toolButtonSaveFile->setHidden( NOT_EDITOR );
     ui->toolButtonReorder->setHidden( NOT_EDITOR );
+    ui->toolButtonSaveSvg->setHidden( NOT_EDITOR );
 
     if( _current_mode == GraphicMode::EDITOR )
     {

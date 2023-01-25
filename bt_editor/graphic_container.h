@@ -33,6 +33,8 @@ public:
 
     void nodeReorder();
 
+    void saveSvgFile(const QString path);
+
     void zoomHomeView();
 
     bool containsValidTree() const;
