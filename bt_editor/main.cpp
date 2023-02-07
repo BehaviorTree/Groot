@@ -39,6 +39,23 @@ main(int argc, char *argv[])
                                    "Start in one of these modes: [editor,monitor,replay]",
                                    "mode");
     parser.addOption(mode_option);
+
+    QCommandLineOption address_option(QStringList() << "address",
+                                      "Address to connect to (defaults to localhost)",
+                                      "address");
+    parser.addOption(address_option);
+    QCommandLineOption pub_port_option(QStringList() << "publisher_port",
+                                       "Publisher port number (defaults to 1666)",
+                                       "publisher_port");
+    parser.addOption(pub_port_option);
+    QCommandLineOption srv_port_option(QStringList() << "server_port",
+                                       "Server port number (defaults to 1667)",
+                                       "server_port");
+    parser.addOption(srv_port_option);
+    QCommandLineOption autoconnect_option(QStringList() << "autoconnect",
+                                          "Autoconnect to monitor");
+    parser.addOption(autoconnect_option);
+
     parser.process( app );
 
     QFile styleFile( ":/stylesheet.qss" );
@@ -88,7 +105,15 @@ main(int argc, char *argv[])
             mode = dialog.getGraphicMode();
         }
 
-        MainWindow win( mode );
+        // Get the monitor options.
+        const QString monitor_address = parser.value(address_option);
+        const QString monitor_pub_port = parser.value(pub_port_option);
+        const QString monitor_srv_port = parser.value(srv_port_option);
+        const bool monitor_autoconnect = parser.isSet(autoconnect_option);
+
+        // Start the main application.
+        MainWindow win( mode, monitor_address, monitor_pub_port,
+                        monitor_srv_port, monitor_autoconnect );
         win.show();
         return app.exec();
     }
