@@ -46,12 +46,10 @@ project is compiled with _catkin_.
 ## Compilation instructions (Linux)
 
 ```
-git clone https://github.com/BehaviorTree/Groot.git
+git clone --recurse-submodules https://github.com/BehaviorTree/Groot.git
 cd Groot
-git submodule update --init --recursive
-mkdir build; cd build
-cmake ..
-make
+cmake -S . -B build
+cmake --build build
 ```
        
  Note compiling "in-source" is not allowed.   
