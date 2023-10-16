@@ -98,6 +98,8 @@ public slots:
 
     void on_actionSave_triggered();
 
+    void on_actionSaveAs_triggered();
+
     void onSubtreeSelected(const QString& subtreeName);
 
     void on_splitter_splitterMoved(int pos = 0, int index = 0);
@@ -206,6 +208,8 @@ private:
 
     QString _main_tree;
 
+    QString _loaded_tree_file_path;
+
     SidepanelEditor* _editor_widget;
     SidepanelReplay* _replay_widget;
 #ifdef ZMQ_FOUND
@@ -219,6 +223,7 @@ private:
 
     MainWindow::SavedState saveCurrentState();
     void clearUndoStacks();
+    void saveTree(QString loadedPath = "");
 };
 
 
