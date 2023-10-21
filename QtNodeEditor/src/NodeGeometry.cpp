@@ -283,7 +283,7 @@ portWidth(PortType portType) const
   for (auto i = 0ul; i < _dataModel->nPorts(portType); ++i)
   {
     QString name = _dataModel->dataType(portType, i).name;
-    width = std::max(unsigned(_fontMetrics.width(name)), width);
+    width = std::max(unsigned(_fontMetrics.horizontalAdvance(name)), width);
   }
 
   return width;
