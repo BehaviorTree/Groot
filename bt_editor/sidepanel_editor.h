@@ -7,11 +7,13 @@
 #include <QTableWidgetItem>
 #include "XML_utilities.hpp"
 
+#include "behavior_tree_editor_export.h"
+
 namespace Ui {
 class SidepanelEditor;
 }
 
-class SidepanelEditor : public QFrame
+class BEHAVIOR_TREE_EDITOR_EXPORT SidepanelEditor : public QFrame
 {
     Q_OBJECT
 
