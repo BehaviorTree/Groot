@@ -492,7 +492,7 @@ QString MainWindow::saveToXML() const
         if( abs_root->children_index.size() == 1 &&
             abs_root->model.registration_ID == "Root"  )
         {
-            // mofe to the child of ROOT
+            // move to the child of ROOT
             abs_root = abs_tree.node( abs_root->children_index.front() );
         }
 

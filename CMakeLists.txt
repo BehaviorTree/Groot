@@ -159,7 +159,7 @@ add_library(behavior_tree_editor SHARED
     ${FORMS_HEADERS}
 )
 
-SET(GROOT_DEPENDENCIES QtNodeEditor curses ncursesw tinfo )
+SET(GROOT_DEPENDENCIES QtNodeEditor ncurses ncursesw tinfo )
 
 if(ament_cmake_FOUND)
     ament_target_dependencies(behavior_tree_editor ${dependencies})
