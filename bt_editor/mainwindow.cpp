@@ -148,6 +148,7 @@ MainWindow::MainWindow(GraphicMode initial_mode,
     connect( redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
     QShortcut* save_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
+    QShortcut* save_as_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S), this);
 
     connect( _editor_widget, &SidepanelEditor::nodeModelEdited,
             this, &MainWindow::onTreeNodeEdited);
@@ -203,6 +204,11 @@ MainWindow::MainWindow(GraphicMode initial_mode,
             this, &MainWindow::on_actionSave_triggered );
 
     connect( save_shortcut, &QShortcut::activated, this, &MainWindow::on_actionSave_triggered );
+
+    connect( ui->toolButtonSaveAsFile, &QToolButton::clicked,
+            this, &MainWindow::on_actionSaveAs_triggered );
+
+    connect( save_as_shortcut, &QShortcut::activated, this, &MainWindow::on_actionSaveAs_triggered );
 
     connect( _replay_widget, &SidepanelReplay::changeNodeStyle,
             this, &MainWindow::onChangeNodesStatus);
@@ -433,22 +439,24 @@ void MainWindow::on_actionLoad_triggered()
     QString directory_path  = settings.value("MainWindow.lastLoadDirectory",
                                             QDir::homePath() ).toString();
 
-    QString fileName = QFileDialog::getOpenFileName(this,
+    QString filePath = QFileDialog::getOpenFileName(this,
                                                     tr("Load BehaviorTree from file"), directory_path,
                                                     tr("BehaviorTree files (*.xml)"));
-    if (!QFileInfo::exists(fileName)){
+    if (!QFileInfo::exists(filePath)){
         return;
     }
 
-    QFile file(fileName);
+    QFile file(filePath);
 
     if (!file.open(QIODevice::ReadOnly)){
         return;
     }
 
-    directory_path = QFileInfo(fileName).absolutePath();
+    directory_path = QFileInfo(filePath).absolutePath();
     settings.setValue("MainWindow.lastLoadDirectory", directory_path);
     settings.sync();
+
+    _loaded_tree_file_path = filePath;
 
     QString xml_text;
 
@@ -633,7 +641,7 @@ void MainWindow::recursivelySaveNodeCanonically(QXmlStreamWriter &stream, const 
   }
 }
 
-void MainWindow::on_actionSave_triggered()
+void MainWindow::saveTree(QString loadedPath)
 {
     for (auto& it: _tab_info)
     {
@@ -656,26 +664,46 @@ void MainWindow::on_actionSave_triggered()
     QString directory_path  = settings.value("MainWindow.lastSaveDirectory",
                                             QDir::currentPath() ).toString();
 
-    auto fileName = QFileDialog::getSaveFileName(this, "Save BehaviorTree to file",
+    auto filePath = loadedPath;
+    if(filePath.isEmpty())
+    {
+        filePath = QFileDialog::getSaveFileName(this, "Save BehaviorTree to file",
                                                  directory_path, "BehaviorTree files (*.xml)");
-    if (fileName.isEmpty()){
+    }
+
+    if (filePath.isEmpty())
+    {
         return;
     }
-    if (!fileName.endsWith(".xml"))
+
+    if (!filePath.endsWith(".xml"))
     {
-        fileName += ".xml";
+        filePath += ".xml";
     }
 
     QString xml_text = saveToXML();
 
-    QFile file(fileName);
+    QFile file(filePath);
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
         stream << xml_text;
     }
 
-    directory_path = QFileInfo(fileName).absolutePath();
+    directory_path = QFileInfo(filePath).absolutePath();
     settings.setValue("MainWindow.lastSaveDirectory", directory_path);
+    _loaded_tree_file_path = filePath;
+
+}
+
+void MainWindow::on_actionSave_triggered()
+{
+    saveTree(_loaded_tree_file_path);
+}
+
+
+void MainWindow::on_actionSaveAs_triggered()
+{
+    saveTree();
 }
 
 void MainWindow::onAutoArrange()
