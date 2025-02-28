@@ -56,6 +56,16 @@ main(int argc, char *argv[])
                                           "Autoconnect to monitor");
     parser.addOption(autoconnect_option);
 
+    QCommandLineOption file_option(QStringList() << "file",
+                                   "Load a file (only in editor mode)",
+                                   "tree.xml");
+    parser.addOption(file_option);
+
+    QCommandLineOption output_svg_option(QStringList() << "output-svg",
+                                         "Save the input file to an svg",
+                                         "output.svg");
+    parser.addOption(output_svg_option);
+
     parser.process( app );
 
     QFile styleFile( ":/stylesheet.qss" );
@@ -92,7 +102,7 @@ main(int argc, char *argv[])
             else{
                 std::cout << "wrong mode passed to --mode. Use on of these: editor / monitor /replay"
                           << std::endl;
-                return 0;
+                return 1;
             }
         }
         else{
@@ -114,6 +124,52 @@ main(int argc, char *argv[])
         // Start the main application.
         MainWindow win( mode, monitor_address, monitor_pub_port,
                         monitor_srv_port, monitor_autoconnect );
+
+        if( parser.isSet(file_option) )
+        {
+            if ( mode != GraphicMode::EDITOR )
+            {
+                std::cout << "--file can only be passed in editor mode" << std::endl;
+                return 1;
+            }
+
+            QString fileName = parser.value(file_option);
+            std::cout << "Loading file: " << fileName.toStdString() << std::endl;
+
+            // Open file
+            QFile file(fileName);
+            if (!file.open(QIODevice::ReadOnly))
+            {
+                std::cout << "Cannot open file" << std::endl;
+                return 1;
+            }
+
+            // Read file to xml
+            QString xml_text;
+            QTextStream in(&file);
+            while (!in.atEnd()) {
+                xml_text += in.readLine();
+            }
+
+            // Show xml
+            win.loadFromXML( xml_text );
+        }
+
+
+        if( parser.isSet(output_svg_option) )
+        {
+            if ( !parser.isSet(file_option))
+            {
+                std::cout << "--output-svg needs the --file" << std::endl;
+                return 1;
+            }
+            QString svgFile = parser.value(output_svg_option);
+
+            std::cout << "Writing to: " << svgFile.toStdString() << std::endl;
+            win.currentTabInfo()->saveSvgFile(svgFile);
+            return 0;
+        }
+
         win.show();
         return app.exec();
     }
